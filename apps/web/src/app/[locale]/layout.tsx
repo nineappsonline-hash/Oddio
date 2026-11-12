@@ -52,7 +52,7 @@ export async function generateMetadata({
     title: { default: title, template: `%s · Oddio` },
     description,
     applicationName: 'Oddio',
-    icons: { icon: '/oddio-official.webp', shortcut: '/oddio-official.webp', apple: '/oddio-official.webp' },
+    icons: { icon: '/oddio-logo-hq.png', shortcut: '/oddio-logo-hq.png', apple: '/oddio-logo-hq.png' },
     alternates: {
       canonical: `${env.siteUrl}/${safeLocale}`,
       languages: { en: `${env.siteUrl}/en`, ar: `${env.siteUrl}/ar` },
