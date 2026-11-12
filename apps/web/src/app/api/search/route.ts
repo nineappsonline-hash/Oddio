@@ -1,6 +1,8 @@
 import { searchQuery } from '@ai-music/contracts';
 import { getViewer } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { searchCatalog } from '@/lib/data/queries';
 import { jsonError, jsonOk } from '@/lib/api-helpers';
 
@@ -20,7 +22,8 @@ export async function GET(request: Request) {
       cursor: url.searchParams.get('cursor') ?? undefined,
     });
     const viewer = await getViewer();
-    const results = searchCatalog(readDb(), viewer, query);
+    const db = demoMode ? readDb() : await loadDbFromSupabase();
+    const results = searchCatalog(db, viewer, query);
     return jsonOk(results);
   } catch (error) {
     return jsonError(error);
