@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     const user = await requireUser();
     rateLimit(`authorize:${user.id}`, 20, 60 * 60_000);
     const input = await parseBody(request, schema);
-    if (!ALLOWED.includes(input.contentType)) {
+    if (!/\.mp3$/i.test(input.filename) || !ALLOWED.includes(input.contentType)) {
       throw Errors.invalid('Unsupported audio content type');
     }
     if (input.bytes > env.audioMaxUploadBytes) {
