@@ -35,6 +35,7 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
         </div>
       </div>
       <div className="flex items-center gap-1">
+        <button type="button" aria-label={locale === 'ar' ? 'افتح القائمة' : 'Open menu'} onClick={() => document.getElementById('oddio-mobile-menu-trigger')?.click()} className="flex h-10 w-10 items-center justify-center rounded-xl border border-fuchsia-400/35 bg-fuchsia-500/15 text-fuchsia-200 transition hover:bg-fuchsia-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-fuchsia-300"><Menu className="h-5 w-5" /></button>
         <Link
           href={`/${locale}/search`}
           className="rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink"
@@ -136,7 +137,7 @@ export function MobileNav() {
           </Link>
         );
       })}
-      <button type="button" onClick={() => setMenuOpen(true)} aria-label={locale === 'ar' ? 'القائمة' : 'Menu'} aria-expanded={menuOpen}
+      <button id="oddio-mobile-menu-trigger" type="button" onClick={() => setMenuOpen(true)} aria-label={locale === 'ar' ? 'القائمة' : 'Menu'} aria-expanded={menuOpen}
         className={cn('flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold transition', menuOpen ? 'text-fuchsia-300' : 'text-muted hover:text-ink')}>
         <Menu className="h-5 w-5" />{locale === 'ar' ? 'القائمة' : 'Menu'}
       </button>
