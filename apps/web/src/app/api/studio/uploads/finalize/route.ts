@@ -1,5 +1,4 @@
 import crypto from 'node:crypto';
-import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { trackDraftInput } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
