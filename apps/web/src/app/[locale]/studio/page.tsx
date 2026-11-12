@@ -96,14 +96,14 @@ export default async function StudioDashboard({
               <Link
                 key={item.title}
                 href={item.href}
-                className="group relative flex min-h-56 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#161526] shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/60 hover:shadow-[0_16px_45px_rgba(130,70,255,0.16)] sm:min-h-60 sm:flex-row"
+                className="studio-motion-card group relative flex min-h-56 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#161526] shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/60 hover:shadow-[0_16px_45px_rgba(130,70,255,0.16)] sm:min-h-60 sm:flex-row"
               >
                 <div className={`relative flex min-h-44 items-center justify-center overflow-hidden bg-gradient-to-br ${item.glow} sm:min-h-full sm:w-[38%] lg:w-[32%]`}>
-                  <div className="absolute h-44 w-44 rounded-full border border-white/10 bg-white/[0.03] shadow-[0_0_65px_rgba(164,90,255,0.16)] transition duration-500 group-hover:scale-110" />
+                  <div aria-hidden="true" className="studio-orbit studio-orbit-outer absolute h-44 w-44 rounded-full border border-dashed border-white/20 bg-white/[0.03] shadow-[0_0_65px_rgba(164,90,255,0.16)]" /><div aria-hidden="true" className="studio-orbit studio-orbit-inner absolute h-36 w-36 rounded-full border border-cyan-300/20" /><div aria-hidden="true" className="studio-glow absolute h-28 w-28 rounded-full bg-primary/20 blur-3xl" />
                   <div className="absolute h-32 w-32 rotate-12 rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-sm transition duration-500 group-hover:rotate-0" />
-                  <Icon aria-hidden="true" strokeWidth={1.2} className={`relative h-24 w-24 drop-shadow-[0_0_25px_rgba(180,130,255,0.35)] sm:h-28 sm:w-28 ${item.iconColor}`} />
+                  <Icon aria-hidden="true" strokeWidth={1.2} className={`studio-feature-icon relative h-24 w-24 drop-shadow-[0_0_25px_rgba(180,130,255,0.35)] sm:h-28 sm:w-28 ${item.iconColor}`} />
                 </div>
-                <div className="flex flex-1 flex-col justify-center p-6 sm:p-8">
+                <div className="relative flex flex-1 flex-col justify-center p-6 sm:p-8"><div aria-hidden="true" className="studio-sparkle pointer-events-none absolute right-8 top-7 h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_16px_5px_rgba(65,217,255,0.35)]" />
                   <span className="text-xs font-bold tracking-[0.2em] text-primary">{item.label}</span>
                   <h3 className="mt-3 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{item.title}</h3>
                   <p className="mt-3 max-w-xl text-sm leading-6 text-muted sm:text-base">{item.description}</p>
