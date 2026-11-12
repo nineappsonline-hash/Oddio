@@ -72,7 +72,11 @@ export async function POST(request: Request) {
     }
     const hasher = crypto.createHash('sha256');
     let verifiedBytes = 0;
-    for await (const chunk of original.body) {
+    const reader = original.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = value;
       const bytes = Buffer.from(chunk);
       verifiedBytes += bytes.length;
       if (verifiedBytes > env.audioMaxUploadBytes) {
