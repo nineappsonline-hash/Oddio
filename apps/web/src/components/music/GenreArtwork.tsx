@@ -55,7 +55,7 @@ function illustration(type: string) {
 }
 
 export function GenreArtwork({slug,index}:Props) {
-  const theme=useMemo(()=>themes[slug.toLowerCase()] || ['#a46bff','#20234f',['stars','vinyl','laser','city'][index%4]], [slug,index]);
+  const theme = useMemo<[string, string, string]>(() => themes[slug.toLowerCase()] ?? ['#a46bff', '#20234f', ['stars', 'vinyl', 'laser', 'city'][index % 4] ?? 'stars'], [slug, index]);
   return <svg aria-hidden="true" className="absolute inset-0 h-full w-full scale-100 transition-transform duration-700 ease-out group-hover:scale-110" viewBox="0 0 240 190" preserveAspectRatio="xMidYMid slice">
     <defs><linearGradient id={`genre-${index}`} x1="0" y1="0" x2="1" y2="1"><stop stopColor={theme[0]}/><stop offset="1" stopColor={theme[1]}/></linearGradient></defs>
     <rect width="240" height="190" fill={`url(#genre-${index})`}/>
