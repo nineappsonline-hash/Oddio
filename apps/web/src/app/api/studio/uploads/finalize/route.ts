@@ -96,7 +96,19 @@ export async function POST(request: Request) {
       idempotencyKey: `r2:${input.objectKey}`,
       dailyLimit: env.uploadDailyLimit,
     });
+    // Artist profiles reference tracks through featured_track_id. Persist the new
+    // track before setting that foreign key, otherwise Postgres rejects the artist upsert.
+    const featuredArtist = after.artists.find((artist) => artist.id === track.artistId);
+    const previousArtist = before.artists.find((artist) => artist.id === track.artistId);
+    const shouldFeature = Boolean(featuredArtist && previousArtist &&
+      featuredArtist.featuredTrackId === track.id && previousArtist.featuredTrackId === null);
+    if (shouldFeature && featuredArtist) featuredArtist.featuredTrackId = null;
     await persistChanges(before, after);
+    if (shouldFeature) {
+      const { error: featureError } = await serviceClient().from('artists')
+        .update({ featured_track_id: track.id }).eq('id', track.artistId);
+      if (featureError) throw new Error(`Unable to feature new track: ${featureError.message}`);
+    }
     const { error } = await serviceClient().from('jobs').upsert({
       type: 'media.transcode',
       entity_id: track.id,
