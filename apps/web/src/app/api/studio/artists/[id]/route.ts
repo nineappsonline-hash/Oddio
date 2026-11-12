@@ -4,13 +4,7 @@ import { updateArtist } from '@/lib/data/mutations';
 import { demoMode } from '@/lib/env';
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { Errors } from '@/lib/errors';
-import {
-  assertSameOrigin,
-  jsonError,
-  jsonOk,
-  parseBody,
-  requireUser,
-} from '@/lib/api-helpers';
+import { assertSameOrigin, jsonError, jsonOk, parseBody, requireUser } from '@/lib/api-helpers';
 
 export const runtime = 'nodejs';
 
