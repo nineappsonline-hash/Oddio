@@ -149,15 +149,40 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
   const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [signupComplete, setSignupComplete] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-    await run('/api/auth/signup', {
+    setSignupError(null);
+    try {
+      const result = await apiRequest<{ emailed?: boolean }>('/api/auth/signup', {
+        method: 'POST',
+        body: JSON.stringify({
       displayName,
       handle: handle || undefined,
       email,
       password,
-    });
+        }),
+      });
+      if (result.emailed) {
+        setSignupComplete(true);
+      } else {
+        window.location.assign(next || `/${locale}`);
+      }
+    } catch (caught) {
+      setSignupError(caught instanceof ApiClientError ? caught.message : 'Could not create account');
+    }
+  }
+
+  if (signupComplete) {
+    return (
+      <div role="status" className="card p-6 space-y-4">
+        <h2 className="text-xl font-bold">Check your email</h2>
+        <p>We created your account request. Open the confirmation email sent to {email} and confirm your address before logging in. Check your spam folder too.</p>
+        <Link href={loginHref(locale, next)} className="btn btn-primary inline-block">Go to login</Link>
+      </div>
+    );
   }
 
   return (
@@ -213,8 +238,8 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
             autoComplete="new-password"
           />
         </Field>
-        {error ? (
-          <p className="rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger">{error}</p>
+        {signupError || error ? (
+          <p className="rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger">{signupError || error}</p>
         ) : null}
         <Button type="submit" loading={pending} className="w-full">
           {t('auth.createAccount')}
