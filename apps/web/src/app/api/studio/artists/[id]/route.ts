@@ -4,7 +4,13 @@ import { updateArtist } from '@/lib/data/mutations';
 import { demoMode } from '@/lib/env';
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { Errors } from '@/lib/errors';
-import { assertSameOrigin, jsonError, jsonOk, parseBody, requireUser } from '@/lib/api-helpers';
+import {
+  assertSameOrigin,
+  jsonError,
+  jsonOk,
+  parseBody,
+  requireUser,
+} from '@/lib/api-helpers';
 
 export const runtime = 'nodejs';
 
@@ -20,17 +26,14 @@ export async function PATCH(
     if (!demoMode) {
       const supabase = await getSupabaseServer();
       if (!supabase) throw Errors.unauthorized();
-      const { data: artist, error } = await supabase.rpc(
-        'update_artist_profile_atomic',
-        {
-          p_artist_id: id,
-          p_name: input.name,
-          p_slug: input.slug,
-          p_bio: input.bio,
-          p_accent: input.accent,
-          p_social_links: input.socialLinks,
-        },
-      );
+      const { data: artist, error } = await supabase.rpc('update_artist_profile_atomic', {
+        p_artist_id: id,
+        p_name: input.name,
+        p_slug: input.slug,
+        p_bio: input.bio,
+        p_accent: input.accent,
+        p_social_links: input.socialLinks,
+      });
       if (error) throw new Error(`Artist update failed: ${error.message}`);
       if (!artist) throw Errors.notFound('Artist not found');
       const { data: links, error: linksError } = await supabase

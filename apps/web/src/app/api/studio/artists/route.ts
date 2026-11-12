@@ -4,7 +4,14 @@ import { createArtist } from '@/lib/data/mutations';
 import { demoMode } from '@/lib/env';
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { Errors } from '@/lib/errors';
-import { assertSameOrigin, jsonError, jsonOk, parseBody, rateLimit, requireUser } from '@/lib/api-helpers';
+import {
+  assertSameOrigin,
+  jsonError,
+  jsonOk,
+  parseBody,
+  rateLimit,
+  requireUser,
+} from '@/lib/api-helpers';
 
 export const runtime = 'nodejs';
 
@@ -17,16 +24,13 @@ export async function POST(request: Request) {
     if (!demoMode) {
       const supabase = await getSupabaseServer();
       if (!supabase) throw Errors.unauthorized();
-      const { data: artist, error } = await supabase.rpc(
-        'create_artist_profile_atomic',
-        {
-          p_name: input.name,
-          p_slug: input.slug,
-          p_bio: input.bio,
-          p_accent: input.accent,
-          p_social_links: input.socialLinks,
-        },
-      );
+      const { data: artist, error } = await supabase.rpc('create_artist_profile_atomic', {
+        p_name: input.name,
+        p_slug: input.slug,
+        p_bio: input.bio,
+        p_accent: input.accent,
+        p_social_links: input.socialLinks,
+      });
       if (error) throw new Error(`Artist creation failed: ${error.message}`);
       return jsonOk({
         artist: {
