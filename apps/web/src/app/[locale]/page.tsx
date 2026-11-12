@@ -59,8 +59,8 @@ export default async function HomePage({
     locale === 'ar' ? genre.labelAr : genre.labelEn;
 
   return (
-    <div className="space-y-12">
-      <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0b18]/55 p-5 shadow-card backdrop-blur-2xl sm:p-8 lg:p-10">
+    <div className="space-y-10">
+      <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0b18]/55 p-5 shadow-card backdrop-blur-2xl sm:p-7 lg:p-8">
         <div className="pointer-events-none absolute inset-0 ambient-grid opacity-25" />
         <div
           className="pointer-events-none absolute -end-24 -top-28 h-80 w-80 animate-float-slow rounded-full opacity-40 blur-3xl"
@@ -73,7 +73,7 @@ export default async function HomePage({
         <div className="pointer-events-none absolute -bottom-32 -start-24 h-72 w-72 rounded-full bg-cyan/10 blur-3xl" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
-        <div className="relative grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="relative grid items-center gap-5 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-3">
               <Badge tone="primary" className="border-primary/50 bg-primary/20">
@@ -85,17 +85,17 @@ export default async function HomePage({
               </span>
             </div>
 
-            <h1 className="mt-6 max-w-2xl text-4xl font-black leading-[1.04] tracking-tight sm:text-5xl xl:text-6xl">
+            <h1 className="mt-4 max-w-2xl text-4xl font-black leading-[1.04] tracking-tight sm:text-5xl xl:text-6xl">
               <span className="text-glow-gradient">{t('home.heroTitle')}</span>
             </h1>
-            <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
               {t('home.heroSubtitle')}
             </p>
 
             {hero ? (
               <Link
                 href={`/tracks/${hero.id}-${hero.slug}`}
-                className="group/featured glass-pill mt-7 inline-flex max-w-full items-center gap-3 rounded-2xl p-2 pe-4 transition hover:border-primary/40 hover:bg-white/[0.06]"
+                className="group/featured glass-pill mt-4 inline-flex max-w-full items-center gap-3 rounded-2xl p-2 pe-4 transition hover:border-primary/40 hover:bg-white/[0.06]"
               >
                 <Artwork
                   title={hero.title}
@@ -123,7 +123,7 @@ export default async function HomePage({
               </Link>
             ) : null}
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-4 flex flex-wrap gap-3">
               <Link
                 href={`/${locale}/discover`}
                 className="group/cta inline-flex items-center gap-2 rounded-pill bg-[linear-gradient(135deg,#9D5CFF,#7C3AED)] px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition duration-300 hover:-translate-y-0.5 hover:shadow-glow-lg"
@@ -140,7 +140,7 @@ export default async function HomePage({
               </Link>
             </div>
 
-            <div className="mt-8 grid max-w-md grid-cols-3 gap-3">
+            <div className="mt-5 grid max-w-md grid-cols-3 gap-3">
               {[
                 { value: data.stats.tracks, label: t('home.statsTracks') },
                 { value: data.stats.artists, label: t('home.statsArtists') },
@@ -175,10 +175,17 @@ export default async function HomePage({
                   : t('track.aiAssisted')
               }
             />
-          ) : null}
+          ) : (
+            <div className="relative mx-auto flex h-52 w-52 items-center justify-center sm:h-64 sm:w-64" aria-hidden="true">
+              <div className="absolute inset-0 animate-spin rounded-full border-[18px] border-fuchsia-500/30 shadow-[0_0_80px_#a855f766]" style={{ animationDuration: '24s' }} />
+              <div className="absolute inset-5 animate-pulse rounded-full border-[16px] border-cyan-400/50 shadow-[inset_0_0_55px_#22d3ee55]" />
+              <div className="absolute -inset-5 rotate-[-24deg] rounded-[50%] border-[8px] border-violet-400/50" />
+              <div className="relative text-center text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_30px_#a855f7]">oddio<span className="text-cyan-300">.</span></div>
+            </div>
+          )}
         </div>
 
-        <div className="relative mt-8 border-t border-white/10 pt-5">
+        <div className="relative mt-5 border-t border-white/10 pt-5">
           <div className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted">
             <Equalizer bars={5} className="h-3 text-primary" />
             {t('home.marqueeLabel')}
@@ -316,15 +323,15 @@ export default async function HomePage({
 
       <section>
         <SectionHeader title={t('home.genres')} />
-        <div className="flex flex-wrap gap-2">
-          {data.genres.map((genre) => (
-            <Link
-              key={genre.id}
-              href={`/${locale}/genres/${genre.slug}`}
-              className="rounded-pill border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-ink transition hover:border-primary/40 hover:bg-primary/10"
-            >
-              {genreLabel(genre)}
-              <span className="ms-2 text-xs text-muted">{genre.count}</span>
+        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 pt-2 [scrollbar-width:thin] [scrollbar-color:#9D5CFF_transparent]">
+          {data.genres.map((genre, index) => (
+            <Link key={genre.id} href={`/${locale}/genres/${genre.slug}`}
+              className="group relative flex h-44 w-48 shrink-0 snap-start flex-col justify-end overflow-hidden rounded-[1.5rem] border border-white/15 p-5 shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/70 hover:shadow-[0_10px_40px_#9d5cff44] sm:h-48 sm:w-56"
+              style={{ background: `radial-gradient(circle at 75% 20%, hsla(${(index * 47 + 265) % 360},90%,65%,.55), transparent 55%), linear-gradient(145deg,#25113d,#090d20)` }}>
+              <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rotate-[-28deg] rounded-full border-[18px] border-white/15 shadow-[0_0_40px_#a855f766] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" />
+              <div className="pointer-events-none absolute right-8 top-7 h-16 w-16 rounded-full border-[9px] border-white/25" />
+              <span className="relative text-xl font-black text-white">{genreLabel(genre)}</span>
+              <span className="relative mt-1 text-xs font-medium text-white/65">{genre.count} tracks <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" /></span>
             </Link>
           ))}
         </div>
