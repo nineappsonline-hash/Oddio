@@ -511,7 +511,7 @@ const en: Record<string, string> = {
   'footer.platform': 'Platform',
   'footer.legal': 'Legal',
   'footer.tagline': 'Oddio — music curated for you.',
-  'footer.rights': '© {year} Project AI Music. All rights reserved.',
+  'footer.rights': '© {year} NineApps. All rights reserved.',
   'footer.aiPolicy': 'All releases are reviewed for rights and policy compliance.',
 
   'error.notFoundTitle': 'We could not find that page',
@@ -1038,7 +1038,7 @@ const ar: Record<string, string> = {
   'footer.platform': 'المنصة',
   'footer.legal': 'قانوني',
   'footer.tagline': 'موسيقى ذكاء اصطناعي، مختارة بإيد بشر.',
-  'footer.rights': '© {year} مشروع ذكاء الموسيقى. كل الحقوق محفوظة.',
+  'footer.rights': '© {year} NineApps. جميع الحقوق محفوظة.',
   'footer.aiPolicy': 'كل الإصدارات بتتراجع للحقوق والالتزام بالسياسات.',
 
   'error.notFoundTitle': 'ماعرفناش نلاقي الصفحة دي',
