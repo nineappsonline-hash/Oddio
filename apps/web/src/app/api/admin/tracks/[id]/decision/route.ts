@@ -63,7 +63,7 @@ export async function POST(
           objectKey,
           processingStatus: 'ready',
           // Unknown bitrate is not a claim of high quality.
-          bitrateKbps: original.bitrateKbps === 1 ? 0 : original.bitrateKbps,
+          bitrateKbps: original.bitrateKbps,
         };
         candidate.qualityLabel = 'standard';
       }
