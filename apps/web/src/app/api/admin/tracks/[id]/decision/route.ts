@@ -37,7 +37,7 @@ export async function POST(
         // Never label the untranscoded original as a 320 kbps rendition.
         const original = candidate?.audio;
         if (!original || original.format !== 'mp3' || !original.objectKey ||
-            !/^incoming\\/[a-f0-9-]+\\/[a-f0-9-]+$/.test(original.objectKey) ||
+            !/^incoming[/][a-f0-9-]+[/][a-f0-9-]+$/.test(original.objectKey) ||
             !original.sha256 || !/^[a-f0-9]{64}$/.test(original.sha256)) {
           throw new AppError('audio_not_ready', 'Audio processing has not finished. Only verified MP3 originals can be approved until the media worker is available.', 409);
         }
