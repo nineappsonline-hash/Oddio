@@ -17,6 +17,7 @@ export function UploadForm({
   moods,
   quotaRemaining,
   locale,
+  production = false,
 }: {
   artists: Artist[];
   albums: Array<{ id: string; artistId: string; title: string }>;
@@ -24,6 +25,7 @@ export function UploadForm({
   moods: Mood[];
   quotaRemaining: number;
   locale: Locale;
+  production?: boolean;
 }) {
   const t = useT();
   const router = useRouter();
@@ -91,7 +93,31 @@ export function UploadForm({
     if (artworkFile) form.set('artwork', artworkFile);
     setPending(true);
     try {
-      await apiRequest('/api/studio/tracks', { method: 'POST', body: form });
+      if (production) {
+        const grant = await apiRequest<{
+          uploadUrl: string; objectKey: string; headers: Record<string, string>;
+        }>('/api/studio/uploads/authorize', {
+          method: 'POST',
+          body: JSON.stringify({
+            filename: audioFile.name,
+            contentType: audioFile.type || 'audio/mpeg',
+            bytes: audioFile.size,
+          }),
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const uploaded = await fetch(grant.uploadUrl, {
+          method: 'PUT', headers: grant.headers, body: audioFile,
+        });
+        if (!uploaded.ok) throw new Error('Audio transfer to storage failed.');
+        form.delete('audio');
+        form.delete('artwork');
+        form.set('objectKey', grant.objectKey);
+        form.set('bytes', String(audioFile.size));
+        form.set('contentType', audioFile.type || 'audio/mpeg');
+        await apiRequest('/api/studio/uploads/finalize', { method: 'POST', body: form });
+      } else {
+        await apiRequest('/api/studio/tracks', { method: 'POST', body: form });
+      }
       toast(t('studio.uploadSuccess'), 'success');
       router.push(`/${locale}/studio/tracks`);
       router.refresh();
