@@ -30,7 +30,9 @@ export async function POST(request: Request) {
       throw Errors.invalid('You must confirm distribution rights');
     }
     const supabase = await getSupabaseServer();
-    if (!supabase) throw new AppError('not_configured', 'Supabase is not configured', 503);
+    if (!supabase) {
+      throw new AppError('not_configured', 'Supabase is not configured', 503);
+    }
 
     // Use the authenticated user's client so RLS enforces applicant ownership.
     const { data: existing, error: lookupError } = await supabase
@@ -39,8 +41,12 @@ export async function POST(request: Request) {
       .eq('applicant_id', user.id)
       .in('status', ['submitted', 'under_review', 'approved'])
       .limit(1);
-    if (lookupError) throw new Error(`Application lookup failed: ${lookupError.message}`);
-    if (existing?.length) throw Errors.conflict('You already have an application in progress');
+    if (lookupError) {
+      throw new Error(`Application lookup failed: ${lookupError.message}`);
+    }
+    if (existing?.length) {
+      throw Errors.conflict('You already have an application in progress');
+    }
 
     const { data: application, error } = await supabase
       .from('artist_applications')
@@ -55,7 +61,9 @@ export async function POST(request: Request) {
       })
       .select('*')
       .single();
-    if (error) throw new Error(`Application submission failed: ${error.message}`);
+    if (error) {
+      throw new Error(`Application submission failed: ${error.message}`);
+    }
     return jsonOk({
       application: {
         id: application.id,
