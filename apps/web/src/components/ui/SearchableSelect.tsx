@@ -41,7 +41,7 @@ export function SearchableSelect({
   }, [open]);
 
   return (
-    <div ref={root} className="relative">
+    <div ref={root} className={`relative ${open ? 'z-[100]' : 'z-0'}`}>
       <button
         id={id}
         type="button"
