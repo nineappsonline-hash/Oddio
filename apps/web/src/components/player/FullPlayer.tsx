@@ -19,6 +19,7 @@ import {
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
+import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Badge } from '@/components/ui/Badge';
 import { LikeButton } from '@/components/community/LikeButton';
 import { ShareButton } from '@/components/community/ShareButton';
@@ -143,6 +144,7 @@ export function FullPlayer() {
                 </div>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-2">
+                <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />
                 <LikeButton
                   trackId={track.id}
                   initialLiked={track.isLiked}
