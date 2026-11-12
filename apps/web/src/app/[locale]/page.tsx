@@ -12,7 +12,6 @@ import { buildMetadata } from '@/lib/seo';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { Artwork } from '@/components/ui/Artwork';
-import { OddioPlanet } from '@/components/music/OddioPlanet';
 import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { MoodArtwork } from '@/components/music/MoodArtwork';
 import { HorizontalCarousel } from '@/components/ui/HorizontalCarousel';
@@ -61,8 +60,10 @@ export default async function HomePage({
 
   return (
     <div className="space-y-8">
-      <section className="relative isolate overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0b0b18]/55 px-5 py-4 shadow-card backdrop-blur-2xl sm:px-7 sm:py-5">
-        <div className="pointer-events-none absolute inset-0 ambient-grid opacity-25" />
+      <section className="relative isolate min-h-[310px] overflow-hidden rounded-[2rem] border border-fuchsia-400/30 bg-[#180b22] px-6 py-8 shadow-[0_18px_75px_#0008] sm:px-10 sm:py-10">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_78%_42%,#b12a8840,transparent_58%),linear-gradient(115deg,#1b0b27_12%,#250d30_62%,#090f28)]" />
+        <div className="pointer-events-none absolute inset-y-0 end-0 w-[55%] bg-cover bg-center opacity-75 [mask-image:linear-gradient(to_right,transparent,black_30%)]" style={{backgroundImage:"url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1200&q=85')"}} />
+        <div className="pointer-events-none absolute inset-y-0 end-0 w-[55%] bg-gradient-to-r from-[#1b0b27]/80 via-fuchsia-900/15 to-fuchsia-500/10" />
         <div
           className="pointer-events-none absolute -end-24 -top-28 h-80 w-80 animate-float-slow rounded-full opacity-40 blur-3xl"
           style={{
@@ -74,10 +75,10 @@ export default async function HomePage({
         <div className="pointer-events-none absolute -bottom-32 -start-24 h-72 w-72 rounded-full bg-cyan/10 blur-3xl" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
-        <div className="relative grid items-center gap-2 md:grid-cols-[1.2fr_0.8fr]">
+        <div className="relative grid items-center gap-2 md:grid-cols-[1fr_0.8fr]">
           <div className="relative z-10">
 
-            <h1 className="mt-2 max-w-2xl text-3xl font-black leading-[1.08] tracking-tight sm:text-4xl xl:text-[2.7rem]">
+            <h1 className="mt-2 max-w-xl text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl">
               <span className="text-glow-gradient">{t('home.heroTitle')}</span>
             </h1>
             <p className="mt-2 max-w-xl text-xs leading-relaxed text-muted sm:text-sm">
@@ -118,7 +119,7 @@ export default async function HomePage({
             <div className="mt-3 flex flex-wrap gap-2">
               <Link
                 href={`/${locale}/discover`}
-                className="group/cta inline-flex items-center gap-2 rounded-pill bg-[linear-gradient(135deg,#9D5CFF,#7C3AED)] px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition duration-300 hover:-translate-y-0.5 hover:shadow-glow-lg"
+                className="group/cta inline-flex items-center gap-2 rounded-pill bg-[linear-gradient(120deg,#ff77e6,#ed39a6)] px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition duration-300 hover:-translate-y-0.5 hover:shadow-glow-lg"
               >
                 {t('home.explore')}
                 <ArrowRight className="h-4 w-4 transition group-hover/cta:translate-x-1 rtl:-scale-x-100 rtl:group-hover/cta:-translate-x-1" />
@@ -152,7 +153,7 @@ export default async function HomePage({
             </div>
           </div>
 
-          <OddioPlanet />
+          <div className="pointer-events-none hidden md:block" aria-hidden="true" />
         </div>
 
 
