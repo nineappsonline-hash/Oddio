@@ -31,7 +31,7 @@ export function Logo({ locale, compact = false }: { locale: string; compact?: bo
       aria-label="Oddio"
     >
       <span className="relative flex h-12 w-12 shrink-0">
-        <Image src="/oddio-mark.svg" alt="Oddio" width={48} height={48} className="h-full w-full object-contain" priority />
+        <Image src="/oddio-logo.svg" alt="Oddio" width={48} height={48} className="h-full w-full object-contain" priority />
       </span>
       {!compact ? (
         <span className="leading-tight">
