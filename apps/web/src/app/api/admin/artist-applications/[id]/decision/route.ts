@@ -40,7 +40,11 @@ export async function POST(
     if (lookupError) throw new Error(lookupError.message);
     if (!existing) throw Errors.notFound('Application not found');
     if (existing.applicant_id === user.id) throw Errors.forbidden();
-    if (!['submitted', 'under_review', 'needs_information'].includes(existing.status)) {
+    if (
+      !['submitted', 'under_review', 'needs_information'].includes(
+        existing.status,
+      )
+    ) {
       throw Errors.conflict('This application has already been reviewed');
     }
 
@@ -57,7 +61,9 @@ export async function POST(
       .select('*')
       .maybeSingle();
     if (error) throw new Error(`Application review failed: ${error.message}`);
-    if (!application) throw Errors.conflict('Application was modified by another reviewer');
+    if (!application) {
+      throw Errors.conflict('Application was modified by another reviewer');
+    }
 
     return jsonOk({
       application: {
