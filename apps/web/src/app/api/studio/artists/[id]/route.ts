@@ -40,6 +40,12 @@ export async function PATCH(
         .maybeSingle();
       if (error) throw new Error(`Artist update failed: ${error.message}`);
       if (!artist) throw Errors.notFound('Artist not found');
+      const { data: links, error: linksError } = await supabase
+        .from('artist_social_links')
+        .select('platform, url, sort_order')
+        .eq('artist_id', id)
+        .order('sort_order');
+      if (linksError) throw new Error(`Artist links lookup failed: ${linksError.message}`);
       return jsonOk({
         artist: {
           id: artist.id,
@@ -52,7 +58,11 @@ export async function PATCH(
           accent: artist.accent,
           featuredTrackId: artist.featured_track_id,
           verificationStatus: artist.verification_status,
-          socialLinks: [],
+          socialLinks: (links ?? []).map((link) => ({
+            platform: link.platform,
+            url: link.url,
+            sortOrder: link.sort_order,
+          })),
           createdAt: artist.created_at,
         },
       });
