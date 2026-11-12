@@ -43,28 +43,47 @@ const photos: Record<string, string> = {
   'arabic-folk': 'photo-1504609813442-a8924e83f76e',
 };
 
-// Unknown genres use a unique, stable seed; never reuse another genre's cover.
-function photoForGenre(slug: string): string {
-  const normalized = slug.trim().toLowerCase().replace(/[_\\s]+/g, '-');
-  const photo = photos[normalized];
-  return photo
-    ? `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=720&q=85`
-    : `https://picsum.photos/seed/oddio-genre-${encodeURIComponent(normalized)}/720/570`;
+// Every card has a locally rendered visual, even when a photo host is blocked.
+const motifs: Record<string, string> = {
+  shaabi: '🪗', tarab: '🎻', 'arabic-classical': '🪕', oriental: '🪕',
+  mahraganat: '🎤', dabke: '🥁', 'arabic-pop': '🎙️', 'arabic-rap': '🎧',
+  'hip-hop': '🎤', jazz: '🎷', blues: '🎸', rock: '🎸',
+  reggae: '🌴', afrobeats: '🥁', amapiano: '🎹', dance: '🪩',
+  edm: '🎛️', house: '🎚️', techno: '🎛️', trance: '✨',
+  ambient: '🌌', cinematic: '🎬', synthwave: '🌆',
+  electronic: '🎹', pop: '🎙️', folk: '🪕', metal: '🎸',
+  punk: '⚡', soul: '🎙️', 'r-and-b': '🎙️', nasheed: '🎙️',
+  khaliji: '🪕', khaleeji: '🪕',
+};
+function normalizedGenre(slug: string) {
+  return slug.trim().toLowerCase().replace(/[\\s_]+/g, '-');
+}
+function photoForGenre(slug: string): string | null {
+  const photo = photos[normalizedGenre(slug)];
+  return photo ? `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=720&q=85` : null;
 }
 
 export function GenreArtwork({ slug }: Props) {
   const [failed, setFailed] = useState(false);
+  const normalized = normalizedGenre(slug);
   const photo = photoForGenre(slug);
+  const hash = [...normalized].reduce((n, ch) => (n * 33 + ch.charCodeAt(0)) >>> 0, 5381);
+  const hue = hash % 360;
+  const motif = motifs[normalized] ?? '♫';
   return (
-    <div aria-hidden="true" className="absolute inset-0 overflow-hidden bg-gradient-to-br from-violet-800 via-slate-900 to-fuchsia-950">
-      {!failed && (
+    <div aria-hidden="true" className="absolute inset-0 overflow-hidden" style={{
+      background: `radial-gradient(ellipse at 72% 25%, hsl(${(hue + 65) % 360} 70% 44% / .65), transparent 58%), linear-gradient(140deg, hsl(${hue} 63% 35%), #090817)`,
+    }}>
+      <div className="absolute -right-8 -top-10 h-44 w-44 rounded-full border-[18px] border-white/10 rotate-12" />
+      <div className="absolute left-4 top-3 text-[110px] leading-none opacity-60 drop-shadow-[0_8px_25px_rgba(0,0,0,.5)] transition-transform duration-700 group-hover:scale-110">{motif}</div>
+      {photo && !failed && (
         <img
           src={photo}
           alt=""
           loading="lazy"
           decoding="async"
           onError={() => setFailed(true)}
-          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/5" />
