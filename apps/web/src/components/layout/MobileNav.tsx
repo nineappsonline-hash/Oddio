@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Bell, Compass, Home, Library, Menu, Search, User, X, Mic2, Settings, LogIn, UserPlus, ArrowUpRight, BarChart3 } from 'lucide-react';
+import { Bell, Compass, Home, Library, Menu, Search, User, X, Mic2, Settings, LogIn, UserPlus, ArrowUpRight, BarChart3, Shield, Globe2 } from 'lucide-react';
 import type { SessionUser } from '@ai-music/contracts';
 import { useSession } from '@/components/providers/SessionProvider';
 import { Avatar } from '@/components/ui/Artwork';
@@ -10,6 +10,7 @@ import { Logo } from '@/components/layout/Sidebar';
 import { useT } from '@/i18n/use-translator';
 import { useLocalePath } from '@/lib/use-locale-path';
 import { Equalizer } from '@/components/visuals/Equalizer';
+import { LocaleSwitcher } from '@/components/layout/LocaleSwitcher';
 import { cn } from '@/lib/utils';
 
 export function MobileHeader({ user }: { user: SessionUser | null }) {
@@ -145,9 +146,9 @@ export function MobileNav() {
     {menuOpen ? (
       <div className="fixed inset-0 z-[70] lg:hidden" role="presentation">
         <button type="button" className="absolute inset-0 bg-black/75 backdrop-blur-sm" aria-label={locale === 'ar' ? 'إغلاق القائمة' : 'Close menu'} onClick={() => setMenuOpen(false)} />
-        <section role="dialog" aria-modal="true" aria-label={locale === 'ar' ? 'القائمة' : 'Menu'} className="absolute inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] max-h-[78dvh] overflow-y-auto rounded-3xl border border-white/15 bg-[#151126] p-5 shadow-[0_20px_80px_rgba(0,0,0,0.65)]">
+        <section role="dialog" aria-modal="true" aria-label={locale === 'ar' ? 'القائمة' : 'Menu'} className="absolute inset-y-0 start-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-e border-fuchsia-400/20 bg-[#151126] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-black text-white">{locale === 'ar' ? 'القائمة' : 'Explore Oddio'}</h2>
+            <div><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-fuchsia-300">ODDIO</p><h2 className="text-xl font-black text-white">{locale === 'ar' ? 'القائمة الرئيسية' : 'Main Menu'}</h2></div>
             <button type="button" onClick={() => setMenuOpen(false)} aria-label={locale === 'ar' ? 'إغلاق' : 'Close'} className="rounded-xl border border-white/10 bg-white/10 p-2 text-white"><X className="h-5 w-5" /></button>
           </div>
           {!user?.isArtistManager ? (
@@ -157,9 +158,13 @@ export function MobileNav() {
           ) : null}
           <div className="grid gap-2">
             {[
+              { href: `/${locale}`, label: t('nav.home'), icon: Home },
+              { href: `/${locale}/discover`, label: t('nav.discover'), icon: Compass },
               { href: `/${locale}/charts`, label: t('nav.charts'), icon: BarChart3 },
+              { href: `/${locale}/search`, label: t('nav.search'), icon: Search },
               ...(user ? [{ href: `/${locale}/library`, label: t('nav.library'), icon: Library }, { href: `/${locale}/notifications`, label: t('nav.notifications'), icon: Bell }, { href: `/${locale}/settings`, label: t('nav.settings'), icon: Settings }] : []),
               ...(user?.isArtistManager ? [{ href: `/${locale}/studio`, label: t('nav.studio'), icon: Mic2 }] : []),
+              ...(user && user.roles.length > 0 ? [{ href: `/${locale}/admin`, label: t('nav.admin'), icon: Shield }] : []),
               ...(!user ? [{ href: `/${locale}/signup`, label: locale === 'ar' ? 'إنشاء حساب' : 'Create account', icon: UserPlus }] : []),
             ].map(({ href, label, icon: Icon }) => (
               <Link key={href} href={href} onClick={() => setMenuOpen(false)} className="flex min-h-12 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-semibold text-white transition hover:border-fuchsia-400/40 hover:bg-white/10">
@@ -167,6 +172,7 @@ export function MobileNav() {
               </Link>
             ))}
           </div>
+          <div className="mt-5 border-t border-white/10 pt-4"><LocaleSwitcher /></div>
           {!user ? <Link href={`/${locale}/login`} onClick={() => setMenuOpen(false)} className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-sm font-black text-white shadow-lg"><LogIn className="h-4 w-4" />{t('nav.login')}</Link> : null}
         </section>
       </div>
