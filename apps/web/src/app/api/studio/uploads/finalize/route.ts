@@ -89,7 +89,9 @@ export async function POST(request: Request) {
         kind: 'original',
         objectKey: input.objectKey,
         format: input.contentType === 'audio/mpeg' ? 'mp3' : input.contentType.split('/')[1] || 'unknown',
-        bitrateKbps: 0, sampleRate: 0, channels: 0,
+        // Provisional nonzero metadata required by audio_assets CHECK constraints.
+        // Worker replaces these with ffprobe measurements.
+        bitrateKbps: 1, sampleRate: 1, channels: 2,
         bytes: storedBytes, sha256: crypto.createHash('sha256').update(input.objectKey).digest('hex'),
         processingStatus: 'pending',
       },
