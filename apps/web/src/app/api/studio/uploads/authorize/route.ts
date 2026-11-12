@@ -1,6 +1,8 @@
 import { z } from 'zod';
+import crypto from 'node:crypto';
+import { getSupabaseServer } from '@/lib/supabase/server';
 import { env, demoMode } from '@/lib/env';
-import { AppError, Errors } from '@/lib/errors';
+import { Errors } from '@/lib/errors';
 import {
   assertSameOrigin,
   jsonError,
@@ -40,11 +42,29 @@ export async function POST(request: Request) {
       throw Errors.invalid('File exceeds the maximum upload size');
     }
     if (!demoMode) {
-      throw new AppError(
-        'not_configured',
-        'R2 direct upload requires Cloudflare credentials and is not enabled.',
-        501,
-      );
+      const supabase = await getSupabaseServer();
+      if (!supabase) throw Errors.unauthorized();
+      const { data: approved, error: approvalError } = await supabase
+        .from('artist_applications')
+        .select('id')
+        .eq('applicant_id', user.id)
+        .eq('status', 'approved')
+        .limit(1);
+      if (approvalError) throw new Error(approvalError.message);
+      if (!approved?.length) throw Errors.forbidden();
+      const { presignR2Put } = await import('@/lib/storage/r2-presign');
+      const objectKey = `incoming/${user.id}/${crypto.randomUUID()}`;
+      const grant = presignR2Put(objectKey, input.contentType);
+      return jsonOk({
+        mode: 'direct',
+        uploadUrl: grant.url,
+        objectKey,
+        bucket: grant.bucket,
+        expiresInSeconds: 300,
+        method: 'PUT',
+        headers: { 'Content-Type': input.contentType },
+        note: 'Upload grant only. Track creation and media validation require a separate finalize step.',
+      });
     }
     return jsonOk({
       mode: 'local',
