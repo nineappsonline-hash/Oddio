@@ -224,6 +224,16 @@ export default async function StudioDashboard({
                 <span className="text-xs tabular-nums text-muted">
                   {formatNumber(track.qualifiedPlays, locale)}
                 </span>
+                {track.audio?.objectKey ? (
+                  <div className="w-full rounded-xl border border-white/10 bg-black/20 p-3">
+                    <p className="mb-2 text-xs font-medium text-muted">{locale === 'ar' ? 'اسمع أغنيتك قبل الموافقة' : 'Listen to your uploaded song — including pending review'}</p>
+                    <audio controls preload="none" className="w-full" controlsList="nodownload" src={`/api/studio/tracks/${track.id}/preview`}>
+                      Your browser does not support audio playback.
+                    </audio>
+                  </div>
+                ) : (
+                  <p className="w-full text-xs text-amber-300">{locale === 'ar' ? 'الملف الصوتي غير متاح حاليًا' : 'Audio file is not available yet.'}</p>
+                )}
                 <StudioTrackActions
                   trackId={track.id}
                   canSubmit={['draft', 'changes_requested', 'ready_for_review'].includes(
