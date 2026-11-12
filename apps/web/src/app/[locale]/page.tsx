@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, BarChart3 } from 'lucide-react';
+import { ArrowRight, BarChart3, Music2, UsersRound, Play } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
 import { getHomeData } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
@@ -11,7 +11,6 @@ import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { Badge } from '@/components/ui/Badge';
 import { Artwork } from '@/components/ui/Artwork';
 import { OddioPlanet } from '@/components/music/OddioPlanet';
 import { GenreArtwork } from '@/components/music/GenreArtwork';
@@ -77,15 +76,6 @@ export default async function HomePage({
 
         <div className="relative grid items-center gap-2 md:grid-cols-[1.2fr_0.8fr]">
           <div className="relative z-10">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge tone="primary" className="border-primary/50 bg-primary/20">
-                {t('home.eyebrow')}
-              </Badge>
-              <span className="glass-pill inline-flex items-center gap-2 rounded-pill px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
-                <span className="live-dot" />
-                {t('home.liveNow')}
-              </span>
-            </div>
 
             <h1 className="mt-2 max-w-2xl text-3xl font-black leading-[1.08] tracking-tight sm:text-4xl xl:text-[2.7rem]">
               <span className="text-glow-gradient">{t('home.heroTitle')}</span>
@@ -142,23 +132,21 @@ export default async function HomePage({
               </Link>
             </div>
 
-            <div className="mt-3 grid max-w-md grid-cols-3 gap-2">
+            <div className="mt-4 grid max-w-xl grid-cols-3 gap-2.5 sm:gap-3">
               {[
-                { value: data.stats.tracks, label: t('home.statsTracks') },
-                { value: data.stats.artists, label: t('home.statsArtists') },
-                { value: data.stats.plays, label: t('home.statsPlays') },
-              ].map((stat, index) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-1.5 backdrop-blur"
-                  style={{ animationDelay: `${index * 90}ms` }}
-                >
-                  <p className="text-lg font-black tabular-nums text-ink sm:text-xl">
-                    {formatNumber(stat.value, locale)}
-                  </p>
-                  <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-muted">
-                    {stat.label}
-                  </p>
+                { value: data.stats.tracks, label: t('home.statsTracks'), Icon: Music2, glow: 'border-fuchsia-400/50 bg-fuchsia-500/10 text-fuchsia-300', icon: 'bg-fuchsia-500/20', line: 'from-fuchsia-500/0 via-fuchsia-400 to-fuchsia-500/0' },
+                { value: data.stats.artists, label: t('home.statsArtists'), Icon: UsersRound, glow: 'border-sky-400/50 bg-sky-500/10 text-sky-300', icon: 'bg-sky-500/20', line: 'from-sky-500/0 via-sky-400 to-sky-500/0' },
+                { value: data.stats.plays, label: t('home.statsPlays'), Icon: Play, glow: 'border-amber-400/50 bg-amber-500/10 text-amber-300', icon: 'bg-amber-500/20', line: 'from-amber-500/0 via-amber-400 to-amber-500/0' },
+              ].map((stat) => (
+                <div key={stat.label} className={`group relative flex min-w-0 items-center gap-2 overflow-hidden rounded-2xl border p-2.5 shadow-[0_8px_28px_#0004] backdrop-blur transition duration-300 hover:-translate-y-1 hover:brightness-125 sm:gap-3 sm:p-3 ${stat.glow}`}>
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-inner sm:h-11 sm:w-11 ${stat.icon}`}>
+                    <stat.Icon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-xl font-black leading-none tabular-nums text-white sm:text-2xl">{formatNumber(stat.value, locale)}</span>
+                    <span className="mt-1 block text-[9px] font-semibold uppercase leading-tight tracking-wide text-white/80 sm:text-[11px]">{stat.label}</span>
+                  </span>
+                  <span className={`pointer-events-none absolute inset-x-3 bottom-0 h-px bg-gradient-to-r ${stat.line}`} />
                 </div>
               ))}
             </div>
