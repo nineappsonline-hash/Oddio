@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ArrowRight, BarChart3, Music2, UsersRound, Play } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
 import { getHomeData } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
@@ -85,72 +84,6 @@ export default async function HomePage({
               {t('home.heroSubtitle')}
             </p>
 
-            {hero ? (
-              <Link
-                href={`/tracks/${hero.id}-${hero.slug}`}
-                className="group/featured glass-pill mt-2 inline-flex max-w-full items-center gap-3 rounded-2xl p-2 pe-4 transition hover:border-primary/40 hover:bg-white/[0.06]"
-              >
-                <Artwork
-                  title={hero.title}
-                  url={hero.artwork.url}
-                  accent={hero.artwork.accent}
-                  className="h-9 w-9 shrink-0"
-                  rounded="rounded-xl"
-                />
-                <span className="min-w-0">
-                  <span className="block text-[9px] font-bold uppercase tracking-[0.22em] text-primary">
-                    {t('common.featured')}
-                  </span>
-                  <span className="block truncate text-sm font-bold text-ink">
-                    {hero.title}
-                  </span>
-                  {hero.artist ? (
-                    <span className="block truncate text-[11px] text-muted">
-                      {hero.artist.name}
-                    </span>
-                  ) : null}
-                </span>
-                <span className="ms-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-ink transition group-hover/featured:border-primary/40 group-hover/featured:bg-primary group-hover/featured:text-white">
-                  <ArrowRight className="h-4 w-4 rtl:-scale-x-100" />
-                </span>
-              </Link>
-            ) : null}
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Link
-                href={`/${locale}/discover`}
-                className="group/cta inline-flex items-center gap-2 rounded-pill bg-[linear-gradient(120deg,#ff77e6,#ed39a6)] px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition duration-300 hover:-translate-y-0.5 hover:shadow-glow-lg"
-              >
-                {t('home.explore')}
-                <ArrowRight className="h-4 w-4 transition group-hover/cta:translate-x-1 rtl:-scale-x-100 rtl:group-hover/cta:-translate-x-1" />
-              </Link>
-              <Link
-                href={`/${locale}/charts`}
-                className="inline-flex items-center gap-2 rounded-pill border border-white/15 bg-white/[0.03] px-5 py-2.5 text-sm font-semibold text-ink backdrop-blur transition hover:border-cyan/40 hover:bg-cyan/10"
-              >
-                <BarChart3 className="h-4 w-4 text-cyan" />
-                {t('home.chartsTeaser')}
-              </Link>
-            </div>
-
-            <div className="mt-4 grid max-w-xl grid-cols-3 gap-2.5 sm:gap-3">
-              {[
-                { value: data.stats.tracks, label: t('home.statsTracks'), Icon: Music2, glow: 'border-fuchsia-400/50 bg-fuchsia-500/10 text-fuchsia-300', icon: 'bg-fuchsia-500/20', line: 'from-fuchsia-500/0 via-fuchsia-400 to-fuchsia-500/0' },
-                { value: data.stats.artists, label: t('home.statsArtists'), Icon: UsersRound, glow: 'border-sky-400/50 bg-sky-500/10 text-sky-300', icon: 'bg-sky-500/20', line: 'from-sky-500/0 via-sky-400 to-sky-500/0' },
-                { value: data.stats.plays, label: t('home.statsPlays'), Icon: Play, glow: 'border-amber-400/50 bg-amber-500/10 text-amber-300', icon: 'bg-amber-500/20', line: 'from-amber-500/0 via-amber-400 to-amber-500/0' },
-              ].map((stat) => (
-                <div key={stat.label} className={`group relative flex min-w-0 items-center gap-2 overflow-hidden rounded-2xl border p-2.5 shadow-[0_8px_28px_#0004] backdrop-blur transition duration-300 hover:-translate-y-1 hover:brightness-125 sm:gap-3 sm:p-3 ${stat.glow}`}>
-                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-inner sm:h-11 sm:w-11 ${stat.icon}`}>
-                    <stat.Icon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-xl font-black leading-none tabular-nums text-white sm:text-2xl">{formatNumber(stat.value, locale)}</span>
-                    <span className="mt-1 block text-[9px] font-semibold uppercase leading-tight tracking-wide text-white/80 sm:text-[11px]">{stat.label}</span>
-                  </span>
-                  <span className={`pointer-events-none absolute inset-x-3 bottom-0 h-px bg-gradient-to-r ${stat.line}`} />
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="pointer-events-none hidden md:block" aria-hidden="true" />
