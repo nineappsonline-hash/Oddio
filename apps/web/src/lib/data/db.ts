@@ -5,7 +5,11 @@ import { createSeedDb } from './seed';
 import type { DemoDb, DemoUser } from './types';
 import { notifyFollowersOfRelease } from './release-notifications';
 
-const DATA_DIR = path.join(process.cwd(), '.data');
+// Vercel functions have a read-only application filesystem; only /tmp is writable.
+// Demo data in /tmp is ephemeral and may reset between serverless invocations.
+const DATA_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'oddio-demo')
+  : path.join(process.cwd(), '.data');
 const DB_FILE = path.join(DATA_DIR, 'demo.json');
 const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 const SEED_AUDIO_DIR = path.join(DATA_DIR, 'seed-audio');
