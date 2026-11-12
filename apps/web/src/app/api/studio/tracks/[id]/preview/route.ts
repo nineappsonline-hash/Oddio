@@ -16,11 +16,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     const db = demoMode ? readDb() : await loadDbFromSupabase();
     const track = db.tracks.find((item) => item.id === id);
     if (!track) return NextResponse.json({ error: 'Track not found' }, { status: 404 });
-    const ownsTrack = db.artists.some((artist) => artist.id === track.artistId && (
-      artist.ownerUserId === user.id || db.artistMembers.some((member) =>
-        member.artistId === artist.id && member.userId === user.id
-      )
-    ));
+    const ownsTrack = db.artists.some((artist) => artist.id === track.artistId && artist.ownerUserId === user.id);
     if (!ownsTrack && !user.roles.some((role) => role === 'admin' || role === 'super_admin')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
