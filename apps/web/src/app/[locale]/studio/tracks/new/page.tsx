@@ -62,12 +62,7 @@ export default async function UploadTrackPage({
   return (
     <div>
       <PageHeader title={t('studio.uploadTrack')} subtitle={t('studio.uploadSubtitle')} />
-      {!demoMode ? (
-        <div role="status" className="card border border-amber-400/30 p-6 text-sm text-ink">
-          Production uploads are temporarily unavailable while secure R2 processing and
-          publication are being connected. Your audio has not been uploaded.
-        </div>
-      ) : <UploadForm
+      <UploadForm
         artists={data.artists}
         albums={data.albums.map((album) => ({
           id: album.id,
@@ -78,7 +73,8 @@ export default async function UploadTrackPage({
         moods={data.moods}
         quotaRemaining={data.quota.remaining}
         locale={locale}
-      />}
+        production={!demoMode}
+      />
     </div>
   );
 }
