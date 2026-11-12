@@ -314,25 +314,46 @@ async function rpc(name, args) {
   return rest('POST', `/rest/v1/rpc/${name}`, args);
 }
 
+const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || '';
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '';
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '';
+function r2SignedUrl(method, bucket, key) {
+  if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
+    throw new Error('R2 worker credentials missing');
+  }
+  if (!['ai-music-originals', 'ai-music-streaming'].includes(bucket)) throw new Error('Invalid R2 bucket');
+  if (!/^[a-zA-Z0-9/_-]+$/.test(key) || key.includes('..')) throw new Error('Invalid R2 key');
+  const host = `${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
+  const date = new Date().toISOString().replace(/[:-]|\\.\\d{3}/g, '');
+  const short = date.slice(0, 8);
+  const scope = `${short}/auto/s3/aws4_request`;
+  const path = `/${bucket}/${key.split('/').map(encodeURIComponent).join('/')}`;
+  const params = {
+    'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+    'X-Amz-Credential': `${R2_ACCESS_KEY_ID}/${scope}`,
+    'X-Amz-Date': date,
+    'X-Amz-Expires': '300',
+    'X-Amz-SignedHeaders': 'host',
+  };
+  const query = Object.entries(params).sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+  const hash = (v) => crypto.createHash('sha256').update(v).digest('hex');
+  const hmac = (k, v) => crypto.createHmac('sha256', k).update(v).digest();
+  const canonical = [method, path, query, `host:${host}\\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\\n');
+  const string = ['AWS4-HMAC-SHA256', date, scope, hash(canonical)].join('\\n');
+  const signingKey = hmac(hmac(hmac(hmac(`AWS4${R2_SECRET_ACCESS_KEY}`, short), 'auto'), 's3'), 'aws4_request');
+  return `https://${host}${path}?${query}&X-Amz-Signature=${crypto.createHmac('sha256', signingKey).update(string).digest('hex')}`;
+}
 async function storageDownload(bucket, objectKey, target) {
-  const route = `/storage/v1/object/${encodeURIComponent(bucket)}/${objectKey.split('/').map(encodeURIComponent).join('/')}`;
-  const response = await fetch(`${SUPABASE_URL}${route}`, { headers: AUTH });
-  if (!response.ok)
-    throw new Error(`download ${bucket}/${objectKey} -> ${response.status}`);
+  const response = await fetch(r2SignedUrl('GET', bucket, objectKey));
+  if (!response.ok) throw new Error(`R2 download failed: ${response.status}`);
   await fsp.writeFile(target, Buffer.from(await response.arrayBuffer()));
 }
-
-async function storageUpload(bucket, objectKey, filePath, contentType = 'audio/mpeg') {
-  const route = `/storage/v1/object/${encodeURIComponent(bucket)}/${objectKey.split('/').map(encodeURIComponent).join('/')}`;
-  const response = await fetch(`${SUPABASE_URL}${route}`, {
-    method: 'POST',
-    headers: { ...AUTH, 'Content-Type': contentType, 'x-upsert': 'true' },
-    body: await fsp.readFile(filePath),
+async function storageUpload(bucket, objectKey, filePath) {
+  const response = await fetch(r2SignedUrl('PUT', bucket, objectKey), {
+    method: 'PUT', body: await fsp.readFile(filePath),
   });
-  if (!response.ok)
-    throw new Error(
-      `upload ${bucket}/${objectKey} -> ${response.status}: ${await response.text()}`,
-    );
+  if (!response.ok) throw new Error(`R2 upload failed: ${response.status}`);
 }
 
 async function handleTranscode(job) {
@@ -357,21 +378,12 @@ async function handleTranscode(job) {
       );
     }
 
-    let objectKey;
-    let bitrate;
-    if (info.format === 'mp3' && info.bitrateKbps >= TARGET_BITRATE - 4) {
-      objectKey = sourceKey;
-      bitrate = info.bitrateKbps;
-    } else {
-      await transcode(input, output);
-      const hash = await sha256File(output);
-      objectKey = `${trackId}/${hash}-${TARGET_BITRATE}.mp3`;
-      bitrate = TARGET_BITRATE;
-      await storageUpload(targetBucket, objectKey, output);
-    }
-
-    const rendered = objectKey === sourceKey ? info : await probe(output);
-    const hash = await sha256File(output).catch(() => null);
+    await transcode(input, output);
+    const hash = await sha256File(output);
+    const objectKey = `${trackId}/${hash}-${TARGET_BITRATE}.mp3`;
+    const bitrate = TARGET_BITRATE;
+    await storageUpload(targetBucket, objectKey, output);
+    const rendered = await probe(output);
 
     if (payload.assetId) {
       await rest(
