@@ -5,7 +5,7 @@ import { useT } from '@/i18n/use-translator';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
-import { apiRequest, ApiClientError } from '@/lib/client-api';
+import { apiRequest } from '@/lib/client-api';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 
