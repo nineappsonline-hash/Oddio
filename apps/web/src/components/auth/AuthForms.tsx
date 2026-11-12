@@ -133,7 +133,6 @@ export function LoginForm({
         </Button>
       </form>
 
-      <ResendConfirmation initialEmail={email} />
       <div className="mt-5 border-t border-white/10 pt-4 text-center text-sm text-muted">
         {t('auth.noAccount')}{' '}
         <Link
