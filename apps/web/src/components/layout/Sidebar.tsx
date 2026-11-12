@@ -36,7 +36,7 @@ export function Logo({ locale, compact = false }: { locale: string; compact?: bo
       {!compact ? (
         <span className="leading-tight">
           <span className="block text-sm font-black uppercase tracking-[0.18em] text-ink">
-            AI Music
+            Oddio
           </span>
           <span className="block text-[9px] font-semibold uppercase tracking-[0.28em] text-primary/80">
             {locale === 'ar' ? 'مختارة بإيد بشر' : 'Human curated'}
@@ -130,7 +130,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
       <div className="relative mt-4 rounded-2xl border border-white/10 bg-gradient-to-br from-primary/15 via-white/[0.03] to-cyan/10 p-3">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink/80">
-            AI Radio
+            Oddio Radio
           </span>
           <span className="live-dot" />
         </div>
