@@ -72,7 +72,7 @@ function ResendConfirmation({ initialEmail = '' }: { initialEmail?: string }) {
   }
   return (
     <form onSubmit={resend} className="mt-5 space-y-3 rounded-xl border border-white/10 p-4">
-      <p className="text-sm font-semibold text-ink">Didn't receive your confirmation email?</p>
+      <p className="text-sm font-semibold text-ink">Did not receive your confirmation email?</p>
       <label htmlFor="resend-email" className="block text-xs text-muted">Email address</label>
       <input id="resend-email" type="email" required autoComplete="email" className="input w-full"
         value={email} onChange={(event) => setEmail(event.target.value)} />
@@ -181,7 +181,6 @@ export function LoginForm({
 
 export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
   const t = useT();
-  const { run, pending, error } = useAuth(locale, next);
   const [displayName, setDisplayName] = useState('');
   const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
