@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getStudioData } from '@/lib/data/queries';
 import { env } from '@/lib/env';
 import { createTranslator } from '@/i18n/dictionaries';
@@ -41,7 +43,8 @@ export default async function UploadTrackPage({
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   if (!user.isArtistManager) redirect(`/${locale}/apply/artist`);
-  const data = getStudioData(readDb(), user, { demoDailyLimit: env.uploadDailyLimit });
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const data = getStudioData(db, user, { demoDailyLimit: env.uploadDailyLimit });
 
   if (data.artists.length === 0) {
     return (
