@@ -21,12 +21,8 @@ const schema = z.object({
 });
 
 const ALLOWED = [
-  'audio/wav',
-  'audio/x-wav',
-  'audio/flac',
   'audio/mpeg',
   'audio/mp3',
-  'audio/aiff',
 ];
 
 export async function POST(request: Request) {
