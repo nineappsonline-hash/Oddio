@@ -14,6 +14,7 @@ import { SectionHeader } from '@/components/ui/SectionHeader';
 import { Badge } from '@/components/ui/Badge';
 import { Artwork } from '@/components/ui/Artwork';
 import { OddioPlanet } from '@/components/music/OddioPlanet';
+import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { TrackCard } from '@/components/music/TrackCard';
 import { TrackRow } from '@/components/music/TrackRow';
 import { ArtistCard } from '@/components/music/ArtistCard';
@@ -287,9 +288,9 @@ export default async function HomePage({
           {data.genres.map((genre, index) => (
             <Link key={genre.id} href={`/${locale}/genres/${genre.slug}`}
               className="group relative flex h-44 w-48 shrink-0 snap-start flex-col justify-end overflow-hidden rounded-[1.5rem] border border-white/15 p-5 shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/70 hover:shadow-[0_10px_40px_#9d5cff44] sm:h-48 sm:w-56"
-              style={{ background: `radial-gradient(circle at 75% 20%, hsla(${(index * 47 + 265) % 360},90%,65%,.55), transparent 55%), linear-gradient(145deg,#25113d,#090d20)` }}>
-              <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rotate-[-28deg] rounded-full border-[18px] border-white/15 shadow-[0_0_40px_#a855f766] transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" />
-              <div className="pointer-events-none absolute right-8 top-7 h-16 w-16 rounded-full border-[9px] border-white/25" />
+              >
+              <GenreArtwork slug={genre.slug} index={index} />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#090818]/95 via-[#090818]/25 to-transparent" />
               <span className="relative text-xl font-black text-white">{genreLabel(genre)}</span>
               <span className="relative mt-1 text-xs font-medium text-white/65">{genre.count} tracks <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" /></span>
             </Link>
