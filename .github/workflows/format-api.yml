@@ -1,0 +1,27 @@
+name: Format API routes
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write 'apps/web/src/app/api/admin/artist-applications/[id]/decision/route.ts' 'apps/web/src/app/api/studio/artists/[id]/route.ts' 'apps/web/src/app/api/studio/artists/route.ts'
+      - name: Commit formatting
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/web/src/app/api
+          if ! git diff --cached --quiet; then
+            git commit -m 'style: apply Prettier to artist API routes'
+            git push origin HEAD:main
+          fi
