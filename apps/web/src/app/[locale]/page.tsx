@@ -14,7 +14,7 @@ import { SectionHeader } from '@/components/ui/SectionHeader';
 import { Badge } from '@/components/ui/Badge';
 import { Artwork } from '@/components/ui/Artwork';
 import { Equalizer } from '@/components/visuals/Equalizer';
-import { HeroShowcase } from '@/components/music/HeroShowcase';
+import { OddioPlanet } from '@/components/music/OddioPlanet';
 import { TrackCard } from '@/components/music/TrackCard';
 import { TrackRow } from '@/components/music/TrackRow';
 import { ArtistCard } from '@/components/music/ArtistCard';
@@ -162,27 +162,7 @@ export default async function HomePage({
             </div>
           </div>
 
-          {hero ? (
-            <HeroShowcase
-              track={hero}
-              queue={heroQueue}
-              locale={locale}
-              nowPlayingLabel={t('player.nowPlaying')}
-              playsLabel={t('common.plays')}
-              productionLabel={
-                hero.productionType === 'fully_ai'
-                  ? t('track.fullyAi')
-                  : t('track.aiAssisted')
-              }
-            />
-          ) : (
-            <div className="relative mx-auto flex h-52 w-52 items-center justify-center sm:h-64 sm:w-64" aria-hidden="true">
-              <div className="absolute inset-0 animate-spin rounded-full border-[18px] border-fuchsia-500/30 shadow-[0_0_80px_#a855f766]" style={{ animationDuration: '24s' }} />
-              <div className="absolute inset-5 animate-pulse rounded-full border-[16px] border-cyan-400/50 shadow-[inset_0_0_55px_#22d3ee55]" />
-              <div className="absolute -inset-5 rotate-[-24deg] rounded-[50%] border-[8px] border-violet-400/50" />
-              <div className="relative text-center text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_30px_#a855f7]">oddio<span className="text-cyan-300">.</span></div>
-            </div>
-          )}
+          <OddioPlanet />
         </div>
 
         <div className="relative mt-5 border-t border-white/10 pt-5">
