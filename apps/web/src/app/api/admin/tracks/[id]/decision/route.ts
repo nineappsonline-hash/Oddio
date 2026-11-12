@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { reviewDecisionInput } from '@ai-music/contracts';
 import { mutateDb } from '@/lib/data/db';
 import { loadDbFromSupabase, persistChanges } from '@/lib/data/supabase-store';
@@ -37,10 +38,32 @@ export async function POST(
         // Never label the untranscoded original as a 320 kbps rendition.
         const original = candidate?.audio;
         if (!original || original.format !== 'mp3' || !original.objectKey ||
-            !Number.isSafeInteger(original.bytes) || original.bytes < 1024 ||
+            
             !/^incoming[/][a-f0-9-]+[/][a-f0-9-]+$/.test(original.objectKey) ||
             !original.sha256 || !/^[a-f0-9]{64}$/.test(original.sha256)) {
           throw new AppError('audio_not_ready', 'Audio processing has not finished. Only verified MP3 originals can be approved until the media worker is available.', 409);
+        }
+        // Repair legacy placeholder sizes only after verifying the stored checksum.
+        if (!Number.isSafeInteger(original.bytes) || original.bytes < 1024) {
+          const verify = await fetch(presignR2OriginalGet(original.objectKey), { cache: 'no-store', signal: AbortSignal.timeout(30000) });
+          if (!verify.ok || !verify.body) throw new AppError('audio_unavailable', 'Original MP3 is unavailable for automatic repair.', 503);
+          const digest = crypto.createHash('sha256');
+          let total = 0;
+          const reader = verify.body.getReader();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            total += value.byteLength;
+            if (total > 25 * 1024 * 1024) {
+              await reader.cancel();
+              throw new AppError('audio_invalid', 'Original exceeds the 25 MB limit.', 422);
+            }
+            digest.update(value);
+          }
+          if (total < 1024 || digest.digest('hex') !== original.sha256) {
+            throw new AppError('audio_invalid', 'Original MP3 failed checksum verification.', 422);
+          }
+          original.bytes = total;
         }
         const source = await fetch(presignR2OriginalGet(original.objectKey), { cache: 'no-store', signal: AbortSignal.timeout(12000) });
         if (!source.ok || !source.body) throw new AppError('audio_unavailable', 'Original audio could not be fetched from storage.', 503);
