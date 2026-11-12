@@ -17,7 +17,7 @@ const photos: Record<string, string> = {
   techno: 'photo-1519608487953-e999c86e7455', // futuristic neon city
   trance: 'photo-1459749411175-04bf5292ceea', // festival light show
   rock: 'photo-1498038432885-c6f3f1b912ee', // electric guitar
-  'hip-hop': 'photo-1547355253-ff0740f6e8c1', // urban street culture
+  'hip-hop': 'photo-1516280440614-37939bbacd81', // urban street culture
   jazz: 'photo-1511196044526-5cb3bcb7071b', // jazz performance
   blues: 'photo-1510915361894-db8b60106cb1', // guitar close-up
   soul: 'photo-1516280440614-37939bbacd81', // soulful singer
@@ -30,23 +30,26 @@ const photos: Record<string, string> = {
   punk: 'photo-1521337581100-8ca9a73a5f79', // alternative live culture
   folk: 'photo-1511379938547-c1f69419868d', // acoustic studio
   dabke: 'photo-1504609813442-a8924e83f76e', // group dance
-  'r-and-b': 'photo-1483412033650-1015ddeb83d1', // R&B vocalist
-  'r&b': 'photo-1483412033650-1015ddeb83d1',
+  'r-and-b': 'photo-1493225457124-a3eb161ffa5f', // R&B vocalist
+  'r&b': 'photo-1493225457124-a3eb161ffa5f',
+  'arabic-pop': 'photo-1501386761578-eac5c94b800a',
+  'mahraganat': 'photo-1506157786151-b8491531f063',
+  'shaabi': 'photo-1528605248644-14dd04022da1',
+  'khaliji': 'photo-1511196044526-5cb3bcb7071b',
+  'khaleeji': 'photo-1500530855697-b586d89ba3ee',
+  'nasheed': 'photo-1470252649378-9c29740c9fa8',
+  'arabic-rap': 'photo-1547355253-ff0740f6e8c1',
+  'arabic-hip-hop': 'photo-1514525253161-7a46d19cd819',
+  'arabic-folk': 'photo-1504609813442-a8924e83f76e',
 };
 
-// Unknown genres get a stable genre-specific image rather than repeating a small fallback list.
-const fallbackPhotos = [
-  'photo-1516280440614-37939bbacd81',
-  'photo-1511379938547-c1f69419868d',
-  'photo-1470225620780-dba8ba36b745',
-  'photo-1498038432885-c6f3f1b912ee',
-  'photo-1514525253161-7a46d19cd819',
-];
-function photoForGenre(slug: string) {
-  const normalized = slug.trim().toLowerCase();
-  if (photos[normalized]) return photos[normalized];
-  const hash = [...normalized].reduce((n, ch) => (n * 31 + ch.charCodeAt(0)) >>> 0, 7);
-  return fallbackPhotos[hash % fallbackPhotos.length];
+// Unknown genres use a unique, stable seed; never reuse another genre's cover.
+function photoForGenre(slug: string): string {
+  const normalized = slug.trim().toLowerCase().replace(/[_\\s]+/g, '-');
+  const photo = photos[normalized];
+  return photo
+    ? `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=720&q=85`
+    : `https://picsum.photos/seed/oddio-genre-${encodeURIComponent(normalized)}/720/570`;
 }
 
 export function GenreArtwork({ slug }: Props) {
@@ -56,7 +59,7 @@ export function GenreArtwork({ slug }: Props) {
     <div aria-hidden="true" className="absolute inset-0 overflow-hidden bg-gradient-to-br from-violet-800 via-slate-900 to-fuchsia-950">
       {!failed && (
         <img
-          src={`https://images.unsplash.com/${photo}?auto=format&fit=crop&w=720&q=85`}
+          src={photo}
           alt=""
           loading="lazy"
           decoding="async"
