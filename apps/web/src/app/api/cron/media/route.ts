@@ -36,7 +36,6 @@ export async function GET(request: Request) {
       if (size < 1024 || size > env.audioMaxUploadBytes) throw new Error('Invalid audio size');
       const type = head.headers.get('content-type') || '';
       if (!['audio/mpeg', 'audio/mp3'].includes(type)) throw new Error('Only MP3 is supported in serverless mode');
-      const sourceGetUrl = sourceUrl.replace('X-Amz-Signature=', 'X-Amz-Signature=');
       // A signed HEAD URL cannot authorize GET; use a dedicated GET signer for originals.
       const { presignR2OriginalGet } = await import('@/lib/storage/r2-presign');
       const response = await fetch(presignR2OriginalGet(sourceKey));
