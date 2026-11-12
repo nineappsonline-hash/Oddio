@@ -1,0 +1,61 @@
+import crypto from 'node:crypto';
+import { env } from '@/lib/env';
+import { AppError } from '@/lib/errors';
+
+function hmac(key: Buffer | string, value: string): Buffer {
+  return crypto.createHmac('sha256', key).update(value).digest();
+}
+
+function sha256(value: string): string {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
+
+export function presignR2Put(objectKey: string, contentType: string) {
+  if (!env.r2AccountId || !env.r2AccessKeyId || !env.r2SecretAccessKey) {
+    throw new AppError('storage_not_configured', 'R2 credentials are missing.', 503);
+  }
+  if (!/^incoming\/[a-f0-9-]+\/[a-f0-9-]+$/.test(objectKey)) {
+    throw new AppError('invalid_object_key', 'Invalid upload key.', 422);
+  }
+  const bucket = 'ai-music-originals';
+  const host = `${env.r2AccountId}.r2.cloudflarestorage.com`;
+  const date = new Date();
+  const timestamp = date.toISOString().replace(/[:-]|\.\d{3}/g, '');
+  const shortDate = timestamp.slice(0, 8);
+  const scope = `${shortDate}/auto/s3/aws4_request`;
+  const path = `/${bucket}/${objectKey}`;
+  const queryParams: Record<string, string> = {
+    'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+    'X-Amz-Credential': `${env.r2AccessKeyId}/${scope}`,
+    'X-Amz-Date': timestamp,
+    'X-Amz-Expires': '300',
+    'X-Amz-SignedHeaders': 'content-type;host',
+  };
+  const query = Object.entries(queryParams)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+  const canonicalRequest = [
+    'PUT',
+    path,
+    query,
+    `content-type:${contentType}\nhost:${host}\n`,
+    'content-type;host',
+    'UNSIGNED-PAYLOAD',
+  ].join('\n');
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    timestamp,
+    scope,
+    sha256(canonicalRequest),
+  ].join('\n');
+  const signingKey = hmac(
+    hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'),
+    'aws4_request',
+  );
+  const signature = hmac(signingKey, stringToSign).toString('hex');
+  return {
+    bucket,
+    url: `https://${host}${path}?${query}&X-Amz-Signature=${signature}`,
+  };
+}
