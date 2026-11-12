@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       throw Errors.forbidden();
     }
     if (input.bytes > env.audioMaxUploadBytes) throw Errors.invalid('Audio exceeds upload limit');
-    if (!['audio/mpeg','audio/mp3','audio/wav','audio/x-wav','audio/flac','audio/aiff'].includes(input.contentType)) {
+    if (!['audio/mpeg','audio/mp3'].includes(input.contentType)) {
       throw Errors.invalid('Unsupported audio format');
     }
     const head = await fetch(presignR2Head(input.objectKey), { method: 'HEAD', cache: 'no-store' });
