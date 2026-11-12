@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import type { ArtistApplicationStatus, Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getApplicationForUser } from '@/lib/data/queries';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -54,7 +56,7 @@ export default async function ApplyPage({
   if (!user) {
     redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/apply/artist`)}`);
   }
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const application = getApplicationForUser(db, user.id);
   const canResubmit =
     application && ['rejected', 'needs_information'].includes(application.status);
