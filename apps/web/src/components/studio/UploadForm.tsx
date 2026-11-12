@@ -132,7 +132,7 @@ export function UploadForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      <div className="card space-y-4 p-5">
+      <div className="card relative space-y-4 p-5 has-[button[aria-expanded=true]]:z-50">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
           {t('studio.selectArtist')}
         </h2>
@@ -146,7 +146,7 @@ export function UploadForm({
         </div>
       </div>
 
-      <div className="card space-y-4 p-5">
+      <div className="card relative space-y-4 p-5 has-[button[aria-expanded=true]]:z-50">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
           {t('studio.metadata')}
         </h2>
@@ -242,7 +242,7 @@ export function UploadForm({
         </Field>
       </div>
 
-      <div className="card space-y-4 p-5">
+      <div className="card relative space-y-4 p-5 has-[button[aria-expanded=true]]:z-50">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
           {t('studio.audioFile')}
         </h2>
