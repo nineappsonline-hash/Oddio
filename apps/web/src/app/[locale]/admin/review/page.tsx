@@ -106,7 +106,7 @@ export default async function AdminReviewPage({
                   {locale === 'ar' ? 'ملف الصوت غير موجود. لا يمكن الموافقة على الأغنية قبل إعادة رفعها.' : 'Audio file is missing. The artist must re-upload the track before approval.'}
                 </p>
               )}
-              <AdminTrackDecision trackId={track.id} audioReady={track.audio?.processingStatus === 'ready'} />
+              <AdminTrackDecision trackId={track.id} audioReady={track.audio?.processingStatus === 'ready' || (track.audio?.format === 'mp3' && Boolean(track.audio?.sha256))} />
             </div>
           </article>
         ))
