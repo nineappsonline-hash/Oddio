@@ -17,36 +17,17 @@ export async function POST(request: Request) {
     if (!demoMode) {
       const supabase = await getSupabaseServer();
       if (!supabase) throw Errors.unauthorized();
-      const { data: artist, error } = await supabase
-        .from('artists')
-        .insert({
-          owner_user_id: user.id,
-          name: input.name.trim(),
-          slug: input.slug,
-          bio: input.bio.trim(),
-          accent: input.accent,
-        })
-        .select('*')
-        .single();
+      const { data: artist, error } = await supabase.rpc(
+        'create_artist_profile_atomic',
+        {
+          p_name: input.name,
+          p_slug: input.slug,
+          p_bio: input.bio,
+          p_accent: input.accent,
+          p_social_links: input.socialLinks,
+        },
+      );
       if (error) throw new Error(`Artist creation failed: ${error.message}`);
-      if (input.socialLinks.length) {
-        const { error: linksError } = await supabase
-          .from('artist_social_links')
-          .insert(
-            input.socialLinks.map((link, index) => ({
-              artist_id: artist.id,
-              platform: link.platform,
-              url: link.url,
-              sort_order: index,
-            })),
-          );
-        if (linksError) {
-          // Do not pretend profile creation was fully successful.
-          throw new Error(
-            `Artist created but social links failed: ${linksError.message}`,
-          );
-        }
-      }
       return jsonOk({
         artist: {
           id: artist.id,
