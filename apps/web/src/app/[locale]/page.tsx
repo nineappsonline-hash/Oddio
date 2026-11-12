@@ -13,7 +13,6 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { Badge } from '@/components/ui/Badge';
 import { Artwork } from '@/components/ui/Artwork';
-import { Equalizer } from '@/components/visuals/Equalizer';
 import { OddioPlanet } from '@/components/music/OddioPlanet';
 import { TrackCard } from '@/components/music/TrackCard';
 import { TrackRow } from '@/components/music/TrackRow';
@@ -59,8 +58,8 @@ export default async function HomePage({
     locale === 'ar' ? genre.labelAr : genre.labelEn;
 
   return (
-    <div className="space-y-10">
-      <section className="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b0b18]/55 p-5 shadow-card backdrop-blur-2xl sm:p-7 lg:p-8">
+    <div className="space-y-8">
+      <section className="relative isolate overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0b0b18]/55 px-5 py-4 shadow-card backdrop-blur-2xl sm:px-7 sm:py-5">
         <div className="pointer-events-none absolute inset-0 ambient-grid opacity-25" />
         <div
           className="pointer-events-none absolute -end-24 -top-28 h-80 w-80 animate-float-slow rounded-full opacity-40 blur-3xl"
@@ -73,7 +72,7 @@ export default async function HomePage({
         <div className="pointer-events-none absolute -bottom-32 -start-24 h-72 w-72 rounded-full bg-cyan/10 blur-3xl" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
-        <div className="relative grid items-center gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="relative grid items-center gap-2 md:grid-cols-[1.2fr_0.8fr]">
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-3">
               <Badge tone="primary" className="border-primary/50 bg-primary/20">
@@ -85,23 +84,23 @@ export default async function HomePage({
               </span>
             </div>
 
-            <h1 className="mt-4 max-w-2xl text-4xl font-black leading-[1.04] tracking-tight sm:text-5xl xl:text-6xl">
+            <h1 className="mt-2 max-w-2xl text-3xl font-black leading-[1.08] tracking-tight sm:text-4xl xl:text-[2.7rem]">
               <span className="text-glow-gradient">{t('home.heroTitle')}</span>
             </h1>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
+            <p className="mt-2 max-w-xl text-xs leading-relaxed text-muted sm:text-sm">
               {t('home.heroSubtitle')}
             </p>
 
             {hero ? (
               <Link
                 href={`/tracks/${hero.id}-${hero.slug}`}
-                className="group/featured glass-pill mt-4 inline-flex max-w-full items-center gap-3 rounded-2xl p-2 pe-4 transition hover:border-primary/40 hover:bg-white/[0.06]"
+                className="group/featured glass-pill mt-2 inline-flex max-w-full items-center gap-3 rounded-2xl p-2 pe-4 transition hover:border-primary/40 hover:bg-white/[0.06]"
               >
                 <Artwork
                   title={hero.title}
                   url={hero.artwork.url}
                   accent={hero.artwork.accent}
-                  className="h-12 w-12 shrink-0"
+                  className="h-9 w-9 shrink-0"
                   rounded="rounded-xl"
                 />
                 <span className="min-w-0">
@@ -123,7 +122,7 @@ export default async function HomePage({
               </Link>
             ) : null}
 
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-3 flex flex-wrap gap-2">
               <Link
                 href={`/${locale}/discover`}
                 className="group/cta inline-flex items-center gap-2 rounded-pill bg-[linear-gradient(135deg,#9D5CFF,#7C3AED)] px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition duration-300 hover:-translate-y-0.5 hover:shadow-glow-lg"
@@ -140,7 +139,7 @@ export default async function HomePage({
               </Link>
             </div>
 
-            <div className="mt-5 grid max-w-md grid-cols-3 gap-3">
+            <div className="mt-3 grid max-w-md grid-cols-3 gap-2">
               {[
                 { value: data.stats.tracks, label: t('home.statsTracks') },
                 { value: data.stats.artists, label: t('home.statsArtists') },
@@ -148,7 +147,7 @@ export default async function HomePage({
               ].map((stat, index) => (
                 <div
                   key={stat.label}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2.5 backdrop-blur"
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-1.5 backdrop-blur"
                   style={{ animationDelay: `${index * 90}ms` }}
                 >
                   <p className="text-lg font-black tabular-nums text-ink sm:text-xl">
@@ -165,26 +164,7 @@ export default async function HomePage({
           <OddioPlanet />
         </div>
 
-        <div className="relative mt-5 border-t border-white/10 pt-5">
-          <div className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted">
-            <Equalizer bars={5} className="h-3 text-primary" />
-            {t('home.marqueeLabel')}
-          </div>
-          <div className="marquee-mask overflow-hidden">
-            <div className="marquee-track gap-2.5" aria-hidden="true">
-              {[...data.genres, ...data.genres].map((genre, index) => (
-                <span
-                  key={`${genre.id}-${index}`}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-pill border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-muted"
-                >
-                  <span className="h-1 w-1 rounded-full bg-primary shadow-glow" />
-                  {genreLabel(genre)}
-                  <span className="text-[10px] text-muted/60">{genre.count}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
+
       </section>
 
       {data.featured.length > 0 ? (
