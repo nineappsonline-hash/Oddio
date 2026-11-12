@@ -7,7 +7,7 @@ import { AppError, Errors } from '@/lib/errors';
 import { env, demoMode } from '@/lib/env';
 import { loadDbFromSupabase, persistChanges, serviceClient } from '@/lib/data/supabase-store';
 import { createTrackFromUpload } from '@/lib/data/mutations';
-import { presignR2Head } from '@/lib/storage/r2-presign';
+import { presignR2Head, presignR2OriginalGet } from '@/lib/storage/r2-presign';
 
 export const runtime = 'nodejs';
 
@@ -64,6 +64,36 @@ export async function POST(request: Request) {
     if (!Number.isSafeInteger(storedBytes) || storedBytes <= 0 || storedBytes !== input.bytes) {
       throw Errors.invalid('Stored audio size does not match the uploaded file');
     }
+    // Hash the actual R2 bytes, never trust a client-supplied checksum.
+    // Stream rather than buffering a potentially 100 MB audio file in memory.
+    const original = await fetch(presignR2OriginalGet(input.objectKey), { cache: 'no-store' });
+    if (!original.ok || !original.body) {
+      throw new AppError('upload_unreadable', 'Unable to verify the uploaded audio.', 422);
+    }
+    const hasher = crypto.createHash('sha256');
+    let verifiedBytes = 0;
+    for await (const chunk of original.body) {
+      const bytes = Buffer.from(chunk);
+      verifiedBytes += bytes.length;
+      if (verifiedBytes > env.audioMaxUploadBytes) {
+        throw Errors.invalid('Audio exceeds upload limit');
+      }
+      hasher.update(bytes);
+    }
+    if (verifiedBytes !== storedBytes) {
+      throw Errors.invalid('Uploaded audio could not be verified');
+    }
+    const verifiedSha256 = hasher.digest('hex');
+    const { data: duplicates, error: duplicateError } = await serviceClient()
+      .from('audio_assets')
+      .select('track_id')
+      .eq('kind', 'original')
+      .eq('sha256', verifiedSha256)
+      .limit(1);
+    if (duplicateError) throw new Error(duplicateError.message);
+    if (duplicates?.length) {
+      throw new AppError('duplicate_audio', 'This exact audio file has already been uploaded.', 409);
+    }
     const before = await loadDbFromSupabase();
     const after = structuredClone(before);
     const track = createTrackFromUpload(after, user, {
@@ -92,7 +122,7 @@ export async function POST(request: Request) {
         // Provisional nonzero metadata required by audio_assets CHECK constraints.
         // Worker replaces these with ffprobe measurements.
         bitrateKbps: 1, sampleRate: 1, channels: 2,
-        bytes: storedBytes, sha256: crypto.createHash('sha256').update(input.objectKey).digest('hex'),
+        bytes: storedBytes, sha256: verifiedSha256,
         processingStatus: 'pending',
       },
       idempotencyKey: `r2:${input.objectKey}`,
