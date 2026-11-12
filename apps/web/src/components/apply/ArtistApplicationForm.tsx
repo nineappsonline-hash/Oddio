@@ -5,7 +5,7 @@ import { useT } from '@/i18n/use-translator';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
-import { apiRequest } from '@/lib/client-api';
+import { ApiClientError, apiRequest } from '@/lib/client-api';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -50,8 +50,8 @@ export function ArtistApplicationForm({
       });
       toast(t('apply.submitted'), 'success');
       router.refresh();
-    } catch {
-      toast('Could not submit the application.', 'error');
+    } catch (caught) {
+      toast(caught instanceof ApiClientError ? caught.message : 'Could not submit the application.', 'error');
     } finally {
       setPending(false);
     }
