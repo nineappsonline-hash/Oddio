@@ -4,6 +4,8 @@ import type { Locale } from '@ai-music/contracts';
 import { chartQuery } from '@ai-music/contracts';
 import { getCharts, getHomeData } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -52,7 +54,7 @@ export default async function ChartsPage({
   });
   const query = parsed.success ? parsed.data : chartQuery.parse({});
   const viewer = await getViewer();
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const data = getCharts(db, viewer, query);
   const home = getHomeData(db, viewer);
   const queue = data.entries.map((entry) => entry.track);
