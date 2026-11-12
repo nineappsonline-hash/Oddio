@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Artwork } from '@/components/ui/Artwork';
 import { OddioPlanet } from '@/components/music/OddioPlanet';
 import { GenreArtwork } from '@/components/music/GenreArtwork';
+import { MoodArtwork } from '@/components/music/MoodArtwork';
 import { TrackCard } from '@/components/music/TrackCard';
 import { TrackRow } from '@/components/music/TrackRow';
 import { ArtistCard } from '@/components/music/ArtistCard';
@@ -300,15 +301,16 @@ export default async function HomePage({
 
       <section>
         <SectionHeader title={t('home.moods')} />
-        <div className="flex flex-wrap gap-2">
+        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 pt-2 [scrollbar-width:thin] [scrollbar-color:#9D5CFF_transparent]">
           {data.moods.map((mood) => (
             <Link
               key={mood.id}
               href={`/${locale}/moods/${mood.slug}`}
-              className="rounded-pill border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-ink transition hover:border-cyan/40 hover:bg-cyan/10"
+              className="group relative flex h-52 w-40 shrink-0 snap-start flex-col justify-end overflow-hidden rounded-[1.5rem] border border-white/15 p-4 shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/70 hover:shadow-[0_10px_40px_#9d5cff44] sm:h-60 sm:w-44"
             >
-              {genreLabel(mood)}
-              <span className="ms-2 text-xs text-muted">{mood.count}</span>
+              <MoodArtwork slug={mood.slug} />
+              <span className="relative text-lg font-black text-white">{genreLabel(mood)}</span>
+              <span className="relative mt-1 text-xs text-white/75">{mood.count} tracks <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" /></span>
             </Link>
           ))}
         </div>
