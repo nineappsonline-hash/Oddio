@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { BarChart3, Heart, Mic2, Users } from 'lucide-react';
+import { BarChart3, Heart, Mic2, Users, UserRoundPen, Disc3, ClipboardCheck, ArrowUpRight } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
@@ -52,28 +52,71 @@ export default async function StudioDashboard({
 
   return (
     <div className="space-y-8">
-      <section className="card space-y-5 p-6" aria-label="Artist getting started">
+      <section className="space-y-5" aria-label="Artist studio actions">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">ARTIST STUDIO · GET STARTED</p>
-          <h2 className="mt-2 text-2xl font-bold text-ink">Your music journey, step by step</h2>
-          <p className="mt-1 text-sm text-muted">Complete your profile, upload your first track, then follow its review and publication status.</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">ARTIST STUDIO · YOUR WORKSPACE</p>
+          <h2 className="mt-2 text-2xl font-bold text-ink">Create, manage & release your music</h2>
+          <p className="mt-1 text-sm text-muted">Choose where you want to go. Everything you need is one click away.</p>
         </div>
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="flex flex-col gap-5">
           {[
-            { n: '01', title: 'Set up your artist profile', description: 'Add your stage name, bio and profile image.', done: data.artists.length > 0, href: data.artists.length > 0 ? `/${locale}/studio/artists` : `/${locale}/studio/artists/new`, action: data.artists.length > 0 ? 'Manage profile' : 'Create profile' },
-            { n: '02', title: 'Upload your first song', description: 'Upload an MP3 and fill in the song details.', done: data.tracks.length > 0, href: `/${locale}/studio/tracks/new`, action: 'Upload a song' },
-            { n: '03', title: 'Track review and release', description: 'See processing, admin review and publication status.', done: data.tracks.some((track) => track.publishStatus === 'published'), href: `/${locale}/studio/tracks`, action: 'View track status' },
-          ].map((step, index) => (
-            <div key={step.n} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold text-primary">STEP {step.n}</span>
-                <span className="text-xs text-muted">{step.done ? '✓ Complete' : index === 0 || (index === 1 && data.artists.length > 0) || (index === 2 && data.tracks.length > 0) ? 'Next step' : 'Coming up'}</span>
-              </div>
-              <h3 className="mt-3 font-semibold text-ink">{step.title}</h3>
-              <p className="mt-2 min-h-12 text-sm text-muted">{step.description}</p>
-              <Link href={step.href} className="mt-4 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">{step.action} →</Link>
-            </div>
-          ))}
+            {
+              title: 'Add / Manage Artist',
+              description: 'Create your artist identity, edit your stage name, biography and profile artwork.',
+              href: data.artists.length > 0 ? `/${locale}/studio/artists` : `/${locale}/studio/artists/new`,
+              icon: UserRoundPen,
+              label: 'ARTIST PROFILE',
+              glow: 'from-fuchsia-500/25 via-violet-500/10 to-transparent',
+              iconColor: 'text-fuchsia-300',
+              status: data.artists.length > 0 ? 'Profile created' : 'Create your first artist',
+            },
+            {
+              title: 'Add / Manage Songs',
+              description: 'Upload new tracks, update song information, artwork and manage your music library.',
+              href: `/${locale}/studio/tracks`,
+              icon: Disc3,
+              label: 'YOUR MUSIC',
+              glow: 'from-cyan-500/25 via-blue-500/10 to-transparent',
+              iconColor: 'text-cyan-300',
+              status: `${data.tracks.length} song${data.tracks.length === 1 ? '' : 's'}`,
+            },
+            {
+              title: 'Songs Review and Release',
+              description: 'Follow song reviews, check processing status and see when your music goes live.',
+              href: `/${locale}/studio/tracks`,
+              icon: ClipboardCheck,
+              label: 'REVIEW & RELEASE',
+              glow: 'from-amber-500/20 via-rose-500/10 to-transparent',
+              iconColor: 'text-amber-300',
+              status: `${data.tracks.filter((track) => track.reviewStatus === 'pending_review').length} pending review`,
+            },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.title}
+                href={item.href}
+                className="group relative flex min-h-56 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#161526] shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/60 hover:shadow-[0_16px_45px_rgba(130,70,255,0.16)] sm:min-h-60 sm:flex-row"
+              >
+                <div className={`relative flex min-h-44 items-center justify-center overflow-hidden bg-gradient-to-br ${item.glow} sm:min-h-full sm:w-[38%] lg:w-[32%]`}>
+                  <div className="absolute h-44 w-44 rounded-full border border-white/10 bg-white/[0.03] shadow-[0_0_65px_rgba(164,90,255,0.16)] transition duration-500 group-hover:scale-110" />
+                  <div className="absolute h-32 w-32 rotate-12 rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-sm transition duration-500 group-hover:rotate-0" />
+                  <Icon aria-hidden="true" strokeWidth={1.2} className={`relative h-24 w-24 drop-shadow-[0_0_25px_rgba(180,130,255,0.35)] sm:h-28 sm:w-28 ${item.iconColor}`} />
+                </div>
+                <div className="flex flex-1 flex-col justify-center p-6 sm:p-8">
+                  <span className="text-xs font-bold tracking-[0.2em] text-primary">{item.label}</span>
+                  <h3 className="mt-3 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{item.title}</h3>
+                  <p className="mt-3 max-w-xl text-sm leading-6 text-muted sm:text-base">{item.description}</p>
+                  <div className="mt-6 flex flex-wrap items-center gap-4">
+                    <span className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white transition group-hover:bg-primary/85">
+                      Open <ArrowUpRight className="h-4 w-4" />
+                    </span>
+                    <span className="text-xs text-muted">{item.status}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
