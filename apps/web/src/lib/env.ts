@@ -31,7 +31,12 @@ export const supabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
  * disabled. Production deployments must configure Supabase and set
  * DEMO_MODE=false so that local JSON storage is never used.
  */
-export const demoMode = process.env.DEMO_MODE === 'false' ? false : !supabaseConfigured;
+export const demoMode =
+  process.env.DEMO_MODE === 'true'
+    ? true
+    : process.env.DEMO_MODE === 'false'
+      ? false
+      : !supabaseConfigured;
 
 export const env: ServerEnv = {
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
