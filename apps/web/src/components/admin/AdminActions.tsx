@@ -5,13 +5,13 @@ import { useT } from '@/i18n/use-translator';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
-import { apiRequest } from '@/lib/client-api';
+import { apiRequest, ApiClientError } from '@/lib/client-api';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 
 type Decision = 'approve' | 'reject' | 'request_changes';
 
-export function AdminTrackDecision({ trackId }: { trackId: string }) {
+export function AdminTrackDecision({ trackId, audioReady = false }: { trackId: string; audioReady?: boolean }) {
   const t = useT();
   const router = useRouter();
   const { toast } = useToast();
@@ -27,8 +27,8 @@ export function AdminTrackDecision({ trackId }: { trackId: string }) {
       });
       toast(t('admin.decisionRecorded'), 'success');
       router.refresh();
-    } catch {
-      toast('Could not record the decision.', 'error');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : 'Could not record the decision.', 'error');
     } finally {
       setPending(null);
     }
@@ -49,7 +49,8 @@ export function AdminTrackDecision({ trackId }: { trackId: string }) {
           size="sm"
           onClick={() => decide('approve')}
           loading={pending === 'approve'}
-          disabled={pending !== null}
+          disabled={pending !== null || !audioReady}
+          title={!audioReady ? 'Audio processing must finish before approval' : undefined}
         >
           <CheckCircle2 className="h-4 w-4" />
           {t('admin.approve')}
