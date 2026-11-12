@@ -6,7 +6,7 @@ import { objectKeyToPath, readDb } from '@/lib/data/db';
 import { accessForTrack } from '@/lib/data/queries';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
-import { presignR2Get } from '@/lib/storage/r2-presign';
+import { presignR2Get, presignR2OriginalGet } from '@/lib/storage/r2-presign';
 
 export const runtime = 'nodejs';
 
@@ -58,11 +58,13 @@ export async function GET(
   }
 
   if (!demoMode) {
-    if (track.audio.processingStatus !== 'ready' || track.audio.kind !== 'rendition') {
+    const ready = track.audio.processingStatus === 'ready' && track.audio.kind === 'rendition';
+    const originalFallback = track.publishStatus === 'published' && track.reviewStatus === 'approved' && track.audio.kind === 'original' && track.audio.format === 'mp3' && /^incoming\/[a-f0-9-]+\/[a-f0-9-]+$/.test(track.audio.objectKey);
+    if (!ready && !originalFallback) {
       return NextResponse.json({ error: { code: 'audio_not_ready', message: 'Audio is still processing.' } }, { status: 409 });
     }
     try {
-      return NextResponse.redirect(presignR2Get(track.audio.objectKey), 307);
+      return NextResponse.redirect(ready ? presignR2Get(track.audio.objectKey) : presignR2OriginalGet(track.audio.objectKey), 307);
     } catch {
       return NextResponse.json({ error: { code: 'storage_unavailable', message: 'Audio storage is unavailable.' } }, { status: 503 });
     }
