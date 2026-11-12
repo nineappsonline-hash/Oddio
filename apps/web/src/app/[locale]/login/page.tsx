@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
@@ -48,6 +49,7 @@ export default async function LoginPage({
   return (
     <div className="mx-auto grid max-w-5xl gap-10 py-6 lg:grid-cols-2 lg:items-center">
       <div className="hidden lg:block">
+        <Image src="/oddio-logo.svg" alt="Oddio" width={220} height={220} className="mb-6 h-48 w-48 object-contain" priority />
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
           {t('app.shortTagline')}
         </p>
@@ -57,6 +59,7 @@ export default async function LoginPage({
         <p className="mt-3 max-w-md text-sm text-muted">{t('auth.loginSubtitle')}</p>
       </div>
       <div className="card p-6 sm:p-8">
+        <Image src="/oddio-logo.svg" alt="Oddio" width={100} height={100} className="mx-auto mb-5 h-20 w-20 object-contain lg:hidden" />
         <h2 className="text-2xl font-bold text-ink">{t('auth.loginTitle')}</h2>
         <p className="mt-1 text-sm text-muted">{t('auth.loginSubtitle')}</p>
         <div className="mt-6">
