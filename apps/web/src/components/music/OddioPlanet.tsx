@@ -1,6 +1,6 @@
 export function OddioPlanet() {
   return (
-    <div className="pointer-events-none relative mx-auto flex h-[230px] w-full max-w-[430px] items-center justify-center overflow-visible sm:h-[280px]" aria-hidden="true">
+    <div className="pointer-events-none relative mx-auto flex h-[175px] w-full max-w-[330px] items-center justify-center overflow-visible sm:h-[205px]" aria-hidden="true">
       <div className="absolute inset-x-12 top-8 h-48 rounded-full bg-fuchsia-500/20 blur-[65px]" />
       <svg viewBox="0 0 460 310" className="relative h-full w-full overflow-visible drop-shadow-[0_0_38px_rgba(166,72,255,.4)]" role="img">
         <defs>
