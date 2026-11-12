@@ -81,11 +81,10 @@ export function FullPlayer() {
           <button
             type="button"
             onClick={() => setExpanded(false)}
-            className="inline-flex items-center gap-2 rounded-pill border border-white/15 px-3 py-2 text-xs font-semibold text-muted transition hover:bg-white/5 hover:text-ink"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-muted transition hover:bg-white/10 hover:text-ink"
             aria-label={t('player.minimize')}
           >
-            <ChevronDown className="h-4 w-4" />
-            {t('player.minimize')}
+            <ChevronDown className="h-5 w-5" />
           </button>
         </div>
 
