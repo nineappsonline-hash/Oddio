@@ -9,6 +9,7 @@ import { apiRequest } from '@/lib/client-api';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 
 export function UploadForm({
   artists,
@@ -137,37 +138,10 @@ export function UploadForm({
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('studio.selectArtist')} htmlFor="upload-artist">
-            <select
-              id="upload-artist"
-              className="input"
-              value={artistId}
-              onChange={(event) => {
-                setArtistId(event.target.value);
-                setAlbumId('');
-              }}
-              required
-            >
-              {artists.map((artist) => (
-                <option key={artist.id} value={artist.id}>
-                  {artist.name}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect id="upload-artist" locale={locale} value={artistId} onChange={(next) => { setArtistId(next); setAlbumId(''); }} options={artists.map((artist) => ({ value: artist.id, label: artist.name }))} required />
           </Field>
           <Field label={t('studio.album')} htmlFor="upload-album">
-            <select
-              id="upload-album"
-              className="input"
-              value={albumId}
-              onChange={(event) => setAlbumId(event.target.value)}
-            >
-              <option value="">{t('studio.noAlbum')}</option>
-              {artistAlbums.map((album) => (
-                <option key={album.id} value={album.id}>
-                  {album.title}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect id="upload-album" locale={locale} value={albumId} onChange={setAlbumId} options={[{ value: '', label: t('studio.noAlbum') }, ...artistAlbums.map((album) => ({ value: album.id, label: album.title }))]}  />
           </Field>
         </div>
       </div>
@@ -197,32 +171,10 @@ export function UploadForm({
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('studio.genre')} htmlFor="upload-genre">
-            <select
-              id="upload-genre"
-              className="input"
-              value={genreId}
-              onChange={(event) => setGenreId(event.target.value)}
-              required
-            >
-              {genres.map((genre) => (
-                <option key={genre.id} value={genre.id}>
-                  {locale === 'ar' ? genre.labelAr : genre.labelEn}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect id="upload-genre" locale={locale} value={genreId} onChange={setGenreId} options={genres.map((genre) => ({ value: genre.id, label: locale === 'ar' ? genre.labelAr : genre.labelEn }))} required />
           </Field>
           <Field label={t('studio.language')} htmlFor="upload-language">
-            <select
-              id="upload-language"
-              className="input"
-              value={languageCode}
-              onChange={(event) => setLanguageCode(event.target.value)}
-            >
-              <option value="ar">العربية</option>
-              <option value="en">English</option>
-              <option value="fr">Français</option>
-              <option value="es">Español</option>
-            </select>
+            <SearchableSelect id="upload-language" locale={locale} value={languageCode} onChange={setLanguageCode} options={[{ value: 'ar', label: 'العربية' }, { value: 'en', label: 'English' }, { value: 'fr', label: 'Français' }, { value: 'es', label: 'Español' }]}  />
           </Field>
         </div>
         <Field label={t('studio.moods')} hint="Up to 5">
@@ -249,17 +201,7 @@ export function UploadForm({
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('studio.productionType')} htmlFor="upload-production">
-            <select
-              id="upload-production"
-              className="input"
-              value={productionType}
-              onChange={(event) =>
-                setProductionType(event.target.value as 'fully_ai' | 'ai_assisted')
-              }
-            >
-              <option value="fully_ai">{t('studio.fullyAi')}</option>
-              <option value="ai_assisted">{t('studio.aiAssisted')}</option>
-            </select>
+            <SearchableSelect id="upload-production" locale={locale} value={productionType} onChange={(next) => setProductionType(next as 'fully_ai' | 'ai_assisted')} options={[{ value: 'fully_ai', label: t('studio.fullyAi') }, { value: 'ai_assisted', label: t('studio.aiAssisted') }]}  />
           </Field>
           <Field label={t('studio.country')} htmlFor="upload-country">
             <input
@@ -326,18 +268,7 @@ export function UploadForm({
         </Field>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label={t('studio.visibility')} htmlFor="upload-visibility">
-            <select
-              id="upload-visibility"
-              className="input"
-              value={visibility}
-              onChange={(event) =>
-                setVisibility(event.target.value as 'public' | 'unlisted' | 'private')
-              }
-            >
-              <option value="public">{t('common.public')}</option>
-              <option value="unlisted">{t('common.unlisted')}</option>
-              <option value="private">{t('common.private')}</option>
-            </select>
+            <SearchableSelect id="upload-visibility" locale={locale} value={visibility} onChange={(next) => setVisibility(next as 'public' | 'unlisted' | 'private')} options={[{ value: 'public', label: t('common.public') }, { value: 'unlisted', label: t('common.unlisted') }, { value: 'private', label: t('common.private') }]}  />
           </Field>
           <Field label={t('studio.releaseDate')} htmlFor="upload-release">
             <input
