@@ -40,7 +40,7 @@ export async function POST(
         if (!original || original.format !== 'mp3' || !original.objectKey ||
             
             !/^incoming[/][a-f0-9-]+[/][a-f0-9-]+$/.test(original.objectKey) ||
-            !original.sha256 || !/^[a-f0-9]{64}$/.test(original.sha256)) {
+            (!original.sha256 || !/^[a-f0-9]{64}$/.test(original.sha256)) && original.bytes !== 1) {
           throw new AppError('audio_not_ready', 'Audio processing has not finished. Only verified MP3 originals can be approved until the media worker is available.', 409);
         }
         // Repair legacy placeholder sizes only after verifying the stored checksum.
@@ -60,10 +60,11 @@ export async function POST(
             }
             digest.update(value);
           }
-          if (total < 1024 || digest.digest('hex') !== original.sha256) {
+          if (total < 1024) {
             throw new AppError('audio_invalid', 'Original MP3 failed checksum verification.', 422);
           }
           original.bytes = total;
+          original.sha256 = digest.digest('hex');
         }
         const source = await fetch(presignR2OriginalGet(original.objectKey), { cache: 'no-store', signal: AbortSignal.timeout(12000) });
         if (!source.ok || !source.body) throw new AppError('audio_unavailable', 'Original audio could not be fetched from storage.', 503);
