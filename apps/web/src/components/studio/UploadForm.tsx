@@ -71,7 +71,15 @@ export function UploadForm({
       toast(t('studio.audioRequired'), 'error');
       return;
     }
-    if (!/\.mp3$/i.test(audioFile.name) || !['audio/mpeg', 'audio/mp3', ''].includes(audioFile.type)) {\n      toast('Only MP3 audio files are allowed.', 'error');\n      return;\n    }\n    if (audioFile.size > 25 * 1024 * 1024) {\n      toast('MP3 file must be 25 MB or smaller.', 'error');\n      return;\n    }\n    if (quotaRemaining <= 0) {
+    if (!/\.mp3$/i.test(audioFile.name) || !['audio/mpeg', 'audio/mp3', ''].includes(audioFile.type)) {
+      toast('Only MP3 audio files are allowed.', 'error');
+      return;
+    }
+    if (audioFile.size > 25 * 1024 * 1024) {
+      toast('MP3 file must be 25 MB or smaller.', 'error');
+      return;
+    }
+    if (quotaRemaining <= 0) {
       toast(t('studio.quotaReached'), 'error');
       return;
     }
