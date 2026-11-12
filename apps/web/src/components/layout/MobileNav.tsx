@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, Compass, Home, Library, Menu, Search, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Bell, Compass, Home, Library, Menu, Search, User, X, Mic2, Settings, LogIn, UserPlus, ArrowUpRight, BarChart3 } from 'lucide-react';
 import type { SessionUser } from '@ai-music/contracts';
 import { useSession } from '@/components/providers/SessionProvider';
 import { Avatar } from '@/components/ui/Artwork';
@@ -57,8 +58,9 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
         ) : (
           <Link
             href={`/${locale}/login`}
-            className="rounded-pill bg-primary px-3 py-1.5 text-xs font-semibold text-white"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-fuchsia-300/40 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500 px-4 py-2 text-xs font-bold text-white shadow-[0_5px_22px_rgba(192,38,211,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(192,38,211,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-300"
           >
+            <LogIn className="h-4 w-4" />
             {t('nav.login')}
           </Link>
         )}
@@ -71,6 +73,14 @@ export function MobileNav() {
   const t = useT();
   const { locale, pathname } = useLocalePath();
   const { user } = useSession();
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => { setMenuOpen(false); }, [pathname]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') setMenuOpen(false); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [menuOpen]);
 
   const items = [
     { href: `/${locale}`, label: t('nav.home'), icon: Home, exact: true },
@@ -89,12 +99,11 @@ export function MobileNav() {
           icon: Library,
           exact: false,
         },
-    user
-      ? { href: `/${locale}/settings`, label: t('nav.account'), icon: User, exact: false }
-      : { href: `/${locale}/login`, label: t('nav.login'), icon: Menu, exact: false },
+
   ];
 
   return (
+    <>
     <nav
       aria-label={t('nav.main')}
       className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-white/10 bg-[#0b0b16]/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl lg:hidden"
@@ -127,6 +136,40 @@ export function MobileNav() {
           </Link>
         );
       })}
+      <button type="button" onClick={() => setMenuOpen(true)} aria-label={locale === 'ar' ? 'القائمة' : 'Menu'} aria-expanded={menuOpen}
+        className={cn('flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold transition', menuOpen ? 'text-fuchsia-300' : 'text-muted hover:text-ink')}>
+        <Menu className="h-5 w-5" />{locale === 'ar' ? 'القائمة' : 'Menu'}
+      </button>
     </nav>
+    {menuOpen ? (
+      <div className="fixed inset-0 z-[70] lg:hidden" role="presentation">
+        <button type="button" className="absolute inset-0 bg-black/75 backdrop-blur-sm" aria-label={locale === 'ar' ? 'إغلاق القائمة' : 'Close menu'} onClick={() => setMenuOpen(false)} />
+        <section role="dialog" aria-modal="true" aria-label={locale === 'ar' ? 'القائمة' : 'Menu'} className="absolute inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] max-h-[78dvh] overflow-y-auto rounded-3xl border border-white/15 bg-[#151126] p-5 shadow-[0_20px_80px_rgba(0,0,0,0.65)]">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-lg font-black text-white">{locale === 'ar' ? 'القائمة' : 'Explore Oddio'}</h2>
+            <button type="button" onClick={() => setMenuOpen(false)} aria-label={locale === 'ar' ? 'إغلاق' : 'Close'} className="rounded-xl border border-white/10 bg-white/10 p-2 text-white"><X className="h-5 w-5" /></button>
+          </div>
+          {!user?.isArtistManager ? (
+            <Link href={`/${locale}/apply/artist`} onClick={() => setMenuOpen(false)} className="mb-4 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-400 to-fuchsia-500 px-4 py-4 font-black text-[#241029] shadow-[0_8px_30px_rgba(244,114,182,0.25)]">
+              <Mic2 className="h-6 w-6" /><span className="flex-1">{locale === 'ar' ? 'كن فنانًا' : 'Become an Artist'}</span><ArrowUpRight className="h-5 w-5" />
+            </Link>
+          ) : null}
+          <div className="grid gap-2">
+            {[
+              { href: `/${locale}/charts`, label: t('nav.charts'), icon: BarChart3 },
+              ...(user ? [{ href: `/${locale}/library`, label: t('nav.library'), icon: Library }, { href: `/${locale}/notifications`, label: t('nav.notifications'), icon: Bell }, { href: `/${locale}/settings`, label: t('nav.settings'), icon: Settings }] : []),
+              ...(user?.isArtistManager ? [{ href: `/${locale}/studio`, label: t('nav.studio'), icon: Mic2 }] : []),
+              ...(!user ? [{ href: `/${locale}/signup`, label: locale === 'ar' ? 'إنشاء حساب' : 'Create account', icon: UserPlus }] : []),
+            ].map(({ href, label, icon: Icon }) => (
+              <Link key={href} href={href} onClick={() => setMenuOpen(false)} className="flex min-h-12 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-semibold text-white transition hover:border-fuchsia-400/40 hover:bg-white/10">
+                <Icon className="h-5 w-5 text-fuchsia-300" />{label}
+              </Link>
+            ))}
+          </div>
+          {!user ? <Link href={`/${locale}/login`} onClick={() => setMenuOpen(false)} className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-sm font-black text-white shadow-lg"><LogIn className="h-4 w-4" />{t('nav.login')}</Link> : null}
+        </section>
+      </div>
+    ) : null}
+    </>
   );
 }
