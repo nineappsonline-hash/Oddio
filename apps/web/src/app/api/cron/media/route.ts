@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         processing_status: 'ready',
       }).eq('track_id', trackId);
       if (assetError) throw assetError;
-      await db.from('jobs').update({ state: 'completed', last_error: null }).eq('id', job.id);
+      await db.from('jobs').update({ state: 'succeeded', last_error: null }).eq('id', job.id);
       results.push({ id: job.id, status: 'completed' });
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : 'Processing failed';
