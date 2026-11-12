@@ -41,22 +41,23 @@ export async function generateMetadata({
   const safeLocale: Locale = isLocale(locale) ? locale : 'en';
   const title =
     safeLocale === 'ar'
-      ? 'مشروع ذكاء الموسيقى — اسمع موسيقى الذكاء الاصطناعي'
-      : 'Project AI Music — Stream human-curated AI music';
+      ? 'Oddio — اسمع موسيقى الذكاء الاصطناعي'
+      : 'Oddio — Stream human-curated AI music';
   const description =
     safeLocale === 'ar'
       ? 'منصة عالمية لسماع ونشر الموسيقى المعمولة بالذكاء الاصطناعي، ببلاش ومن غير إعلانات وبيتراجع بشريًا قبل ما تنزل.'
       : 'A global listening and publishing platform for AI-generated music. Free, ad-free and human-reviewed before release.';
   return {
     metadataBase: new URL(env.siteUrl),
-    title: { default: title, template: `%s · Project AI Music` },
+    title: { default: title, template: `%s · Oddio` },
     description,
-    applicationName: 'Project AI Music',
+    applicationName: 'Oddio',
+    icons: { icon: '/oddio-logo.svg', shortcut: '/oddio-logo.svg', apple: '/oddio-logo.svg' },
     alternates: {
       canonical: `${env.siteUrl}/${safeLocale}`,
       languages: { en: `${env.siteUrl}/en`, ar: `${env.siteUrl}/ar` },
     },
-    openGraph: { title, description, siteName: 'Project AI Music', type: 'website' },
+    openGraph: { title, description, siteName: 'Oddio', type: 'website' },
     twitter: { card: 'summary_large_image', title, description },
   };
 }
