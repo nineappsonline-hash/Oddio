@@ -2,9 +2,9 @@ import type { Locale } from '@ai-music/contracts';
 import { defaultLocale, isLocale } from './config';
 
 const en: Record<string, string> = {
-  'app.name': 'Project AI Music',
-  'app.tagline': 'The home of AI-made sound.',
-  'app.shortTagline': 'AI music, curated by humans.',
+  'app.name': 'Oddio',
+  'app.tagline': 'The home of Oddio sound.',
+  'app.shortTagline': 'Oddio — music curated for you.',
 
   'nav.home': 'Home',
   'nav.discover': 'Discover',
@@ -113,7 +113,7 @@ const en: Record<string, string> = {
   'player.playbackDenied': 'This track is not available for playback.',
   'player.noTrack': 'Nothing playing yet',
 
-  'home.eyebrow': 'Human-curated AI sound',
+  'home.eyebrow': 'The Oddio sound',
   'home.heroTitle': 'Music forged by machines, chosen by people.',
   'home.heroSubtitle':
     'Stream a growing catalogue of fully AI-generated and AI-assisted music from Arab and global artists. Free, ad-free, and reviewed by humans before release.',
@@ -130,7 +130,7 @@ const en: Record<string, string> = {
   'home.fullPlayerHint': 'Everything streams in your browser. No downloads at launch.',
   'home.liveNow': 'Live catalogue',
   'home.liveHint': 'Streaming now · human-reviewed',
-  'home.statsTracks': 'AI tracks',
+  'home.statsTracks': 'Tracks',
   'home.statsArtists': 'Artists',
   'home.statsPlays': 'Qualified plays',
   'home.marqueeLabel': 'Explore sounds',
@@ -510,7 +510,7 @@ const en: Record<string, string> = {
 
   'footer.platform': 'Platform',
   'footer.legal': 'Legal',
-  'footer.tagline': 'AI music, curated by humans.',
+  'footer.tagline': 'Oddio — music curated for you.',
   'footer.rights': '© {year} Project AI Music. All rights reserved.',
   'footer.aiPolicy': 'All releases are reviewed for rights and policy compliance.',
 
