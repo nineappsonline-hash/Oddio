@@ -37,11 +37,12 @@ export async function POST(
         // Never label the untranscoded original as a 320 kbps rendition.
         const original = candidate?.audio;
         if (!original || original.format !== 'mp3' || !original.objectKey ||
+            !Number.isSafeInteger(original.bytes) || original.bytes < 1024 ||
             !/^incoming[/][a-f0-9-]+[/][a-f0-9-]+$/.test(original.objectKey) ||
             !original.sha256 || !/^[a-f0-9]{64}$/.test(original.sha256)) {
           throw new AppError('audio_not_ready', 'Audio processing has not finished. Only verified MP3 originals can be approved until the media worker is available.', 409);
         }
-        const source = await fetch(presignR2OriginalGet(original.objectKey), { cache: 'no-store' });
+        const source = await fetch(presignR2OriginalGet(original.objectKey), { cache: 'no-store', signal: AbortSignal.timeout(12000) });
         if (!source.ok || !source.body) throw new AppError('audio_unavailable', 'Original audio could not be fetched from storage.', 503);
         const bytes = Number(source.headers.get('content-length'));
         if (!Number.isSafeInteger(bytes) || bytes <= 0 || bytes !== original.bytes) {
@@ -55,6 +56,7 @@ export async function POST(
           // Node fetch requires duplex when forwarding a readable stream.
           duplex: 'half',
           headers: { 'Content-Type': 'audio/mpeg', 'Content-Length': String(bytes) },
+          signal: AbortSignal.timeout(20000),
         } as RequestInit & { duplex: 'half' });
         if (!upload.ok) throw new AppError('audio_copy_failed', 'Could not prepare the MP3 for streaming.', 503);
         candidate.audio = {
