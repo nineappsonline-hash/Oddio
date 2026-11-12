@@ -259,6 +259,9 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
         (asset) => asset.kind === 'rendition' && asset.processingStatus === 'ready',
       ) ??
       assets.find((asset) => asset.processingStatus === 'ready') ??
+      // Keep the uploaded master visible to staff while transcoding is queued.
+      // Public playback still requires a ready rendition in /api/stream.
+      assets.find((asset) => asset.kind === 'original') ??
       null;
     return {
       id,
