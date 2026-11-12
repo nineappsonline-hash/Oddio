@@ -3,6 +3,8 @@ import { ArrowRight, BarChart3 } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
 import { getHomeData } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -47,7 +49,7 @@ export default async function HomePage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const data = getHomeData(db, viewer);
   const hero = data.hero;
   const heroQueue = hero
