@@ -47,6 +47,42 @@ function useAuth(locale: Locale, next: string) {
   return { run, pending, error };
 }
 
+
+function ResendConfirmation({ initialEmail = '' }: { initialEmail?: string }) {
+  const [email, setEmail] = useState(initialEmail);
+  const [pending, setPending] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const [error, setError] = useState('');
+  async function resend(event: React.FormEvent) {
+    event.preventDefault();
+    setPending(true);
+    setFeedback('');
+    setError('');
+    try {
+      await apiRequest('/api/auth/resend-confirmation', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      setFeedback('If your email is not yet confirmed, we have requested a new confirmation link. Check your inbox and spam folder.');
+    } catch (caught) {
+      setError(caught instanceof ApiClientError ? caught.message : 'Unable to resend confirmation email.');
+    } finally {
+      setPending(false);
+    }
+  }
+  return (
+    <form onSubmit={resend} className="mt-5 space-y-3 rounded-xl border border-white/10 p-4">
+      <p className="text-sm font-semibold text-ink">Didn't receive your confirmation email?</p>
+      <label htmlFor="resend-email" className="block text-xs text-muted">Email address</label>
+      <input id="resend-email" type="email" required autoComplete="email" className="input w-full"
+        value={email} onChange={(event) => setEmail(event.target.value)} />
+      <Button type="submit" loading={pending} className="w-full">Resend confirmation email</Button>
+      {feedback ? <p role="status" className="text-sm text-ink">{feedback}</p> : null}
+      {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
+    </form>
+  );
+}
+
 export function LoginForm({
   locale,
   next,
@@ -129,6 +165,7 @@ export function LoginForm({
         <p className="mt-3 text-xs text-muted/80">{t('auth.demoNotice')}</p>
       </div>
 
+      <ResendConfirmation initialEmail={email} />
       <div className="mt-5 border-t border-white/10 pt-4 text-center text-sm text-muted">
         {t('auth.noAccount')}{' '}
         <Link
@@ -180,6 +217,7 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
       <div role="status" className="card p-6 space-y-4">
         <h2 className="text-xl font-bold">Check your email</h2>
         <p>We created your account request. Open the confirmation email sent to {email} and confirm your address before logging in. Check your spam folder too.</p>
+        <ResendConfirmation initialEmail={email} />
         <Link href={loginHref(locale, next)} className="btn btn-primary inline-block">Go to login</Link>
       </div>
     );
