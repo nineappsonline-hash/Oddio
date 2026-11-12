@@ -96,7 +96,7 @@ export default async function AdminReviewPage({
                 <>
                   {track.audio.processingStatus !== 'ready' && (
                     <p role="status" className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-3 text-sm text-amber-200">
-                      {locale === 'ar' ? 'الملف الأصلي موجود، لكن تجهيز نسخة البث لم يكتمل بعد. يمكنك الاستماع للملف الأصلي للمراجعة، ولن يتم نشر الأغنية قبل اكتمال المعالجة.' : 'Original audio is uploaded, but streaming processing is not complete. You can preview the original; publishing must wait until processing finishes.'}
+                      {locale === 'ar' ? 'الملف الأصلي موجود، لكن تجهيز نسخة البث لم يكتمل بعد. يمكنك الاستماع للملف الأصلي للمراجعة، ولن يتم نشر الأغنية قبل اكتمال المعالجة.' : 'Original audio is uploaded, but streaming processing is not complete. You can preview the original. Approval is disabled until processing finishes; you can still request changes or reject.'}
                     </p>
                   )}
                   <audio controls preload="metadata" className="w-full" src={`/api/admin/tracks/${track.id}/preview`} aria-label={`Preview ${track.title}`} />
@@ -106,7 +106,7 @@ export default async function AdminReviewPage({
                   {locale === 'ar' ? 'ملف الصوت غير موجود. لا يمكن الموافقة على الأغنية قبل إعادة رفعها.' : 'Audio file is missing. The artist must re-upload the track before approval.'}
                 </p>
               )}
-              <AdminTrackDecision trackId={track.id} />
+              <AdminTrackDecision trackId={track.id} audioReady={track.audio?.processingStatus === 'ready'} />
             </div>
           </article>
         ))
