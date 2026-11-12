@@ -339,8 +339,8 @@ function r2SignedUrl(method, bucket, key) {
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
   const hash = (v) => crypto.createHash('sha256').update(v).digest('hex');
   const hmac = (k, v) => crypto.createHmac('sha256', k).update(v).digest();
-  const canonical = [method, path, query, `host:${host}\\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\\n');
-  const string = ['AWS4-HMAC-SHA256', date, scope, hash(canonical)].join('\\n');
+  const canonical = [method, path, query, `host:${host}\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\n');
+  const string = ['AWS4-HMAC-SHA256', date, scope, hash(canonical)].join('\n');
   const signingKey = hmac(hmac(hmac(hmac(`AWS4${R2_SECRET_ACCESS_KEY}`, short), 'auto'), 's3'), 'aws4_request');
   return `https://${host}${path}?${query}&X-Amz-Signature=${crypto.createHmac('sha256', signingKey).update(string).digest('hex')}`;
 }
