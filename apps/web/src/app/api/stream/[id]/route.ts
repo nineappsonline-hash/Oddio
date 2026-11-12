@@ -4,6 +4,9 @@ import { verifyPlaybackToken } from '@/lib/auth/token';
 import { getViewer } from '@/lib/auth/session';
 import { objectKeyToPath, readDb } from '@/lib/data/db';
 import { accessForTrack } from '@/lib/data/queries';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
+import { presignR2Get } from '@/lib/storage/r2-presign';
 
 export const runtime = 'nodejs';
 
@@ -37,7 +40,7 @@ export async function GET(
     );
   }
 
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const track = db.tracks.find((item) => item.id === id);
   if (!track || !track.audio) {
     return NextResponse.json(
@@ -52,6 +55,17 @@ export async function GET(
       { error: { code: 'playback_denied', message: 'Playback is not authorized.' } },
       { status: 403 },
     );
+  }
+
+  if (!demoMode) {
+    if (track.audio.processingStatus !== 'ready' || track.audio.kind !== 'rendition') {
+      return NextResponse.json({ error: { code: 'audio_not_ready', message: 'Audio is still processing.' } }, { status: 409 });
+    }
+    try {
+      return NextResponse.redirect(presignR2Get(track.audio.objectKey), 307);
+    } catch {
+      return NextResponse.json({ error: { code: 'storage_unavailable', message: 'Audio storage is unavailable.' } }, { status: 503 });
+    }
   }
 
   const filePath = objectKeyToPath(track.audio.objectKey);
