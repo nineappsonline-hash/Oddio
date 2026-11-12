@@ -4,14 +4,7 @@ import { createArtist } from '@/lib/data/mutations';
 import { demoMode } from '@/lib/env';
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { Errors } from '@/lib/errors';
-import {
-  assertSameOrigin,
-  jsonError,
-  jsonOk,
-  parseBody,
-  rateLimit,
-  requireUser,
-} from '@/lib/api-helpers';
+import { assertSameOrigin, jsonError, jsonOk, parseBody, rateLimit, requireUser } from '@/lib/api-helpers';
 
 export const runtime = 'nodejs';
 
@@ -49,7 +42,9 @@ export async function POST(request: Request) {
           );
         if (linksError) {
           // Do not pretend profile creation was fully successful.
-          throw new Error(`Artist created but social links failed: ${linksError.message}`);
+          throw new Error(
+            `Artist created but social links failed: ${linksError.message}`,
+          );
         }
       }
       return jsonOk({
