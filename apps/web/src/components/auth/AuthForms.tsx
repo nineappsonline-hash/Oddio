@@ -275,10 +275,10 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
             autoComplete="new-password"
           />
         </Field>
-        {signupError || error ? (
-          <p className="rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger">{signupError || error}</p>
+        {signupError ? (
+          <p className="rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger">{signupError}</p>
         ) : null}
-        <Button type="submit" loading={pending} className="w-full">
+        <Button type="submit" loading={false} className="w-full">
           {t('auth.createAccount')}
         </Button>
       </form>
