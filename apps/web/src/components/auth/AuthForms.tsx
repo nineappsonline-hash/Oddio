@@ -11,14 +11,6 @@ import { loginHref } from '@/lib/use-locale-path';
 import type { Locale } from '@ai-music/contracts';
 import { useT } from '@/i18n/use-translator';
 
-const DEMO_ACCOUNTS = [
-  { email: 'listener@demo.local', label: 'Listener' },
-  { email: 'artist@demo.local', label: 'Artist' },
-  { email: 'artist2@demo.local', label: 'Artist 2' },
-  { email: 'admin@demo.local', label: 'Admin' },
-  { email: 'mod@demo.local', label: 'Moderator' },
-];
-
 function useAuth(locale: Locale, next: string) {
   const router = useRouter();
   const { toast } = useToast();
@@ -104,11 +96,6 @@ export function LoginForm({
     await run('/api/auth/login', { email, password });
   }
 
-  function fill(demoEmail: string) {
-    setEmail(demoEmail);
-    setPassword('demo1234');
-  }
-
   return (
     <>
       <form onSubmit={onSubmit} className="space-y-4">
@@ -145,25 +132,6 @@ export function LoginForm({
           {t('auth.signIn')}
         </Button>
       </form>
-
-      <div className="mt-4">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
-          {t('auth.demoAccounts')}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {DEMO_ACCOUNTS.map((account) => (
-            <button
-              key={account.email}
-              type="button"
-              onClick={() => fill(account.email)}
-              className="rounded-pill border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-muted transition hover:border-primary/40 hover:text-ink"
-            >
-              {account.label}
-            </button>
-          ))}
-        </div>
-        <p className="mt-3 text-xs text-muted/80">{t('auth.demoNotice')}</p>
-      </div>
 
       <ResendConfirmation initialEmail={email} />
       <div className="mt-5 border-t border-white/10 pt-4 text-center text-sm text-muted">
