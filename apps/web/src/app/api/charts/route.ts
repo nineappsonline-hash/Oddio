@@ -1,6 +1,8 @@
 import { chartQuery } from '@ai-music/contracts';
 import { getViewer } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getCharts } from '@/lib/data/queries';
 import { jsonError, jsonOk } from '@/lib/api-helpers';
 
@@ -16,7 +18,8 @@ export async function GET(request: Request) {
       limit: url.searchParams.get('limit') ?? undefined,
     });
     const viewer = await getViewer();
-    return jsonOk(getCharts(readDb(), viewer, query));
+    const db = demoMode ? readDb() : await loadDbFromSupabase();
+    return jsonOk(getCharts(db, viewer, query));
   } catch (error) {
     return jsonError(error);
   }
