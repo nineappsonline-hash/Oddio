@@ -20,7 +20,6 @@ import { LocaleSwitcher } from '@/components/layout/LocaleSwitcher';
 import { LogoutButton } from '@/components/layout/LogoutButton';
 import { useT } from '@/i18n/use-translator';
 import { useLocalePath } from '@/lib/use-locale-path';
-import { Equalizer } from '@/components/visuals/Equalizer';
 import { cn } from '@/lib/utils';
 
 export function Logo({ locale, compact = false }: { locale: string; compact?: boolean }) {
@@ -126,24 +125,6 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
           );
         })}
       </nav>
-
-      <div className="relative mt-4 rounded-2xl border border-white/10 bg-gradient-to-br from-primary/15 via-white/[0.03] to-cyan/10 p-3">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink/80">
-            Oddio Radio
-          </span>
-          <span className="live-dot" />
-        </div>
-        <div className="mt-2 flex items-end gap-2">
-          <Equalizer bars={7} className="h-6 flex-1 text-primary/80" />
-          <span className="text-[9px] font-semibold uppercase tracking-widest text-muted">
-            24/7
-          </span>
-        </div>
-        <p className="mt-2 text-[10px] leading-relaxed text-muted">
-          {t('app.shortTagline')}
-        </p>
-      </div>
 
       <div className="mt-4 space-y-1 border-t border-white/10 pt-4">
         <Link
