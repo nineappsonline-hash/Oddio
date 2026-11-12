@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getAdminData } from '@/lib/data/queries';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -42,7 +44,8 @@ export default async function AdminReviewPage({
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   if (user.roles.length === 0) redirect(`/${locale}`);
-  const data = getAdminData(readDb(), user.roles[0]!);
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const data = getAdminData(db, user.roles[0]!);
 
   return (
     <div className="space-y-3">
@@ -87,7 +90,9 @@ export default async function AdminReviewPage({
                 </p>
               </div>
             </div>
-            <div className="mt-4">
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-semibold text-muted">{locale === 'ar' ? 'استمع للأغنية قبل اتخاذ القرار' : 'Listen before making a decision'}</p>
+              <audio controls preload="none" className="w-full" src={`/api/admin/tracks/${track.id}/preview`} aria-label={`Preview ${track.title}`} />
               <AdminTrackDecision trackId={track.id} />
             </div>
           </article>
