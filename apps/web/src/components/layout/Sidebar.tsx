@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import {
+  ArrowUpRight,
+  Sparkles,
   BarChart3,
   Compass,
   Home,
@@ -125,6 +127,28 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
           );
         })}
       </nav>
+
+      {!currentUser?.isArtistManager ? (
+        <Link
+          href={`/${locale}/apply/artist`}
+          className="group/artist relative mt-4 flex items-center gap-3 overflow-hidden rounded-2xl border border-amber-200/50 bg-gradient-to-r from-[#f59e0b] via-[#fb7185] to-[#e879f9] px-3 py-3.5 text-[#21102a] shadow-[0_8px_32px_rgba(251,113,133,0.32)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_42px_rgba(251,113,133,0.55)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+        >
+          <span aria-hidden="true" className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 group-hover/artist:translate-x-full" />
+          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/25 ring-1 ring-white/40">
+            <Mic2 className="h-5 w-5" strokeWidth={2.5} />
+          </span>
+          <span className="relative min-w-0 flex-1">
+            <span className="block text-[10px] font-black uppercase tracking-[0.14em] opacity-75">
+              <Sparkles className="me-1 inline h-3 w-3" />
+              {locale === 'ar' ? 'ابدأ مشوارك' : 'YOUR STAGE AWAITS'}
+            </span>
+            <span className="block text-sm font-black leading-5">
+              {locale === 'ar' ? 'كن فنانًا' : 'Become an Artist'}
+            </span>
+          </span>
+          <ArrowUpRight className="relative h-5 w-5 shrink-0 transition-transform group-hover/artist:-translate-y-0.5 group-hover/artist:translate-x-0.5" />
+        </Link>
+      ) : null}
 
       <div className="mt-4 space-y-1 border-t border-white/10 pt-4">
         <Link
