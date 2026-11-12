@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   BarChart3,
   Compass,
@@ -27,13 +28,10 @@ export function Logo({ locale, compact = false }: { locale: string; compact?: bo
     <Link
       href={`/${locale}`}
       className="group/logo inline-flex items-center gap-3"
-      aria-label="Project AI Music"
+      aria-label="Oddio"
     >
-      <span className="relative flex h-10 w-10 shrink-0 items-center justify-center">
-        <span className="absolute inset-0 animate-gradient-pan rounded-[14px] bg-[linear-gradient(135deg,#9D5CFF,#41D9FF,#FF725E)] opacity-70 blur-md transition group-hover/logo:opacity-100" />
-        <span className="relative flex h-10 w-10 items-center justify-center rounded-[14px] border border-white/20 bg-[#121222]/90 shadow-glow backdrop-blur">
-          <Equalizer bars={3} className="h-4 text-white" />
-        </span>
+      <span className="relative flex h-12 w-12 shrink-0 overflow-hidden rounded-xl shadow-glow">
+        <Image src="/oddio-logo.webp" alt="Oddio" width={48} height={48} className="h-full w-full object-cover" priority />
       </span>
       {!compact ? (
         <span className="leading-tight">
