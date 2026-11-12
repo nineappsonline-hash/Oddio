@@ -94,7 +94,7 @@ export function presignR2Head(objectKey: string) {
   if (!env.r2AccountId || !env.r2AccessKeyId || !env.r2SecretAccessKey) {
     throw new AppError('storage_not_configured', 'R2 credentials are missing.', 503);
   }
-  if (!/^[a-zA-Z0-9/_-]+\.[a-zA-Z0-9]+$/.test(objectKey) || objectKey.includes('..')) {
+  if (!/^incoming\/[a-f0-9-]+\/[a-f0-9-]+$/.test(objectKey)) {
     throw new AppError('invalid_object_key', 'Invalid audio object key.', 422);
   }
   const bucket = 'ai-music-originals';
