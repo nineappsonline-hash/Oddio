@@ -17,6 +17,7 @@ import {
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
+import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { cn, formatDuration } from '@/lib/utils';
 
@@ -120,7 +121,7 @@ export function PlayerBar() {
               aria-label={t('player.shuffle')}
               aria-pressed={shuffle}
               className={cn(
-                'hidden rounded-full p-2 transition hover:bg-white/10 sm:block',
+                'rounded-full p-1.5 transition hover:bg-white/10 sm:p-2',
                 shuffle ? 'text-primary' : 'text-muted',
               )}
             >
@@ -159,7 +160,7 @@ export function PlayerBar() {
               onClick={cycleRepeat}
               aria-label={t('player.repeat')}
               className={cn(
-                'hidden rounded-full p-2 transition hover:bg-white/10 sm:block',
+                'rounded-full p-1.5 transition hover:bg-white/10 sm:p-2',
                 repeat !== 'off' ? 'text-primary' : 'text-muted',
               )}
             >
@@ -194,6 +195,7 @@ export function PlayerBar() {
         </div>
 
         <div className="hidden items-center gap-2 lg:flex">
+          <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />
           {buffering ? (
             <span className="text-[10px] uppercase tracking-wide text-muted">
               {t('player.buffering')}
