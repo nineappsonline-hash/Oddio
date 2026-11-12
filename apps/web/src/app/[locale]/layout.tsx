@@ -41,8 +41,8 @@ export async function generateMetadata({
   const safeLocale: Locale = isLocale(locale) ? locale : 'en';
   const title =
     safeLocale === 'ar'
-      ? 'Oddio — اسمع موسيقى الذكاء الاصطناعي'
-      : 'Oddio — Stream human-curated AI music';
+      ? 'Oddio — عالمك الموسيقي'
+      : 'Oddio — Your music universe';
   const description =
     safeLocale === 'ar'
       ? 'منصة عالمية لسماع ونشر الموسيقى المعمولة بالذكاء الاصطناعي، ببلاش ومن غير إعلانات وبيتراجع بشريًا قبل ما تنزل.'
