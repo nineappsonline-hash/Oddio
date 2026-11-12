@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { assessAudioQuality } from '@ai-music/audio';
 import { trackDraftInput } from '@ai-music/contracts';
-import { audioPolicy, env } from '@/lib/env';
+import { audioPolicy, env, demoMode } from '@/lib/env';
 import { probeAudio, transcodeToMp3 } from '@/lib/audio/probe';
 import { mutateDb, uploadDir } from '@/lib/data/db';
 import { createTrackFromUpload } from '@/lib/data/mutations';
@@ -39,6 +39,13 @@ function field(form: FormData, name: string): string {
 export async function POST(request: Request) {
   const created: string[] = [];
   try {
+    if (!demoMode) {
+      throw new AppError(
+        'production_upload_requires_finalize',
+        'Production uploads must use the verified R2 direct-upload and finalize flow; publishing is not available yet.',
+        503,
+      );
+    }
     assertSameOrigin(request);
     const user = await getSessionUser();
     if (!user) throw Errors.unauthorized();
