@@ -4,13 +4,7 @@ import { decideApplication } from '@/lib/data/mutations';
 import { demoMode } from '@/lib/env';
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { Errors } from '@/lib/errors';
-import {
-  assertSameOrigin,
-  jsonError,
-  jsonOk,
-  parseBody,
-  requireRole,
-} from '@/lib/api-helpers';
+import { assertSameOrigin, jsonError, jsonOk, parseBody, requireRole } from '@/lib/api-helpers';
 
 export const runtime = 'nodejs';
 
@@ -41,9 +35,7 @@ export async function POST(
     if (!existing) throw Errors.notFound('Application not found');
     if (existing.applicant_id === user.id) throw Errors.forbidden();
     if (
-      !['submitted', 'under_review', 'needs_information'].includes(
-        existing.status,
-      )
+      !['submitted', 'under_review', 'needs_information'].includes(existing.status)
     ) {
       throw Errors.conflict('This application has already been reviewed');
     }
