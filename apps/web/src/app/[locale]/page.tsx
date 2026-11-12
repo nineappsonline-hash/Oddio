@@ -16,6 +16,7 @@ import { Artwork } from '@/components/ui/Artwork';
 import { OddioPlanet } from '@/components/music/OddioPlanet';
 import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { MoodArtwork } from '@/components/music/MoodArtwork';
+import { HorizontalCarousel } from '@/components/ui/HorizontalCarousel';
 import { TrackCard } from '@/components/music/TrackCard';
 import { TrackRow } from '@/components/music/TrackRow';
 import { ArtistCard } from '@/components/music/ArtistCard';
@@ -285,7 +286,7 @@ export default async function HomePage({
 
       <section>
         <SectionHeader title={t('home.genres')} />
-        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 pt-2 [scrollbar-width:thin] [scrollbar-color:#9D5CFF_transparent]">
+        <HorizontalCarousel label="Genres">
           {data.genres.map((genre, index) => (
             <Link key={genre.id} href={`/${locale}/genres/${genre.slug}`}
               className="group relative flex h-44 w-48 shrink-0 snap-start flex-col justify-end overflow-hidden rounded-[1.5rem] border border-white/15 p-5 shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/70 hover:shadow-[0_10px_40px_#9d5cff44] sm:h-48 sm:w-56"
@@ -296,12 +297,12 @@ export default async function HomePage({
               <span className="relative mt-1 text-xs font-medium text-white/65">{genre.count} tracks <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" /></span>
             </Link>
           ))}
-        </div>
+        </HorizontalCarousel>
       </section>
 
       <section>
         <SectionHeader title={t('home.moods')} />
-        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 pt-2 [scrollbar-width:thin] [scrollbar-color:#9D5CFF_transparent]">
+        <HorizontalCarousel label="Moods">
           {data.moods.map((mood) => (
             <Link
               key={mood.id}
@@ -313,7 +314,7 @@ export default async function HomePage({
               <span className="relative mt-1 text-xs text-white/75">{mood.count} tracks <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" /></span>
             </Link>
           ))}
-        </div>
+        </HorizontalCarousel>
       </section>
 
       <section>
