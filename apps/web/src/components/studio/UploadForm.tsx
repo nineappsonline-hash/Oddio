@@ -10,6 +10,7 @@ import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { FileDropzone } from '@/components/ui/FileDropzone';
 
 export function UploadForm({
   artists,
@@ -250,21 +251,10 @@ export function UploadForm({
           label={t('studio.audioFile')}
           hint="WAV, FLAC or MP3 · min 256 kbps · max 15 min · max 100 MB"
         >
-          <input
-            type="file"
-            accept="audio/*"
-            required
-            onChange={(event) => setAudioFile(event.target.files?.[0] ?? null)}
-            className="input file:me-3 file:rounded-pill file:border-0 file:bg-white/10 file:px-3 file:py-1 file:text-xs file:text-ink"
-          />
+          <FileDropzone kind="audio" file={audioFile} onFile={setAudioFile} locale={locale} required />
         </Field>
         <Field label={t('studio.artworkFile')} hint="PNG, JPEG, WEBP or GIF · under 5 MB">
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            onChange={(event) => setArtworkFile(event.target.files?.[0] ?? null)}
-            className="input file:me-3 file:rounded-pill file:border-0 file:bg-white/10 file:px-3 file:py-1 file:text-xs file:text-ink"
-          />
+          <FileDropzone kind="image" file={artworkFile} onFile={setArtworkFile} locale={locale} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label={t('studio.visibility')} htmlFor="upload-visibility">
