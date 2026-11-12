@@ -1,0 +1,347 @@
+'use client';
+
+import Link from 'next/link';
+import {
+  ChevronDown,
+  ListMusic,
+  Pause,
+  Play,
+  Repeat,
+  Repeat1,
+  Shuffle,
+  SkipBack,
+  SkipForward,
+  Trash2,
+  Volume2,
+  VolumeX,
+  X,
+} from 'lucide-react';
+import { usePlayer } from '@/lib/player-store';
+import { useLocale, useT } from '@/i18n/use-translator';
+import { Artwork } from '@/components/ui/Artwork';
+import { Badge } from '@/components/ui/Badge';
+import { LikeButton } from '@/components/community/LikeButton';
+import { ShareButton } from '@/components/community/ShareButton';
+import { Equalizer } from '@/components/visuals/Equalizer';
+import { cn, formatDuration, formatNumber } from '@/lib/utils';
+
+export function FullPlayer() {
+  const t = useT();
+  const rtl = useLocale() === 'ar';
+  const expanded = usePlayer((state) => state.expanded);
+  const track = usePlayer((state) => state.track);
+  const queue = usePlayer((state) => state.queue);
+  const isPlaying = usePlayer((state) => state.isPlaying);
+  const currentTime = usePlayer((state) => state.currentTime);
+  const duration = usePlayer((state) => state.duration);
+  const volume = usePlayer((state) => state.volume);
+  const muted = usePlayer((state) => state.muted);
+  const repeat = usePlayer((state) => state.repeat);
+  const shuffle = usePlayer((state) => state.shuffle);
+  const autoplay = usePlayer((state) => state.autoplay);
+  const setExpanded = usePlayer((state) => state.setExpanded);
+  const toggle = usePlayer((state) => state.toggle);
+  const next = usePlayer((state) => state.next);
+  const previous = usePlayer((state) => state.previous);
+  const seek = usePlayer((state) => state.seek);
+  const setVolume = usePlayer((state) => state.setVolume);
+  const toggleMute = usePlayer((state) => state.toggleMute);
+  const cycleRepeat = usePlayer((state) => state.cycleRepeat);
+  const toggleShuffle = usePlayer((state) => state.toggleShuffle);
+  const toggleAutoplay = usePlayer((state) => state.toggleAutoplay);
+  const jumpTo = usePlayer((state) => state.jumpTo);
+  const removeFromQueue = usePlayer((state) => state.removeFromQueue);
+  const clearQueue = usePlayer((state) => state.clearQueue);
+
+  if (!expanded || !track) return null;
+
+  const accent = track.artwork.accent;
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] overflow-y-auto bg-background scroll-thin"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('player.fullPlayer')}
+    >
+      <div
+        className="pointer-events-none fixed inset-0 opacity-70"
+        style={{
+          background: `radial-gradient(900px 600px at 15% 0%, ${accent}55, transparent 60%), radial-gradient(800px 600px at 90% 100%, rgba(65,217,255,0.15), transparent 60%)`,
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl px-4 py-5 sm:px-8 sm:py-8">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted">
+            <ListMusic className="h-4 w-4" />
+            {t('player.nowPlaying')}
+          </div>
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="inline-flex items-center gap-2 rounded-pill border border-white/15 px-3 py-2 text-xs font-semibold text-muted transition hover:bg-white/5 hover:text-ink"
+            aria-label={t('player.minimize')}
+          >
+            <ChevronDown className="h-4 w-4" />
+            {t('player.minimize')}
+          </button>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <div>
+            <div className="relative mx-auto max-w-md">
+              <div
+                aria-hidden="true"
+                className="absolute -inset-6 rounded-[2.5rem] opacity-50 blur-3xl"
+                style={{
+                  background: `radial-gradient(circle, ${accent}, transparent 70%)`,
+                }}
+              />
+              <div className="relative overflow-hidden rounded-3xl border border-white/10 p-1.5">
+                <Artwork
+                  title={track.title}
+                  url={track.artwork.url}
+                  accent={accent}
+                  className="aspect-square w-full shadow-glow"
+                  rounded="rounded-[1.35rem]"
+                />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-24 animate-spin-slow opacity-40 [background:conic-gradient(from_0deg,transparent_0deg,rgba(157,92,255,0.5)_70deg,transparent_140deg,rgba(65,217,255,0.4)_240deg,transparent_300deg)]"
+                />
+              </div>
+              <div className="mt-5 flex h-8 items-end justify-center gap-1">
+                <Equalizer
+                  bars={28}
+                  paused={!isPlaying}
+                  className="h-full w-full max-w-xs text-primary/70"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <h1 className="truncate text-2xl font-black tracking-tight text-ink sm:text-3xl">
+                  {track.title}
+                </h1>
+                {track.artist ? (
+                  <Link
+                    href={`/artists/${track.artist.slug}`}
+                    className="text-sm text-muted transition hover:text-ink"
+                  >
+                    {track.artist.name}
+                  </Link>
+                ) : null}
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Badge tone="cyan">{track.qualityLabel}</Badge>
+                  <Badge tone="primary">
+                    {track.productionType === 'fully_ai'
+                      ? t('track.fullyAi')
+                      : t('track.aiAssisted')}
+                  </Badge>
+                  {track.genre ? <Badge tone="neutral">{track.genre.slug}</Badge> : null}
+                </div>
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                <LikeButton
+                  trackId={track.id}
+                  initialLiked={track.isLiked}
+                  initialCount={track.likeCount}
+                  compact
+                />
+                <span className="text-xs text-muted">
+                  {formatNumber(track.qualifiedPlays)} {t('common.plays')}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <input
+                type="range"
+                min={0}
+                max={Math.max(duration, 0.1)}
+                step={0.1}
+                value={Math.min(currentTime, duration || 0)}
+                onChange={(event) => seek(Number(event.target.value))}
+                className="w-full shadow-[0_0_18px_rgba(255,255,255,0.18)]"
+                aria-label={t('player.seek')}
+                style={{
+                  background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #fff ${progress}%, rgba(255,255,255,0.2) ${progress}%)`,
+                }}
+              />
+              <div className="mt-1.5 flex justify-between text-[11px] tabular-nums text-muted">
+                <span>{formatDuration(currentTime * 1000)}</span>
+                <span>{formatDuration(duration * 1000)}</span>
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-center gap-3 sm:gap-5">
+              <button
+                type="button"
+                onClick={toggleShuffle}
+                aria-label={t('player.shuffle')}
+                aria-pressed={shuffle}
+                className={cn(
+                  'rounded-full p-2.5 transition hover:bg-white/10',
+                  shuffle ? 'text-primary' : 'text-muted',
+                )}
+              >
+                <Shuffle className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={previous}
+                aria-label={t('common.previous')}
+                className="rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink"
+              >
+                <SkipBack className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                onClick={toggle}
+                aria-label={isPlaying ? t('common.pause') : t('common.play')}
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-background shadow-glow transition hover:scale-105"
+              >
+                {isPlaying ? (
+                  <Pause className="h-7 w-7" fill="currentColor" />
+                ) : (
+                  <Play className="ms-1 h-7 w-7" fill="currentColor" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => next()}
+                aria-label={t('common.next')}
+                className="rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink"
+              >
+                <SkipForward className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                onClick={cycleRepeat}
+                aria-label={t('player.repeat')}
+                className={cn(
+                  'rounded-full p-2.5 transition hover:bg-white/10',
+                  repeat !== 'off' ? 'text-primary' : 'text-muted',
+                )}
+              >
+                {repeat === 'one' ? (
+                  <Repeat1 className="h-5 w-5" />
+                ) : (
+                  <Repeat className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  aria-label={t('player.volume')}
+                  className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
+                >
+                  {muted || volume === 0 ? (
+                    <VolumeX className="h-4 w-4" />
+                  ) : (
+                    <Volume2 className="h-4 w-4" />
+                  )}
+                </button>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={muted ? 0 : volume}
+                  onChange={(event) => setVolume(Number(event.target.value))}
+                  className="w-28"
+                  aria-label={t('player.volume')}
+                />
+              </div>
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-muted">
+                <input
+                  type="checkbox"
+                  checked={autoplay}
+                  onChange={toggleAutoplay}
+                  className="h-4 w-4 rounded border-white/20 bg-black/30 accent-primary"
+                />
+                {t('player.autoplay')}
+              </label>
+              <ShareButton title={track.title} label={t('common.share')} />
+            </div>
+            <p className="mt-4 text-center text-[11px] text-muted">
+              {t('player.qualifiedHint')}
+            </p>
+          </div>
+
+          <aside
+            className="card flex max-h-[70vh] flex-col p-4"
+            aria-label={t('player.queue')}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-ink">
+                <ListMusic className="h-4 w-4 text-primary" />
+                {t('player.queue')}
+                <span className="text-xs font-normal text-muted">({queue.length})</span>
+              </h2>
+              {queue.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={clearQueue}
+                  className="rounded-full p-1.5 text-muted transition hover:bg-white/10 hover:text-ink"
+                  aria-label={t('player.clearQueue')}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              ) : null}
+            </div>
+            {queue.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-white/10 p-4 text-xs text-muted">
+                {t('player.emptyQueue')}
+              </p>
+            ) : (
+              <ul className="scroll-thin -mx-1 space-y-1 overflow-y-auto px-1">
+                {queue.map((item, index) => (
+                  <li
+                    key={`${item.id}-${index}`}
+                    className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/5"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => jumpTo(item.id)}
+                      className="flex min-w-0 flex-1 items-center gap-3 text-start"
+                    >
+                      <Artwork
+                        title={item.title}
+                        url={item.artwork.url}
+                        accent={item.artwork.accent}
+                        className="h-10 w-10 shrink-0"
+                        rounded="rounded-lg"
+                      />
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium text-ink">
+                          {item.title}
+                        </span>
+                        <span className="block truncate text-xs text-muted">
+                          {item.artist?.name ?? '—'}
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeFromQueue(item.id)}
+                      className="rounded-full p-1.5 text-muted opacity-0 transition hover:bg-white/10 hover:text-ink group-hover:opacity-100"
+                      aria-label={t('player.removeFromQueue')}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
+}

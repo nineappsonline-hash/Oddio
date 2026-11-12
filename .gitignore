@@ -1,0 +1,27 @@
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# local runtime data (demo store, uploads, generated audio)
+.data/
+apps/web/public/audio/generated/
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# logs / os
+*.log
+.DS_Store
+npm-debug.log*
+
+# editors
+.vscode/
+.idea/

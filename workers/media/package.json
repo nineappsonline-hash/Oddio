@@ -1,0 +1,17 @@
+{
+  "name": "@ai-music/media-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Transcoding, scheduled publication and playback-housekeeping worker",
+  "bin": {
+    "ai-music-media-worker": "./src/index.mjs"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "start": "node src/index.mjs",
+    "once": "node src/index.mjs --once"
+  }
+}
