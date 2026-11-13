@@ -17,7 +17,7 @@ export function auditReleaseEnvironment(env) {
     'R2_ACCOUNT_ID',
     'R2_ACCESS_KEY_ID',
     'R2_SECRET_ACCESS_KEY',
-    'MEDIA_WORKER_SECRET',
+    'CRON_SECRET',
   ]) {
     if (!env[key]?.trim()) blockers.push(`Missing required configuration: ${key}`);
   }
