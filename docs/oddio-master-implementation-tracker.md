@@ -58,6 +58,14 @@ Exit gate: playback success and recovery budgets met in real test sessions.
 Exit gate: validated task completion and search success benchmarks.
 
 ## Phase 4 — Distinctive AI-first identity
+- [x] Launch a separate bilingual Soundspace route with Mood Shift and a three-level Taste Dial.
+- [x] Build deterministic, testable music selection with per-artist diversity and visible reason labels; no claim of trained personalized AI.
+- [x] Offer a low-distraction view without removing the persistent playback controls.
+- [x] Build first Artist Worlds upgrade with genres, AI-production transparency and artist biography.
+- [x] Surface Soundspace from home, desktop navigation and mobile navigation.
+- [ ] Improve recommendation reasons to be specific to each track/mood signal and add user-controlled feedback.
+- [ ] Persist opt-in taste preferences per account after database/privacy review.
+- [ ] Measure usability on Arabic and English mobile/desktop and test with real artists/tracks.
 - [ ] Artist Worlds with identity, music, credits and clearly labeled AI provenance.
 - [ ] Taste Dial (familiar to surprising) with predictable, explainable outputs.
 - [ ] Soundspace and distraction-free listening, with reduced motion support.
