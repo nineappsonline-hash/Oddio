@@ -40,6 +40,20 @@ try {
       const pageErrors = [];
       page.on('pageerror', (error) => pageErrors.push(error.message));
 
+      await test(`${label} editorial home layout and viewport`, async () => {
+        const response = await page.goto(`${base}/${locale}`, {
+          waitUntil: 'domcontentloaded',
+        });
+        assert.equal(response?.status(), 200);
+        await page.locator('.oddio-home-feature-grid').waitFor();
+        assert.equal(await page.locator('.oddio-featured-stage').count(), 1);
+        assert.equal(await page.locator('.oddio-topbar-search').count(), 1);
+        assert.equal(await page.locator('.oddio-listening-rail').count(), 1);
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+        assert.ok(overflow <= 2, `home layout horizontal overflow: ${overflow}px`);
+        assert.equal(pageErrors.length, 0, pageErrors.join('; '));
+      });
+
       await test(`${label} soundspace controls`, async () => {
         const response = await page.goto(`${base}/${locale}/soundspace`, {
           waitUntil: 'domcontentloaded',
