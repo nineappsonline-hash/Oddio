@@ -323,7 +323,7 @@ function r2SignedUrl(method, bucket, key) {
   }
   if (!['ai-music-originals', 'ai-music-streaming'].includes(bucket))
     throw new Error('Invalid R2 bucket');
-  if (!/^[a-zA-Z0-9/_-]+$/.test(key) || key.includes('..'))
+  if (!/^[a-zA-Z0-9/_-]+(?:\\.[a-zA-Z0-9]+)?$/.test(key) || key.includes('..'))
     throw new Error('Invalid R2 key');
   const host = `${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
   const date = new Date().toISOString().replace(/[:-]|\\.\\d{3}/g, '');
@@ -373,8 +373,8 @@ async function storageUpload(bucket, objectKey, filePath) {
 
 async function handleTranscode(job) {
   const payload = job.payload || {};
-  const sourceBucket = payload.sourceBucket || 'audio-masters';
-  const targetBucket = payload.targetBucket || 'audio-renditions';
+  const sourceBucket = payload.sourceBucket || 'ai-music-originals';
+  const targetBucket = payload.targetBucket || 'ai-music-streaming';
   const sourceKey = payload.sourceKey || payload.objectKey;
   const trackId = payload.trackId || job.entity_id;
   if (!sourceKey) throw new Error('transcode job is missing sourceKey');
@@ -406,6 +406,7 @@ async function handleTranscode(job) {
         `/rest/v1/audio_assets?id=eq.${encodeURIComponent(payload.assetId)}`,
         {
           object_key: objectKey,
+          kind: 'rendition',
           format: 'mp3',
           bitrate_kbps: bitrate,
           sample_rate: rendered.sampleRate || 44100,
