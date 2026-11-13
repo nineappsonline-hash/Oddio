@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlaybackEventInput } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
+import { PLAYER_SESSION_KEY, buildPlayerSession, parsePlayerSession } from '@/lib/player-session';
 import type { CatalogTrack, HomeData } from '@/lib/data/queries';
 import { useToast } from '@/components/providers/ToastProvider';
 
@@ -27,10 +28,77 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const track = usePlayer((state) => state.track);
   const trackId = track?.id;
+  const playbackRequestId = usePlayer((state) => state.playbackRequestId);
+  const pendingRestoreTime = useRef<number | null>(null);
   const isPlaying = usePlayer((state) => state.isPlaying);
   const volume = usePlayer((state) => state.volume);
   const muted = usePlayer((state) => state.muted);
   const seekRequest = usePlayer((state) => state.seekRequest);
+
+  // Keep the current queue and preferences in this tab. Restoring never
+  // automatically starts audio: playback always needs a user gesture.
+  useEffect(() => {
+    try {
+      const session = parsePlayerSession(window.sessionStorage.getItem(PLAYER_SESSION_KEY));
+      if (session) {
+        pendingRestoreTime.current = session.currentTime;
+        usePlayer.setState({
+          track: session.track,
+          queue: session.queue,
+          history: [],
+          currentTime: session.currentTime,
+          duration: session.track?.durationMs ? session.track.durationMs / 1000 : 0,
+          volume: session.volume,
+          muted: session.muted,
+          repeat: session.repeat,
+          shuffle: session.shuffle,
+          autoplay: session.autoplay,
+          isPlaying: false,
+          expanded: false,
+          error: null,
+          buffering: false,
+          seekRequest: null,
+        });
+      }
+    } catch {
+      // Browser storage might be disabled; the player works without it.
+    }
+
+    const save = () => {
+      const state = usePlayer.getState();
+      try {
+        if (!state.track) {
+          window.sessionStorage.removeItem(PLAYER_SESSION_KEY);
+          return;
+        }
+        window.sessionStorage.setItem(PLAYER_SESSION_KEY, JSON.stringify(buildPlayerSession({
+          version: 1,
+          track: state.track,
+          queue: state.queue,
+          currentTime: state.currentTime,
+          volume: state.volume,
+          muted: state.muted,
+          repeat: state.repeat,
+          shuffle: state.shuffle,
+          autoplay: state.autoplay,
+        })));
+      } catch {
+        // Browsers can reject storage writes in private or restricted contexts.
+      }
+    };
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const unsubscribe = usePlayer.subscribe(() => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(save, 400);
+    });
+    window.addEventListener('pagehide', save);
+    return () => {
+      if (timer) clearTimeout(timer);
+      save();
+      unsubscribe();
+      window.removeEventListener('pagehide', save);
+    };
+  }, []);
 
   const sendEvent = useCallback(
     (eventType: PlaybackEventInput['eventType'], audibleMs: number) => {
@@ -82,7 +150,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [trackId, sendEvent]);
+  }, [trackId, playbackRequestId, sendEvent]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -156,6 +224,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     };
 
     const onLoaded = () => {
+      // A restored seek must wait for the new stream's metadata.
+      if (pendingRestoreTime.current !== null) {
+        const position = pendingRestoreTime.current;
+        pendingRestoreTime.current = null;
+        const maximum = Number.isFinite(audio.duration) ? audio.duration : position;
+        audio.currentTime = Math.min(Math.max(position, 0), maximum || 0);
+        usePlayer.getState().setCurrentTime(audio.currentTime);
+        audibleRef.current.lastTime = audio.currentTime;
+      }
       usePlayer.getState().setBuffering(false);
       if (Number.isFinite(audio.duration)) {
         usePlayer.getState().setDuration(audio.duration);
@@ -216,8 +293,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     try {
       mediaSession.metadata = new MediaMetadata({
         title: track.title,
-        artist: track.artist?.name ?? 'Project AI Music',
-        album: 'Project AI Music',
+        artist: track.artist?.name ?? 'Oddio',
+        album: 'Oddio',
       });
       mediaSession.setActionHandler('play', () => usePlayer.getState().setPlaying(true));
       mediaSession.setActionHandler('pause', () =>
