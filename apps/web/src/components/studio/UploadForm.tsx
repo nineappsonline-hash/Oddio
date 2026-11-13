@@ -54,6 +54,8 @@ export function UploadForm({
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [artworkFile, setArtworkFile] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
+  const [rightsConfirmed, setRightsConfirmed] = useState(false);
+  const [voiceConfirmed, setVoiceConfirmed] = useState(false);
 
   const artistAlbums = albums.filter((album) => album.artistId === artistId);
 
@@ -67,6 +69,10 @@ export function UploadForm({
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (!rightsConfirmed || !voiceConfirmed) {
+      toast(locale === 'ar' ? 'لازم تأكد حقوق النشر وموافقة استخدام الأصوات قبل الرفع.' : 'Confirm your distribution rights and voice consent before uploading.', 'error');
+      return;
+    }
     if (!audioFile) {
       toast(t('studio.audioRequired'), 'error');
       return;
@@ -85,6 +91,8 @@ export function UploadForm({
     }
     const form = new FormData();
     form.set('artistId', artistId);
+    form.set('rightsConfirmed', 'yes');
+    form.set('voiceConfirmed', 'yes');
     if (albumId) form.set('albumId', albumId);
     form.set('title', title);
     form.set('description', description);
@@ -287,7 +295,21 @@ export function UploadForm({
             />
           </Field>
         </div>
-        <Button type="submit" loading={pending} size="lg" className="w-full sm:w-auto">
+        <fieldset className="space-y-3 rounded-2xl border border-primary/25 bg-primary/5 p-4">
+          <legend className="px-1 text-sm font-bold text-ink">{locale === 'ar' ? 'إقرار حقوق المحتوى' : 'Creator rights declaration'}</legend>
+          <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-ink">
+            <input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)}
+              required className="mt-1 h-5 w-5 shrink-0 accent-primary" />
+            <span>{locale === 'ar' ? 'بأكد إن معايا حق نشر وتوزيع الأغنية والكلمات والصورة وأي مواد مستخدمة.' : 'I confirm I have permission to publish and distribute this music, lyrics, artwork and every included asset.'}</span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-ink">
+            <input type="checkbox" checked={voiceConfirmed} onChange={(event) => setVoiceConfirmed(event.target.checked)}
+              required className="mt-1 h-5 w-5 shrink-0 accent-primary" />
+            <span>{locale === 'ar' ? 'بأكد إني ماقلدتش صوت أو شكل شخص حقيقي من غير إذنه، وإن عندي الموافقات اللازمة لو مستخدم شبهه أو صوته.' : 'I confirm I have not impersonated a real person without permission and have the required consent for any recognizable voice or likeness.'}</span>
+          </label>
+          <p className="text-xs leading-5 text-muted">{locale === 'ar' ? 'الإقرار بيتسجل للمراجعة، لكنه مش إثبات تلقائي للترخيص. الأغنية هتخضع لمراجعة قبل النشر.' : 'This declaration is recorded for audit; it does not prove licensing. Every submission remains subject to moderation.'}</p>
+        </fieldset>
+        <Button type="submit" disabled={!rightsConfirmed || !voiceConfirmed} loading={pending} size="lg" className="w-full sm:w-auto">
           {t('studio.upload')}
         </Button>
       </div>
