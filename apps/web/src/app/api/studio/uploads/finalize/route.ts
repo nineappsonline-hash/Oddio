@@ -1,6 +1,8 @@
 import crypto from 'node:crypto';
 import { z } from 'zod';
 import { trackDraftInput } from '@ai-music/contracts';
+import { assertUploadAttestations, RIGHTS_AUDIT_ACTION } from '@/lib/moderation/upload-attestations';
+import { audit } from '@/lib/data/db';
 import { getSessionUser } from '@/lib/auth/session';
 import { assertSameOrigin, jsonError, jsonOk, rateLimit } from '@/lib/api-helpers';
 import { AppError, Errors } from '@/lib/errors';
@@ -31,6 +33,7 @@ export async function POST(request: Request) {
     if (!user.isArtistManager) throw Errors.forbidden();
     rateLimit(`finalize:${user.id}`, 12, 60 * 60_000);
     const form = await request.formData();
+    assertUploadAttestations({ rightsConfirmed: field(form, 'rightsConfirmed'), voiceConfirmed: field(form, 'voiceConfirmed') });
     const input = schema.parse({
       artistId: field(form, 'artistId'),
       albumId: field(form, 'albumId') || undefined,
@@ -132,6 +135,9 @@ export async function POST(request: Request) {
       idempotencyKey: `r2:${input.objectKey}`,
       dailyLimit: env.uploadDailyLimit,
     });
+    if (!after.auditLogs.some((entry) => entry.entityId === track.id && entry.action === RIGHTS_AUDIT_ACTION)) {
+      audit(after, user, RIGHTS_AUDIT_ACTION, 'track', track.id);
+    }
     // Artist profiles reference tracks through featured_track_id. Persist the new
     // track before setting that foreign key, otherwise Postgres rejects the artist upsert.
     const featuredArtist = after.artists.find((artist) => artist.id === track.artistId);
