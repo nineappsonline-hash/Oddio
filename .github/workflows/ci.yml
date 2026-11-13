@@ -23,7 +23,11 @@ jobs:
           DEMO_MODE: 'true'
           DEMO_AUTH_SECRET: ci-demo-secret
           NEXT_PUBLIC_SITE_URL: https://example.com
-      - name: HTTP smoke test — bilingual routes and SEO
+      - name: Generate a four-second synthesized MP3 for real Range checks
+        run: |
+          mkdir -p apps/web/.data/seed-audio
+          ffmpeg -y -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=4' -c:a libmp3lame -b:a 320k -ar 44100 apps/web/.data/seed-audio/track-1.mp3
+      - name: HTTP smoke test — bilingual routes, SEO and audio bytes
         env:
           DEMO_MODE: 'true'
           DEMO_AUTH_SECRET: ci-demo-secret
@@ -44,7 +48,7 @@ jobs:
             cat /tmp/oddio-server.log
             exit 1
           fi
-          SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/smoke-release.mjs
+          SMOKE_AUDIO=true SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/smoke-release.mjs
       - run: npm run lint
       - run: npm run format:check
 
