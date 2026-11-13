@@ -15,7 +15,7 @@ export function PlaylistCard({
 }) {
   return (
     <Link
-      href={`/playlists/${playlist.id}-${playlist.title
+      href={`/${locale}/playlists/${playlist.id}-${playlist.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '')}`}
