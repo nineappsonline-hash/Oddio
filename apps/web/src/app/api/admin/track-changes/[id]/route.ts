@@ -13,7 +13,7 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
   const {data:change,error}=await db.from('track_change_requests').select('*').eq('id',id).eq('status','pending').single();
   if(error||!change) throw Errors.invalid('Request is no longer pending.');
   if(decision==='approved'){
-    const values=change.change_type==='srt'?{synced_lyrics_srt:change.srt_content}:{artwork_key:db.storage.from('artwork').getPublicUrl(change.artwork_key).data.publicUrl};
+    const values=change.change_type==='srt'?{synced_lyrics_srt:change.srt_content||null}:change.change_type==='lyrics_text'?{lyrics_text:change.srt_content||null}:{artwork_key:db.storage.from('artwork').getPublicUrl(change.artwork_key).data.publicUrl};
     const updated=await db.from('tracks').update(values).eq('id',change.track_id);
     if(updated.error) throw updated.error;
   }
