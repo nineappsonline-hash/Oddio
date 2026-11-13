@@ -122,15 +122,13 @@ export async function POST(
       .maybeSingle();
     if (existing)
       throw Errors.invalid('This song already has a pending request of this type.');
-    const { error } = await db
-      .from('track_change_requests')
-      .insert({
-        track_id: id,
-        artist_user_id: user.id,
-        change_type: kind,
-        status: 'pending',
-        ...payload,
-      });
+    const { error } = await db.from('track_change_requests').insert({
+      track_id: id,
+      artist_user_id: user.id,
+      change_type: kind,
+      status: 'pending',
+      ...payload,
+    });
     if (error) throw error;
     return jsonOk({ status: 'pending' });
   } catch (error) {
