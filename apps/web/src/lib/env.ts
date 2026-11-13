@@ -28,7 +28,10 @@ function num(value: string | undefined, fallback: number): number {
  * production domain (also present in preview builds).
  */
 export function resolveSiteUrl(explicit: string | undefined, productionDomain: string | undefined): string {
-  if (explicit?.trim()) return explicit.trim().replace(/\\/$/, '');
+  if (explicit?.trim()) {
+    const origin = explicit.trim();
+    return origin.endsWith('/') ? origin.slice(0, -1) : origin;
+  }
   if (productionDomain && /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i.test(productionDomain) && productionDomain.includes('.')) {
     return `https://${productionDomain}`;
   }
