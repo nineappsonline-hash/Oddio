@@ -102,7 +102,8 @@ Status: **in progress**. Product source: EchoPlay Master Plan v1.1, adapted for 
 - [x] Serve Sitemap from Supabase when not in demo mode and list Soundspace.
 - [x] Improve error recovery localization, loading-state accessibility and focus contrast.
 - [x] Create explicit launch Go/No-Go security, playback, UX, operational gates in docs/oddio-release-gates.md.
-- [ ] Verify full-repository Prettier formatting normalization and get green format check (63 pre-existing violations in last audit).
+- [x] Normalize the repository using the pinned Prettier version on the Phase 6 review branch.
+- [ ] Confirm the full-repository format quality gate passes on the final commit.
 - [ ] Verify real-browser E2E and external production service integration before merge.
 - [ ] Responsive, RTL, keyboard and screen-reader E2E test matrix.
 - [ ] Production-like canary / preview testing before rollout.
