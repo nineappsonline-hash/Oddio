@@ -116,18 +116,30 @@ export async function GET(
   };
 
   if (range) {
-    const match = /bytes=(\d*)-(\d*)/.exec(range);
-    if (!match) {
+    // RFC 9110 single byte ranges, including suffix requests from Safari and
+    // other players. Reject multiple or malformed ranges rather than silently
+    // serving a different slice.
+    const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+    if (!match || (!match[1] && !match[2])) {
       return new NextResponse('Invalid range', {
         status: 416,
         headers: { 'Content-Range': `bytes */${stat.size}` },
       });
     }
-    const start = match[1] ? Number.parseInt(match[1], 10) : 0;
-    const end = match[2]
-      ? Math.min(Number.parseInt(match[2], 10), stat.size - 1)
-      : stat.size - 1;
-    if (start >= stat.size || start > end) {
+    const start = match[1]
+      ? Number.parseInt(match[1], 10)
+      : Math.max(0, stat.size - Number.parseInt(match[2]!, 10));
+    const end =
+      match[1] && match[2]
+        ? Math.min(Number.parseInt(match[2], 10), stat.size - 1)
+        : stat.size - 1;
+    if (
+      !Number.isSafeInteger(start) ||
+      !Number.isSafeInteger(end) ||
+      start < 0 ||
+      start >= stat.size ||
+      start > end
+    ) {
       return new NextResponse('Range not satisfiable', {
         status: 416,
         headers: { 'Content-Range': `bytes */${stat.size}` },
