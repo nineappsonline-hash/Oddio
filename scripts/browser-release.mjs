@@ -106,6 +106,7 @@ try {
           await page.locator('form button[type="submit"]').first().click();
           await page.waitForURL((url) => url.pathname === '/en/library', {
             timeout: 20_000,
+            waitUntil: 'domcontentloaded',
           });
           await page.getByRole('heading', { level: 1 }).waitFor();
           assert.equal(pageErrors.length, 0, pageErrors.join('; '));
