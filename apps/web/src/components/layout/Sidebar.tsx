@@ -100,7 +100,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
   }
 
   return (
-    <aside className="fixed inset-y-0 start-0 z-40 hidden w-[244px] flex-col overflow-hidden border-e border-[#eab99719] bg-[#130f13] px-4 py-5 lg:flex">
+    <aside className="fixed inset-y-0 start-0 z-40 hidden w-[244px] flex-col overflow-y-auto overflow-x-hidden border-e border-[#eab99719] bg-[#130f13] px-4 py-5 lg:flex">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-24 start-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-primary/25 blur-3xl"
