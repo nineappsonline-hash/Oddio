@@ -42,6 +42,14 @@ Exit gate: secure persistence and cross-instance behavior verified in staging.
 Exit gate: playback success and recovery budgets met in real test sessions.
 
 ## Phase 3 — Search, library, discovery
+- [x] Search Arabic with normalized hamza, diacritics and alef/ya forms; normalize Latin accents.
+- [x] Rank matching tracks by normalized exact/title/artist relevance before plays.
+- [x] Wire Search, Discover and Library to the configured Supabase snapshot in non-demo mode.
+- [x] Add discover query input, search/discover pagination and locale-preserving links.
+- [x] Add library section navigation and liked-song sorting by name or popularity.
+- [ ] Verify production data adapters in a staging database and conduct real search usability tests.
+- [ ] Implement intentional transliteration aliases from catalog metadata; avoid guessing personal names.
+- [ ] Build proper search indexes and targeted DB queries before significant traffic.
 - [ ] Accent-insensitive Arabic/English search; Arabic spelling variants.
 - [ ] Search filters, zero-state, clear feedback and recent searches with privacy controls.
 - [ ] Library sorting, bulk actions, undo, removal explanations and duplicate handling.
