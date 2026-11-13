@@ -29,7 +29,7 @@ test('demo mode and missing worker or storage settings block release', () => {
   const result = auditReleaseEnvironment({
     ...valid,
     DEMO_MODE: 'true',
-    MEDIA_WORKER_SECRET: '',
+    CRON_SECRET: '',
     R2_SECRET_ACCESS_KEY: '',
   });
   assert.equal(result.ready, false);
