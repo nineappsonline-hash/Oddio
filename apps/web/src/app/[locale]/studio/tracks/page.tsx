@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
+import { TrackChangeUploader } from '@/components/studio/TrackChangeUploader';
 import { getStudioData } from '@/lib/data/queries';
 import { env } from '@/lib/env';
 import { createTranslator } from '@/i18n/dictionaries';
@@ -43,7 +46,7 @@ export default async function StudioTracksPage({
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   if (!user.isArtistManager) redirect(`/${locale}/apply/artist`);
-  const data = getStudioData(readDb(), user, { demoDailyLimit: env.uploadDailyLimit });
+  const data = getStudioData(demoMode ? readDb() : await loadDbFromSupabase(), user, { demoDailyLimit: env.uploadDailyLimit });
 
   return (
     <div className="space-y-4">
@@ -107,6 +110,7 @@ export default async function StudioTracksPage({
               <span className="text-xs tabular-nums text-muted">
                 {formatNumber(track.qualifiedPlays, locale)} {t('common.plays')}
               </span>
+              {!demoMode ? <TrackChangeUploader trackId={track.id} /> : null}
               <StudioTrackActions
                 trackId={track.id}
                 canSubmit={['draft', 'changes_requested', 'ready_for_review'].includes(
