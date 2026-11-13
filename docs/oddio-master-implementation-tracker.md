@@ -30,6 +30,11 @@ Exit gate: secure persistence and cross-instance behavior verified in staging.
 - [ ] User-test navigation and first-play success.
 
 ## Phase 2 — Reliable core playback
+- [x] Preserve tab-scoped queue, current track and playback preferences with validation; restore paused.
+- [x] Add retry authorization for failed playback in mini and expanded players.
+- [x] Only send a playback-start event after the audio element begins playing.
+- [x] Separate saved player sessions per signed-in listener / guest.
+- [ ] Integration-test refresh restoration, expired stream tokens, unavailable tracks and multiple tabs.
 - [ ] Validate range streaming, buffering, token renewal and permission errors on real audio.
 - [ ] Persist/restore queue safely, including unavailable items and refresh.
 - [ ] Protect against duplicate playback events and lost favorite writes.
