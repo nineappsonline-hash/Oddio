@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ChevronDown,
   ListMusic,
+  Mic2,
   Pause,
   Play,
   Repeat,
@@ -44,6 +45,8 @@ function parseSrt(source:string):LyricCue[]{
 export function FullPlayer() {
   const t = useT();
   const [srt,setSrt]=useState<string|null>(null);
+  const [lyricsLoading,setLyricsLoading]=useState(false);
+  const [sideTab,setSideTab]=useState<'lyrics'|'queue'>('lyrics');
   const rtl = useLocale() === 'ar';
   const expanded = usePlayer((state) => state.expanded);
   const track = usePlayer((state) => state.track);
@@ -71,13 +74,15 @@ export function FullPlayer() {
   const clearQueue = usePlayer((state) => state.clearQueue);
 
   useEffect(()=>{
-    if(!track?.id){setSrt(null);return;}
+    if(!track?.id){setSrt(null);setLyricsLoading(false);return;}
     const controller=new AbortController();
     setSrt(null);
+    setLyricsLoading(true);
     fetch('/api/tracks/'+encodeURIComponent(track.id)+'/synced-lyrics',{signal:controller.signal})
       .then(response=>response.ok?response.json():null)
       .then(result=>{if(!controller.signal.aborted)setSrt(result?.data?.srt||null);})
-      .catch(()=>{});
+      .catch(()=>{})
+      .finally(()=>{if(!controller.signal.aborted)setLyricsLoading(false)});
     return ()=>controller.abort();
   },[track?.id]);
   const cues=useMemo(()=>srt?parseSrt(srt):[],[srt]);
@@ -184,15 +189,6 @@ export function FullPlayer() {
               </div>
             </div>
 
-            {cues.length>0?<section aria-label="Synchronized lyrics" className="mt-6 rounded-2xl border border-fuchsia-400/20 bg-white/[0.04] p-4">
-              <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-fuchsia-200">Live Lyrics</h2>
-              <div className="max-h-52 space-y-2 overflow-y-auto scroll-smooth">
-                {cues.map((cue,index)=><button key={index} type="button" onClick={()=>seek(cue.start)} aria-current={index===activeCue?'true':undefined}
-                  className={cn('block w-full rounded-xl px-3 py-2 text-start text-sm transition hover:bg-white/10',index===activeCue?'bg-fuchsia-500/20 font-bold text-fuchsia-200':'text-muted')}>
-                  {cue.text}
-                </button>)}
-              </div>
-            </section>:null}
             <div className="mt-6">
               <input
                 type="range"
@@ -312,70 +308,53 @@ export function FullPlayer() {
             </p>
           </div>
 
-          <aside
-            className="card flex max-h-[70vh] flex-col p-4"
-            aria-label={t('player.queue')}
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-sm font-bold text-ink">
-                <ListMusic className="h-4 w-4 text-primary" />
-                {t('player.queue')}
-                <span className="text-xs font-normal text-muted">({queue.length})</span>
-              </h2>
-              {queue.length > 0 ? (
-                <button
-                  type="button"
-                  onClick={clearQueue}
-                  className="rounded-full p-1.5 text-muted transition hover:bg-white/10 hover:text-ink"
-                  aria-label={t('player.clearQueue')}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              ) : null}
+          <aside className="card flex min-h-[350px] max-h-[75vh] flex-col p-4" aria-label={sideTab==='lyrics'?'Lyrics':t('player.queue')}>
+            <div className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-black/25 p-1" role="tablist" aria-label="Player panels">
+              <button type="button" role="tab" aria-selected={sideTab==='lyrics'} onClick={()=>setSideTab('lyrics')}
+                className={cn('flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',sideTab==='lyrics'?'bg-fuchsia-500/25 text-fuchsia-200 ring-1 ring-fuchsia-400/30':'text-muted hover:bg-white/5 hover:text-ink')}>
+                <Mic2 className="h-4 w-4"/> {rtl?'الكلمات':'Lyrics'}
+              </button>
+              <button type="button" role="tab" aria-selected={sideTab==='queue'} onClick={()=>setSideTab('queue')}
+                className={cn('flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',sideTab==='queue'?'bg-fuchsia-500/25 text-fuchsia-200 ring-1 ring-fuchsia-400/30':'text-muted hover:bg-white/5 hover:text-ink')}>
+                <ListMusic className="h-4 w-4"/> {t('player.queue')}
+              </button>
             </div>
-            {queue.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-white/10 p-4 text-xs text-muted">
-                {t('player.emptyQueue')}
-              </p>
-            ) : (
-              <ul className="scroll-thin -mx-1 space-y-1 overflow-y-auto px-1">
-                {queue.map((item, index) => (
-                  <li
-                    key={`${item.id}-${index}`}
-                    className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/5"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => jumpTo(item.id)}
-                      className="flex min-w-0 flex-1 items-center gap-3 text-start"
-                    >
-                      <Artwork
-                        title={item.title}
-                        url={item.artwork.url}
-                        accent={item.artwork.accent}
-                        className="h-10 w-10 shrink-0"
-                        rounded="rounded-lg"
-                      />
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium text-ink">
-                          {item.title}
-                        </span>
-                        <span className="block truncate text-xs text-muted">
-                          {item.artist?.name ?? '—'}
-                        </span>
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeFromQueue(item.id)}
-                      className="rounded-full p-1.5 text-muted opacity-0 transition hover:bg-white/10 hover:text-ink group-hover:opacity-100"
-                      aria-label={t('player.removeFromQueue')}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+            {sideTab==='lyrics'?(
+              <div role="tabpanel" aria-label={rtl?'كلمات الأغنية':'Synchronized lyrics'} className="scroll-thin min-h-0 flex-1 overflow-y-auto">
+                {lyricsLoading?<p className="rounded-xl border border-white/10 p-5 text-center text-sm text-muted">{rtl?'جارٍ تحميل الكلمات…':'Loading lyrics…'}</p>
+                :cues.length>0?(
+                  <div className="space-y-2 py-2">
+                    {cues.map((cue,index)=><button key={index} type="button" onClick={()=>seek(cue.start)} aria-current={index===activeCue?'true':undefined}
+                      className={cn('block w-full rounded-xl px-4 py-3 text-start text-base leading-relaxed transition hover:bg-white/10',index===activeCue?'bg-fuchsia-500/20 font-black text-fuchsia-200 ring-1 ring-fuchsia-400/20':'text-muted')}>
+                      {cue.text}
+                    </button>)}
+                  </div>
+                ):(
+                  <div className="flex min-h-56 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/15 px-6 text-center">
+                    <Mic2 className="h-8 w-8 text-fuchsia-300/70"/>
+                    <p className="text-sm font-bold text-ink">{rtl?'الكلمات غير متاحة حاليًا':'Lyrics aren’t available yet'}</p>
+                    <p className="text-xs leading-relaxed text-muted">{rtl?'هتظهر هنا بعد ما الفنان يرفع ملف SRT ويوافق عليه الأدمن.':'Synced lyrics will appear here once the artist uploads an SRT file and an admin approves it.'}</p>
+                  </div>
+                )}
+              </div>
+            ):(
+              <div role="tabpanel" aria-label={t('player.queue')} className="flex min-h-0 flex-1 flex-col">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-sm font-bold text-ink">{t('player.queue')} <span className="text-xs font-normal text-muted">({queue.length})</span></h2>
+                  {queue.length>0?<button type="button" onClick={clearQueue} className="rounded-full p-1.5 text-muted transition hover:bg-white/10 hover:text-ink" aria-label={t('player.clearQueue')}><Trash2 className="h-4 w-4"/></button>:null}
+                </div>
+                {queue.length===0?<p className="rounded-xl border border-dashed border-white/10 p-4 text-xs text-muted">{t('player.emptyQueue')}</p>:(
+                  <ul className="scroll-thin -mx-1 space-y-1 overflow-y-auto px-1">
+                    {queue.map((item,index)=><li key={`${item.id}-${index}`} className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/5">
+                      <button type="button" onClick={()=>jumpTo(item.id)} className="flex min-w-0 flex-1 items-center gap-3 text-start">
+                        <Artwork title={item.title} url={item.artwork.url} accent={item.artwork.accent} className="h-10 w-10 shrink-0" rounded="rounded-lg"/>
+                        <span className="min-w-0"><span className="block truncate text-sm font-medium text-ink">{item.title}</span><span className="block truncate text-xs text-muted">{item.artist?.name??'—'}</span></span>
+                      </button>
+                      <button type="button" onClick={()=>removeFromQueue(item.id)} className="rounded-full p-1.5 text-muted opacity-0 transition hover:bg-white/10 hover:text-ink group-hover:opacity-100" aria-label={t('player.removeFromQueue')}><X className="h-4 w-4"/></button>
+                    </li>)}
+                  </ul>
+                )}
+              </div>
             )}
           </aside>
         </div>
