@@ -1,16 +1,18 @@
 name: One-time v8 final format normalization
 
 on:
-  pull_request:
+  push:
     branches:
-      - feature/oddio-final-release-hardening-v7
+      - feature/oddio-release-blockers-fix-v8
+    paths:
+      - '.github/workflows/format-v8-final.yml'
 
 permissions:
   contents: write
 
 jobs:
   format:
-    if: github.repository == 'jimmydodo/oddio' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feature/oddio-release-blockers-fix-v8'
+    if: github.repository == 'jimmydodo/oddio'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
