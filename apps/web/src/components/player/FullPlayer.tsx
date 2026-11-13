@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ChevronDown,
   ListMusic,
@@ -26,8 +27,23 @@ import { ShareButton } from '@/components/community/ShareButton';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { cn, formatDuration, formatNumber } from '@/lib/utils';
 
+type LyricCue = {start:number;end:number;text:string};
+function parseSrt(source:string):LyricCue[]{
+ const toSeconds=(value:string)=>{const [h,m,rest]=value.split(':');const [sec,ms]=(rest||'').split(',');return Number(h)*3600+Number(m)*60+Number(sec)+Number(ms)/1000;};
+ return source.replace(/\r/g,'').trim().split(/\n\s*\n/).flatMap(block=>{
+  const lines=block.split('\n');const index=lines.findIndex(line=>/\d{2}:\d{2}:\d{2},\d{3}\s*-->/.test(line));
+  if(index<0)return [];
+  const match=lines[index]?.match(/(\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2},\d{3})/);
+  if(!match)return [];
+  const start=toSeconds(match[1]!);const end=toSeconds(match[2]!);
+  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return [];
+  return [{start,end,text:lines.slice(index+1).join(' ').replace(/<[^>]*>/g,'').trim()}];
+ }).filter(cue=>cue.text).sort((a,b)=>a.start-b.start);
+}
+
 export function FullPlayer() {
   const t = useT();
+  const [srt,setSrt]=useState<string|null>(null);
   const rtl = useLocale() === 'ar';
   const expanded = usePlayer((state) => state.expanded);
   const track = usePlayer((state) => state.track);
@@ -54,6 +70,18 @@ export function FullPlayer() {
   const removeFromQueue = usePlayer((state) => state.removeFromQueue);
   const clearQueue = usePlayer((state) => state.clearQueue);
 
+  useEffect(()=>{
+    if(!track?.id){setSrt(null);return;}
+    const controller=new AbortController();
+    setSrt(null);
+    fetch('/api/tracks/'+encodeURIComponent(track.id)+'/synced-lyrics',{signal:controller.signal})
+      .then(response=>response.ok?response.json():null)
+      .then(result=>{if(!controller.signal.aborted)setSrt(result?.data?.srt||null);})
+      .catch(()=>{});
+    return ()=>controller.abort();
+  },[track?.id]);
+  const cues=useMemo(()=>srt?parseSrt(srt):[],[srt]);
+  const activeCue=cues.findIndex(cue=>currentTime>=cue.start&&currentTime<cue.end);
   if (!expanded || !track) return null;
 
   const accent = track.artwork.accent;
@@ -156,6 +184,15 @@ export function FullPlayer() {
               </div>
             </div>
 
+            {cues.length>0?<section aria-label="Synchronized lyrics" className="mt-6 rounded-2xl border border-fuchsia-400/20 bg-white/[0.04] p-4">
+              <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-fuchsia-200">Live Lyrics</h2>
+              <div className="max-h-52 space-y-2 overflow-y-auto scroll-smooth">
+                {cues.map((cue,index)=><button key={index} type="button" onClick={()=>seek(cue.start)} aria-current={index===activeCue?'true':undefined}
+                  className={cn('block w-full rounded-xl px-3 py-2 text-start text-sm transition hover:bg-white/10',index===activeCue?'bg-fuchsia-500/20 font-bold text-fuchsia-200':'text-muted')}>
+                  {cue.text}
+                </button>)}
+              </div>
+            </section>:null}
             <div className="mt-6">
               <input
                 type="range"
