@@ -108,13 +108,14 @@ export async function POST(request: Request) {
 
     const sha256 = crypto.createHash('sha256').update(buffer).digest('hex');
     const extension = (probe.format || 'mp3').replace('mpeg', 'mp3');
-    const originalPath = path.join(dir, `${sha256}.original.${extension}`);
+    const uploadKey = crypto.randomUUID();
+    const originalPath = path.join(dir, `${sha256}-${uploadKey}.original.${extension}`);
     fs.renameSync(tempPath, originalPath);
     created[created.length - 1] = originalPath;
 
     let playablePath = originalPath;
     if (decision.transcodeTarget) {
-      const renditionPath = path.join(dir, `${sha256}-${decision.transcodeTarget}.mp3`);
+      const renditionPath = path.join(dir, `${sha256}-${uploadKey}-${decision.transcodeTarget}.mp3`);
       await transcodeToMp3(
         originalPath,
         renditionPath,
