@@ -15,7 +15,8 @@ interface PlaybackAuthorization {
   trackId: string;
 }
 
-export function PlayerProvider({ children }: { children: React.ReactNode }) {
+export function PlayerProvider({ children, viewerId }: { children: React.ReactNode; viewerId: string | null }) {
+  const storageKey = `${PLAYER_SESSION_KEY}:${viewerId ?? 'guest'}`;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const sessionRef = useRef<string | null>(null);
   const audibleRef = useRef({
@@ -41,7 +42,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   // automatically starts audio: playback always needs a user gesture.
   useEffect(() => {
     try {
-      const session = parsePlayerSession(window.sessionStorage.getItem(PLAYER_SESSION_KEY));
+      const session = parsePlayerSession(window.sessionStorage.getItem(storageKey));
       if (session) {
         pendingRestoreTime.current = session.currentTime;
         pendingRestoreTrackId.current = session.track?.id ?? null;
@@ -62,6 +63,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           buffering: false,
           seekRequest: null,
         });
+      } else {
+        usePlayer.setState({ track: null, queue: [], history: [], isPlaying: false, currentTime: 0, duration: 0, error: null, buffering: false, seekRequest: null });
       }
     } catch {
       // Browser storage might be disabled; the player works without it.
@@ -71,10 +74,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const state = usePlayer.getState();
       try {
         if (!state.track) {
-          window.sessionStorage.removeItem(PLAYER_SESSION_KEY);
+          window.sessionStorage.removeItem(storageKey);
           return;
         }
-        window.sessionStorage.setItem(PLAYER_SESSION_KEY, JSON.stringify(buildPlayerSession({
+        window.sessionStorage.setItem(storageKey, JSON.stringify(buildPlayerSession({
           version: 1,
           track: state.track,
           queue: state.queue,
@@ -101,7 +104,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       unsubscribe();
       window.removeEventListener('pagehide', save);
     };
-  }, []);
+  }, [storageKey]);
 
   const sendEvent = useCallback(
     (eventType: PlaybackEventInput['eventType'], audibleMs: number) => {
