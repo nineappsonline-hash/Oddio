@@ -73,6 +73,16 @@ Exit gate: validated task completion and search success benchmarks.
 Exit gate: demonstrate improvements to discovery without deceptive AI claims.
 
 ## Phase 5 — Trust, creators, growth
+- [x] Require rights and voice/likeness consent declarations on demo and production upload paths; write audit actions for submission.
+- [x] Reject exact duplicate uploaded audio hashes, with existing production R2 hash verification retained.
+- [x] Route report creation and moderation closure through Supabase snapshots outside demo mode.
+- [x] Validate report targets and visibility, avoid duplicate active reports, and audit report submissions.
+- [x] Require meaningful explanations for track rejection/changes and report resolution; prevent re-closing cases.
+- [x] Add unit tests for rights declarations and moderation safety behavior.
+- [ ] Conduct independent license, voice-consent and takedown evidence review; a checkbox is not legal proof.
+- [ ] Add perceptual audio fingerprints, near-duplicate triage and appeal workflow (exact SHA-256 is not perceptual matching).
+- [ ] Introduce transactional/idempotent moderation writes and indexed reporting queries before production scale.
+- [ ] Verify stored audit records and report lifecycle end-to-end in a staging Supabase project.
 - [ ] Track versioning, fingerprint/dedup, takedown and appeal process.
 - [ ] Consent for real-person likeness/voice and evidence retention policy.
 - [ ] Abuse prevention, creator trust, rights audit trails and editorial integrity.
