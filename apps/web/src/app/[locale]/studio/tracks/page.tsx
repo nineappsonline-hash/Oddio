@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
-import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { loadDbFromSupabase, serviceClient } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { TrackChangeUploader } from '@/components/studio/TrackChangeUploader';
 import { getStudioData } from '@/lib/data/queries';
@@ -47,6 +47,7 @@ export default async function StudioTracksPage({
   if (!user) redirect(`/${locale}/login`);
   if (!user.isArtistManager) redirect(`/${locale}/apply/artist`);
   const data = getStudioData(demoMode ? readDb() : await loadDbFromSupabase(), user, { demoDailyLimit: env.uploadDailyLimit });
+  const { data: changeRequests } = !demoMode && data.tracks.length ? await serviceClient().from('track_change_requests').select('track_id,change_type,status,created_at').eq('artist_user_id',user.id).in('track_id',data.tracks.map(track=>track.id)).order('created_at',{ascending:false}) : {data:[]};
 
   return (
     <div className="space-y-4">
@@ -83,6 +84,7 @@ export default async function StudioTracksPage({
                   {track.visibility}
                 </p>
               </Link>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-muted">Song status</span>
               <Badge
                 tone={
                   track.reviewStatus === 'approved'
@@ -110,7 +112,7 @@ export default async function StudioTracksPage({
               <span className="text-xs tabular-nums text-muted">
                 {formatNumber(track.qualifiedPlays, locale)} {t('common.plays')}
               </span>
-              {!demoMode ? <TrackChangeUploader trackId={track.id} /> : null}
+              {!demoMode ? <div className="w-full space-y-2 rounded-xl border border-white/10 bg-white/[0.025] p-3"><p className="text-xs font-bold text-fuchsia-200">Lyrics & artwork approval (separate from song status)</p><div className="flex flex-wrap gap-2">{(['srt','artwork'] as const).map(kind=>{const latest=changeRequests?.find(request=>request.track_id===track.id&&request.change_type===kind);return <span key={kind} className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-muted">{kind==='srt'?'SRT lyrics':'Cover artwork'}: <strong className={latest?.status==='approved'?'text-emerald-300':latest?.status==='pending'?'text-amber-300':latest?.status==='rejected'?'text-rose-300':'text-muted'}>{latest?.status??'Not submitted'}</strong></span>})}</div><TrackChangeUploader trackId={track.id} /></div> : null}
               <StudioTrackActions
                 trackId={track.id}
                 canSubmit={['draft', 'changes_requested', 'ready_for_review'].includes(
