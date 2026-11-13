@@ -648,3 +648,7 @@ body {
 @media (prefers-reduced-motion:reduce) {
   .aurora-blob,.hero-halo,.hero-ring-dashed,.hero-ring-dashed-reverse,.text-glow-gradient { animation:none!important; }
 }
+
+/* Warm primary surfaces require dark icon/text contrast. */
+[class~='bg-primary'][class~='text-white'] { color:#211518; }
+[class~='bg-primary'][class~='text-white']:hover { color:#211518; }
