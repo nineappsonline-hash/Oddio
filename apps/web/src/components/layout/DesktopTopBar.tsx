@@ -53,20 +53,20 @@ export function DesktopTopBar() {
         <kbd aria-hidden="true">↵</kbd>
       </form>
       <div className="oddio-topbar-actions">
-        <Link href={`/${locale}/soundspace`} className="oddio-topbar-discover">
+        <Link prefetch={false} href={`/${locale}/soundspace`} className="oddio-topbar-discover">
           <Headphones size={17} />
           <span>{ar ? 'مساحتك' : 'My soundspace'}</span>
         </Link>
         {user ? (
           <>
-            <Link
+            <Link prefetch={false}
               href={`/${locale}/notifications`}
               aria-label={ar ? 'الإشعارات' : 'Notifications'}
               className="oddio-topbar-icon"
             >
               <Bell size={19} />
             </Link>
-            <Link
+            <Link prefetch={false}
               href={`/${locale}/settings`}
               aria-label={ar ? 'الحساب' : 'Your account'}
             >
@@ -74,7 +74,7 @@ export function DesktopTopBar() {
             </Link>
           </>
         ) : (
-          <Link href={`/${locale}/login`} className="oddio-topbar-account">
+          <Link prefetch={false} href={`/${locale}/login`} className="oddio-topbar-account">
             <UserRound size={17} />
             <span>{ar ? 'دخول' : 'Log in'}</span>
           </Link>
