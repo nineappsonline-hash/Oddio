@@ -93,7 +93,11 @@ if (process.env.SMOKE_AUDIO === 'true') {
     });
     const range = headBytes.headers.get('content-range') || '';
     const body = new Uint8Array(await headBytes.arrayBuffer());
-    if (headBytes.status !== 206 || body.length !== 256 || !range.startsWith('bytes 0-255/')) {
+    if (
+      headBytes.status !== 206 ||
+      body.length !== 256 ||
+      !range.startsWith('bytes 0-255/')
+    ) {
       throw new Error(`First-byte range invalid: HTTP ${headBytes.status}, ${range}`);
     }
     if (!headBytes.headers.get('content-type')?.includes('audio/mpeg')) {
@@ -106,8 +110,14 @@ if (process.env.SMOKE_AUDIO === 'true') {
     });
     const tailRange = tailBytes.headers.get('content-range') || '';
     const tail = new Uint8Array(await tailBytes.arrayBuffer());
-    if (tailBytes.status !== 206 || tail.length !== 128 || tailRange !== `bytes ${size - 128}-${size - 1}/${size}`) {
-      throw new Error(`Suffix-byte range invalid: HTTP ${tailBytes.status}, ${tailRange}`);
+    if (
+      tailBytes.status !== 206 ||
+      tail.length !== 128 ||
+      tailRange !== `bytes ${size - 128}-${size - 1}/${size}`
+    ) {
+      throw new Error(
+        `Suffix-byte range invalid: HTTP ${tailBytes.status}, ${tailRange}`,
+      );
     }
     const malformed = await fetch(streamUrl, {
       headers: { Range: 'bytes=0-2,5-8' },
@@ -116,10 +126,14 @@ if (process.env.SMOKE_AUDIO === 'true') {
     if (malformed.status !== 416) {
       throw new Error(`Invalid multiple ranges were accepted: HTTP ${malformed.status}`);
     }
-    process.stdout.write('PASS authorized MP3 stream, seeking, suffix ranges and invalid token protection\\n');
+    process.stdout.write(
+      'PASS authorized MP3 stream, seeking, suffix ranges and invalid token protection\\n',
+    );
   } catch (error) {
     failed += 1;
-    process.stderr.write(`FAIL audio streaming smoke: ${error instanceof Error ? error.message : String(error)}\\n`);
+    process.stderr.write(
+      `FAIL audio streaming smoke: ${error instanceof Error ? error.message : String(error)}\\n`,
+    );
   }
 }
 if (failed) {

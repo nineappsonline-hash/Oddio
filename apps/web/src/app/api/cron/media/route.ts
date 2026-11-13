@@ -26,17 +26,20 @@ export async function GET(request: Request) {
     .lt('updated_at', cutoff)
     .order('updated_at')
     .limit(10);
-  if (staleError) return NextResponse.json({ error: 'Lease recovery unavailable' }, { status: 503 });
+  if (staleError)
+    return NextResponse.json({ error: 'Lease recovery unavailable' }, { status: 503 });
   for (const job of stale ?? []) {
     const nextState = expiredMediaLease(job);
     if (!nextState) continue;
-    await db.from('jobs')
+    await db
+      .from('jobs')
       .update({
         state: nextState,
         next_run_at: new Date().toISOString(),
-        last_error: nextState === 'dead'
-          ? 'Processing exceeded its retry limit after a stale lease.'
-          : 'Recovered an abandoned media-processing lease.',
+        last_error:
+          nextState === 'dead'
+            ? 'Processing exceeded its retry limit after a stale lease.'
+            : 'Recovered an abandoned media-processing lease.',
       })
       .eq('id', job.id)
       .eq('state', 'running')

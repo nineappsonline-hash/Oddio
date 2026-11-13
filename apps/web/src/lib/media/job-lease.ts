@@ -26,7 +26,9 @@ export function expiredMediaLease(
   return job.attempts >= job.max_attempts ? 'dead' : 'failed';
 }
 
-export function mayClaimMediaJob(job: Pick<MediaJobLease, 'state' | 'attempts' | 'max_attempts'>): boolean {
+export function mayClaimMediaJob(
+  job: Pick<MediaJobLease, 'state' | 'attempts' | 'max_attempts'>,
+): boolean {
   return (
     (job.state === 'queued' || job.state === 'failed') &&
     job.attempts >= 0 &&

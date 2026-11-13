@@ -129,9 +129,10 @@ export async function GET(
     const start = match[1]
       ? Number.parseInt(match[1], 10)
       : Math.max(0, stat.size - Number.parseInt(match[2]!, 10));
-    const end = match[1] && match[2]
-      ? Math.min(Number.parseInt(match[2], 10), stat.size - 1)
-      : stat.size - 1;
+    const end =
+      match[1] && match[2]
+        ? Math.min(Number.parseInt(match[2], 10), stat.size - 1)
+        : stat.size - 1;
     if (
       !Number.isSafeInteger(start) ||
       !Number.isSafeInteger(end) ||
