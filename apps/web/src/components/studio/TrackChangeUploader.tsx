@@ -12,7 +12,7 @@ export function TrackChangeUploader({trackId,hasApprovedSrt=false}:{trackId:stri
  async function send(kind:'srt'|'artwork'|'lyrics_text',file?:File,action?:'remove'){
   if(busy)return;
   if(!file && kind!=='lyrics_text' && action!=='remove')return;
-  if(kind==='srt'&&(!/\.srt$/i.test(file.name)||file.size>256*1024||!file.size)){
+  if(kind==='srt' && action!=='remove' && file && (!/\.srt$/i.test(file.name)||file.size>256*1024||!file.size)){
    setMessage('Please choose a valid .srt file (maximum 256 KB).');return;
   }
   setBusy(kind);setMessage('');
