@@ -36,8 +36,10 @@ export async function generateMetadata({
 
 export default async function LibraryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ likedSort?: string }>;
 }) {
   const { locale: raw } = await params;
   if (!isLocale(raw)) redirect('/en');
@@ -50,6 +52,11 @@ export default async function LibraryPage({
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const library = getLibraryData(db, viewer);
   const history = getHistoryData(db, viewer);
+  const { likedSort: requestedSort } = await searchParams;
+  const likedSort = requestedSort === 'title' || requestedSort === 'popular' ? requestedSort : 'recent';
+  const likedTracks = [...library.likedTracks];
+  if (likedSort === 'title') likedTracks.sort((a, b) => a.title.localeCompare(b.title, locale));
+  if (likedSort === 'popular') likedTracks.sort((a, b) => b.qualifiedPlays - a.qualifiedPlays);
 
   return (
     <div className="space-y-12">
@@ -71,15 +78,28 @@ export default async function LibraryPage({
 
       <section id="liked" className="scroll-mt-24">
         <SectionHeader title={t('library.likes')} />
-        {library.likedTracks.length === 0 ? (
+        {likedTracks.length > 0 ? (
+          <nav aria-label={locale === 'ar' ? 'ترتيب الأغاني المفضلة' : 'Sort liked songs'} className="mb-4 flex flex-wrap gap-2">
+            {([
+              ['recent', locale === 'ar' ? 'المضافة مؤخرًا' : 'Recently added'],
+              ['title', locale === 'ar' ? 'الاسم' : 'Title'],
+              ['popular', locale === 'ar' ? 'الأكثر استماعًا' : 'Most played'],
+            ] as const).map(([value, label]) => (
+              <Link key={value} href={`/${locale}/library?likedSort=${value}#liked`}
+                aria-current={likedSort === value ? 'page' : undefined}
+                className={likedSort === value ? 'chip chip-active' : 'chip'}>{label}</Link>
+            ))}
+          </nav>
+        ) : null}
+        {likedTracks.length === 0 ? (
           <EmptyState title={t('library.emptyLikes')} />
         ) : (
           <div className="card divide-y divide-white/5 p-2">
-            {library.likedTracks.map((track, index) => (
+            {likedTracks.map((track, index) => (
               <TrackRow
                 key={track.id}
                 track={track}
-                queue={library.likedTracks}
+                queue={likedTracks}
                 index={index}
                 locale={locale}
               />
