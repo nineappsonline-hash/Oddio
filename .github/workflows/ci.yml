@@ -15,8 +15,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run format:check
-      - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
@@ -24,6 +22,8 @@ jobs:
           DEMO_MODE: 'true'
           DEMO_AUTH_SECRET: ci-demo-secret
           NEXT_PUBLIC_SITE_URL: https://example.com
+      - run: npm run lint
+      - run: npm run format:check
 
   database:
     runs-on: ubuntu-latest
