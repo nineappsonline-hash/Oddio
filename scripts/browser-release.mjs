@@ -78,7 +78,7 @@ try {
           await page.locator('#login-email').fill('listener@demo.local');
           await page.locator('#login-password').fill('demo1234');
           await page.locator('form button[type="submit"]').first().click();
-          await page.waitForURL(/\\/en\\/library/, { timeout: 20_000 });
+          await page.waitForURL((url) => url.pathname === '/en/library', { timeout: 20_000 });
           await page.getByRole('heading', { level: 1 }).waitFor();
           assert.equal(pageErrors.length, 0, pageErrors.join('; '));
         });
