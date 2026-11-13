@@ -41,9 +41,7 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
       <div className="flex items-center gap-2.5">
         <Logo locale={locale} compact />
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-ink">
-            Oddio
-          </p>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-ink">Oddio</p>
           <div className="flex items-center gap-1.5">
             <Equalizer bars={3} className="h-2.5 text-primary" />
             <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-muted">
