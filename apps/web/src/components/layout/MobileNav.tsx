@@ -86,7 +86,7 @@ export function MobileNav() {
 
   const items = [
     { href: `/${locale}`, label: t('nav.home'), icon: Home, exact: true },
-    { href: `/${locale}/discover`, label: t('nav.discover'), icon: Compass },
+    { href: `/${locale}/soundspace`, label: 'Soundspace', icon: Compass },
     { href: `/${locale}/search`, label: t('nav.search'), icon: Search },
     user
       ? {
@@ -160,6 +160,7 @@ export function MobileNav() {
             {[
               { href: `/${locale}`, label: t('nav.home'), icon: Home },
               { href: `/${locale}/discover`, label: t('nav.discover'), icon: Compass },
+              { href: `/${locale}/soundspace`, label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace', icon: Compass },
               { href: `/${locale}/charts`, label: t('nav.charts'), icon: BarChart3 },
               { href: `/${locale}/search`, label: t('nav.search'), icon: Search },
               ...(user ? [{ href: `/${locale}/library`, label: t('nav.library'), icon: Library }, { href: `/${locale}/notifications`, label: t('nav.notifications'), icon: Bell }, { href: `/${locale}/settings`, label: t('nav.settings'), icon: Settings }] : []),
