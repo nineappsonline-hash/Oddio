@@ -142,18 +142,48 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         })}
       </nav>
 
-      <section className="mt-4 border-t border-[#eab99718] pt-5" aria-label={locale === 'ar' ? 'مجموعة الموسيقى' : 'Your collection'}>
+      <section
+        className="mt-4 border-t border-[#eab99718] pt-5"
+        aria-label={locale === 'ar' ? 'مجموعة الموسيقى' : 'Your collection'}
+      >
         <div className="mb-3 flex items-center justify-between px-3">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#98858b]">{locale === 'ar' ? 'مجموعتك' : 'YOUR COLLECTION'}</p>
-          <Library size={14} className="text-[#b28a87]" aria-hidden="true"/>
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#98858b]">
+            {locale === 'ar' ? 'مجموعتك' : 'YOUR COLLECTION'}
+          </p>
+          <Library size={14} className="text-[#b28a87]" aria-hidden="true" />
         </div>
         {[
-          { label: locale === 'ar' ? 'الأغاني المفضلة' : 'Liked songs', href: `/${locale}/library`, symbol: '♥', color: '#673547' },
-          { label: locale === 'ar' ? 'على حسب مودك' : 'Made for your mood', href: `/${locale}/soundspace`, symbol: '♫', color: '#563a4c' },
-          { label: locale === 'ar' ? 'آخر الإصدارات' : 'New releases', href: `/${locale}/discover?sort=newest`, symbol: '✦', color: '#6a443c' },
+          {
+            label: locale === 'ar' ? 'الأغاني المفضلة' : 'Liked songs',
+            href: `/${locale}/library`,
+            symbol: '♥',
+            color: '#673547',
+          },
+          {
+            label: locale === 'ar' ? 'على حسب مودك' : 'Made for your mood',
+            href: `/${locale}/soundspace`,
+            symbol: '♫',
+            color: '#563a4c',
+          },
+          {
+            label: locale === 'ar' ? 'آخر الإصدارات' : 'New releases',
+            href: `/${locale}/discover?sort=newest`,
+            symbol: '✦',
+            color: '#6a443c',
+          },
         ].map((item) => (
-          <Link key={item.href} href={item.href} prefetch={false} className="group flex items-center gap-3 rounded-xl px-2 py-2 text-xs font-semibold text-[#c5b4b0] transition hover:bg-white/5 hover:text-white">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg text-[#f5c9a8]" style={{ backgroundColor: item.color }}>{item.symbol}</span>
+          <Link
+            key={item.href}
+            href={item.href}
+            prefetch={false}
+            className="group flex items-center gap-3 rounded-xl px-2 py-2 text-xs font-semibold text-[#c5b4b0] transition hover:bg-white/5 hover:text-white"
+          >
+            <span
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg text-[#f5c9a8]"
+              style={{ backgroundColor: item.color }}
+            >
+              {item.symbol}
+            </span>
             <span>{item.label}</span>
           </Link>
         ))}

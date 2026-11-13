@@ -48,19 +48,32 @@ export function PlayerBar() {
 
   if (!track) {
     return (
-      <div className="oddio-player-bar oddio-idle-player" role="region"
-        aria-label={rtl ? 'مشغل أوديو' : 'Oddio music player'}>
-        <div className="oddio-idle-cover"><ListMusic size={20} aria-hidden="true" /></div>
+      <div
+        className="oddio-player-bar oddio-idle-player"
+        role="region"
+        aria-label={rtl ? 'مشغل أوديو' : 'Oddio music player'}
+      >
+        <div className="oddio-idle-cover">
+          <ListMusic size={20} aria-hidden="true" />
+        </div>
         <div className="oddio-idle-details">
           <strong>{rtl ? 'شغّل أي أغنية' : 'Your soundtrack starts here'}</strong>
-          <span>{rtl ? 'اختار أغنية علشان تبدأ الاستماع' : 'Choose a track to start listening'}</span>
+          <span>
+            {rtl
+              ? 'اختار أغنية علشان تبدأ الاستماع'
+              : 'Choose a track to start listening'}
+          </span>
         </div>
         <div className="oddio-idle-controls" aria-hidden="true">
           <SkipBack size={20} />
-          <span className="oddio-idle-play"><Play size={17} fill="currentColor" /></span>
+          <span className="oddio-idle-play">
+            <Play size={17} fill="currentColor" />
+          </span>
           <SkipForward size={20} />
         </div>
-        <div className="oddio-idle-track" aria-hidden="true"><span/></div>
+        <div className="oddio-idle-track" aria-hidden="true">
+          <span />
+        </div>
         <span className="oddio-idle-watermark">ODDIO / HUMAN CURATED</span>
       </div>
     );
