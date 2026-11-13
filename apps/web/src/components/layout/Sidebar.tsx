@@ -57,6 +57,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
   const items = [
     { href: `/${locale}`, label: t('nav.home'), icon: Home, exact: true },
     { href: `/${locale}/discover`, label: t('nav.discover'), icon: Compass },
+    { href: `/${locale}/soundspace`, label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace', icon: Sparkles },
     { href: `/${locale}/charts`, label: t('nav.charts'), icon: BarChart3 },
     { href: `/${locale}/search`, label: t('nav.search'), icon: Search },
   ];
