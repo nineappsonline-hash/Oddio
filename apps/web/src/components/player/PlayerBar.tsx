@@ -46,13 +46,31 @@ export function PlayerBar() {
   const toggleShuffle = usePlayer((state) => state.toggleShuffle);
   const setExpanded = usePlayer((state) => state.setExpanded);
 
-  if (!track) return null;
+  if (!track) {
+    return (
+      <div className="oddio-player-bar oddio-idle-player" role="region"
+        aria-label={rtl ? 'مشغل أوديو' : 'Oddio music player'}>
+        <div className="oddio-idle-cover"><ListMusic size={20} aria-hidden="true" /></div>
+        <div className="oddio-idle-details">
+          <strong>{rtl ? 'شغّل أي أغنية' : 'Your soundtrack starts here'}</strong>
+          <span>{rtl ? 'اختار أغنية علشان تبدأ الاستماع' : 'Choose a track to start listening'}</span>
+        </div>
+        <div className="oddio-idle-controls" aria-hidden="true">
+          <SkipBack size={20} />
+          <span className="oddio-idle-play"><Play size={17} fill="currentColor" /></span>
+          <SkipForward size={20} />
+        </div>
+        <div className="oddio-idle-track" aria-hidden="true"><span/></div>
+        <span className="oddio-idle-watermark">ODDIO / HUMAN CURATED</span>
+      </div>
+    );
+  }
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
     <div
-      className="fixed inset-x-0 bottom-16 z-40 overflow-hidden border-t border-white/10 bg-[#1C1216]/95 px-3 py-2.5 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6"
+      className="oddio-player-bar fixed inset-x-0 bottom-16 z-40 overflow-hidden border-t border-white/10 bg-[#171116]/95 px-3 py-2.5 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6"
       role="region"
       aria-label={t('player.miniPlayer')}
     >
@@ -149,7 +167,7 @@ export function PlayerBar() {
               type="button"
               onClick={toggle}
               aria-label={isPlaying ? t('common.pause') : t('common.play')}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white transition hover:bg-primary-strong"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eab997] text-[#25171d] transition hover:bg-primary-strong"
             >
               {isPlaying ? (
                 <Pause className="h-5 w-5" fill="currentColor" />
@@ -233,7 +251,7 @@ export function PlayerBar() {
             className="w-24"
             aria-label={t('player.volume')}
             style={{
-              background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #9D5CFF ${
+              background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #EAB997 ${
                 (muted ? 0 : volume) * 100
               }%, rgba(255,255,255,0.18) ${(muted ? 0 : volume) * 100}%)`,
             }}
