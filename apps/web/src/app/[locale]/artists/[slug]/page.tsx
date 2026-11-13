@@ -4,6 +4,8 @@ import { ExternalLink } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
 import { getArtistPage, listableTracks } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -28,7 +30,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, slug } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getArtistPage(db, { userId: null, roles: [] }, slug);
   if (!page)
     return buildMetadata({
@@ -58,13 +60,26 @@ export default async function ArtistPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getArtistPage(db, viewer, slug);
   if (!page) notFound();
   const { artist, tracks, albums, followerCount, isFollowing, featuredTrack } = page;
   const queue = featuredTrack
     ? [featuredTrack, ...tracks.filter((track) => track.id !== featuredTrack.id)]
     : tracks;
+  const fullyAiCount = tracks.filter(
+    (track) => track.productionType === 'fully_ai',
+  ).length;
+  const assistedCount = tracks.filter(
+    (track) => track.productionType === 'ai_assisted',
+  ).length;
+  const genres = [
+    ...new Map(
+      tracks
+        .filter((track) => track.genre)
+        .map((track) => [track.genre!.id, track.genre!]),
+    ).values(),
+  ].slice(0, 6);
   const relatedArtists = listableTracks(db, viewer)
     .flatMap((track) =>
       track.artist && track.artist.id !== artist.id ? [track.artist] : [],
@@ -80,7 +95,7 @@ export default async function ArtistPage({
       <JsonLd
         data={artistJsonLd({
           name: artist.name,
-          url: `/artists/${artist.slug}`,
+          url: `/${locale}/artists/${artist.slug}`,
           description: artist.bio,
         })}
       />
@@ -88,7 +103,7 @@ export default async function ArtistPage({
         <div
           className="h-36 w-full sm:h-48"
           style={{
-            backgroundImage: `linear-gradient(135deg, ${artist.accent}, #16112b 70%, #090912)`,
+            backgroundImage: `radial-gradient(ellipse at 80% 15%, ${artist.accent}66, transparent 55%), linear-gradient(125deg, #311B25, #191215 75%)`,
           }}
         />
         <div className="relative -mt-14 flex flex-col gap-5 p-5 sm:-mt-16 sm:flex-row sm:items-end sm:p-8">
@@ -108,7 +123,10 @@ export default async function ArtistPage({
                 <Badge tone="cyan">{t('artist.verified')}</Badge>
               ) : null}
             </div>
-            <h1 className="mt-1 text-3xl font-black tracking-tight text-ink sm:text-4xl">
+            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              {locale === 'ar' ? 'عالم الفنان على Oddio' : 'Inside the artist world'}
+            </p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
               {artist.name}
             </h1>
             <p className="mt-1 text-sm text-muted">
@@ -130,6 +148,57 @@ export default async function ArtistPage({
               label={t('common.report')}
             />
           </div>
+        </div>
+      </section>
+
+      <section
+        aria-label={locale === 'ar' ? 'هوية الفنان الموسيقية' : 'Artist sound identity'}
+        className="mb-9 rounded-[1.5rem] border border-primary/20 bg-surface/75 p-5 sm:p-7"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.19em] text-primary">
+              ARTIST WORLD
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-ink">
+              {locale === 'ar' ? 'البصمة الموسيقية' : 'The sound behind the name'}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
+              {artist.bio ||
+                (locale === 'ar'
+                  ? 'تابع إصدارات الفنان واكتشف أسلوبه الموسيقي.'
+                  : 'Explore this artist’s releases and musical identity.')}
+            </p>
+          </div>
+          <Link
+            href={`/${locale}/soundspace`}
+            className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary transition hover:bg-primary/10"
+          >
+            {locale === 'ar' ? 'اكتشف أصوات مشابهة' : 'Explore your soundspace'}
+          </Link>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {genres.map((genre) => (
+            <Link
+              key={genre.id}
+              href={`/${locale}/discover?genre=${encodeURIComponent(genre.slug)}`}
+              className="inline-flex min-h-10 items-center rounded-full border border-white/15 bg-white/5 px-4 text-xs text-ink transition hover:border-primary/50"
+            >
+              {locale === 'ar' ? genre.labelAr : genre.labelEn}
+            </Link>
+          ))}
+        </div>
+        <div className="mt-5 flex flex-wrap gap-3 text-xs text-muted">
+          <span className="rounded-lg border border-white/10 px-3 py-2">
+            {locale === 'ar'
+              ? `${fullyAiCount} أغنية مولّدة بالكامل بالـAI`
+              : `${fullyAiCount} fully AI-generated tracks`}
+          </span>
+          <span className="rounded-lg border border-white/10 px-3 py-2">
+            {locale === 'ar'
+              ? `${assistedCount} أغنية بمساعدة AI`
+              : `${assistedCount} AI-assisted tracks`}
+          </span>
         </div>
       </section>
 
@@ -190,7 +259,7 @@ export default async function ArtistPage({
                 {relatedArtists.map((related) => (
                   <li key={related.id}>
                     <Link
-                      href={`/artists/${related.slug}`}
+                      href={`/${locale}/artists/${related.slug}`}
                       className="text-sm font-medium text-ink hover:text-primary"
                     >
                       {related.name}
