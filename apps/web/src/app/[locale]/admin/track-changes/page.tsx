@@ -21,7 +21,7 @@ export default async function TrackChangesPage({params}:{params:Promise<{locale:
   {(requests||[]).map(row=><article key={row.id} className="card space-y-3 p-5">
    <div className="flex flex-wrap justify-between gap-2"><h2 className="font-bold">{titles.get(row.track_id)||row.track_id}</h2><span className="rounded-lg bg-white/10 px-2 py-1 text-xs uppercase text-fuchsia-200">{row.change_type}</span></div>
    <p className="text-xs text-muted">Requested {new Date(row.created_at).toLocaleString()} · Artist {row.artist_user_id}</p>
-   {row.change_type==='srt'?<pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-xl bg-black/30 p-4 text-xs text-white/85">{row.srt_content}</pre>:row.artwork_key?<img src={db.storage.from('artwork').getPublicUrl(row.artwork_key).data.publicUrl} alt="Proposed cover artwork" className="h-48 w-48 rounded-xl object-cover"/>:null}
+   {(row.change_type==='srt'||row.change_type==='lyrics_text')?<pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-xl bg-black/30 p-4 text-xs text-white/85">{row.change_type==='srt'&&!row.srt_content?'Request to REMOVE approved synchronized lyrics':row.srt_content}</pre>:row.artwork_key?<img src={db.storage.from('artwork').getPublicUrl(row.artwork_key).data.publicUrl} alt="Proposed cover artwork" className="h-48 w-48 rounded-xl object-cover"/>:null}
    <TrackChangeModeration id={row.id}/>
   </article>)}
  </div>
