@@ -20,10 +20,7 @@ const schema = z.object({
   bytes: z.number().int().positive(),
 });
 
-const ALLOWED = [
-  'audio/mpeg',
-  'audio/mp3',
-];
+const ALLOWED = ['audio/mpeg', 'audio/mp3'];
 
 export async function POST(request: Request) {
   try {

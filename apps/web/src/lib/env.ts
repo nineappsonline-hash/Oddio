@@ -50,7 +50,10 @@ export const env: ServerEnv = {
   r2Bucket: process.env.R2_BUCKET ?? 'ai-music-private',
   audioMinBitrateKbps: num(process.env.AUDIO_MIN_BITRATE_KBPS, 256),
   audioMaxDurationSeconds: num(process.env.AUDIO_MAX_DURATION_SECONDS, 900),
-  audioMaxUploadBytes: Math.min(num(process.env.AUDIO_MAX_UPLOAD_BYTES, 25 * 1024 * 1024), 25 * 1024 * 1024),
+  audioMaxUploadBytes: Math.min(
+    num(process.env.AUDIO_MAX_UPLOAD_BYTES, 25 * 1024 * 1024),
+    25 * 1024 * 1024,
+  ),
   audioTargetBitrateKbps: num(process.env.AUDIO_TARGET_BITRATE_KBPS, 320),
   uploadDailyLimit: num(process.env.UPLOAD_DAILY_LIMIT, 5),
   mediaWorkerSecret: process.env.MEDIA_WORKER_SECRET ?? '',

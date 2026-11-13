@@ -11,7 +11,13 @@ import { Button } from '@/components/ui/Button';
 
 type Decision = 'approve' | 'reject' | 'request_changes';
 
-export function AdminTrackDecision({ trackId, audioReady = false }: { trackId: string; audioReady?: boolean }) {
+export function AdminTrackDecision({
+  trackId,
+  audioReady = false,
+}: {
+  trackId: string;
+  audioReady?: boolean;
+}) {
   const t = useT();
   const router = useRouter();
   const { toast } = useToast();
@@ -28,7 +34,10 @@ export function AdminTrackDecision({ trackId, audioReady = false }: { trackId: s
       toast(t('admin.decisionRecorded'), 'success');
       router.refresh();
     } catch (error) {
-      toast(error instanceof Error ? error.message : 'Could not record the decision.', 'error');
+      toast(
+        error instanceof Error ? error.message : 'Could not record the decision.',
+        'error',
+      );
     } finally {
       setPending(null);
     }

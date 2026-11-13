@@ -58,7 +58,12 @@ export default async function AdminDashboard({
 
   return (
     <div className="space-y-8">
-      <Link href={`/${locale}/admin/track-changes`} className="inline-flex rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/15 px-5 py-3 text-sm font-bold text-fuchsia-200 hover:bg-fuchsia-500/25">Review lyrics & cover artwork requests →</Link>
+      <Link
+        href={`/${locale}/admin/track-changes`}
+        className="inline-flex rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/15 px-5 py-3 text-sm font-bold text-fuchsia-200 hover:bg-fuchsia-500/25"
+      >
+        Review lyrics & cover artwork requests →
+      </Link>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((stat) => (
           <Stat
