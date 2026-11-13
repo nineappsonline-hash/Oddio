@@ -20,7 +20,7 @@ export default async function LocaleNotFound({
       </p>
       <Link
         href={`/${locale}`}
-        className="mt-5 rounded-pill bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-strong"
+        className="mt-5 inline-flex min-h-11 items-center justify-center rounded-pill bg-primary px-5 py-2.5 text-sm font-semibold text-[#211518] hover:bg-primary-strong"
       >
         {locale === 'ar' ? 'ارجع للرئيسية' : 'Back to home'}
       </Link>
