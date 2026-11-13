@@ -1,0 +1,39 @@
+name: Phase 6 source formatting (review branch only)
+
+on:
+  push:
+    branches:
+      - feature/oddio-release-qa-v6
+    paths:
+      - '.github/workflows/format-phase6.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.repository == 'jimmydodo/oddio'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/oddio-release-qa-v6
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Normalize repo with pinned Prettier
+        run: npm run format
+      - name: Commit formatting-only updates on review branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if git diff --cached --quiet; then
+            echo "No formatting differences."
+          else
+            git commit -m "style: normalize formatting across Oddio workspace"
+            git push origin HEAD:feature/oddio-release-qa-v6
+          fi
