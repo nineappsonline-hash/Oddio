@@ -1,0 +1,36 @@
+name: Temporary format Oddio editorial redesign
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.repository == 'jimmydodo/oddio' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'design/oddio-editorial-layout-v9'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: design/oddio-editorial-layout-v9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format changed design files
+        run: |
+          npx prettier --write 'apps/web/src/app/[locale]/page.tsx' apps/web/src/app/globals.css apps/web/src/components/layout/AppShell.tsx apps/web/src/components/layout/DesktopTopBar.tsx apps/web/src/components/layout/ListeningRail.tsx apps/web/src/components/layout/Sidebar.tsx apps/web/src/components/player/PlayerBar.tsx
+          npm run format:check
+      - name: Commit style-only corrections
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if ! git diff --cached --quiet; then
+            git commit -m "style: normalize actual Oddio dashboard redesign"
+            git push origin HEAD:design/oddio-editorial-layout-v9
+          fi
