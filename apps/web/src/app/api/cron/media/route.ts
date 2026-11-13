@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { serviceClient } from '@/lib/data/supabase-store';
 import { presignR2Head, presignR2StreamingPut } from '@/lib/storage/r2-presign';
 import { env } from '@/lib/env';
+import { expiredMediaLease, mayClaimMediaJob } from '@/lib/media/job-lease';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -13,22 +14,54 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const db = serviceClient();
+  // Recover abandoned leases before picking new work. An invocation may be
+  // killed by the hosting runtime while a job remains marked "running".
+  // Do not reset live leases, and never retry jobs past their maximum attempts.
+  const cutoff = new Date(Date.now() - 20 * 60_000).toISOString();
+  const { data: stale, error: staleError } = await db
+    .from('jobs')
+    .select('id,state,attempts,max_attempts,updated_at')
+    .eq('type', 'media.transcode')
+    .eq('state', 'running')
+    .lt('updated_at', cutoff)
+    .order('updated_at')
+    .limit(10);
+  if (staleError) return NextResponse.json({ error: 'Lease recovery unavailable' }, { status: 503 });
+  for (const job of stale ?? []) {
+    const nextState = expiredMediaLease(job);
+    if (!nextState) continue;
+    await db.from('jobs')
+      .update({
+        state: nextState,
+        next_run_at: new Date().toISOString(),
+        last_error: nextState === 'dead'
+          ? 'Processing exceeded its retry limit after a stale lease.'
+          : 'Recovered an abandoned media-processing lease.',
+      })
+      .eq('id', job.id)
+      .eq('state', 'running')
+      .eq('updated_at', job.updated_at);
+  }
+
   const { data: jobs, error } = await db
     .from('jobs')
-    .select('id,entity_id,payload,attempts')
+    .select('id,entity_id,payload,attempts,max_attempts,state')
     .eq('type', 'media.transcode')
-    .eq('state', 'queued')
+    .in('state', ['queued', 'failed'])
     .lte('next_run_at', new Date().toISOString())
     .order('created_at')
-    .limit(2);
+    .limit(10);
   if (error) return NextResponse.json({ error: 'Queue unavailable' }, { status: 503 });
   const results: Array<{ id: string; status: string }> = [];
   for (const job of jobs || []) {
+    if (results.length >= 2) break;
+    if (!mayClaimMediaJob(job)) continue;
     const { data: claimed } = await db
       .from('jobs')
       .update({ state: 'running', attempts: (job.attempts || 0) + 1 })
       .eq('id', job.id)
-      .eq('state', 'queued')
+      .eq('state', job.state)
+      .eq('attempts', job.attempts)
       .select('id')
       .maybeSingle();
     if (!claimed) continue;
@@ -86,10 +119,17 @@ export async function GET(request: Request) {
       results.push({ id: job.id, status: 'completed' });
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : 'Processing failed';
+      const retryAllowed = (job.attempts || 0) + 1 < (job.max_attempts || 3);
+      const retryDelaySeconds = Math.min(3600, 30 * 2 ** Math.max(0, job.attempts || 0));
       await db
         .from('jobs')
-        .update({ state: 'failed', last_error: message.slice(0, 500) })
-        .eq('id', job.id);
+        .update({
+          state: retryAllowed ? 'failed' : 'dead',
+          last_error: message.slice(0, 500),
+          next_run_at: new Date(Date.now() + retryDelaySeconds * 1000).toISOString(),
+        })
+        .eq('id', job.id)
+        .eq('state', 'running');
       results.push({ id: job.id, status: 'failed' });
     }
   }
