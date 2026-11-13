@@ -23,7 +23,9 @@
     "format:check": "prettier --check .",
     "setup:demo": "node scripts/setup-demo.mjs",
     "worker:media": "node workers/media/src/index.mjs",
-    "test:db": "bash scripts/test-db.sh"
+    "test:db": "bash scripts/test-db.sh",
+    "release:preflight": "node scripts/release-env-preflight.mjs",
+    "test:release-env": "node --test scripts/release-env-preflight.test.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
