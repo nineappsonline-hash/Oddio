@@ -135,7 +135,7 @@ export async function GET(request: Request) {
       }
       await db
         .from('jobs')
-        .update({ state: 'succeeded', last_error: null })
+        .update({ state: 'succeeded', last_error: '' })
         .eq('id', job.id);
       results.push({ id: job.id, status: 'completed' });
     } catch (caught) {
