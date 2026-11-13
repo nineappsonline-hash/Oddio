@@ -93,7 +93,7 @@ export function TrackRow({
       <div className="min-w-0">
         <span className="flex items-center gap-1.5">
           <Link
-            href={`/tracks/${track.id}-${track.slug}`}
+            href={`/${locale}/tracks/${track.id}-${track.slug}`}
             className={cn(
               'block truncate text-sm font-semibold transition hover:underline',
               isCurrent ? 'text-primary' : 'text-ink group-hover:text-ink',
@@ -111,7 +111,7 @@ export function TrackRow({
         </span>
         {showArtist && track.artist ? (
           <Link
-            href={`/artists/${track.artist.slug}`}
+            href={`/${locale}/artists/${track.artist.slug}`}
             className="block truncate text-xs text-muted transition hover:text-ink"
           >
             {track.artist.name}
