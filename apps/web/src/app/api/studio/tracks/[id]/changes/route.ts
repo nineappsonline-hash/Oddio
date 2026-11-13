@@ -18,15 +18,29 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const form = await request.formData();
   const file = form.get('file');
   const kind = form.get('kind');
-  if (!(file instanceof File) || !['srt','artwork'].includes(String(kind))) throw Errors.invalid('Choose a valid file and change type.');
+  const action = form.get('action');
+  if (!['srt','artwork','lyrics_text'].includes(String(kind))) throw Errors.invalid('Choose a valid change type.');
+  if (kind === 'artwork' && !(file instanceof File)) throw Errors.invalid('Choose an image file.');
   let payload: Record<string,string> = {};
   if (kind === 'srt') {
-    if (file.size > 256*1024 || !/\.srt$/i.test(file.name)) throw Errors.invalid('SRT file must be 256 KB or smaller.');
+    if (action === 'remove') {
+      const {data:current} = await db.from('tracks').select('synced_lyrics_srt').eq('id',id).single();
+      if (!current?.synced_lyrics_srt) throw Errors.invalid('There are no approved synced lyrics to remove.');
+      payload = {srt_content:''};
+    } else {
+    if (!(file instanceof File) || file.size > 256*1024 || !/\.srt$/i.test(file.name)) throw Errors.invalid('SRT file must be 256 KB or smaller.');
     const raw = (await file.text()).replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n').trim();
     const blocks = raw.split(/\n\s*\n/);
     if (!blocks.length || blocks.length > 3000 || !blocks.every(block => /(?:^|\n)\d{2}:\d{2}:\d{2},\d{3}\s*-->\s*\d{2}:\d{2}:\d{2},\d{3}(?:\n|$)/.test(block))) throw Errors.invalid('Invalid SRT timestamps.');
     payload = {srt_content:raw};
+    }
+  } else if (kind === 'lyrics_text') {
+    const raw = String(form.get('text') ?? '').trim();
+    if (raw.length > 30000) throw Errors.invalid('Lyrics must be under 30,000 characters.');
+    if (!raw && action !== 'remove') throw Errors.invalid('Paste lyrics before submitting.');
+    payload = {srt_content:raw};
   } else {
+    if (!(file instanceof File)) throw Errors.invalid('Choose an image file.');
     const extensions:Record<string,string> = {'image/png':'png','image/jpeg':'jpg','image/webp':'webp'};
     const ext = extensions[file.type];
     if (!ext || file.size > 5*1024*1024 || !file.size) throw Errors.invalid('Artwork must be PNG, JPG or WEBP under 5 MB.');
