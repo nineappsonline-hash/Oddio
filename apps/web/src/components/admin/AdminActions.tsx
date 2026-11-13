@@ -19,6 +19,10 @@ export function AdminTrackDecision({ trackId, audioReady = false }: { trackId: s
   const [pending, setPending] = useState<Decision | null>(null);
 
   async function decide(decision: Decision) {
+    if (decision !== 'approve' && reason.trim().length < 10) {
+      toast('Please provide a clear explanation (at least 10 characters).', 'error');
+      return;
+    }
     setPending(decision);
     try {
       await apiRequest(`/api/admin/tracks/${trackId}/decision`, {
@@ -158,6 +162,10 @@ export function AdminReportActions({ reportId }: { reportId: string }) {
   const [pending, setPending] = useState<'resolve' | 'dismiss' | null>(null);
 
   async function act(resolution: 'resolve' | 'dismiss') {
+    if (notes.trim().length < 10) {
+      toast('Explain the decision (at least 10 characters) before closing a report.', 'error');
+      return;
+    }
     setPending(resolution);
     try {
       await apiRequest(`/api/admin/reports/${reportId}/resolve`, {
