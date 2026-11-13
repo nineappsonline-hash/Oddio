@@ -5,6 +5,11 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { assessAudioQuality } from '@ai-music/audio';
 import { trackDraftInput } from '@ai-music/contracts';
+import {
+  assertUploadAttestations,
+  RIGHTS_AUDIT_ACTION,
+} from '@/lib/moderation/upload-attestations';
+import { audit } from '@/lib/data/db';
 import { audioPolicy, env, demoMode } from '@/lib/env';
 import { probeAudio, transcodeToMp3 } from '@/lib/audio/probe';
 import { mutateDb, uploadDir } from '@/lib/data/db';
@@ -59,6 +64,10 @@ export async function POST(request: Request) {
     rateLimit(`upload:${user.id}`, 12, 60 * 60_000);
 
     const form = await request.formData();
+    assertUploadAttestations({
+      rightsConfirmed: field(form, 'rightsConfirmed'),
+      voiceConfirmed: field(form, 'voiceConfirmed'),
+    });
     const audioFile = form.get('audio');
     if (!(audioFile instanceof File) || audioFile.size === 0) {
       throw Errors.invalid('Choose an audio file to upload');
@@ -105,13 +114,17 @@ export async function POST(request: Request) {
 
     const sha256 = crypto.createHash('sha256').update(buffer).digest('hex');
     const extension = (probe.format || 'mp3').replace('mpeg', 'mp3');
-    const originalPath = path.join(dir, `${sha256}.original.${extension}`);
+    const uploadKey = crypto.randomUUID();
+    const originalPath = path.join(dir, `${sha256}-${uploadKey}.original.${extension}`);
     fs.renameSync(tempPath, originalPath);
     created[created.length - 1] = originalPath;
 
     let playablePath = originalPath;
     if (decision.transcodeTarget) {
-      const renditionPath = path.join(dir, `${sha256}-${decision.transcodeTarget}.mp3`);
+      const renditionPath = path.join(
+        dir,
+        `${sha256}-${uploadKey}-${decision.transcodeTarget}.mp3`,
+      );
       await transcodeToMp3(
         originalPath,
         renditionPath,
@@ -142,8 +155,8 @@ export async function POST(request: Request) {
         ? new Date(parsed.releaseAt).toISOString()
         : null;
 
-    const track = mutateDb((db) =>
-      createTrackFromUpload(db, user, {
+    const track = mutateDb((db) => {
+      const createdTrack = createTrackFromUpload(db, user, {
         artistId: parsed.artistId,
         albumId: parsed.albumId || null,
         title: parsed.title,
@@ -177,8 +190,17 @@ export async function POST(request: Request) {
         },
         idempotencyKey: `upload:${user.id}:${sha256}:${new Date().toISOString().slice(0, 10)}`,
         dailyLimit: env.uploadDailyLimit,
-      }),
-    );
+      });
+      if (
+        !db.auditLogs.some(
+          (entry) =>
+            entry.entityId === createdTrack.id && entry.action === RIGHTS_AUDIT_ACTION,
+        )
+      ) {
+        audit(db, user, RIGHTS_AUDIT_ACTION, 'track', createdTrack.id);
+      }
+      return createdTrack;
+    });
 
     return jsonOk({
       track,

@@ -18,7 +18,7 @@ html {
 body {
   min-height: 100dvh;
   overflow-x: hidden;
-  background-color: #090912;
+  background-color: #100c0d;
   background-image:
     radial-gradient(1100px 600px at 12% -10%, rgba(157, 92, 255, 0.16), transparent 60%),
     radial-gradient(900px 500px at 90% 0%, rgba(65, 217, 255, 0.08), transparent 55%),
@@ -44,7 +44,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid #9d5cff;
+  outline: 2px solid #eab997;
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -79,7 +79,7 @@ a {
   }
 
   .chip {
-    @apply inline-flex items-center gap-2 rounded-pill border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-muted transition hover:border-primary/50 hover:text-ink;
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-muted transition hover:border-primary/50 hover:text-ink;
   }
 
   .chip-active {
@@ -87,7 +87,7 @@ a {
   }
 
   .heading-gradient {
-    background: linear-gradient(110deg, #f5f5fa 10%, #c7a8ff 45%, #41d9ff 90%);
+    background: linear-gradient(110deg, #f5f5fa 10%, #eab997 45%, #b79a88 90%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -132,7 +132,7 @@ input[type='range']::-webkit-slider-thumb {
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  background: #9d5cff;
+  background: #eab997;
   box-shadow: 0 0 0 4px rgba(157, 92, 255, 0.18);
 }
 
@@ -141,7 +141,7 @@ input[type='range']::-moz-range-thumb {
   height: 12px;
   border: 0;
   border-radius: 999px;
-  background: #9d5cff;
+  background: #eab997;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -275,10 +275,10 @@ input[type='range']::-moz-range-thumb {
   background-image: linear-gradient(
     110deg,
     #ffffff 0%,
-    #e8dcff 22%,
-    #b58bff 42%,
-    #41d9ff 64%,
-    #ffb4a8 84%,
+    #f7d7bf 22%,
+    #eab997 42%,
+    #b79a88 64%,
+    #e9c1ab 84%,
     #ffffff 100%
   );
   background-size: 220% auto;
@@ -695,4 +695,84 @@ input[type='range']::-moz-range-thumb {
   .studio-motion-card::before {
     display: none;
   }
+}
+
+/* Oddio editorial identity: quiet surfaces, legible controls, motion only when helpful. */
+:root {
+  color-scheme: dark;
+}
+body {
+  background-color: #100c0d;
+  background-image:
+    radial-gradient(850px 520px at 83% -12%, rgba(110, 38, 53, 0.24), transparent 69%),
+    radial-gradient(900px 650px at 0% 100%, rgba(186, 111, 84, 0.08), transparent 72%);
+}
+::selection {
+  background: #8e5549;
+  color: #fff9f4;
+}
+:focus-visible {
+  outline-color: #eab997;
+  outline-width: 3px;
+  outline-offset: 3px;
+}
+@layer components {
+  .card {
+    background: linear-gradient(156deg, rgba(48, 32, 36, 0.97), rgba(29, 20, 23, 0.98));
+  }
+  .surface {
+    background: linear-gradient(145deg, rgba(45, 29, 34, 0.93), rgba(25, 18, 20, 0.98));
+  }
+  .chip-active {
+    background-color: rgba(234, 185, 151, 0.15);
+  }
+}
+.oddio-editorial-hero {
+  background:
+    radial-gradient(ellipse at 79% 24%, rgba(190, 105, 79, 0.16), transparent 58%),
+    linear-gradient(125deg, #251519 4%, #391b25 60%, #181113 100%);
+  border: 1px solid rgba(234, 185, 151, 0.22);
+}
+.oddio-editorial-kicker {
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #eab997;
+}
+.oddio-editorial-headline {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+  color: #f8f0e9;
+}
+[dir='rtl'] .oddio-editorial-headline {
+  font-family: var(--font-cairo), sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.oddio-editorial-cover {
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  transform: rotate(4deg);
+}
+@media (max-width: 639px) {
+  .oddio-editorial-cover {
+    transform: rotate(2deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob,
+  .hero-halo,
+  .hero-ring-dashed,
+  .hero-ring-dashed-reverse,
+  .text-glow-gradient {
+    animation: none !important;
+  }
+}
+
+/* Warm primary surfaces require dark icon/text contrast. */
+[class~='bg-primary'][class~='text-white'] {
+  color: #211518;
+}
+[class~='bg-primary'][class~='text-white']:hover {
+  color: #211518;
 }

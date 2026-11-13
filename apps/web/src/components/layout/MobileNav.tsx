@@ -62,6 +62,7 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
           <Menu className="h-5 w-5" />
         </button>
         <Link
+          prefetch={false}
           href={`/${locale}/search`}
           className="rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink"
           aria-label={t('nav.search')}
@@ -71,18 +72,24 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
         {currentUser ? (
           <>
             <Link
+              prefetch={false}
               href={`/${locale}/notifications`}
               className="rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink"
               aria-label={t('nav.notifications')}
             >
               <Bell className="h-5 w-5" />
             </Link>
-            <Link href={`/${locale}/settings`} aria-label={t('nav.settings')}>
+            <Link
+              prefetch={false}
+              href={`/${locale}/settings`}
+              aria-label={t('nav.settings')}
+            >
               <Avatar name={currentUser.displayName} className="h-8 w-8" />
             </Link>
           </>
         ) : (
           <Link
+            prefetch={false}
             href={`/${locale}/login`}
             className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-fuchsia-300/40 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500 px-4 py-2 text-xs font-bold text-white shadow-[0_5px_22px_rgba(192,38,211,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(192,38,211,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-300"
           >
@@ -114,7 +121,7 @@ export function MobileNav() {
 
   const items = [
     { href: `/${locale}`, label: t('nav.home'), icon: Home, exact: true },
-    { href: `/${locale}/discover`, label: t('nav.discover'), icon: Compass },
+    { href: `/${locale}/soundspace`, label: 'Soundspace', icon: Compass },
     { href: `/${locale}/search`, label: t('nav.search'), icon: Search },
     user
       ? {
@@ -144,6 +151,7 @@ export function MobileNav() {
           const Icon = item.icon;
           return (
             <Link
+              prefetch={false}
               key={item.href + item.label}
               href={item.href}
               aria-current={active ? 'page' : undefined}
@@ -214,6 +222,7 @@ export function MobileNav() {
             </div>
             {!user?.isArtistManager ? (
               <Link
+                prefetch={false}
                 href={`/${locale}/apply/artist`}
                 onClick={() => setMenuOpen(false)}
                 className="mb-4 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-400 to-fuchsia-500 px-4 py-4 font-black text-[#241029] shadow-[0_8px_30px_rgba(244,114,182,0.25)]"
@@ -229,6 +238,11 @@ export function MobileNav() {
               {[
                 { href: `/${locale}`, label: t('nav.home'), icon: Home },
                 { href: `/${locale}/discover`, label: t('nav.discover'), icon: Compass },
+                {
+                  href: `/${locale}/soundspace`,
+                  label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace',
+                  icon: Compass,
+                },
                 { href: `/${locale}/charts`, label: t('nav.charts'), icon: BarChart3 },
                 { href: `/${locale}/search`, label: t('nav.search'), icon: Search },
                 ...(user
@@ -267,6 +281,7 @@ export function MobileNav() {
                   : []),
               ].map(({ href, label, icon: Icon }) => (
                 <Link
+                  prefetch={false}
                   key={href}
                   href={href}
                   onClick={() => setMenuOpen(false)}
@@ -282,6 +297,7 @@ export function MobileNav() {
             </div>
             {!user ? (
               <Link
+                prefetch={false}
                 href={`/${locale}/login`}
                 onClick={() => setMenuOpen(false)}
                 className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-sm font-black text-white shadow-lg"

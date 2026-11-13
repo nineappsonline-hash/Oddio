@@ -21,6 +21,12 @@ import {
 } from '@ai-music/db';
 import type { DemoDb } from './types';
 import { userIsArtistManager } from './db';
+import {
+  matchesMusicSearch,
+  normalizeMusicSearch,
+  searchRelevanceScore,
+  searchWords,
+} from '../music-search';
 
 export type CatalogTrack = TrackWithRelations & {
   isLiked: boolean;
@@ -240,16 +246,12 @@ export function searchCatalog(
   query: SearchQuery,
 ): SearchResults {
   const now = new Date();
-  const term = query.q.toLowerCase().trim();
-  const tokens = term.split(/\s+/).filter(Boolean);
+  const term = normalizeMusicSearch(query.q);
+  const tokens = searchWords(query.q);
   const listable = listableTracks(db, viewer, now);
   const artistById = new Map(db.artists.map((artist) => [artist.id, artist]));
 
-  const matches = (haystack: string): boolean => {
-    if (tokens.length === 0) return true;
-    const value = haystack.toLowerCase();
-    return tokens.every((token) => value.includes(token));
-  };
+  const matches = (haystack: string): boolean => matchesMusicSearch(haystack, tokens);
 
   let tracks = listable.filter((track) => {
     const genre = track.genre;
@@ -285,14 +287,27 @@ export function searchCatalog(
     tracks = [...tracks].sort((a, b) => b.qualifiedPlays - a.qualifiedPlays);
   } else {
     tracks = [...tracks].sort((a, b) => {
-      const aExact = a.title.toLowerCase() === term ? 1 : 0;
-      const bExact = b.title.toLowerCase() === term ? 1 : 0;
-      if (aExact !== bExact) return bExact - aExact;
+      const aScore = searchRelevanceScore(
+        term,
+        a.title,
+        a.artist?.name ?? '',
+        a.description,
+      );
+      const bScore = searchRelevanceScore(
+        term,
+        b.title,
+        b.artist?.name ?? '',
+        b.description,
+      );
+      if (aScore !== bScore) return bScore - aScore;
       return b.qualifiedPlays - a.qualifiedPlays;
     });
   }
 
-  const offset = query.cursor ? Math.max(0, Number.parseInt(query.cursor, 10) || 0) : 0;
+  const offset =
+    query.cursor && /^\d+$/.test(query.cursor)
+      ? Math.min(100_000, Number(query.cursor))
+      : 0;
   const limit = query.limit ?? 20;
   const page = tracks.slice(offset, offset + limit);
   const nextCursor = offset + limit < tracks.length ? String(offset + limit) : null;

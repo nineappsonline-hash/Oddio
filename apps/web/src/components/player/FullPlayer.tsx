@@ -77,6 +77,8 @@ export function FullPlayer() {
   const track = usePlayer((state) => state.track);
   const queue = usePlayer((state) => state.queue);
   const isPlaying = usePlayer((state) => state.isPlaying);
+  const error = usePlayer((state) => state.error);
+  const retryPlayback = usePlayer((state) => state.retryPlayback);
   const currentTime = usePlayer((state) => state.currentTime);
   const duration = usePlayer((state) => state.duration);
   const volume = usePlayer((state) => state.volume);
@@ -201,7 +203,7 @@ export function FullPlayer() {
                 </h1>
                 {track.artist ? (
                   <Link
-                    href={`/artists/${track.artist.slug}`}
+                    href={`/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
                     className="text-sm text-muted transition hover:text-ink"
                   >
                     {track.artist.name}
@@ -234,6 +236,21 @@ export function FullPlayer() {
               </div>
             </div>
 
+            {error ? (
+              <div
+                role="alert"
+                className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-danger/25 bg-danger/10 p-3 text-sm text-ink"
+              >
+                <span>{rtl ? 'تعذّر تشغيل الأغنية.' : 'Playback failed.'}</span>
+                <button
+                  type="button"
+                  onClick={retryPlayback}
+                  className="rounded-full border border-primary/50 px-4 py-2 font-bold text-primary hover:bg-primary/10"
+                >
+                  {t('common.retry')}
+                </button>
+              </div>
+            ) : null}
             <div className="mt-6">
               <input
                 type="range"
@@ -370,7 +387,7 @@ export function FullPlayer() {
                 className={cn(
                   'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
                   sideTab === 'lyrics'
-                    ? 'bg-fuchsia-500/25 text-fuchsia-200 ring-1 ring-fuchsia-400/30'
+                    ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
                     : 'text-muted hover:bg-white/5 hover:text-ink',
                 )}
               >
@@ -384,7 +401,7 @@ export function FullPlayer() {
                 className={cn(
                   'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
                   sideTab === 'queue'
-                    ? 'bg-fuchsia-500/25 text-fuchsia-200 ring-1 ring-fuchsia-400/30'
+                    ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
                     : 'text-muted hover:bg-white/5 hover:text-ink',
                 )}
               >
@@ -412,7 +429,7 @@ export function FullPlayer() {
                         className={cn(
                           'block w-full rounded-xl px-4 py-3 text-start text-base leading-relaxed transition hover:bg-white/10',
                           index === activeCue
-                            ? 'bg-fuchsia-500/20 font-black text-fuchsia-200 ring-1 ring-fuchsia-400/20'
+                            ? 'bg-primary/15 font-black text-primary ring-1 ring-primary/20'
                             : 'text-muted',
                         )}
                       >
@@ -422,7 +439,7 @@ export function FullPlayer() {
                   </div>
                 ) : (
                   <div className="flex min-h-56 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/15 px-6 text-center">
-                    <Mic2 className="h-8 w-8 text-fuchsia-300/70" />
+                    <Mic2 className="h-8 w-8 text-primary/70" />
                     <p className="text-sm font-bold text-ink">
                       {rtl ? 'الكلمات غير متاحة حاليًا' : 'Lyrics aren’t available yet'}
                     </p>

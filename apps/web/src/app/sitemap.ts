@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getSitemapEntries } from '@/lib/data/queries';
 import { absoluteUrl } from '@/lib/utils';
 import { locales } from '@/i18n/config';
@@ -12,8 +14,8 @@ function languages(path: string) {
   );
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const db = readDb();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const entries = getSitemapEntries(db);
   const now = new Date();
   const items: MetadataRoute.Sitemap = [];
@@ -21,6 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPaths = [
     '',
     '/discover',
+    '/soundspace',
     '/charts',
     '/apply/artist',
     '/legal/terms',
