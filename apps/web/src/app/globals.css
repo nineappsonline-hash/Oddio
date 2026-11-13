@@ -1008,3 +1008,24 @@ body {
 @media(prefers-reduced-motion:reduce) {
   .oddio-spinning-record { animation:none; }
 }
+
+/* The player is part of the music desk, even before a track is selected. */
+.oddio-idle-player {
+  position:fixed; inset-inline:0;bottom:64px;z-index:40;display:flex;align-items:center;
+  height:76px;padding:12px 20px;gap:14px;
+  border-top:1px solid #eab99725;background:#191319f0;box-shadow:0 -15px 38px #0005;
+  backdrop-filter:blur(22px);
+}
+.oddio-idle-cover { display:grid;place-items:center;width:48px;height:48px;flex-shrink:0;border-radius:11px;color:#e5b99c;background:linear-gradient(135deg,#51303d,#2b1b27);border:1px solid #eab99730; }
+.oddio-idle-details { display:flex;flex-direction:column;gap:5px;min-width:0; }
+.oddio-idle-details strong { color:#faf0e8;font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.oddio-idle-details span { color:#a99494;font-size:10px; }
+.oddio-idle-controls { display:flex;align-items:center;gap:20px;margin-inline:auto;color:#b7a5a3; }
+.oddio-idle-play { display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#eab997;color:#2d1922; }
+.oddio-idle-track { display:none;flex:1;max-width:190px;height:3px;border-radius:99px;background:#4a3a42; }
+.oddio-idle-track span { display:block;width:25%;height:100%;border-radius:99px;background:#b48880; }
+.oddio-idle-watermark { display:none;margin-inline-start:auto;color:#8e777b;font-size:9px;font-weight:850;letter-spacing:.16em; }
+@media(min-width:768px) { .oddio-idle-track { display:block; } .oddio-idle-watermark { display:block; } }
+@media(min-width:1024px) { .oddio-idle-player { inset-inline-start:244px;bottom:0;height:85px; } }
+@media(min-width:1536px) { .oddio-idle-player { inset-inline-end:300px; } }
+@media(max-width:480px) { .oddio-idle-controls { gap:10px;margin-inline-end:0; } .oddio-idle-play { width:35px;height:35px; } }
