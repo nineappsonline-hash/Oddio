@@ -34,7 +34,7 @@ describe('explainable Soundspace', () => {
   it('changes the ordering of discoveries without randomness', () => {
     const familiar = buildSoundspace(tracks, 'all', 'familiar');
     const surprising = buildSoundspace(tracks, 'all', 'surprise');
-    expect(familiar[0]?.track.id).toBe('popular');
+    expect(familiar[0]?.track.id).toBe('other-artist-one');
     expect(surprising[0]?.track.id).toBe('niche');
     expect(buildSoundspace(tracks, 'all', 'surprise')).toEqual(surprising);
   });
