@@ -525,6 +525,11 @@ export function createTrackFromUpload(
     const existingTrack = db.tracks.find((track) => track.id === existingEvent.trackId);
     if (existingTrack) return existingTrack;
   }
+  if (input.audio.sha256 && db.tracks.some((existing) =>
+    existing.audio?.sha256 === input.audio.sha256 && existing.audio?.kind === 'original'
+  )) {
+    throw Errors.conflict('This exact audio file has already been submitted.');
+  }
   const quota = evaluateUploadQuota(
     db.uploadEvents.map((event) => ({
       userId: event.userId,
