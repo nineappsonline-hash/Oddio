@@ -23,7 +23,7 @@ jobs:
       - run: npm ci
       - name: Format changed design files
         run: |
-          npx prettier --write 'apps/web/src/app/[locale]/page.tsx' apps/web/src/app/globals.css apps/web/src/components/layout/AppShell.tsx apps/web/src/components/layout/DesktopTopBar.tsx apps/web/src/components/layout/ListeningRail.tsx apps/web/src/components/layout/Sidebar.tsx apps/web/src/components/player/PlayerBar.tsx
+          npx prettier --write 'apps/web/src/app/[locale]/page.tsx' apps/web/src/app/globals.css apps/web/src/components/layout/AppShell.tsx apps/web/src/components/layout/DesktopTopBar.tsx apps/web/src/components/layout/ListeningRail.tsx apps/web/src/components/layout/Sidebar.tsx apps/web/src/components/layout/MobileNav.tsx apps/web/src/components/player/PlayerBar.tsx
           npm run format:check
       - name: Commit style-only corrections
         run: |
