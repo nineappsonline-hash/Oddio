@@ -4,6 +4,8 @@ import type { Locale } from '@ai-music/contracts';
 import { searchQuery } from '@ai-music/contracts';
 import { getHomeData, searchCatalog } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -48,7 +50,7 @@ export default async function DiscoverPage({
   const t = createTranslator(locale);
   const sp = await searchParams;
   const viewer = await getViewer();
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const home = getHomeData(db, viewer);
 
   const parsed = searchQuery.safeParse({
@@ -58,15 +60,21 @@ export default async function DiscoverPage({
     language: first(sp.language) || undefined,
     country: first(sp.country) || undefined,
     sort: first(sp.sort) ?? 'relevant',
-    limit: 50,
+    limit: 25,
+    cursor: first(sp.cursor),
   });
   const query = parsed.success ? parsed.data : searchQuery.parse({});
   const results = searchCatalog(db, viewer, query);
   const genreLabel = (item: { labelEn: string; labelAr: string }) =>
     locale === 'ar' ? item.labelAr : item.labelEn;
-  const activeFilters = [query.genre, query.mood, query.language, query.country].filter(
-    Boolean,
-  );
+  const activeFilters = [
+    query.q,
+    query.genre,
+    query.mood,
+    query.language,
+    query.country,
+    query.sort !== 'relevant' ? query.sort : '',
+  ].filter(Boolean);
 
   return (
     <div>
@@ -77,6 +85,17 @@ export default async function DiscoverPage({
         className="card mb-8 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5"
         action={`/${locale}/discover`}
       >
+        <label className="block text-xs font-semibold uppercase tracking-wide text-muted sm:col-span-2 lg:col-span-5">
+          {t('common.search')}
+          <input
+            type="search"
+            name="q"
+            defaultValue={query.q}
+            maxLength={120}
+            className="input mt-1.5 h-11"
+            placeholder={t('search.placeholder')}
+          />
+        </label>
         <label className="block text-xs font-semibold uppercase tracking-wide text-muted">
           {t('discover.genre')}
           <select
@@ -131,7 +150,7 @@ export default async function DiscoverPage({
         <div className="flex items-end gap-2">
           <button
             type="submit"
-            className="h-10 flex-1 rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-strong"
+            className="h-10 flex-1 rounded-lg bg-primary px-4 text-sm font-semibold text-[#211518] transition hover:bg-primary-strong"
           >
             {t('common.search')}
           </button>
@@ -172,6 +191,22 @@ export default async function DiscoverPage({
               />
             ))}
           </div>
+          {results.nextCursor ? (
+            <Link
+              href={`/${locale}/discover?${new URLSearchParams({
+                ...(query.q ? { q: query.q } : {}),
+                ...(query.genre ? { genre: query.genre } : {}),
+                ...(query.mood ? { mood: query.mood } : {}),
+                ...(query.language ? { language: query.language } : {}),
+                ...(query.country ? { country: query.country } : {}),
+                sort: query.sort,
+                cursor: results.nextCursor,
+              }).toString()}`}
+              className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-5 text-sm font-semibold text-primary hover:bg-primary/10"
+            >
+              {locale === 'ar' ? 'المزيد من الأغاني' : 'More tracks'}
+            </Link>
+          ) : null}
         </>
       )}
 
@@ -182,7 +217,7 @@ export default async function DiscoverPage({
             {results.artists.map((artist) => (
               <Link
                 key={artist.id}
-                href={`/artists/${artist.slug}`}
+                href={`/${locale}/artists/${artist.slug}`}
                 className="rounded-pill border border-white/10 bg-white/5 px-4 py-2 text-sm text-ink hover:border-primary/40"
               >
                 {artist.name}
