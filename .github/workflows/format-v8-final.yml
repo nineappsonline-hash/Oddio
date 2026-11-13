@@ -1,11 +1,10 @@
 name: One-time v8 final format normalization
 
 on:
-  push:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
     branches:
-      - feature/oddio-release-blockers-fix-v8
-    paths:
-      - '.github/workflows/format-v8-final.yml'
+      - feature/oddio-final-release-hardening-v7
 
 permissions:
   contents: write
