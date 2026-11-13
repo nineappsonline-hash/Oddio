@@ -12,12 +12,12 @@ import { Modal } from '@/components/ui/Modal';
 import { Field } from '@/components/ui/Field';
 
 const REASONS = [
-  { value: 'copyright', label: 'Copyright / rights' },
-  { value: 'impersonation', label: 'Impersonation' },
-  { value: 'explicit_content', label: 'Prohibited explicit content' },
-  { value: 'harassment', label: 'Harassment' },
-  { value: 'spam', label: 'Spam' },
-  { value: 'other', label: 'Other' },
+  { value: 'copyright', en: 'Copyright / rights', ar: 'حقوق النشر والتوزيع' },
+  { value: 'impersonation', en: 'Voice / identity impersonation', ar: 'انتحال صوت أو هوية' },
+  { value: 'explicit_content', en: 'Prohibited explicit content', ar: 'محتوى غير مسموح' },
+  { value: 'harassment', en: 'Harassment', ar: 'مضايقة' },
+  { value: 'spam', en: 'Spam', ar: 'محتوى مزعج أو مكرر' },
+  { value: 'other', en: 'Other', ar: 'سبب آخر' },
 ] as const;
 
 export function ReportButton({
@@ -31,6 +31,7 @@ export function ReportButton({
 }) {
   const { user } = useSession();
   const { locale, pathname } = useLocalePath();
+  const ar = locale === 'ar';
   const router = useRouter();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -52,9 +53,9 @@ export function ReportButton({
       });
       setOpen(false);
       setDetails('');
-      toast('Report submitted. Our moderators will review it.', 'success');
-    } catch {
-      toast('Could not submit the report.', 'error');
+      toast(ar ? 'تم إرسال البلاغ للمراجعة.' : 'Report submitted for moderator review.', 'success');
+    } catch (error) {
+      toast(error instanceof Error ? error.message : (ar ? 'تعذر إرسال البلاغ.' : 'Could not submit the report.'), 'error');
     } finally {
       setPending(false);
     }
@@ -69,19 +70,19 @@ export function ReportButton({
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title="Report content"
+        title={ar ? 'الإبلاغ عن محتوى' : 'Report content'}
         footer={
           <>
             <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
-              Cancel
+              {ar ? 'إلغاء' : 'Cancel'}
             </Button>
             <Button size="sm" onClick={submit} loading={pending}>
-              Submit report
+              {ar ? 'إرسال البلاغ' : 'Submit report'}
             </Button>
           </>
         }
       >
-        <Field label="Reason" htmlFor="report-reason">
+        <Field label={ar ? 'سبب البلاغ' : 'Reason'} htmlFor="report-reason">
           <select
             id="report-reason"
             className="input"
@@ -90,14 +91,14 @@ export function ReportButton({
           >
             {REASONS.map((item) => (
               <option key={item.value} value={item.value}>
-                {item.label}
+                {ar ? item.ar : item.en}
               </option>
             ))}
           </select>
         </Field>
         <Field
-          label="Details"
-          hint="Optional, but helpful for moderators."
+          label={ar ? 'التفاصيل' : 'Details'}
+          hint={ar ? 'اختياري، لكن يساعد فريق المراجعة.' : 'Optional, but helpful for moderators.'}
           htmlFor="report-details"
         >
           <textarea
@@ -106,7 +107,7 @@ export function ReportButton({
             value={details}
             maxLength={2000}
             onChange={(event) => setDetails(event.target.value)}
-            placeholder="Describe the issue…"
+            placeholder={ar ? 'وضح المشكلة باختصار…' : 'Describe the issue…'}
           />
         </Field>
       </Modal>
