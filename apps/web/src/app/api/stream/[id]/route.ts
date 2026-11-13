@@ -119,7 +119,7 @@ export async function GET(
     // RFC 9110 single byte ranges, including suffix requests from Safari and
     // other players. Reject multiple or malformed ranges rather than silently
     // serving a different slice.
-    const match = /^bytes=(\\d*)-(\\d*)$/.exec(range);
+    const match = /^bytes=(\d*)-(\d*)$/.exec(range);
     if (!match || (!match[1] && !match[2])) {
       return new NextResponse('Invalid range', {
         status: 416,
