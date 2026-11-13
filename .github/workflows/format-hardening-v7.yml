@@ -23,7 +23,7 @@ jobs:
       - run: npm ci
       - name: Format only release hardening edits
         run: |
-          npx prettier --write scripts/browser-release.mjs scripts/release-env-preflight.mjs scripts/release-env-preflight.test.mjs apps/web/src/lib/env.ts apps/web/src/lib/env.test.ts 'apps/web/src/app/[locale]/admin/reports/page.tsx' .github/workflows/ci.yml docs/oddio-release-gates.md package.json
+          npx prettier --write .github/workflows/format-hardening-v7.yml scripts/browser-release.mjs scripts/release-env-preflight.mjs scripts/release-env-preflight.test.mjs apps/web/src/lib/env.ts apps/web/src/lib/env.test.ts 'apps/web/src/app/[locale]/admin/reports/page.tsx' .github/workflows/ci.yml docs/oddio-release-gates.md package.json
           npm run format:check
       - name: Commit normalized files on review branch
         run: |
