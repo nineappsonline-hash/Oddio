@@ -5,10 +5,13 @@
  * real Supabase/R2 account flows or audible audio playback.
  */
 import assert from 'node:assert/strict';
-import { chromium } from 'playwright';
+import { chromium, firefox, webkit } from 'playwright';
 
 const base = (process.env.SMOKE_BASE_URL || 'http://127.0.0.1:3100').replace(/\/$/, '');
-const browser = await chromium.launch({ headless: true });
+const engines = { chromium, firefox, webkit };
+const engine = process.env.BROWSER_ENGINE || 'chromium';
+if (!(engine in engines)) throw new Error('Unsupported browser test engine');
+const browser = await engines[engine].launch({ headless: true });
 let failures = 0;
 const tests = [];
 async function test(name, fn) {
@@ -31,7 +34,7 @@ try {
       { width: 1366, height: 900 },
       { width: 390, height: 844 },
     ]) {
-      const label = `${locale}/${viewport.width === 390 ? 'mobile' : 'desktop'}`;
+      const label = `${engine}/${locale}/${viewport.width === 390 ? 'mobile' : 'desktop'}`;
       const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
       const page = await context.newPage();
       const pageErrors = [];
