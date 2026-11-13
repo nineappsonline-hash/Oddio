@@ -4,6 +4,8 @@ import type { Locale } from '@ai-music/contracts';
 import { searchQuery } from '@ai-music/contracts';
 import { searchCatalog } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -44,10 +46,12 @@ export default async function SearchPage({
   const t = createTranslator(locale);
   const sp = await searchParams;
   const q = typeof sp.q === 'string' ? sp.q : '';
-  const parsed = searchQuery.safeParse({ q, limit: 50 });
+  const cursor =
+    typeof sp.cursor === 'string' && /^\d+$/.test(sp.cursor) ? sp.cursor : undefined;
+  const parsed = searchQuery.safeParse({ q, limit: 25, cursor });
   const query = parsed.success ? parsed.data : searchQuery.parse({});
   const viewer = await getViewer();
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const results = query.q ? searchCatalog(db, viewer, query) : null;
 
   return (
@@ -61,11 +65,10 @@ export default async function SearchPage({
           placeholder={t('search.placeholder')}
           aria-label={t('search.title')}
           className="input h-12 flex-1 text-base"
-          autoFocus
         />
         <button
           type="submit"
-          className="h-12 rounded-lg bg-primary px-6 text-sm font-semibold text-white hover:bg-primary-strong"
+          className="h-12 rounded-lg bg-primary px-6 text-sm font-semibold text-[#211518] hover:bg-primary-strong"
         >
           {t('common.search')}
         </button>
@@ -76,7 +79,15 @@ export default async function SearchPage({
       ) : results.total === 0 &&
         results.artists.length === 0 &&
         results.albums.length === 0 ? (
-        <EmptyState title={t('common.noResults')} body={q} />
+        <div className="space-y-3">
+          <EmptyState title={t('common.noResults')} body={q} />
+          <Link
+            href={`/${locale}/discover`}
+            className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary"
+          >
+            {locale === 'ar' ? 'استكشف الأغاني والتصنيفات' : 'Browse genres and moods'}
+          </Link>
+        </div>
       ) : (
         <div className="space-y-10">
           {results.tracks.length > 0 ? (
@@ -93,6 +104,14 @@ export default async function SearchPage({
                   />
                 ))}
               </div>
+              {results.nextCursor ? (
+                <Link
+                  href={`/${locale}/search?q=${encodeURIComponent(query.q)}&cursor=${results.nextCursor}`}
+                  className="mt-4 inline-flex min-h-11 items-center rounded-full border border-primary/40 px-5 text-sm font-semibold text-primary hover:bg-primary/10"
+                >
+                  {locale === 'ar' ? 'عرض المزيد من الأغاني' : 'More tracks'}
+                </Link>
+              ) : null}
             </section>
           ) : null}
 
@@ -114,7 +133,7 @@ export default async function SearchPage({
                 {results.albums.map((album) => (
                   <Link
                     key={album.id}
-                    href={`/albums/${album.id}`}
+                    href={`/${locale}/albums/${album.id}`}
                     className="flex items-center justify-between p-3 text-sm hover:bg-white/5"
                   >
                     <span className="font-semibold text-ink">{album.title}</span>
@@ -134,7 +153,7 @@ export default async function SearchPage({
                 {results.playlists.map((playlist) => (
                   <Link
                     key={playlist.id}
-                    href={`/playlists/${playlist.id}`}
+                    href={`/${locale}/playlists/${playlist.id}`}
                     className="rounded-pill border border-white/10 bg-white/5 px-4 py-2 text-sm text-ink hover:border-primary/40"
                   >
                     {playlist.title}
