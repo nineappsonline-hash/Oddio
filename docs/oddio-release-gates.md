@@ -2,6 +2,18 @@
 
 **Status: NOT APPROVED FOR PRODUCTION.** This document tracks executable release gates rather than declaring launch readiness. Pull requests #1–#6 form a stacked sequence: each must be reviewed, tested and merged in dependency order.
 
+## Consolidated audit findings — 13 Nov 2026
+
+- **Repository:** Phase 1–6 changes are stacked in draft review branches. No production merge or rollout has been approved.
+- **Prettier debt:** a dedicated formatting pass normalized the workspace, and the final Studio route fix landed in commit `bfadb104`. Recheck the full CI gate on the final hardening SHA.
+- **User journeys:** the existing 10-route HTTP smoke suite passed in GitHub CI. Interactive Chromium checks initially passed 9/12; 3 searches were checked before streamed navigation settled. The revised suite waits for the actual empty state and includes a demo login/library path. Final run remains a release gate.
+- **Live data:** read-only Supabase inspection found 2 tracks, 1 artist and 2 audio assets; do not infer that the full music player, billing or uploads have been validated by these counts.
+- **Supabase RLS:** every inspected public table had RLS enabled. Security Advisors still flag eight `SECURITY DEFINER` helper functions callable by anonymous/authenticated users and disabled leaked-password protection. The boolean-returning helpers are referenced by access-control policies, so blindly revoking grants could break RLS; investigate, simulate calls and review a migration in staging before production permission changes.
+- **Database:** the advisor also reports missing foreign-key indexes (performance) and five RLS-enabled internal tables without client policies, which may be intentional for service-only resources. Validate actual exposure before altering permissions.
+- **Vercel:** production-scoped R2 and Supabase secrets exist, but `MEDIA_WORKER_SECRET` was absent from the visible project variable names; `R2_BUCKET` and `NEXT_PUBLIC_SITE_URL` were not explicitly listed. Canonical URLs now fall back to the Vercel project production URL. Production worker/storage readiness must be verified before release.
+- **Moderation:** fixed Admin Reports server page to read Supabase in real mode, matching the Phase 5 report API storage adapter. Actual end-to-end report creation, moderation and rights takedowns in a staging project remain unverified.
+- **Release checks:** `npm run release:preflight` validates production configuration without printing secrets; it must be executed with the actual release environment in a protected context.
+
 ## Gate A — Security and data (blocking)
 
 - [ ] Validate the live Vercel project runs with `DEMO_MODE=false` and properly scoped Supabase/R2 secrets (without printing secrets).
