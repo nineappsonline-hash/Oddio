@@ -70,14 +70,22 @@ export function UploadForm({
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!rightsConfirmed || !voiceConfirmed) {
-      toast(locale === 'ar' ? 'لازم تأكد حقوق النشر وموافقة استخدام الأصوات قبل الرفع.' : 'Confirm your distribution rights and voice consent before uploading.', 'error');
+      toast(
+        locale === 'ar'
+          ? 'لازم تأكد حقوق النشر وموافقة استخدام الأصوات قبل الرفع.'
+          : 'Confirm your distribution rights and voice consent before uploading.',
+        'error',
+      );
       return;
     }
     if (!audioFile) {
       toast(t('studio.audioRequired'), 'error');
       return;
     }
-    if (!/\.mp3$/i.test(audioFile.name) || !['audio/mpeg', 'audio/mp3', ''].includes(audioFile.type)) {
+    if (
+      !/\.mp3$/i.test(audioFile.name) ||
+      !['audio/mpeg', 'audio/mp3', ''].includes(audioFile.type)
+    ) {
       toast('Only MP3 audio files are allowed.', 'error');
       return;
     }
@@ -113,7 +121,9 @@ export function UploadForm({
     try {
       if (production) {
         const grant = await apiRequest<{
-          uploadUrl: string; objectKey: string; headers: Record<string, string>;
+          uploadUrl: string;
+          objectKey: string;
+          headers: Record<string, string>;
         }>('/api/studio/uploads/authorize', {
           method: 'POST',
           body: JSON.stringify({
@@ -124,7 +134,9 @@ export function UploadForm({
           headers: { 'Content-Type': 'application/json' },
         });
         const uploaded = await fetch(grant.uploadUrl, {
-          method: 'PUT', headers: grant.headers, body: audioFile,
+          method: 'PUT',
+          headers: grant.headers,
+          body: audioFile,
         });
         if (!uploaded.ok) throw new Error('Audio transfer to storage failed.');
         form.delete('audio');
@@ -155,10 +167,32 @@ export function UploadForm({
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('studio.selectArtist')} htmlFor="upload-artist">
-            <SearchableSelect id="upload-artist" locale={locale} value={artistId} onChange={(next) => { setArtistId(next); setAlbumId(''); }} options={artists.map((artist) => ({ value: artist.id, label: artist.name }))} required />
+            <SearchableSelect
+              id="upload-artist"
+              locale={locale}
+              value={artistId}
+              onChange={(next) => {
+                setArtistId(next);
+                setAlbumId('');
+              }}
+              options={artists.map((artist) => ({
+                value: artist.id,
+                label: artist.name,
+              }))}
+              required
+            />
           </Field>
           <Field label={t('studio.album')} htmlFor="upload-album">
-            <SearchableSelect id="upload-album" locale={locale} value={albumId} onChange={setAlbumId} options={[{ value: '', label: t('studio.noAlbum') }, ...artistAlbums.map((album) => ({ value: album.id, label: album.title }))]}  />
+            <SearchableSelect
+              id="upload-album"
+              locale={locale}
+              value={albumId}
+              onChange={setAlbumId}
+              options={[
+                { value: '', label: t('studio.noAlbum') },
+                ...artistAlbums.map((album) => ({ value: album.id, label: album.title })),
+              ]}
+            />
           </Field>
         </div>
       </div>
@@ -188,10 +222,31 @@ export function UploadForm({
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('studio.genre')} htmlFor="upload-genre">
-            <SearchableSelect id="upload-genre" locale={locale} value={genreId} onChange={setGenreId} options={genres.map((genre) => ({ value: genre.id, label: locale === 'ar' ? genre.labelAr : genre.labelEn }))} required />
+            <SearchableSelect
+              id="upload-genre"
+              locale={locale}
+              value={genreId}
+              onChange={setGenreId}
+              options={genres.map((genre) => ({
+                value: genre.id,
+                label: locale === 'ar' ? genre.labelAr : genre.labelEn,
+              }))}
+              required
+            />
           </Field>
           <Field label={t('studio.language')} htmlFor="upload-language">
-            <SearchableSelect id="upload-language" locale={locale} value={languageCode} onChange={setLanguageCode} options={[{ value: 'ar', label: 'العربية' }, { value: 'en', label: 'English' }, { value: 'fr', label: 'Français' }, { value: 'es', label: 'Español' }]}  />
+            <SearchableSelect
+              id="upload-language"
+              locale={locale}
+              value={languageCode}
+              onChange={setLanguageCode}
+              options={[
+                { value: 'ar', label: 'العربية' },
+                { value: 'en', label: 'English' },
+                { value: 'fr', label: 'Français' },
+                { value: 'es', label: 'Español' },
+              ]}
+            />
           </Field>
         </div>
         <Field label={t('studio.moods')} hint="Up to 5">
@@ -218,7 +273,16 @@ export function UploadForm({
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('studio.productionType')} htmlFor="upload-production">
-            <SearchableSelect id="upload-production" locale={locale} value={productionType} onChange={(next) => setProductionType(next as 'fully_ai' | 'ai_assisted')} options={[{ value: 'fully_ai', label: t('studio.fullyAi') }, { value: 'ai_assisted', label: t('studio.aiAssisted') }]}  />
+            <SearchableSelect
+              id="upload-production"
+              locale={locale}
+              value={productionType}
+              onChange={(next) => setProductionType(next as 'fully_ai' | 'ai_assisted')}
+              options={[
+                { value: 'fully_ai', label: t('studio.fullyAi') },
+                { value: 'ai_assisted', label: t('studio.aiAssisted') },
+              ]}
+            />
           </Field>
           <Field label={t('studio.country')} htmlFor="upload-country">
             <input
@@ -267,14 +331,37 @@ export function UploadForm({
           label={t('studio.audioFile')}
           hint="MP3 only · max 25 MB · max 15 min · 256 kbps or higher"
         >
-          <FileDropzone kind="audio" file={audioFile} onFile={setAudioFile} locale={locale} required />
+          <FileDropzone
+            kind="audio"
+            file={audioFile}
+            onFile={setAudioFile}
+            locale={locale}
+            required
+          />
         </Field>
         <Field label={t('studio.artworkFile')} hint="PNG, JPEG, WEBP or GIF · under 5 MB">
-          <FileDropzone kind="image" file={artworkFile} onFile={setArtworkFile} locale={locale} />
+          <FileDropzone
+            kind="image"
+            file={artworkFile}
+            onFile={setArtworkFile}
+            locale={locale}
+          />
         </Field>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label={t('studio.visibility')} htmlFor="upload-visibility">
-            <SearchableSelect id="upload-visibility" locale={locale} value={visibility} onChange={(next) => setVisibility(next as 'public' | 'unlisted' | 'private')} options={[{ value: 'public', label: t('common.public') }, { value: 'unlisted', label: t('common.unlisted') }, { value: 'private', label: t('common.private') }]}  />
+            <SearchableSelect
+              id="upload-visibility"
+              locale={locale}
+              value={visibility}
+              onChange={(next) =>
+                setVisibility(next as 'public' | 'unlisted' | 'private')
+              }
+              options={[
+                { value: 'public', label: t('common.public') },
+                { value: 'unlisted', label: t('common.unlisted') },
+                { value: 'private', label: t('common.private') },
+              ]}
+            />
           </Field>
           <Field label={t('studio.releaseDate')} htmlFor="upload-release">
             <input
@@ -296,20 +383,50 @@ export function UploadForm({
           </Field>
         </div>
         <fieldset className="space-y-3 rounded-2xl border border-primary/25 bg-primary/5 p-4">
-          <legend className="px-1 text-sm font-bold text-ink">{locale === 'ar' ? 'إقرار حقوق المحتوى' : 'Creator rights declaration'}</legend>
+          <legend className="px-1 text-sm font-bold text-ink">
+            {locale === 'ar' ? 'إقرار حقوق المحتوى' : 'Creator rights declaration'}
+          </legend>
           <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-ink">
-            <input type="checkbox" checked={rightsConfirmed} onChange={(event) => setRightsConfirmed(event.target.checked)}
-              required className="mt-1 h-5 w-5 shrink-0 accent-primary" />
-            <span>{locale === 'ar' ? 'بأكد إن معايا حق نشر وتوزيع الأغنية والكلمات والصورة وأي مواد مستخدمة.' : 'I confirm I have permission to publish and distribute this music, lyrics, artwork and every included asset.'}</span>
+            <input
+              type="checkbox"
+              checked={rightsConfirmed}
+              onChange={(event) => setRightsConfirmed(event.target.checked)}
+              required
+              className="mt-1 h-5 w-5 shrink-0 accent-primary"
+            />
+            <span>
+              {locale === 'ar'
+                ? 'بأكد إن معايا حق نشر وتوزيع الأغنية والكلمات والصورة وأي مواد مستخدمة.'
+                : 'I confirm I have permission to publish and distribute this music, lyrics, artwork and every included asset.'}
+            </span>
           </label>
           <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-ink">
-            <input type="checkbox" checked={voiceConfirmed} onChange={(event) => setVoiceConfirmed(event.target.checked)}
-              required className="mt-1 h-5 w-5 shrink-0 accent-primary" />
-            <span>{locale === 'ar' ? 'بأكد إني ماقلدتش صوت أو شكل شخص حقيقي من غير إذنه، وإن عندي الموافقات اللازمة لو مستخدم شبهه أو صوته.' : 'I confirm I have not impersonated a real person without permission and have the required consent for any recognizable voice or likeness.'}</span>
+            <input
+              type="checkbox"
+              checked={voiceConfirmed}
+              onChange={(event) => setVoiceConfirmed(event.target.checked)}
+              required
+              className="mt-1 h-5 w-5 shrink-0 accent-primary"
+            />
+            <span>
+              {locale === 'ar'
+                ? 'بأكد إني ماقلدتش صوت أو شكل شخص حقيقي من غير إذنه، وإن عندي الموافقات اللازمة لو مستخدم شبهه أو صوته.'
+                : 'I confirm I have not impersonated a real person without permission and have the required consent for any recognizable voice or likeness.'}
+            </span>
           </label>
-          <p className="text-xs leading-5 text-muted">{locale === 'ar' ? 'الإقرار بيتسجل للمراجعة، لكنه مش إثبات تلقائي للترخيص. الأغنية هتخضع لمراجعة قبل النشر.' : 'This declaration is recorded for audit; it does not prove licensing. Every submission remains subject to moderation.'}</p>
+          <p className="text-xs leading-5 text-muted">
+            {locale === 'ar'
+              ? 'الإقرار بيتسجل للمراجعة، لكنه مش إثبات تلقائي للترخيص. الأغنية هتخضع لمراجعة قبل النشر.'
+              : 'This declaration is recorded for audit; it does not prove licensing. Every submission remains subject to moderation.'}
+          </p>
         </fieldset>
-        <Button type="submit" disabled={!rightsConfirmed || !voiceConfirmed} loading={pending} size="lg" className="w-full sm:w-auto">
+        <Button
+          type="submit"
+          disabled={!rightsConfirmed || !voiceConfirmed}
+          loading={pending}
+          size="lg"
+          className="w-full sm:w-auto"
+        >
           {t('studio.upload')}
         </Button>
       </div>

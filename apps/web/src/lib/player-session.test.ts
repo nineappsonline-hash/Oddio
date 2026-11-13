@@ -16,14 +16,20 @@ describe('Oddio saved player session', () => {
     expect(parsePlayerSession(null)).toBeNull();
     expect(parsePlayerSession('{')).toBeNull();
     expect(parsePlayerSession(JSON.stringify({ version: 2, track }))).toBeNull();
-    expect(parsePlayerSession(JSON.stringify({ version: 1, track: { id: 1 } }))).toBeNull();
+    expect(
+      parsePlayerSession(JSON.stringify({ version: 1, track: { id: 1 } })),
+    ).toBeNull();
   });
 
   it('restores a valid session and never saves playback as active', () => {
     const data = {
       version: 1 as const,
       track: track as unknown as CatalogTrack,
-      queue: [next as unknown as CatalogTrack, next as unknown as CatalogTrack, track as unknown as CatalogTrack],
+      queue: [
+        next as unknown as CatalogTrack,
+        next as unknown as CatalogTrack,
+        track as unknown as CatalogTrack,
+      ],
       currentTime: 48,
       volume: 0.4,
       muted: false,
@@ -40,15 +46,17 @@ describe('Oddio saved player session', () => {
   });
 
   it('clamps untrusted saved values', () => {
-    const result = parsePlayerSession(JSON.stringify({
-      version: 1,
-      track,
-      queue: [],
-      currentTime: 10_000,
-      volume: 8,
-      repeat: 'invalid',
-      autoplay: false,
-    }));
+    const result = parsePlayerSession(
+      JSON.stringify({
+        version: 1,
+        track,
+        queue: [],
+        currentTime: 10_000,
+        volume: 8,
+        repeat: 'invalid',
+        autoplay: false,
+      }),
+    );
     expect(result?.currentTime).toBe(180);
     expect(result?.volume).toBe(1);
     expect(result?.repeat).toBe('off');

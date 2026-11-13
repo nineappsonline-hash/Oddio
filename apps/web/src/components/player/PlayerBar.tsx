@@ -65,9 +65,18 @@ export function PlayerBar() {
         }}
       />
       {error ? (
-        <div role="alert" className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-danger/25 bg-danger/10 px-3 py-2 text-xs text-ink">
-          <span>{rtl ? 'تعذّر تشغيل الأغنية. جرّب مرة تانية.' : 'Unable to play this track.'}</span>
-          <button type="button" onClick={retryPlayback} className="shrink-0 rounded-full border border-primary/50 px-3 py-1.5 font-semibold text-primary hover:bg-primary/10">
+        <div
+          role="alert"
+          className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-danger/25 bg-danger/10 px-3 py-2 text-xs text-ink"
+        >
+          <span>
+            {rtl ? 'تعذّر تشغيل الأغنية. جرّب مرة تانية.' : 'Unable to play this track.'}
+          </span>
+          <button
+            type="button"
+            onClick={retryPlayback}
+            className="shrink-0 rounded-full border border-primary/50 px-3 py-1.5 font-semibold text-primary hover:bg-primary/10"
+          >
             {t('common.retry')}
           </button>
         </div>

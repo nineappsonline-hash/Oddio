@@ -58,15 +58,37 @@ export async function GET(
   }
 
   if (!demoMode) {
-    const ready = track.audio.processingStatus === 'ready' && track.audio.kind === 'rendition';
-    const originalFallback = track.publishStatus === 'published' && track.reviewStatus === 'approved' && track.audio.kind === 'original' && track.audio.format === 'mp3' && /^incoming\/[a-f0-9-]+\/[a-f0-9-]+$/.test(track.audio.objectKey);
+    const ready =
+      track.audio.processingStatus === 'ready' && track.audio.kind === 'rendition';
+    const originalFallback =
+      track.publishStatus === 'published' &&
+      track.reviewStatus === 'approved' &&
+      track.audio.kind === 'original' &&
+      track.audio.format === 'mp3' &&
+      /^incoming\/[a-f0-9-]+\/[a-f0-9-]+$/.test(track.audio.objectKey);
     if (!ready && !originalFallback) {
-      return NextResponse.json({ error: { code: 'audio_not_ready', message: 'Audio is still processing.' } }, { status: 409 });
+      return NextResponse.json(
+        { error: { code: 'audio_not_ready', message: 'Audio is still processing.' } },
+        { status: 409 },
+      );
     }
     try {
-      return NextResponse.redirect(ready ? presignR2Get(track.audio.objectKey) : presignR2OriginalGet(track.audio.objectKey), 307);
+      return NextResponse.redirect(
+        ready
+          ? presignR2Get(track.audio.objectKey)
+          : presignR2OriginalGet(track.audio.objectKey),
+        307,
+      );
     } catch {
-      return NextResponse.json({ error: { code: 'storage_unavailable', message: 'Audio storage is unavailable.' } }, { status: 503 });
+      return NextResponse.json(
+        {
+          error: {
+            code: 'storage_unavailable',
+            message: 'Audio storage is unavailable.',
+          },
+        },
+        { status: 503 },
+      );
     }
   }
 

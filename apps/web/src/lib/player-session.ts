@@ -21,11 +21,18 @@ function isCatalogTrack(value: unknown): value is CatalogTrack {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const track = value as Record<string, unknown>;
   const artwork = track.artwork;
-  return typeof track.id === 'string' && track.id.length > 0 &&
-    typeof track.title === 'string' && typeof track.slug === 'string' &&
-    typeof track.durationMs === 'number' && Number.isFinite(track.durationMs) &&
-    track.durationMs >= 0 && !!artwork && typeof artwork === 'object' &&
-    typeof (artwork as Record<string, unknown>).accent === 'string';
+  return (
+    typeof track.id === 'string' &&
+    track.id.length > 0 &&
+    typeof track.title === 'string' &&
+    typeof track.slug === 'string' &&
+    typeof track.durationMs === 'number' &&
+    Number.isFinite(track.durationMs) &&
+    track.durationMs >= 0 &&
+    !!artwork &&
+    typeof artwork === 'object' &&
+    typeof (artwork as Record<string, unknown>).accent === 'string'
+  );
 }
 
 export function parsePlayerSession(source: string | null): SavedPlayerSession | null {
@@ -38,22 +45,37 @@ export function parsePlayerSession(source: string | null): SavedPlayerSession | 
     const track = isCatalogTrack(session.track) ? session.track : null;
     if (!track) return null;
     const queue = Array.isArray(session.queue)
-      ? session.queue.filter(isCatalogTrack).filter(
-        (item: CatalogTrack, index: number, items: CatalogTrack[]) =>
-          item.id !== track.id && items.findIndex((other) => other.id === item.id) === index,
-      ).slice(0, MAX_QUEUE_ITEMS)
+      ? session.queue
+          .filter(isCatalogTrack)
+          .filter(
+            (item: CatalogTrack, index: number, items: CatalogTrack[]) =>
+              item.id !== track.id &&
+              items.findIndex((other) => other.id === item.id) === index,
+          )
+          .slice(0, MAX_QUEUE_ITEMS)
       : [];
     return {
       version: 1,
       track,
       queue,
-      currentTime: typeof session.currentTime === 'number' && Number.isFinite(session.currentTime)
-        ? Math.max(0, Math.min(session.currentTime, MAX_SAVED_POSITION_SECONDS, track.durationMs / 1000))
-        : 0,
-      volume: typeof session.volume === 'number' && Number.isFinite(session.volume)
-        ? Math.max(0, Math.min(1, session.volume)) : 0.8,
+      currentTime:
+        typeof session.currentTime === 'number' && Number.isFinite(session.currentTime)
+          ? Math.max(
+              0,
+              Math.min(
+                session.currentTime,
+                MAX_SAVED_POSITION_SECONDS,
+                track.durationMs / 1000,
+              ),
+            )
+          : 0,
+      volume:
+        typeof session.volume === 'number' && Number.isFinite(session.volume)
+          ? Math.max(0, Math.min(1, session.volume))
+          : 0.8,
       muted: session.muted === true,
-      repeat: session.repeat === 'one' || session.repeat === 'all' ? session.repeat : 'off',
+      repeat:
+        session.repeat === 'one' || session.repeat === 'all' ? session.repeat : 'off',
       shuffle: session.shuffle === true,
       autoplay: session.autoplay !== false,
     };

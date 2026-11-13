@@ -3,6 +3,7 @@
 **Status: NOT APPROVED FOR PRODUCTION.** This document tracks executable release gates rather than declaring launch readiness. Pull requests #1–#6 form a stacked sequence: each must be reviewed, tested and merged in dependency order.
 
 ## Gate A — Security and data (blocking)
+
 - [ ] Validate the live Vercel project runs with `DEMO_MODE=false` and properly scoped Supabase/R2 secrets (without printing secrets).
 - [ ] Validate ownership and moderation permissions against staging Supabase with the exact deployed RLS schema.
 - [ ] Prove user A cannot access private songs, likes, playlists, reports or artist data belonging to user B.
@@ -14,6 +15,7 @@
 - [ ] Confirm use of public catalog only in sitemap and recommendations.
 
 ## Gate B — Reliability and playback (blocking)
+
 - [ ] Confirm stream validity, range requests, expiry renewal, buffering retries and graceful failures with actual audio.
 - [ ] Test queue restore after refresh, repeat one/all, shuffle, mute, and background Media Session behavior.
 - [ ] Cross-user session switch does not show prior users' queue or preferences.
@@ -23,6 +25,7 @@
 - [ ] Verify storage/CDN egress and database/API cost budgets.
 
 ## Gate C — Product experience
+
 - [x] Add smoke suite for English and Arabic home/search/discover/soundspace plus sitemap/robots.
 - [x] Add smoke execution against a running built Next.js server to CI.
 - [x] Use production Supabase catalog for sitemap instead of demo snapshot.
@@ -35,6 +38,7 @@
 - [ ] Validate cross-language URLs and metadata without redirect loops.
 
 ## Gate D — CI and operating discipline
+
 - [x] Keep existing typecheck, unit, production build, lint and RLS checks.
 - [ ] Existing full-repository Prettier check must become green; initially 63 paths were reported.
 - [ ] Run smoke suite and record results on the final review SHA.
@@ -44,4 +48,5 @@
 - [ ] Stage canary rollout; confirm owner approval before production promotion.
 
 ## Explicit boundaries
+
 The Phase 6 HTTP smoke test confirms page responses and basic bilingual HTML, **not** touch behavior, playback quality or authorization. Demo-mode tests alone cannot prove production Supabase/R2 reliability. Formatting normalization is review-branch-only. A successful Vercel preview build is not a launch approval. Nothing should be promoted to production until all blocking gates are verified.

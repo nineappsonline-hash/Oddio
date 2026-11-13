@@ -4,7 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlaybackEventInput } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
-import { PLAYER_SESSION_KEY, buildPlayerSession, parsePlayerSession } from '@/lib/player-session';
+import {
+  PLAYER_SESSION_KEY,
+  buildPlayerSession,
+  parsePlayerSession,
+} from '@/lib/player-session';
 import type { CatalogTrack, HomeData } from '@/lib/data/queries';
 import { useToast } from '@/components/providers/ToastProvider';
 
@@ -15,7 +19,13 @@ interface PlaybackAuthorization {
   trackId: string;
 }
 
-export function PlayerProvider({ children, viewerId }: { children: React.ReactNode; viewerId: string | null }) {
+export function PlayerProvider({
+  children,
+  viewerId,
+}: {
+  children: React.ReactNode;
+  viewerId: string | null;
+}) {
   const storageKey = `${PLAYER_SESSION_KEY}:${viewerId ?? 'guest'}`;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const sessionRef = useRef<string | null>(null);
@@ -64,7 +74,17 @@ export function PlayerProvider({ children, viewerId }: { children: React.ReactNo
           seekRequest: null,
         });
       } else {
-        usePlayer.setState({ track: null, queue: [], history: [], isPlaying: false, currentTime: 0, duration: 0, error: null, buffering: false, seekRequest: null });
+        usePlayer.setState({
+          track: null,
+          queue: [],
+          history: [],
+          isPlaying: false,
+          currentTime: 0,
+          duration: 0,
+          error: null,
+          buffering: false,
+          seekRequest: null,
+        });
       }
     } catch {
       // Browser storage might be disabled; the player works without it.
@@ -77,17 +97,22 @@ export function PlayerProvider({ children, viewerId }: { children: React.ReactNo
           window.sessionStorage.removeItem(storageKey);
           return;
         }
-        window.sessionStorage.setItem(storageKey, JSON.stringify(buildPlayerSession({
-          version: 1,
-          track: state.track,
-          queue: state.queue,
-          currentTime: state.currentTime,
-          volume: state.volume,
-          muted: state.muted,
-          repeat: state.repeat,
-          shuffle: state.shuffle,
-          autoplay: state.autoplay,
-        })));
+        window.sessionStorage.setItem(
+          storageKey,
+          JSON.stringify(
+            buildPlayerSession({
+              version: 1,
+              track: state.track,
+              queue: state.queue,
+              currentTime: state.currentTime,
+              volume: state.volume,
+              muted: state.muted,
+              repeat: state.repeat,
+              shuffle: state.shuffle,
+              autoplay: state.autoplay,
+            }),
+          ),
+        );
       } catch {
         // Browsers can reject storage writes in private or restricted contexts.
       }
@@ -231,7 +256,10 @@ export function PlayerProvider({ children, viewerId }: { children: React.ReactNo
 
     const onLoaded = () => {
       // A restored seek must wait for the new stream's metadata.
-      if (pendingRestoreTime.current !== null && pendingRestoreTrackId.current === usePlayer.getState().track?.id) {
+      if (
+        pendingRestoreTime.current !== null &&
+        pendingRestoreTrackId.current === usePlayer.getState().track?.id
+      ) {
         const position = pendingRestoreTime.current;
         pendingRestoreTime.current = null;
         pendingRestoreTrackId.current = null;

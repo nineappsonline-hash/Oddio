@@ -67,9 +67,14 @@ export default async function DiscoverPage({
   const results = searchCatalog(db, viewer, query);
   const genreLabel = (item: { labelEn: string; labelAr: string }) =>
     locale === 'ar' ? item.labelAr : item.labelEn;
-  const activeFilters = [query.q, query.genre, query.mood, query.language, query.country, query.sort !== 'relevant' ? query.sort : ''].filter(
-    Boolean,
-  );
+  const activeFilters = [
+    query.q,
+    query.genre,
+    query.mood,
+    query.language,
+    query.country,
+    query.sort !== 'relevant' ? query.sort : '',
+  ].filter(Boolean);
 
   return (
     <div>
@@ -82,7 +87,14 @@ export default async function DiscoverPage({
       >
         <label className="block text-xs font-semibold uppercase tracking-wide text-muted sm:col-span-2 lg:col-span-5">
           {t('common.search')}
-          <input type="search" name="q" defaultValue={query.q} maxLength={120} className="input mt-1.5 h-11" placeholder={t('search.placeholder')} />
+          <input
+            type="search"
+            name="q"
+            defaultValue={query.q}
+            maxLength={120}
+            className="input mt-1.5 h-11"
+            placeholder={t('search.placeholder')}
+          />
         </label>
         <label className="block text-xs font-semibold uppercase tracking-wide text-muted">
           {t('discover.genre')}

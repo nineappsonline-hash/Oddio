@@ -33,11 +33,11 @@ const photos: Record<string, string> = {
   'r-and-b': 'photo-1493225457124-a3eb161ffa5f', // R&B vocalist
   'r&b': 'photo-1493225457124-a3eb161ffa5f',
   'arabic-pop': 'photo-1501386761578-eac5c94b800a',
-  'mahraganat': 'photo-1506157786151-b8491531f063',
-  'shaabi': 'photo-1528605248644-14dd04022da1',
-  'khaliji': 'photo-1511196044526-5cb3bcb7071b',
-  'khaleeji': 'photo-1500530855697-b586d89ba3ee',
-  'nasheed': 'photo-1470252649378-9c29740c9fa8',
+  mahraganat: 'photo-1506157786151-b8491531f063',
+  shaabi: 'photo-1528605248644-14dd04022da1',
+  khaliji: 'photo-1511196044526-5cb3bcb7071b',
+  khaleeji: 'photo-1500530855697-b586d89ba3ee',
+  nasheed: 'photo-1470252649378-9c29740c9fa8',
   'arabic-rap': 'photo-1547355253-ff0740f6e8c1',
   'arabic-hip-hop': 'photo-1514525253161-7a46d19cd819',
   'arabic-folk': 'photo-1504609813442-a8924e83f76e',
@@ -45,22 +45,51 @@ const photos: Record<string, string> = {
 
 // Every card has a locally rendered visual, even when a photo host is blocked.
 const motifs: Record<string, string> = {
-  shaabi: '🪗', tarab: '🎻', 'arabic-classical': '🪕', oriental: '🪕',
-  mahraganat: '🎤', dabke: '🥁', 'arabic-pop': '🎙️', 'arabic-rap': '🎧',
-  'hip-hop': '🎤', jazz: '🎷', blues: '🎸', rock: '🎸',
-  reggae: '🌴', afrobeats: '🥁', amapiano: '🎹', dance: '🪩',
-  edm: '🎛️', house: '🎚️', techno: '🎛️', trance: '✨',
-  ambient: '🌌', cinematic: '🎬', synthwave: '🌆',
-  electronic: '🎹', pop: '🎙️', folk: '🪕', metal: '🎸',
-  punk: '⚡', soul: '🎙️', 'r-and-b': '🎙️', nasheed: '🎙️',
-  khaliji: '🪕', khaleeji: '🪕',
+  shaabi: '🪗',
+  tarab: '🎻',
+  'arabic-classical': '🪕',
+  oriental: '🪕',
+  mahraganat: '🎤',
+  dabke: '🥁',
+  'arabic-pop': '🎙️',
+  'arabic-rap': '🎧',
+  'hip-hop': '🎤',
+  jazz: '🎷',
+  blues: '🎸',
+  rock: '🎸',
+  reggae: '🌴',
+  afrobeats: '🥁',
+  amapiano: '🎹',
+  dance: '🪩',
+  edm: '🎛️',
+  house: '🎚️',
+  techno: '🎛️',
+  trance: '✨',
+  ambient: '🌌',
+  cinematic: '🎬',
+  synthwave: '🌆',
+  electronic: '🎹',
+  pop: '🎙️',
+  folk: '🪕',
+  metal: '🎸',
+  punk: '⚡',
+  soul: '🎙️',
+  'r-and-b': '🎙️',
+  nasheed: '🎙️',
+  khaliji: '🪕',
+  khaleeji: '🪕',
 };
 function normalizedGenre(slug: string) {
-  return slug.trim().toLowerCase().replace(/[\\s_]+/g, '-');
+  return slug
+    .trim()
+    .toLowerCase()
+    .replace(/[\\s_]+/g, '-');
 }
 function photoForGenre(slug: string): string | null {
   const photo = photos[normalizedGenre(slug)];
-  return photo ? `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=720&q=85` : null;
+  return photo
+    ? `https://images.unsplash.com/${photo}?auto=format&fit=crop&w=720&q=85`
+    : null;
 }
 
 export function GenreArtwork({ slug }: Props) {
@@ -71,11 +100,17 @@ export function GenreArtwork({ slug }: Props) {
   const hue = hash % 360;
   const motif = motifs[normalized] ?? '♫';
   return (
-    <div aria-hidden="true" className="absolute inset-0 overflow-hidden" style={{
-      background: `radial-gradient(ellipse at 72% 25%, hsl(${(hue + 65) % 360} 70% 44% / .65), transparent 58%), linear-gradient(140deg, hsl(${hue} 63% 35%), #090817)`,
-    }}>
+    <div
+      aria-hidden="true"
+      className="absolute inset-0 overflow-hidden"
+      style={{
+        background: `radial-gradient(ellipse at 72% 25%, hsl(${(hue + 65) % 360} 70% 44% / .65), transparent 58%), linear-gradient(140deg, hsl(${hue} 63% 35%), #090817)`,
+      }}
+    >
       <div className="absolute -right-8 -top-10 h-44 w-44 rounded-full border-[18px] border-white/10 rotate-12" />
-      <div className="absolute left-4 top-3 text-[110px] leading-none opacity-60 drop-shadow-[0_8px_25px_rgba(0,0,0,.5)] transition-transform duration-700 group-hover:scale-110">{motif}</div>
+      <div className="absolute left-4 top-3 text-[110px] leading-none opacity-60 drop-shadow-[0_8px_25px_rgba(0,0,0,.5)] transition-transform duration-700 group-hover:scale-110">
+        {motif}
+      </div>
       {photo && !failed && (
         <img
           src={photo}

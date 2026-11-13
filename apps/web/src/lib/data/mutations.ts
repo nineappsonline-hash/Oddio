@@ -167,7 +167,10 @@ export function createReport(
   let label = '';
   if (input.targetType === 'track') {
     const track = db.tracks.find((item) => item.id === input.targetId);
-    if (!track || !accessForTrack(db, track, { userId: actor.id, roles: actor.roles }).allowed) {
+    if (
+      !track ||
+      !accessForTrack(db, track, { userId: actor.id, roles: actor.roles }).allowed
+    ) {
       throw Errors.notFound('Track not found');
     }
     label = track.title;
@@ -177,22 +180,28 @@ export function createReport(
     label = artist.name;
   } else {
     const comment = db.comments.find((item) => item.id === input.targetId);
-    if (!comment || comment.status === 'hidden') throw Errors.notFound('Comment not found');
+    if (!comment || comment.status === 'hidden')
+      throw Errors.notFound('Comment not found');
     const track = db.tracks.find((item) => item.id === comment.trackId);
-    if (!track || !accessForTrack(db, track, { userId: actor.id, roles: actor.roles }).allowed) {
+    if (
+      !track ||
+      !accessForTrack(db, track, { userId: actor.id, roles: actor.roles }).allowed
+    ) {
       throw Errors.notFound('Comment not found');
     }
     label = comment.body.slice(0, 60);
   }
   // A second open report from the same user on the same content adds noise
   // and makes the moderation queue less usable.
-  const pending = db.reports.some((report) =>
-    report.reporterId === actor.id &&
-    report.targetType === input.targetType &&
-    report.targetId === input.targetId &&
-    (report.status === 'open' || report.status === 'investigating'),
+  const pending = db.reports.some(
+    (report) =>
+      report.reporterId === actor.id &&
+      report.targetType === input.targetType &&
+      report.targetId === input.targetId &&
+      (report.status === 'open' || report.status === 'investigating'),
   );
-  if (pending) throw Errors.conflict('You already have a pending report for this content.');
+  if (pending)
+    throw Errors.conflict('You already have a pending report for this content.');
   const report: Report = {
     id: crypto.randomUUID(),
     reporterId: actor.id,
@@ -525,9 +534,10 @@ export function createTrackFromUpload(
     const existingTrack = db.tracks.find((track) => track.id === existingEvent.trackId);
     if (existingTrack) return existingTrack;
   }
-  if (input.audio.sha256 && db.tracks.some((existing) =>
-    existing.audio?.sha256 === input.audio.sha256
-  )) {
+  if (
+    input.audio.sha256 &&
+    db.tracks.some((existing) => existing.audio?.sha256 === input.audio.sha256)
+  ) {
     throw Errors.conflict('This exact audio file has already been submitted.');
   }
   const quota = evaluateUploadQuota(
@@ -645,7 +655,11 @@ export function reviewTrack(
   const now = new Date();
   const ownerId = ownerIdForTrack(db, track);
   if (decision === 'approve') {
-    if (!track.audio || !track.audio.objectKey || track.audio.processingStatus !== 'ready') {
+    if (
+      !track.audio ||
+      !track.audio.objectKey ||
+      track.audio.processingStatus !== 'ready'
+    ) {
       throw Errors.conflict('Audio must be uploaded and ready before approval');
     }
     track.reviewStatus = 'approved';
@@ -715,7 +729,9 @@ export function resolveReport(
     throw Errors.conflict('This report has already been closed.');
   }
   if (notes.trim().length < 10) {
-    throw Errors.invalid('Record at least 10 characters explaining the moderation decision.');
+    throw Errors.invalid(
+      'Record at least 10 characters explaining the moderation decision.',
+    );
   }
   report.status = resolution === 'resolve' ? 'resolved' : 'dismissed';
   report.resolution = notes.trim();

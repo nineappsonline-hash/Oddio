@@ -67,9 +67,19 @@ export default async function ArtistPage({
   const queue = featuredTrack
     ? [featuredTrack, ...tracks.filter((track) => track.id !== featuredTrack.id)]
     : tracks;
-  const fullyAiCount = tracks.filter((track) => track.productionType === 'fully_ai').length;
-  const assistedCount = tracks.filter((track) => track.productionType === 'ai_assisted').length;
-  const genres = [...new Map(tracks.filter((track) => track.genre).map((track) => [track.genre!.id, track.genre!])).values()].slice(0, 6);
+  const fullyAiCount = tracks.filter(
+    (track) => track.productionType === 'fully_ai',
+  ).length;
+  const assistedCount = tracks.filter(
+    (track) => track.productionType === 'ai_assisted',
+  ).length;
+  const genres = [
+    ...new Map(
+      tracks
+        .filter((track) => track.genre)
+        .map((track) => [track.genre!.id, track.genre!]),
+    ).values(),
+  ].slice(0, 6);
   const relatedArtists = listableTracks(db, viewer)
     .flatMap((track) =>
       track.artist && track.artist.id !== artist.id ? [track.artist] : [],
@@ -113,7 +123,9 @@ export default async function ArtistPage({
                 <Badge tone="cyan">{t('artist.verified')}</Badge>
               ) : null}
             </div>
-            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">{locale === 'ar' ? 'عالم الفنان على Oddio' : 'Inside the artist world'}</p>
+            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              {locale === 'ar' ? 'عالم الفنان على Oddio' : 'Inside the artist world'}
+            </p>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
               {artist.name}
             </h1>
@@ -139,28 +151,54 @@ export default async function ArtistPage({
         </div>
       </section>
 
-      <section aria-label={locale === 'ar' ? 'هوية الفنان الموسيقية' : 'Artist sound identity'} className="mb-9 rounded-[1.5rem] border border-primary/20 bg-surface/75 p-5 sm:p-7">
+      <section
+        aria-label={locale === 'ar' ? 'هوية الفنان الموسيقية' : 'Artist sound identity'}
+        className="mb-9 rounded-[1.5rem] border border-primary/20 bg-surface/75 p-5 sm:p-7"
+      >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.19em] text-primary">ARTIST WORLD</p>
-            <h2 className="mt-2 text-xl font-semibold text-ink">{locale === 'ar' ? 'البصمة الموسيقية' : 'The sound behind the name'}</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">{artist.bio || (locale === 'ar' ? 'تابع إصدارات الفنان واكتشف أسلوبه الموسيقي.' : 'Explore this artist’s releases and musical identity.')}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.19em] text-primary">
+              ARTIST WORLD
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-ink">
+              {locale === 'ar' ? 'البصمة الموسيقية' : 'The sound behind the name'}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
+              {artist.bio ||
+                (locale === 'ar'
+                  ? 'تابع إصدارات الفنان واكتشف أسلوبه الموسيقي.'
+                  : 'Explore this artist’s releases and musical identity.')}
+            </p>
           </div>
-          <Link href={`/${locale}/soundspace`} className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary transition hover:bg-primary/10">
+          <Link
+            href={`/${locale}/soundspace`}
+            className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary transition hover:bg-primary/10"
+          >
             {locale === 'ar' ? 'اكتشف أصوات مشابهة' : 'Explore your soundspace'}
           </Link>
         </div>
         <div className="mt-5 flex flex-wrap gap-2">
           {genres.map((genre) => (
-            <Link key={genre.id} href={`/${locale}/discover?genre=${encodeURIComponent(genre.slug)}`}
-              className="inline-flex min-h-10 items-center rounded-full border border-white/15 bg-white/5 px-4 text-xs text-ink transition hover:border-primary/50">
+            <Link
+              key={genre.id}
+              href={`/${locale}/discover?genre=${encodeURIComponent(genre.slug)}`}
+              className="inline-flex min-h-10 items-center rounded-full border border-white/15 bg-white/5 px-4 text-xs text-ink transition hover:border-primary/50"
+            >
               {locale === 'ar' ? genre.labelAr : genre.labelEn}
             </Link>
           ))}
         </div>
         <div className="mt-5 flex flex-wrap gap-3 text-xs text-muted">
-          <span className="rounded-lg border border-white/10 px-3 py-2">{locale === 'ar' ? `${fullyAiCount} أغنية مولّدة بالكامل بالـAI` : `${fullyAiCount} fully AI-generated tracks`}</span>
-          <span className="rounded-lg border border-white/10 px-3 py-2">{locale === 'ar' ? `${assistedCount} أغنية بمساعدة AI` : `${assistedCount} AI-assisted tracks`}</span>
+          <span className="rounded-lg border border-white/10 px-3 py-2">
+            {locale === 'ar'
+              ? `${fullyAiCount} أغنية مولّدة بالكامل بالـAI`
+              : `${fullyAiCount} fully AI-generated tracks`}
+          </span>
+          <span className="rounded-lg border border-white/10 px-3 py-2">
+            {locale === 'ar'
+              ? `${assistedCount} أغنية بمساعدة AI`
+              : `${assistedCount} AI-assisted tracks`}
+          </span>
         </div>
       </section>
 

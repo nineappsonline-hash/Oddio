@@ -62,10 +62,15 @@ export default async function HomePage({
   return (
     <div className="space-y-8">
       <section className="oddio-editorial-hero relative isolate overflow-hidden rounded-[2rem] px-6 py-8 shadow-[0_24px_80px_#0007] sm:px-10 sm:py-12">
-        <div className="pointer-events-none absolute -end-16 -top-28 h-72 w-72 rounded-full bg-[#A95F52]/10 blur-3xl" aria-hidden="true" />
+        <div
+          className="pointer-events-none absolute -end-16 -top-28 h-72 w-72 rounded-full bg-[#A95F52]/10 blur-3xl"
+          aria-hidden="true"
+        />
         <div className="relative grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_minmax(220px,.64fr)]">
           <div className="relative z-10 max-w-xl">
-            <p className="oddio-editorial-kicker text-[11px] font-bold sm:text-xs">{t('home.eyebrow')}</p>
+            <p className="oddio-editorial-kicker text-[11px] font-bold sm:text-xs">
+              {t('home.eyebrow')}
+            </p>
             <h1 className="oddio-editorial-headline mt-5 max-w-xl text-4xl sm:text-5xl lg:text-6xl">
               {locale === 'ar' ? 'مساحتك الخاصة للموسيقى.' : 'Your own soundspace.'}
             </h1>
@@ -75,14 +80,13 @@ export default async function HomePage({
                 : 'Discover what moves you. Find new sounds, revisit favorites, and explore thoughtfully curated AI music.'}
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              {hero ? (
-                <PlayButton track={hero} queue={heroQueue} size="lg" />
-              ) : null}
+              {hero ? <PlayButton track={hero} queue={heroQueue} size="lg" /> : null}
               <Link
                 href={`/${locale}/discover`}
                 className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#EAB997]/45 px-5 text-sm font-semibold text-[#F8F0E9] transition hover:bg-white/10 focus-visible:outline"
               >
-                {t('home.explore')} <ArrowRight className="ms-2 h-4 w-4 rtl:-scale-x-100" />
+                {t('home.explore')}{' '}
+                <ArrowRight className="ms-2 h-4 w-4 rtl:-scale-x-100" />
               </Link>
             </div>
           </div>
@@ -98,20 +102,38 @@ export default async function HomePage({
                 />
               </div>
             ) : (
-              <div className="aspect-square rounded-[1.5rem] border border-[#EAB997]/20 bg-[radial-gradient(circle_at_60%_40%,#7E4B45,#26171B_65%)]" aria-hidden="true" />
+              <div
+                className="aspect-square rounded-[1.5rem] border border-[#EAB997]/20 bg-[radial-gradient(circle_at_60%_40%,#7E4B45,#26171B_65%)]"
+                aria-hidden="true"
+              />
             )}
-            {hero ? <p className="mt-5 truncate text-center text-xs font-medium text-[#E4C4B1]">{hero.title} · {hero.artist?.name}</p> : null}
+            {hero ? (
+              <p className="mt-5 truncate text-center text-xs font-medium text-[#E4C4B1]">
+                {hero.title} · {hero.artist?.name}
+              </p>
+            ) : null}
           </div>
         </div>
       </section>
 
       <section className="flex flex-col gap-4 rounded-[1.5rem] border border-primary/25 bg-[linear-gradient(120deg,#321C26,#1C1518)] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
         <div className="max-w-xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">ODDIO SOUNDSCAPE</p>
-          <h2 className="mt-2 text-2xl font-semibold text-ink">{locale === 'ar' ? 'الموسيقى اللي تناسب مودك.' : 'Tune in to your mood.'}</h2>
-          <p className="mt-2 text-sm leading-6 text-muted">{locale === 'ar' ? 'اختار المود ودرجة الاكتشاف، واعرف ليه رشحنالك كل أغنية.' : 'Shape a mix with the Mood Shift and Taste Dial. See why every track was selected.'}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+            ODDIO SOUNDSCAPE
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-ink">
+            {locale === 'ar' ? 'الموسيقى اللي تناسب مودك.' : 'Tune in to your mood.'}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            {locale === 'ar'
+              ? 'اختار المود ودرجة الاكتشاف، واعرف ليه رشحنالك كل أغنية.'
+              : 'Shape a mix with the Mood Shift and Taste Dial. See why every track was selected.'}
+          </p>
         </div>
-        <Link href={`/${locale}/soundspace`} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-bold text-[#211518] transition hover:bg-primary-strong">
+        <Link
+          href={`/${locale}/soundspace`}
+          className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-bold text-[#211518] transition hover:bg-primary-strong"
+        >
           {locale === 'ar' ? 'جرّب Soundspace' : 'Enter Soundspace'}
           <ArrowRight className="h-4 w-4 rtl:-scale-x-100" />
         </Link>
@@ -235,13 +257,20 @@ export default async function HomePage({
         <SectionHeader title={t('home.genres')} />
         <HorizontalCarousel label="Genres">
           {data.genres.map((genre, index) => (
-            <Link key={genre.id} href={`/${locale}/genres/${genre.slug}`}
+            <Link
+              key={genre.id}
+              href={`/${locale}/genres/${genre.slug}`}
               className="group relative flex h-44 w-48 shrink-0 snap-start flex-col justify-end overflow-hidden rounded-[1.5rem] border border-white/15 p-5 shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/70 hover:shadow-[0_10px_40px_#9d5cff44] sm:h-48 sm:w-56"
-              >
+            >
               <GenreArtwork slug={genre.slug} index={index} />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#090818]/95 via-[#090818]/25 to-transparent" />
-              <span className="relative text-xl font-black text-white">{genreLabel(genre)}</span>
-              <span className="relative mt-1 text-xs font-medium text-white/65">{genre.count} tracks <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" /></span>
+              <span className="relative text-xl font-black text-white">
+                {genreLabel(genre)}
+              </span>
+              <span className="relative mt-1 text-xs font-medium text-white/65">
+                {genre.count} tracks{' '}
+                <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" />
+              </span>
             </Link>
           ))}
         </HorizontalCarousel>
@@ -257,8 +286,13 @@ export default async function HomePage({
               className="group relative flex h-52 w-40 shrink-0 snap-start flex-col justify-end overflow-hidden rounded-[1.5rem] border border-white/15 p-4 shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/70 hover:shadow-[0_10px_40px_#9d5cff44] sm:h-60 sm:w-44"
             >
               <MoodArtwork slug={mood.slug} />
-              <span className="relative text-lg font-black text-white">{genreLabel(mood)}</span>
-              <span className="relative mt-1 text-xs text-white/75">{mood.count} tracks <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" /></span>
+              <span className="relative text-lg font-black text-white">
+                {genreLabel(mood)}
+              </span>
+              <span className="relative mt-1 text-xs text-white/75">
+                {mood.count} tracks{' '}
+                <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" />
+              </span>
             </Link>
           ))}
         </HorizontalCarousel>

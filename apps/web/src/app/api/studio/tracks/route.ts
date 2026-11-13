@@ -5,7 +5,10 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { assessAudioQuality } from '@ai-music/audio';
 import { trackDraftInput } from '@ai-music/contracts';
-import { assertUploadAttestations, RIGHTS_AUDIT_ACTION } from '@/lib/moderation/upload-attestations';
+import {
+  assertUploadAttestations,
+  RIGHTS_AUDIT_ACTION,
+} from '@/lib/moderation/upload-attestations';
 import { audit } from '@/lib/data/db';
 import { audioPolicy, env, demoMode } from '@/lib/env';
 import { probeAudio, transcodeToMp3 } from '@/lib/audio/probe';
@@ -61,7 +64,10 @@ export async function POST(request: Request) {
     rateLimit(`upload:${user.id}`, 12, 60 * 60_000);
 
     const form = await request.formData();
-    assertUploadAttestations({ rightsConfirmed: field(form, 'rightsConfirmed'), voiceConfirmed: field(form, 'voiceConfirmed') });
+    assertUploadAttestations({
+      rightsConfirmed: field(form, 'rightsConfirmed'),
+      voiceConfirmed: field(form, 'voiceConfirmed'),
+    });
     const audioFile = form.get('audio');
     if (!(audioFile instanceof File) || audioFile.size === 0) {
       throw Errors.invalid('Choose an audio file to upload');
@@ -115,7 +121,10 @@ export async function POST(request: Request) {
 
     let playablePath = originalPath;
     if (decision.transcodeTarget) {
-      const renditionPath = path.join(dir, `${sha256}-${uploadKey}-${decision.transcodeTarget}.mp3`);
+      const renditionPath = path.join(
+        dir,
+        `${sha256}-${uploadKey}-${decision.transcodeTarget}.mp3`,
+      );
       await transcodeToMp3(
         originalPath,
         renditionPath,
@@ -182,7 +191,12 @@ export async function POST(request: Request) {
         idempotencyKey: `upload:${user.id}:${sha256}:${new Date().toISOString().slice(0, 10)}`,
         dailyLimit: env.uploadDailyLimit,
       });
-      if (!db.auditLogs.some((entry) => entry.entityId === createdTrack.id && entry.action === RIGHTS_AUDIT_ACTION)) {
+      if (
+        !db.auditLogs.some(
+          (entry) =>
+            entry.entityId === createdTrack.id && entry.action === RIGHTS_AUDIT_ACTION,
+        )
+      ) {
         audit(db, user, RIGHTS_AUDIT_ACTION, 'track', createdTrack.id);
       }
       return createdTrack;

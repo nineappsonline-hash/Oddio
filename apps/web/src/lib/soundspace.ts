@@ -29,27 +29,42 @@ export function buildSoundspace(
   const filtered = tracks.filter((track) => {
     if (mood === 'all') return true;
     const haystack = [
-      track.genre?.slug ?? '', track.genre?.labelEn ?? '', track.genre?.labelAr ?? '',
+      track.genre?.slug ?? '',
+      track.genre?.labelEn ?? '',
+      track.genre?.labelAr ?? '',
       ...(track.moods ?? []).flatMap((item) => [item.slug, item.labelEn, item.labelAr]),
-    ].join(' ').toLowerCase();
+    ]
+      .join(' ')
+      .toLowerCase();
     return labels.some((label) => haystack.includes(label));
   });
   const maxPlays = Math.max(1, ...filtered.map((track) => track.qualifiedPlays));
-  const newest = Math.max(1, ...filtered.map((track) => Date.parse(track.releaseAt) || 0));
-  const oldest = Math.min(newest, ...filtered.map((track) => Date.parse(track.releaseAt) || newest));
+  const newest = Math.max(
+    1,
+    ...filtered.map((track) => Date.parse(track.releaseAt) || 0),
+  );
+  const oldest = Math.min(
+    newest,
+    ...filtered.map((track) => Date.parse(track.releaseAt) || newest),
+  );
   const score = (track: CatalogTrack): number => {
-    const familiarity = Math.log1p(Math.max(0, track.qualifiedPlays)) / Math.log1p(maxPlays);
+    const familiarity =
+      Math.log1p(Math.max(0, track.qualifiedPlays)) / Math.log1p(maxPlays);
     const recency = (Date.parse(track.releaseAt) - oldest) / Math.max(1, newest - oldest);
     if (discovery === 'familiar') return familiarity * 0.82 + recency * 0.18;
     if (discovery === 'surprise') return (1 - familiarity) * 0.72 + recency * 0.28;
     return familiarity * 0.45 + recency * 0.55;
   };
-  const ordered = [...filtered].sort((a, b) => score(b) - score(a) || a.id.localeCompare(b.id));
+  const ordered = [...filtered].sort(
+    (a, b) => score(b) - score(a) || a.id.localeCompare(b.id),
+  );
   const chosen: CatalogTrack[] = [];
   const artistUsage = new Map<string, number>();
   const remaining = [...ordered];
   while (chosen.length < Math.min(count, ordered.length) && remaining.length) {
-    const nextIndex = remaining.findIndex((track) => (artistUsage.get(track.artistId) ?? 0) === 0);
+    const nextIndex = remaining.findIndex(
+      (track) => (artistUsage.get(track.artistId) ?? 0) === 0,
+    );
     const [item] = remaining.splice(nextIndex === -1 ? 0 : nextIndex, 1);
     if (!item) break;
     chosen.push(item);
@@ -57,8 +72,13 @@ export function buildSoundspace(
   }
   return chosen.map((track) => ({
     track,
-    why: mood !== 'all' ? 'mood'
-      : discovery === 'surprise' ? 'explore'
-        : discovery === 'familiar' ? 'popular' : 'new',
+    why:
+      mood !== 'all'
+        ? 'mood'
+        : discovery === 'surprise'
+          ? 'explore'
+          : discovery === 'familiar'
+            ? 'popular'
+            : 'new',
   }));
 }

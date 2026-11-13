@@ -13,7 +13,11 @@ import { Field } from '@/components/ui/Field';
 
 const REASONS = [
   { value: 'copyright', en: 'Copyright / rights', ar: 'حقوق النشر والتوزيع' },
-  { value: 'impersonation', en: 'Voice / identity impersonation', ar: 'انتحال صوت أو هوية' },
+  {
+    value: 'impersonation',
+    en: 'Voice / identity impersonation',
+    ar: 'انتحال صوت أو هوية',
+  },
   { value: 'explicit_content', en: 'Prohibited explicit content', ar: 'محتوى غير مسموح' },
   { value: 'harassment', en: 'Harassment', ar: 'مضايقة' },
   { value: 'spam', en: 'Spam', ar: 'محتوى مزعج أو مكرر' },
@@ -53,9 +57,19 @@ export function ReportButton({
       });
       setOpen(false);
       setDetails('');
-      toast(ar ? 'تم إرسال البلاغ للمراجعة.' : 'Report submitted for moderator review.', 'success');
+      toast(
+        ar ? 'تم إرسال البلاغ للمراجعة.' : 'Report submitted for moderator review.',
+        'success',
+      );
     } catch (error) {
-      toast(error instanceof Error ? error.message : (ar ? 'تعذر إرسال البلاغ.' : 'Could not submit the report.'), 'error');
+      toast(
+        error instanceof Error
+          ? error.message
+          : ar
+            ? 'تعذر إرسال البلاغ.'
+            : 'Could not submit the report.',
+        'error',
+      );
     } finally {
       setPending(false);
     }
@@ -98,7 +112,11 @@ export function ReportButton({
         </Field>
         <Field
           label={ar ? 'التفاصيل' : 'Details'}
-          hint={ar ? 'اختياري، لكن يساعد فريق المراجعة.' : 'Optional, but helpful for moderators.'}
+          hint={
+            ar
+              ? 'اختياري، لكن يساعد فريق المراجعة.'
+              : 'Optional, but helpful for moderators.'
+          }
           htmlFor="report-details"
         >
           <textarea

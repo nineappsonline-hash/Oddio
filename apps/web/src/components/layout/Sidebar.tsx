@@ -32,7 +32,14 @@ export function Logo({ locale, compact = false }: { locale: string; compact?: bo
       aria-label="Oddio"
     >
       <span className="relative flex h-12 w-12 shrink-0">
-        <Image src="/oddio-logo-hq.png" alt="Oddio" width={48} height={48} className="h-full w-full object-contain" priority />
+        <Image
+          src="/oddio-logo-hq.png"
+          alt="Oddio"
+          width={48}
+          height={48}
+          className="h-full w-full object-contain"
+          priority
+        />
       </span>
       {!compact ? (
         <span className="leading-tight">
@@ -57,7 +64,11 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
   const items = [
     { href: `/${locale}`, label: t('nav.home'), icon: Home, exact: true },
     { href: `/${locale}/discover`, label: t('nav.discover'), icon: Compass },
-    { href: `/${locale}/soundspace`, label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace', icon: Sparkles },
+    {
+      href: `/${locale}/soundspace`,
+      label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace',
+      icon: Sparkles,
+    },
     { href: `/${locale}/charts`, label: t('nav.charts'), icon: BarChart3 },
     { href: `/${locale}/search`, label: t('nav.search'), icon: Search },
   ];
@@ -134,7 +145,10 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
           href={`/${locale}/apply/artist`}
           className="group/artist relative mt-4 flex items-center gap-3 overflow-hidden rounded-2xl border border-amber-200/50 bg-gradient-to-r from-[#f59e0b] via-[#fb7185] to-[#e879f9] px-3 py-3.5 text-[#21102a] shadow-[0_8px_32px_rgba(251,113,133,0.32)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_42px_rgba(251,113,133,0.55)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
         >
-          <span aria-hidden="true" className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 group-hover/artist:translate-x-full" />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 group-hover/artist:translate-x-full"
+          />
           <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/25 ring-1 ring-white/40">
             <Mic2 className="h-5 w-5" strokeWidth={2.5} />
           </span>

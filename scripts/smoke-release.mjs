@@ -22,15 +22,24 @@ let failed = 0;
 for (const route of routes) {
   const url = base + route.path;
   try {
-    const response = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(15_000) });
+    const response = await fetch(url, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(15_000),
+    });
     const body = await response.text();
     const contentType = response.headers.get('content-type') || '';
     const problems = [];
     if (!response.ok) problems.push(`HTTP ${response.status}`);
-    if (route.lang && !new RegExp(`<html[^>]*\\blang=["']${route.lang}["']`, 'i').test(body)) {
+    if (
+      route.lang &&
+      !new RegExp(`<html[^>]*\\blang=["']${route.lang}["']`, 'i').test(body)
+    ) {
       problems.push(`missing <html lang=${route.lang}>`);
     }
-    if (route.dir && !new RegExp(`<html[^>]*\\bdir=["']${route.dir}["']`, 'i').test(body)) {
+    if (
+      route.dir &&
+      !new RegExp(`<html[^>]*\\bdir=["']${route.dir}["']`, 'i').test(body)
+    ) {
       problems.push(`missing <html dir=${route.dir}>`);
     }
     if (route.contentType && !contentType.includes(route.contentType)) {
@@ -47,7 +56,9 @@ for (const route of routes) {
     }
   } catch (error) {
     failed += 1;
-    process.stderr.write(`FAIL ${route.path}: ${error instanceof Error ? error.message : String(error)}\n`);
+    process.stderr.write(
+      `FAIL ${route.path}: ${error instanceof Error ? error.message : String(error)}\n`,
+    );
   }
 }
 if (failed) {

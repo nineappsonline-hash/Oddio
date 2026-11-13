@@ -3,6 +3,7 @@
 Status: **in progress**. Product source: EchoPlay Master Plan v1.1, adapted for the actual **Oddio** brand and repository. This tracker is not a claim that all roadmap features are delivered.
 
 ## Non-negotiable product principles
+
 - Music-first: direct play, persistent controls, minimal distractions.
 - AI-only music with human moderation, licensing and consent disclosures.
 - Fully supported Arabic RTL and English LTR.
@@ -11,6 +12,7 @@ Status: **in progress**. Product source: EchoPlay Master Plan v1.1, adapted for 
 - Preserve guest listening and free, ad-free positioning unless the product owner changes policy.
 
 ## Phase 0 — Architecture and production-readiness audit (BLOCKING)
+
 - [x] Identify the actual Oddio repo and Vercel deployment.
 - [x] Verify existing routes, player, studio, admin and Supabase adapter.
 - [ ] Confirm Vercel environment settings without revealing secrets.
@@ -18,9 +20,10 @@ Status: **in progress**. Product source: EchoPlay Master Plan v1.1, adapted for 
 - [ ] Run typecheck, lint, unit tests, RLS tests and end-to-end tests.
 - [ ] Review signed stream responses, abuse controls, authentication, quotas and content consent.
 - [ ] Resolve contradictory production notes around demo JSON versus Supabase.
-Exit gate: secure persistence and cross-instance behavior verified in staging.
+      Exit gate: secure persistence and cross-instance behavior verified in staging.
 
 ## Phase 1 — Music-first design foundation
+
 - [x] Introduce branded Obsidian/Oxblood/Copper color tokens.
 - [x] Give the homepage a playable Soundspace presentation with artwork.
 - [x] Respect current locale in a homepage track link.
@@ -30,6 +33,7 @@ Exit gate: secure persistence and cross-instance behavior verified in staging.
 - [ ] User-test navigation and first-play success.
 
 ## Phase 2 — Reliable core playback
+
 - [x] Preserve tab-scoped queue, current track and playback preferences with validation; restore paused.
 - [x] Add retry authorization for failed playback in mini and expanded players.
 - [x] Only send a playback-start event after the audio element begins playing.
@@ -39,9 +43,10 @@ Exit gate: secure persistence and cross-instance behavior verified in staging.
 - [ ] Persist/restore queue safely, including unavailable items and refresh.
 - [ ] Protect against duplicate playback events and lost favorite writes.
 - [ ] Add observability for play success, first-audio latency, buffering and crashes.
-Exit gate: playback success and recovery budgets met in real test sessions.
+      Exit gate: playback success and recovery budgets met in real test sessions.
 
 ## Phase 3 — Search, library, discovery
+
 - [x] Search Arabic with normalized hamza, diacritics and alef/ya forms; normalize Latin accents.
 - [x] Rank matching tracks by normalized exact/title/artist relevance before plays.
 - [x] Wire Search, Discover and Library to the configured Supabase snapshot in non-demo mode.
@@ -55,9 +60,10 @@ Exit gate: playback success and recovery budgets met in real test sessions.
 - [ ] Library sorting, bulk actions, undo, removal explanations and duplicate handling.
 - [ ] Transparent preference controls, hide/unlike feedback and diversity limits.
 - [ ] Algorithmic Daily Flow only after sufficient consented signals.
-Exit gate: validated task completion and search success benchmarks.
+      Exit gate: validated task completion and search success benchmarks.
 
 ## Phase 4 — Distinctive AI-first identity
+
 - [x] Launch a separate bilingual Soundspace route with Mood Shift and a three-level Taste Dial.
 - [x] Build deterministic, testable music selection with per-artist diversity and visible reason labels; no claim of trained personalized AI.
 - [x] Offer a low-distraction view without removing the persistent playback controls.
@@ -70,9 +76,10 @@ Exit gate: validated task completion and search success benchmarks.
 - [ ] Taste Dial (familiar to surprising) with predictable, explainable outputs.
 - [ ] Soundspace and distraction-free listening, with reduced motion support.
 - [ ] Mood Shift and Explain My Mix, initially deterministic before advanced recommendations.
-Exit gate: demonstrate improvements to discovery without deceptive AI claims.
+      Exit gate: demonstrate improvements to discovery without deceptive AI claims.
 
 ## Phase 5 — Trust, creators, growth
+
 - [x] Require rights and voice/likeness consent declarations on demo and production upload paths; write audit actions for submission.
 - [x] Reject exact duplicate uploaded audio hashes, with existing production R2 hash verification retained.
 - [x] Route report creation and moderation closure through Supabase snapshots outside demo mode.
@@ -90,6 +97,7 @@ Exit gate: demonstrate improvements to discovery without deceptive AI claims.
 - [ ] Analytics privacy, rate limits, cost controls and backup restore drills.
 
 ## Phase 6 — Release and measurement
+
 - [x] Add Node HTTP bilingual release smoke suite and wire it into CI after the Next production build.
 - [x] Serve Sitemap from Supabase when not in demo mode and list Soundspace.
 - [x] Improve error recovery localization, loading-state accessibility and focus contrast.
@@ -103,5 +111,6 @@ Exit gate: demonstrate improvements to discovery without deceptive AI claims.
 - [ ] Promote to production only after explicit release checks.
 
 ## Important safeguards
+
 This initial UI PR **does not** switch production databases, alter rights/consent rules, migrate data, enable premium billing, or promise features not implemented.
 Changes are isolated to a review branch; a preview is not production release.

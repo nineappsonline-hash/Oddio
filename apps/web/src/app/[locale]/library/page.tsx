@@ -53,10 +53,13 @@ export default async function LibraryPage({
   const library = getLibraryData(db, viewer);
   const history = getHistoryData(db, viewer);
   const { likedSort: requestedSort } = await searchParams;
-  const likedSort = requestedSort === 'title' || requestedSort === 'popular' ? requestedSort : 'recent';
+  const likedSort =
+    requestedSort === 'title' || requestedSort === 'popular' ? requestedSort : 'recent';
   const likedTracks = [...library.likedTracks];
-  if (likedSort === 'title') likedTracks.sort((a, b) => a.title.localeCompare(b.title, locale));
-  if (likedSort === 'popular') likedTracks.sort((a, b) => b.qualifiedPlays - a.qualifiedPlays);
+  if (likedSort === 'title')
+    likedTracks.sort((a, b) => a.title.localeCompare(b.title, locale));
+  if (likedSort === 'popular')
+    likedTracks.sort((a, b) => b.qualifiedPlays - a.qualifiedPlays);
 
   return (
     <div className="space-y-12">
@@ -70,24 +73,43 @@ export default async function LibraryPage({
         }
       />
 
-      <nav aria-label={locale === 'ar' ? 'أقسام المكتبة' : 'Library sections'} className="flex flex-wrap gap-2">
-        <a href="#liked" className="chip">{t('library.likes')}</a>
-        <a href="#playlists" className="chip">{t('library.playlists')}</a>
-        <a href="#recent" className="chip">{t('library.history')}</a>
+      <nav
+        aria-label={locale === 'ar' ? 'أقسام المكتبة' : 'Library sections'}
+        className="flex flex-wrap gap-2"
+      >
+        <a href="#liked" className="chip">
+          {t('library.likes')}
+        </a>
+        <a href="#playlists" className="chip">
+          {t('library.playlists')}
+        </a>
+        <a href="#recent" className="chip">
+          {t('library.history')}
+        </a>
       </nav>
 
       <section id="liked" className="scroll-mt-24">
         <SectionHeader title={t('library.likes')} />
         {likedTracks.length > 0 ? (
-          <nav aria-label={locale === 'ar' ? 'ترتيب الأغاني المفضلة' : 'Sort liked songs'} className="mb-4 flex flex-wrap gap-2">
-            {([
-              ['recent', locale === 'ar' ? 'المضافة مؤخرًا' : 'Recently added'],
-              ['title', locale === 'ar' ? 'الاسم' : 'Title'],
-              ['popular', locale === 'ar' ? 'الأكثر استماعًا' : 'Most played'],
-            ] as const).map(([value, label]) => (
-              <Link key={value} href={`/${locale}/library?likedSort=${value}#liked`}
+          <nav
+            aria-label={locale === 'ar' ? 'ترتيب الأغاني المفضلة' : 'Sort liked songs'}
+            className="mb-4 flex flex-wrap gap-2"
+          >
+            {(
+              [
+                ['recent', locale === 'ar' ? 'المضافة مؤخرًا' : 'Recently added'],
+                ['title', locale === 'ar' ? 'الاسم' : 'Title'],
+                ['popular', locale === 'ar' ? 'الأكثر استماعًا' : 'Most played'],
+              ] as const
+            ).map(([value, label]) => (
+              <Link
+                key={value}
+                href={`/${locale}/library?likedSort=${value}#liked`}
                 aria-current={likedSort === value ? 'page' : undefined}
-                className={likedSort === value ? 'chip chip-active' : 'chip'}>{label}</Link>
+                className={likedSort === value ? 'chip chip-active' : 'chip'}
+              >
+                {label}
+              </Link>
             ))}
           </nav>
         ) : null}

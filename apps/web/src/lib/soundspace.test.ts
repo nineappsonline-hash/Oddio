@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import type { CatalogTrack } from './data/queries';
 import { buildSoundspace } from './soundspace';
 
-function sample(id: string, artistId: string, moods: string[], plays: number, date: string): CatalogTrack {
+function sample(
+  id: string,
+  artistId: string,
+  moods: string[],
+  plays: number,
+  date: string,
+): CatalogTrack {
   return {
     id,
     artistId,
@@ -12,8 +18,20 @@ function sample(id: string, artistId: string, moods: string[], plays: number, da
     durationMs: 120000,
     qualifiedPlays: plays,
     releaseAt: date,
-    genre: { id: 'g', slug: 'ambient', labelEn: 'Ambient', labelAr: 'هادئ', active: true },
-    moods: moods.map((mood) => ({ id: mood, slug: mood, labelEn: mood, labelAr: mood, active: true })),
+    genre: {
+      id: 'g',
+      slug: 'ambient',
+      labelEn: 'Ambient',
+      labelAr: 'هادئ',
+      active: true,
+    },
+    moods: moods.map((mood) => ({
+      id: mood,
+      slug: mood,
+      labelEn: mood,
+      labelAr: mood,
+      active: true,
+    })),
   } as unknown as CatalogTrack;
 }
 

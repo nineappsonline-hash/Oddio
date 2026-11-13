@@ -2,7 +2,14 @@ import { z } from 'zod';
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { demoMode } from '@/lib/env';
 import { Errors } from '@/lib/errors';
-import { assertSameOrigin, clientIp, jsonError, jsonOk, parseBody, rateLimit } from '@/lib/api-helpers';
+import {
+  assertSameOrigin,
+  clientIp,
+  jsonError,
+  jsonOk,
+  parseBody,
+  rateLimit,
+} from '@/lib/api-helpers';
 
 export const runtime = 'nodejs';
 
@@ -20,7 +27,9 @@ export async function POST(request: Request) {
     if (error && !/already confirmed|already registered|not found/i.test(error.message)) {
       throw Errors.invalid(error.message);
     }
-    return jsonOk({ message: 'If this account needs confirmation, a new email has been requested.' });
+    return jsonOk({
+      message: 'If this account needs confirmation, a new email has been requested.',
+    });
   } catch (error) {
     return jsonError(error);
   }

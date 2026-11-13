@@ -40,9 +40,7 @@ export async function generateMetadata({
   const { locale } = await params;
   const safeLocale: Locale = isLocale(locale) ? locale : 'en';
   const title =
-    safeLocale === 'ar'
-      ? 'Oddio — عالمك الموسيقي'
-      : 'Oddio — Your music universe';
+    safeLocale === 'ar' ? 'Oddio — عالمك الموسيقي' : 'Oddio — Your music universe';
   const description =
     safeLocale === 'ar'
       ? 'منصة عالمية لسماع ونشر الموسيقى المعمولة بالذكاء الاصطناعي، ببلاش ومن غير إعلانات وبيتراجع بشريًا قبل ما تنزل.'
@@ -52,7 +50,11 @@ export async function generateMetadata({
     title: { default: title, template: `%s · Oddio` },
     description,
     applicationName: 'Oddio',
-    icons: { icon: '/oddio-logo-hq.png', shortcut: '/oddio-logo-hq.png', apple: '/oddio-logo-hq.png' },
+    icons: {
+      icon: '/oddio-logo-hq.png',
+      shortcut: '/oddio-logo-hq.png',
+      apple: '/oddio-logo-hq.png',
+    },
     alternates: {
       canonical: `${env.siteUrl}/${safeLocale}`,
       languages: { en: `${env.siteUrl}/en`, ar: `${env.siteUrl}/ar` },

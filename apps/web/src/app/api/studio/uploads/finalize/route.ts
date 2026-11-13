@@ -1,13 +1,20 @@
 import crypto from 'node:crypto';
 import { z } from 'zod';
 import { trackDraftInput } from '@ai-music/contracts';
-import { assertUploadAttestations, RIGHTS_AUDIT_ACTION } from '@/lib/moderation/upload-attestations';
+import {
+  assertUploadAttestations,
+  RIGHTS_AUDIT_ACTION,
+} from '@/lib/moderation/upload-attestations';
 import { audit } from '@/lib/data/db';
 import { getSessionUser } from '@/lib/auth/session';
 import { assertSameOrigin, jsonError, jsonOk, rateLimit } from '@/lib/api-helpers';
 import { AppError, Errors } from '@/lib/errors';
 import { env, demoMode } from '@/lib/env';
-import { loadDbFromSupabase, persistChanges, serviceClient } from '@/lib/data/supabase-store';
+import {
+  loadDbFromSupabase,
+  persistChanges,
+  serviceClient,
+} from '@/lib/data/supabase-store';
 import { createTrackFromUpload } from '@/lib/data/mutations';
 import { presignR2Head, presignR2OriginalGet } from '@/lib/storage/r2-presign';
 
@@ -18,7 +25,10 @@ const schema = trackDraftInput.extend({
   bytes: z.coerce.number().int().positive(),
   contentType: z.string().max(120),
   releaseAt: z.string().datetime({ offset: true }).optional(),
-  artworkAccent: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#9D5CFF'),
+  artworkAccent: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .default('#9D5CFF'),
 });
 function field(form: FormData, key: string) {
   const value = form.get(key);
@@ -33,7 +43,10 @@ export async function POST(request: Request) {
     if (!user.isArtistManager) throw Errors.forbidden();
     rateLimit(`finalize:${user.id}`, 12, 60 * 60_000);
     const form = await request.formData();
-    assertUploadAttestations({ rightsConfirmed: field(form, 'rightsConfirmed'), voiceConfirmed: field(form, 'voiceConfirmed') });
+    assertUploadAttestations({
+      rightsConfirmed: field(form, 'rightsConfirmed'),
+      voiceConfirmed: field(form, 'voiceConfirmed'),
+    });
     const input = schema.parse({
       artistId: field(form, 'artistId'),
       albumId: field(form, 'albumId') || undefined,
@@ -57,21 +70,36 @@ export async function POST(request: Request) {
     if (!new RegExp(`^incoming/${user.id}/[a-f0-9-]{36}$`).test(input.objectKey)) {
       throw Errors.forbidden();
     }
-    if (input.bytes > Math.min(env.audioMaxUploadBytes, 25 * 1024 * 1024)) throw Errors.invalid('Audio exceeds upload limit');
-    if (!['audio/mpeg','audio/mp3'].includes(input.contentType)) {
+    if (input.bytes > Math.min(env.audioMaxUploadBytes, 25 * 1024 * 1024))
+      throw Errors.invalid('Audio exceeds upload limit');
+    if (!['audio/mpeg', 'audio/mp3'].includes(input.contentType)) {
       throw Errors.invalid('Unsupported audio format');
     }
-    const head = await fetch(presignR2Head(input.objectKey), { method: 'HEAD', cache: 'no-store' });
-    if (!head.ok) throw new AppError('upload_not_found', 'Audio upload was not found in R2.', 422);
+    const head = await fetch(presignR2Head(input.objectKey), {
+      method: 'HEAD',
+      cache: 'no-store',
+    });
+    if (!head.ok)
+      throw new AppError('upload_not_found', 'Audio upload was not found in R2.', 422);
     const storedBytes = Number(head.headers.get('content-length'));
-    if (!Number.isSafeInteger(storedBytes) || storedBytes <= 0 || storedBytes !== input.bytes) {
+    if (
+      !Number.isSafeInteger(storedBytes) ||
+      storedBytes <= 0 ||
+      storedBytes !== input.bytes
+    ) {
       throw Errors.invalid('Stored audio size does not match the uploaded file');
     }
     // Hash the actual R2 bytes, never trust a client-supplied checksum.
     // Stream rather than buffering a potentially 100 MB audio file in memory.
-    const original = await fetch(presignR2OriginalGet(input.objectKey), { cache: 'no-store' });
+    const original = await fetch(presignR2OriginalGet(input.objectKey), {
+      cache: 'no-store',
+    });
     if (!original.ok || !original.body) {
-      throw new AppError('upload_unreadable', 'Unable to verify the uploaded audio.', 422);
+      throw new AppError(
+        'upload_unreadable',
+        'Unable to verify the uploaded audio.',
+        422,
+      );
     }
     const hasher = crypto.createHash('sha256');
     let verifiedBytes = 0;
@@ -99,7 +127,11 @@ export async function POST(request: Request) {
       .limit(1);
     if (duplicateError) throw new Error(duplicateError.message);
     if (duplicates?.length) {
-      throw new AppError('duplicate_audio', 'This exact audio file has already been uploaded.', 409);
+      throw new AppError(
+        'duplicate_audio',
+        'This exact audio file has already been uploaded.',
+        409,
+      );
     }
     const before = await loadDbFromSupabase();
     const after = structuredClone(before);
@@ -125,45 +157,71 @@ export async function POST(request: Request) {
       audio: {
         kind: 'original',
         objectKey: input.objectKey,
-        format: input.contentType === 'audio/mpeg' ? 'mp3' : input.contentType.split('/')[1] || 'unknown',
+        format:
+          input.contentType === 'audio/mpeg'
+            ? 'mp3'
+            : input.contentType.split('/')[1] || 'unknown',
         // Provisional nonzero metadata required by audio_assets CHECK constraints.
         // Worker replaces these with ffprobe measurements.
-        bitrateKbps: 1, sampleRate: 1, channels: 2,
-        bytes: storedBytes, sha256: verifiedSha256,
+        bitrateKbps: 1,
+        sampleRate: 1,
+        channels: 2,
+        bytes: storedBytes,
+        sha256: verifiedSha256,
         processingStatus: 'pending',
       },
       idempotencyKey: `r2:${input.objectKey}`,
       dailyLimit: env.uploadDailyLimit,
     });
-    if (!after.auditLogs.some((entry) => entry.entityId === track.id && entry.action === RIGHTS_AUDIT_ACTION)) {
+    if (
+      !after.auditLogs.some(
+        (entry) => entry.entityId === track.id && entry.action === RIGHTS_AUDIT_ACTION,
+      )
+    ) {
       audit(after, user, RIGHTS_AUDIT_ACTION, 'track', track.id);
     }
     // Artist profiles reference tracks through featured_track_id. Persist the new
     // track before setting that foreign key, otherwise Postgres rejects the artist upsert.
     const featuredArtist = after.artists.find((artist) => artist.id === track.artistId);
     const previousArtist = before.artists.find((artist) => artist.id === track.artistId);
-    const shouldFeature = Boolean(featuredArtist && previousArtist &&
-      featuredArtist.featuredTrackId === track.id && previousArtist.featuredTrackId === null);
+    const shouldFeature = Boolean(
+      featuredArtist &&
+      previousArtist &&
+      featuredArtist.featuredTrackId === track.id &&
+      previousArtist.featuredTrackId === null,
+    );
     if (shouldFeature && featuredArtist) featuredArtist.featuredTrackId = null;
     await persistChanges(before, after);
     if (shouldFeature) {
-      const { error: featureError } = await serviceClient().from('artists')
-        .update({ featured_track_id: track.id }).eq('id', track.artistId);
-      if (featureError) throw new Error(`Unable to feature new track: ${featureError.message}`);
+      const { error: featureError } = await serviceClient()
+        .from('artists')
+        .update({ featured_track_id: track.id })
+        .eq('id', track.artistId);
+      if (featureError)
+        throw new Error(`Unable to feature new track: ${featureError.message}`);
     }
-    const { error } = await serviceClient().from('jobs').upsert({
-      type: 'media.transcode',
-      entity_id: track.id,
-      idempotency_key: `media:${track.id}`,
-      payload: {
-        trackId: track.id,
-        sourceBucket: 'ai-music-originals',
-        targetBucket: 'ai-music-streaming',
-        sourceKey: input.objectKey,
-      },
-    }, { onConflict: 'idempotency_key' });
+    const { error } = await serviceClient()
+      .from('jobs')
+      .upsert(
+        {
+          type: 'media.transcode',
+          entity_id: track.id,
+          idempotency_key: `media:${track.id}`,
+          payload: {
+            trackId: track.id,
+            sourceBucket: 'ai-music-originals',
+            targetBucket: 'ai-music-streaming',
+            sourceKey: input.objectKey,
+          },
+        },
+        { onConflict: 'idempotency_key' },
+      );
     if (error) throw new Error(`Unable to queue audio processing: ${error.message}`);
-    return jsonOk({ id: track.id, reviewStatus: track.reviewStatus, processingStatus: 'pending' });
+    return jsonOk({
+      id: track.id,
+      reviewStatus: track.reviewStatus,
+      processingStatus: 'pending',
+    });
   } catch (error) {
     return jsonError(error);
   }

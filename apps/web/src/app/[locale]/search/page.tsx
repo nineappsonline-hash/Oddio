@@ -46,7 +46,8 @@ export default async function SearchPage({
   const t = createTranslator(locale);
   const sp = await searchParams;
   const q = typeof sp.q === 'string' ? sp.q : '';
-  const cursor = typeof sp.cursor === 'string' && /^\d+$/.test(sp.cursor) ? sp.cursor : undefined;
+  const cursor =
+    typeof sp.cursor === 'string' && /^\d+$/.test(sp.cursor) ? sp.cursor : undefined;
   const parsed = searchQuery.safeParse({ q, limit: 25, cursor });
   const query = parsed.success ? parsed.data : searchQuery.parse({});
   const viewer = await getViewer();
@@ -64,7 +65,7 @@ export default async function SearchPage({
           placeholder={t('search.placeholder')}
           aria-label={t('search.title')}
           className="input h-12 flex-1 text-base"
-          />
+        />
         <button
           type="submit"
           className="h-12 rounded-lg bg-primary px-6 text-sm font-semibold text-[#211518] hover:bg-primary-strong"
@@ -78,8 +79,14 @@ export default async function SearchPage({
       ) : results.total === 0 &&
         results.artists.length === 0 &&
         results.albums.length === 0 ? (
-        <div className="space-y-3"><EmptyState title={t('common.noResults')} body={q} />
-          <Link href={`/${locale}/discover`} className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary">{locale === 'ar' ? 'استكشف الأغاني والتصنيفات' : 'Browse genres and moods'}</Link>
+        <div className="space-y-3">
+          <EmptyState title={t('common.noResults')} body={q} />
+          <Link
+            href={`/${locale}/discover`}
+            className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary"
+          >
+            {locale === 'ar' ? 'استكشف الأغاني والتصنيفات' : 'Browse genres and moods'}
+          </Link>
         </div>
       ) : (
         <div className="space-y-10">

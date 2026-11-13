@@ -29,7 +29,9 @@ export async function POST(
     const input = await parseBody(request, schema);
     let report;
     if (demoMode) {
-      report = mutateDb((db) => resolveReport(db, user, id, input.resolution, input.notes));
+      report = mutateDb((db) =>
+        resolveReport(db, user, id, input.resolution, input.notes),
+      );
     } else {
       const before = await loadDbFromSupabase();
       const after = structuredClone(before);
