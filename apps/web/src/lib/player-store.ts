@@ -21,6 +21,8 @@ interface PlayerState {
   error: string | null;
   buffering: boolean;
   seekRequest: { seconds: number; nonce: number } | null;
+  playbackRequestId: number;
+  retryPlayback: () => void;
   play: (track: CatalogTrack, upcoming?: CatalogTrack[]) => void;
   toggle: () => void;
   setPlaying: (playing: boolean) => void;
@@ -72,6 +74,14 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   error: null,
   buffering: false,
   seekRequest: null,
+  playbackRequestId: 0,
+
+  retryPlayback: () => set((state) => state.track ? ({
+    playbackRequestId: state.playbackRequestId + 1,
+    error: null,
+    buffering: true,
+    isPlaying: true,
+  }) : state),
 
   play: (track, upcoming = []) => {
     const state = get();
@@ -99,7 +109,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   setPlaying: (playing) => set({ isPlaying: playing }),
   setCurrentTime: (seconds) => set({ currentTime: seconds }),
   setDuration: (seconds) => set({ duration: seconds }),
-  setVolume: (volume) => set({ volume, muted: volume === 0 }),
+  setVolume: (volume) => set({ volume: Math.min(1, Math.max(0, volume)), muted: volume === 0 }),
   toggleMute: () => set((state) => ({ muted: !state.muted })),
   setExpanded: (expanded) => set({ expanded }),
   setError: (error) => set({ error, isPlaying: error ? false : get().isPlaying }),
@@ -169,7 +179,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   advance: () => {
     const state = get();
     if (state.repeat === 'one') {
-      set({ currentTime: 0, isPlaying: true });
+      get().seek(0);
+      set({ isPlaying: true });
       return true;
     }
     if (state.queue.length > 0) return state.next();
@@ -206,7 +217,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }),
 
   playNextInQueue: (track) =>
-    set((state) => ({
+    set((state) => state.track?.id === track.id ? state : ({
       queue: [track, ...state.queue.filter((item) => item.id !== track.id)],
     })),
 
