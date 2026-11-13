@@ -12,7 +12,8 @@ export function Footer({ locale }: { locale: Locale }) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(700px_240px_at_20%_0%,rgba(157,92,255,0.1),transparent_70%)]" />
       <div className="relative mx-auto flex max-w-7xl flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-sm space-y-3">
-          <Link prefetch={false}
+          <Link
+            prefetch={false}
             href={`/${locale}`}
             aria-label="Oddio home"
             className="inline-flex items-center rounded-xl transition-opacity hover:opacity-85"
@@ -33,13 +34,25 @@ export function Footer({ locale }: { locale: Locale }) {
             <p className="font-semibold uppercase tracking-wide text-ink/80">
               {t('footer.platform')}
             </p>
-            <Link prefetch={false} href={`/${locale}/discover`} className="block hover:text-ink">
+            <Link
+              prefetch={false}
+              href={`/${locale}/discover`}
+              className="block hover:text-ink"
+            >
               {t('nav.discover')}
             </Link>
-            <Link prefetch={false} href={`/${locale}/charts`} className="block hover:text-ink">
+            <Link
+              prefetch={false}
+              href={`/${locale}/charts`}
+              className="block hover:text-ink"
+            >
               {t('nav.charts')}
             </Link>
-            <Link prefetch={false} href={`/${locale}/apply/artist`} className="block hover:text-ink">
+            <Link
+              prefetch={false}
+              href={`/${locale}/apply/artist`}
+              className="block hover:text-ink"
+            >
               {t('nav.apply')}
             </Link>
           </div>
@@ -47,19 +60,32 @@ export function Footer({ locale }: { locale: Locale }) {
             <p className="font-semibold uppercase tracking-wide text-ink/80">
               {t('footer.legal')}
             </p>
-            <Link prefetch={false} href={`/${locale}/legal/terms`} className="block hover:text-ink">
+            <Link
+              prefetch={false}
+              href={`/${locale}/legal/terms`}
+              className="block hover:text-ink"
+            >
               {t('legal.terms')}
             </Link>
-            <Link prefetch={false} href={`/${locale}/legal/privacy`} className="block hover:text-ink">
+            <Link
+              prefetch={false}
+              href={`/${locale}/legal/privacy`}
+              className="block hover:text-ink"
+            >
               {t('legal.privacy')}
             </Link>
-            <Link prefetch={false}
+            <Link
+              prefetch={false}
               href={`/${locale}/legal/content-policy`}
               className="block hover:text-ink"
             >
               {t('legal.contentPolicy')}
             </Link>
-            <Link prefetch={false} href={`/${locale}/legal/copyright`} className="block hover:text-ink">
+            <Link
+              prefetch={false}
+              href={`/${locale}/legal/copyright`}
+              className="block hover:text-ink"
+            >
               {t('legal.copyright')}
             </Link>
           </div>
