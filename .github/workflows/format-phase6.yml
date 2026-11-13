@@ -1,18 +1,16 @@
 name: Phase 6 source formatting (review branch only)
 
 on:
-  push:
+  pull_request:
     branches:
-      - feature/oddio-release-qa-v6
-    paths:
-      - '.github/workflows/format-phase6.yml'
+      - feature/oddio-creator-trust-v5
 
 permissions:
   contents: write
 
 jobs:
   format:
-    if: github.repository == 'jimmydodo/oddio'
+    if: github.repository == 'jimmydodo/oddio' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feature/oddio-release-qa-v6'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
