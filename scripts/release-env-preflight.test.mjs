@@ -10,8 +10,8 @@ const valid = {
   R2_ACCOUNT_ID: 'account',
   R2_ACCESS_KEY_ID: 'key',
   R2_SECRET_ACCESS_KEY: 'private-placeholder',
-  MEDIA_WORKER_SECRET: 'private-placeholder',
   CRON_SECRET: 'private-placeholder',
+  MEDIA_WORKER_SECRET: 'private-placeholder',
   R2_BUCKET: 'audio',
   VERCEL_PROJECT_PRODUCTION_URL: 'oddio.vercel.app',
   VERCEL_ENV: 'production',
@@ -34,7 +34,7 @@ test('demo mode and missing worker or storage settings block release', () => {
   });
   assert.equal(result.ready, false);
   assert.ok(result.blockers.some((message) => message.includes('DEMO_MODE')));
-  assert.ok(result.blockers.some((message) => message.includes('MEDIA_WORKER_SECRET')));
+  assert.ok(result.blockers.some((message) => message.includes('CRON_SECRET')));
   assert.ok(result.blockers.some((message) => message.includes('R2_SECRET_ACCESS_KEY')));
 });
 
