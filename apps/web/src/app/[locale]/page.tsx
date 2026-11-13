@@ -105,6 +105,18 @@ export default async function HomePage({
         </div>
       </section>
 
+      <section className="flex flex-col gap-4 rounded-[1.5rem] border border-primary/25 bg-[linear-gradient(120deg,#321C26,#1C1518)] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+        <div className="max-w-xl">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">ODDIO SOUNDSCAPE</p>
+          <h2 className="mt-2 text-2xl font-semibold text-ink">{locale === 'ar' ? 'الموسيقى اللي تناسب مودك.' : 'Tune in to your mood.'}</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">{locale === 'ar' ? 'اختار المود ودرجة الاكتشاف، واعرف ليه رشحنالك كل أغنية.' : 'Shape a mix with the Mood Shift and Taste Dial. See why every track was selected.'}</p>
+        </div>
+        <Link href={`/${locale}/soundspace`} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-bold text-[#211518] transition hover:bg-primary-strong">
+          {locale === 'ar' ? 'جرّب Soundspace' : 'Enter Soundspace'}
+          <ArrowRight className="h-4 w-4 rtl:-scale-x-100" />
+        </Link>
+      </section>
+
       {data.featured.length > 0 ? (
         <section>
           <SectionHeader
