@@ -5,12 +5,12 @@
 ## Consolidated audit findings — 13 Nov 2026
 
 - **Repository:** Phase 1–6 changes are stacked in draft review branches. No production merge or rollout has been approved.
-- **Prettier debt:** a dedicated formatting pass normalized the workspace, and the final Studio route fix landed in commit `bfadb104`. Recheck the full CI gate on the final hardening SHA.
-- **User journeys:** the existing 10-route HTTP smoke suite passed in GitHub CI. Interactive Chromium checks initially passed 9/12; 3 searches were checked before streamed navigation settled. The revised suite waits for the actual empty state and includes a demo login/library path. Final run remains a release gate.
-- **Live data:** read-only Supabase inspection found 2 tracks, 1 artist and 2 audio assets; do not infer that the full music player, billing or uploads have been validated by these counts.
+- **Prettier debt:** resolved on the review branch. The combined CI run `43473116951` passed formatting, TypeScript, lint, build, HTTP smoke tests, release-env checks, DB/RLS and Chromium browser flows.
+- **User journeys:** the 10-route HTTP smoke suite and revised bilingual Chromium flows passed against the built demo. They do not verify production R2 streaming or Supabase authorization with actual user sessions.
+- **Live data:** read-only Supabase inspection found 2 tracks, 1 artist and 2 audio assets. One published/approved track still points at a pending original MP3 asset with provisional size data. The streaming route permits a signed original fallback for this key shape, but actual R2 delivery and audible playback are not yet verified.
 - **Supabase RLS:** every inspected public table had RLS enabled. Security Advisors still flag eight `SECURITY DEFINER` helper functions callable by anonymous/authenticated users and disabled leaked-password protection. The boolean-returning helpers are referenced by access-control policies, so blindly revoking grants could break RLS; investigate, simulate calls and review a migration in staging before production permission changes.
 - **Database:** the advisor also reports missing foreign-key indexes (performance) and five RLS-enabled internal tables without client policies, which may be intentional for service-only resources. Validate actual exposure before altering permissions.
-- **Vercel:** production-scoped R2 and Supabase secrets exist, but `MEDIA_WORKER_SECRET` was absent from the visible project variable names; `R2_BUCKET` and `NEXT_PUBLIC_SITE_URL` were not explicitly listed. Canonical URLs now fall back to the Vercel project production URL. Production worker/storage readiness must be verified before release.
+- **Vercel:** preview deployments were using `DEMO_MODE=false` without a preview `SUPABASE_SERVICE_ROLE_KEY`, causing real runtime errors and a 500 sitemap despite a successful build. Preview is now explicitly configured for isolated ephemeral demo mode; production remains `DEMO_MODE=false`. `NEXT_PUBLIC_SITE_URL=https://oddio.vercel.app` is now configured for preview and production, but existing deployments need rebuilding before their cached canonical metadata changes. Production `MEDIA_WORKER_SECRET` remains unconfigured and audio-worker readiness is not verified.
 - **Moderation:** fixed Admin Reports server page to read Supabase in real mode, matching the Phase 5 report API storage adapter. Actual end-to-end report creation, moderation and rights takedowns in a staging project remain unverified.
 - **Release checks:** `npm run release:preflight` validates production configuration without printing secrets; it must be executed with the actual release environment in a protected context.
 
@@ -43,7 +43,8 @@
 - [x] Use production Supabase catalog for sitemap instead of demo snapshot.
 - [x] Localize route error recovery and fix error/404 button contrast.
 - [ ] Test all core journeys with real browser interaction, screen readers, touch and keyboard-only input.
-- [ ] Verify Chrome, Firefox, Safari and mobile devices for player visibility and navigation.
+- [x] Run Chromium Desktop/Mobile Arabic/English interaction checks in CI.
+- [ ] Verify Firefox and Safari with real devices and confirm player behavior.
 - [ ] Audit RTL mix of Latin song titles and Arabic UI, text wrapping, input direction, and back navigation.
 - [ ] Accessibility review: WCAG 2.2 AA contrast, focus, ARIA, dynamic status announcements, reduced motion.
 - [ ] Verify pages without playable tracks, images or connectivity do not dead-end.
@@ -52,7 +53,7 @@
 ## Gate D — CI and operating discipline
 
 - [x] Keep existing typecheck, unit, production build, lint and RLS checks.
-- [ ] Existing full-repository Prettier check must become green; initially 63 paths were reported.
+- [x] Full-repository Prettier check is green in CI run 43473116951.
 - [ ] Run smoke suite and record results on the final review SHA.
 - [ ] Inspect final preview and create a screenshot/video capture checklist for mobile and desktop.
 - [ ] Set monitoring: playback start success, buffering time, API errors, 5xx rate, search zero results.
