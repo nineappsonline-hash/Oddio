@@ -7,12 +7,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
  try {
   assertSameOrigin(request);
   const user = await requireUser();
-  if (!user.isArtistManager) throw Errors.forbidden();
   rateLimit('track-change:'+user.id, 20, 3600000);
   const { id } = await params;
   const db = serviceClient();
-  const { data: track, error: trackError } = await db.from('tracks').select('id,artist_id,artists!inner(owner_user_id)').eq('id',id).single();
-  if (trackError || !track || (track.artists as unknown as {owner_user_id:string}).owner_user_id !== user.id) throw Errors.forbidden();
+  const { data: track, error: trackError } = await db.from('tracks').select('id,artist_id').eq('id',id).single();
+  if (trackError || !track) throw Errors.invalid('Track not found.');
+  const { data: ownedArtist, error: artistError } = await db.from('artists').select('id').eq('id',track.artist_id).eq('owner_user_id',user.id).maybeSingle();
+  if (artistError) throw artistError;
+  if (!ownedArtist) throw Errors.forbidden();
   const form = await request.formData();
   const file = form.get('file');
   const kind = form.get('kind');
