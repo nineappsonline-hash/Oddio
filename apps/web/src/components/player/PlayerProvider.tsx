@@ -30,6 +30,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const trackId = track?.id;
   const playbackRequestId = usePlayer((state) => state.playbackRequestId);
   const pendingRestoreTime = useRef<number | null>(null);
+  const startSentRef = useRef(false);
   const isPlaying = usePlayer((state) => state.isPlaying);
   const volume = usePlayer((state) => state.volume);
   const muted = usePlayer((state) => state.muted);
@@ -126,6 +127,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     state.setError(null);
     state.setBuffering(true);
     sessionRef.current = null;
+    startSentRef.current = false;
     setStream(null);
     audibleRef.current = { accumulated: 0, lastTime: 0, qualified: false, lastSent: 0 };
 
@@ -137,7 +139,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         sessionRef.current = result.sessionId;
         setStream(result.streamUrl);
         usePlayer.getState().setDuration(result.durationMs / 1000);
-        sendEvent('start', 0);
       })
       .catch((error: unknown) => {
         if (cancelled) return;
@@ -239,7 +240,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }
     };
     const onWaiting = () => usePlayer.getState().setBuffering(true);
-    const onPlaying = () => usePlayer.getState().setBuffering(false);
+    const onPlaying = () => {
+      usePlayer.getState().setBuffering(false);
+      if (!startSentRef.current && sessionRef.current) {
+        startSentRef.current = true;
+        sendEvent('start', 0);
+      }
+    };
     const onError = () => {
       usePlayer.getState().setBuffering(false);
       usePlayer.getState().setError('Playback failed. Try again.');
