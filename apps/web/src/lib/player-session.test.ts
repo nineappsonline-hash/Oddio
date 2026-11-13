@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { CatalogTrack } from './data/queries';
 import { buildPlayerSession, parsePlayerSession } from './player-session';
 
 const track = {
@@ -21,8 +22,8 @@ describe('Oddio saved player session', () => {
   it('restores a valid session and never saves playback as active', () => {
     const data = {
       version: 1 as const,
-      track: track as any,
-      queue: [next as any, next as any, track as any],
+      track: track as unknown as CatalogTrack,
+      queue: [next as unknown as CatalogTrack, next as unknown as CatalogTrack, track as unknown as CatalogTrack],
       currentTime: 48,
       volume: 0.4,
       muted: false,
