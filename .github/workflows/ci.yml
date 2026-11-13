@@ -22,6 +22,28 @@ jobs:
           DEMO_MODE: 'true'
           DEMO_AUTH_SECRET: ci-demo-secret
           NEXT_PUBLIC_SITE_URL: https://example.com
+      - name: HTTP smoke test — bilingual routes and SEO
+        env:
+          DEMO_MODE: 'true'
+          DEMO_AUTH_SECRET: ci-demo-secret
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+        run: |
+          npm run start --workspace @ai-music/web -- -p 3100 > /tmp/oddio-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:3100/en > /dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/oddio-server.log
+            exit 1
+          fi
+          SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/smoke-release.mjs
       - run: npm run lint
       - run: npm run format:check
 
