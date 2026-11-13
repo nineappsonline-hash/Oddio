@@ -7,6 +7,8 @@ import { PlayerProvider } from '@/components/player/PlayerProvider';
 import { PlayerBar } from '@/components/player/PlayerBar';
 import { FullPlayer } from '@/components/player/FullPlayer';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { DesktopTopBar } from '@/components/layout/DesktopTopBar';
+import { ListeningRail } from '@/components/layout/ListeningRail';
 import { MobileHeader, MobileNav } from '@/components/layout/MobileNav';
 import { Footer } from '@/components/layout/Footer';
 import { AmbientBackground } from '@/components/visuals/AmbientBackground';
@@ -35,16 +37,18 @@ export function AppShell({
           </a>
           <AmbientBackground />
           <Sidebar user={user} />
-          <div className="relative z-10 lg:ps-64">
+          <div className="oddio-workspace relative z-10 lg:ps-[244px] 2xl:pe-[300px]">
             <MobileHeader user={user} />
+            <DesktopTopBar />
             <main
               id="main"
-              className="mx-auto max-w-7xl px-4 pb-48 pt-6 sm:px-6 lg:px-8 lg:pb-32"
+              className="oddio-main-content mx-auto w-full max-w-[1720px] px-4 pb-48 pt-6 sm:px-6 lg:px-7 lg:pb-36 2xl:px-8"
             >
               {children}
             </main>
             <Footer locale={locale} />
           </div>
+          <ListeningRail />
           <PlayerBar />
           <FullPlayer />
           <MobileNav />
