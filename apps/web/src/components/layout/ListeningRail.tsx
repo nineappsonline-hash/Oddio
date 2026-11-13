@@ -66,7 +66,7 @@ export function ListeningRail() {
           </button>
           <div className="oddio-rail-track-meta">
             <div className="min-w-0">
-              <Link
+              <Link prefetch={false}
                 className="oddio-rail-track-name"
                 href={`/${locale}/tracks/${track.id}-${track.slug}`}
               >
@@ -119,7 +119,7 @@ export function ListeningRail() {
               ? 'شغّل أي أغنية علشان تظهر هنا، أو ابدأ بالمود اللي يناسبك.'
               : 'Play a track to bring your listening room to life.'}
           </p>
-          <Link href={`/${locale}/soundspace`}>
+          <Link prefetch={false} href={`/${locale}/soundspace`}>
             {ar ? 'اكتشف مودك' : 'Explore your mood'} <ArrowUpRight size={15} />
           </Link>
         </div>
@@ -168,7 +168,7 @@ export function ListeningRail() {
           </div>
         )}
       </div>
-      <Link className="oddio-rail-footer-link" href={`/${locale}/discover`}>
+      <Link prefetch={false} className="oddio-rail-footer-link" href={`/${locale}/discover`}>
         {ar ? 'استكشف مزيد من الموسيقى' : 'Find more music'} <ArrowUpRight size={15} />
       </Link>
     </aside>
