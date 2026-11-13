@@ -21,8 +21,8 @@ export function auditReleaseEnvironment(env) {
   ]) {
     if (!env[key]?.trim()) blockers.push(`Missing required configuration: ${key}`);
   }
-  if (!env.CRON_SECRET?.trim())
-    warnings.push('CRON_SECRET is not set: scheduled endpoints require review');
+  // The deployed serverless cron uses CRON_SECRET; MEDIA_WORKER_SECRET is only
+  // relevant if a separately deployed media worker is configured.
   if (!env.R2_BUCKET?.trim())
     warnings.push('R2_BUCKET is not explicit: validate the default bucket exists');
   const canonical =
