@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { mutateDb } from '@/lib/data/db';
+import { loadDbFromSupabase, persistChanges } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { resolveReport } from '@/lib/data/mutations';
 import {
   assertSameOrigin,
@@ -25,9 +27,17 @@ export async function POST(
     const user = await requireRole(['moderator', 'admin', 'super_admin']);
     const { id } = await context.params;
     const input = await parseBody(request, schema);
-    const report = mutateDb((db) =>
-      resolveReport(db, user, id, input.resolution, input.notes),
-    );
+    let report;
+    if (demoMode) {
+      report = mutateDb((db) =>
+        resolveReport(db, user, id, input.resolution, input.notes),
+      );
+    } else {
+      const before = await loadDbFromSupabase();
+      const after = structuredClone(before);
+      report = resolveReport(after, user, id, input.resolution, input.notes);
+      await persistChanges(before, after);
+    }
     return jsonOk({ report });
   } catch (error) {
     return jsonError(error);
