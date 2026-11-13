@@ -28,6 +28,7 @@ const config: Config = {
       borderRadius: {
         card: radii.md,
         xl2: radii.lg,
+        pill: radii.pill,
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
