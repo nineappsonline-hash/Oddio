@@ -10,6 +10,7 @@ import { Field } from '@/components/ui/Field';
 import { loginHref } from '@/lib/use-locale-path';
 import type { Locale } from '@ai-music/contracts';
 import { useT } from '@/i18n/use-translator';
+import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 
 function useAuth(locale: Locale, next: string) {
   const router = useRouter();
@@ -249,6 +250,7 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
           {t('auth.createAccount')}
         </Button>
       </form>
+      <SocialAuthButtons locale={locale} next={next} />
       <div className="mt-5 border-t border-white/10 pt-4 text-center text-sm text-muted">
         {t('auth.haveAccount')}{' '}
         <Link
