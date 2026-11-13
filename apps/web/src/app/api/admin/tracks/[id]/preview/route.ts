@@ -32,6 +32,9 @@ export async function GET(
       headers: { 'Cache-Control': 'private, no-store', 'Referrer-Policy': 'no-referrer' },
     });
   } catch {
-    return NextResponse.json({ error: 'Not authorized or preview unavailable' }, { status: 403 });
+    return NextResponse.json(
+      { error: 'Not authorized or preview unavailable' },
+      { status: 403 },
+    );
   }
 }

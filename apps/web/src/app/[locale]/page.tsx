@@ -62,7 +62,13 @@ export default async function HomePage({
     <div className="space-y-8">
       <section className="relative isolate min-h-[310px] overflow-hidden rounded-[2rem] border border-fuchsia-400/30 bg-[#180b22] px-6 py-8 shadow-[0_18px_75px_#0008] sm:px-10 sm:py-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_78%_42%,#b12a8840,transparent_58%),linear-gradient(115deg,#1b0b27_12%,#250d30_62%,#090f28)]" />
-        <div className="pointer-events-none absolute inset-y-0 end-0 w-[55%] bg-cover bg-center opacity-75 [mask-image:linear-gradient(to_right,transparent,black_30%)]" style={{backgroundImage:"url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1200&q=85')"}} />
+        <div
+          className="pointer-events-none absolute inset-y-0 end-0 w-[55%] bg-cover bg-center opacity-75 [mask-image:linear-gradient(to_right,transparent,black_30%)]"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1200&q=85')",
+          }}
+        />
         <div className="pointer-events-none absolute inset-y-0 end-0 w-[55%] bg-gradient-to-r from-[#1b0b27]/80 via-fuchsia-900/15 to-fuchsia-500/10" />
         <div
           className="pointer-events-none absolute -end-24 -top-28 h-80 w-80 animate-float-slow rounded-full opacity-40 blur-3xl"
@@ -77,20 +83,16 @@ export default async function HomePage({
 
         <div className="relative grid items-center gap-2 md:grid-cols-[1fr_0.8fr]">
           <div className="relative z-10">
-
             <h1 className="mt-2 max-w-xl text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl">
               <span className="text-glow-gradient">{t('home.heroTitle')}</span>
             </h1>
             <p className="mt-2 max-w-xl text-xs leading-relaxed text-muted sm:text-sm">
               {t('home.heroSubtitle')}
             </p>
-
           </div>
 
           <div className="pointer-events-none hidden md:block" aria-hidden="true" />
         </div>
-
-
       </section>
 
       {data.featured.length > 0 ? (
@@ -211,13 +213,20 @@ export default async function HomePage({
         <SectionHeader title={t('home.genres')} />
         <HorizontalCarousel label="Genres">
           {data.genres.map((genre, index) => (
-            <Link key={genre.id} href={`/${locale}/genres/${genre.slug}`}
+            <Link
+              key={genre.id}
+              href={`/${locale}/genres/${genre.slug}`}
               className="group relative flex h-44 w-48 shrink-0 snap-start flex-col justify-end overflow-hidden rounded-[1.5rem] border border-white/15 p-5 shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/70 hover:shadow-[0_10px_40px_#9d5cff44] sm:h-48 sm:w-56"
-              >
+            >
               <GenreArtwork slug={genre.slug} index={index} />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#090818]/95 via-[#090818]/25 to-transparent" />
-              <span className="relative text-xl font-black text-white">{genreLabel(genre)}</span>
-              <span className="relative mt-1 text-xs font-medium text-white/65">{genre.count} tracks <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" /></span>
+              <span className="relative text-xl font-black text-white">
+                {genreLabel(genre)}
+              </span>
+              <span className="relative mt-1 text-xs font-medium text-white/65">
+                {genre.count} tracks{' '}
+                <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" />
+              </span>
             </Link>
           ))}
         </HorizontalCarousel>
@@ -233,8 +242,13 @@ export default async function HomePage({
               className="group relative flex h-52 w-40 shrink-0 snap-start flex-col justify-end overflow-hidden rounded-[1.5rem] border border-white/15 p-4 shadow-lg transition duration-300 hover:-translate-y-1 hover:border-primary/70 hover:shadow-[0_10px_40px_#9d5cff44] sm:h-60 sm:w-44"
             >
               <MoodArtwork slug={mood.slug} />
-              <span className="relative text-lg font-black text-white">{genreLabel(mood)}</span>
-              <span className="relative mt-1 text-xs text-white/75">{mood.count} tracks <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" /></span>
+              <span className="relative text-lg font-black text-white">
+                {genreLabel(mood)}
+              </span>
+              <span className="relative mt-1 text-xs text-white/75">
+                {mood.count} tracks{' '}
+                <ArrowRight className="ms-1 inline h-3 w-3 rtl:-scale-x-100" />
+              </span>
             </Link>
           ))}
         </HorizontalCarousel>

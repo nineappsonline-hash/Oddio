@@ -81,11 +81,28 @@ export function presignR2Get(objectKey: string) {
     'X-Amz-Expires': '120',
     'X-Amz-SignedHeaders': 'host',
   };
-  const query = Object.entries(queryParams).sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
-  const canonicalRequest = ['GET', path, query, `host:${host}\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\n');
-  const stringToSign = ['AWS4-HMAC-SHA256', timestamp, scope, sha256(canonicalRequest)].join('\n');
-  const signingKey = hmac(hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'), 'aws4_request');
+  const query = Object.entries(queryParams)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+  const canonicalRequest = [
+    'GET',
+    path,
+    query,
+    `host:${host}\n`,
+    'host',
+    'UNSIGNED-PAYLOAD',
+  ].join('\n');
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    timestamp,
+    scope,
+    sha256(canonicalRequest),
+  ].join('\n');
+  const signingKey = hmac(
+    hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'),
+    'aws4_request',
+  );
   return `https://${host}${path}?${query}&X-Amz-Signature=${hmac(signingKey, stringToSign).toString('hex')}`;
 }
 
@@ -110,11 +127,28 @@ export function presignR2Head(objectKey: string) {
     'X-Amz-Expires': '120',
     'X-Amz-SignedHeaders': 'host',
   };
-  const query = Object.entries(queryParams).sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
-  const canonicalRequest = ['HEAD', path, query, `host:${host}\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\n');
-  const stringToSign = ['AWS4-HMAC-SHA256', timestamp, scope, sha256(canonicalRequest)].join('\n');
-  const signingKey = hmac(hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'), 'aws4_request');
+  const query = Object.entries(queryParams)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+  const canonicalRequest = [
+    'HEAD',
+    path,
+    query,
+    `host:${host}\n`,
+    'host',
+    'UNSIGNED-PAYLOAD',
+  ].join('\n');
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    timestamp,
+    scope,
+    sha256(canonicalRequest),
+  ].join('\n');
+  const signingKey = hmac(
+    hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'),
+    'aws4_request',
+  );
   return `https://${host}${path}?${query}&X-Amz-Signature=${hmac(signingKey, stringToSign).toString('hex')}`;
 }
 
@@ -138,14 +172,30 @@ export function presignR2StreamingPut(objectKey: string) {
     'X-Amz-Expires': '300',
     'X-Amz-SignedHeaders': 'host',
   };
-  const query = Object.entries(queryParams).sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
-  const canonicalRequest = ['PUT', path, query, `host:${host}\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\n');
-  const stringToSign = ['AWS4-HMAC-SHA256', timestamp, scope, sha256(canonicalRequest)].join('\n');
-  const signingKey = hmac(hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'), 'aws4_request');
+  const query = Object.entries(queryParams)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+  const canonicalRequest = [
+    'PUT',
+    path,
+    query,
+    `host:${host}\n`,
+    'host',
+    'UNSIGNED-PAYLOAD',
+  ].join('\n');
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    timestamp,
+    scope,
+    sha256(canonicalRequest),
+  ].join('\n');
+  const signingKey = hmac(
+    hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'),
+    'aws4_request',
+  );
   return `https://${host}${path}?${query}&X-Amz-Signature=${hmac(signingKey, stringToSign).toString('hex')}`;
 }
-
 
 export function presignR2OriginalGet(objectKey: string) {
   if (!env.r2AccountId || !env.r2AccessKeyId || !env.r2SecretAccessKey) {
@@ -167,11 +217,27 @@ export function presignR2OriginalGet(objectKey: string) {
     'X-Amz-Expires': '120',
     'X-Amz-SignedHeaders': 'host',
   };
-  const query = Object.entries(queryParams).sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
-  const canonicalRequest = ['GET', path, query, `host:${host}\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\n');
-  const stringToSign = ['AWS4-HMAC-SHA256', timestamp, scope, sha256(canonicalRequest)].join('\n');
-  const signingKey = hmac(hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'), 'aws4_request');
+  const query = Object.entries(queryParams)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+  const canonicalRequest = [
+    'GET',
+    path,
+    query,
+    `host:${host}\n`,
+    'host',
+    'UNSIGNED-PAYLOAD',
+  ].join('\n');
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    timestamp,
+    scope,
+    sha256(canonicalRequest),
+  ].join('\n');
+  const signingKey = hmac(
+    hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'),
+    'aws4_request',
+  );
   return `https://${host}${path}?${query}&X-Amz-Signature=${hmac(signingKey, stringToSign).toString('hex')}`;
 }
-

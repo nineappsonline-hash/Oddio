@@ -321,8 +321,10 @@ function r2SignedUrl(method, bucket, key) {
   if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
     throw new Error('R2 worker credentials missing');
   }
-  if (!['ai-music-originals', 'ai-music-streaming'].includes(bucket)) throw new Error('Invalid R2 bucket');
-  if (!/^[a-zA-Z0-9/_-]+$/.test(key) || key.includes('..')) throw new Error('Invalid R2 key');
+  if (!['ai-music-originals', 'ai-music-streaming'].includes(bucket))
+    throw new Error('Invalid R2 bucket');
+  if (!/^[a-zA-Z0-9/_-]+$/.test(key) || key.includes('..'))
+    throw new Error('Invalid R2 key');
   const host = `${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
   const date = new Date().toISOString().replace(/[:-]|\\.\\d{3}/g, '');
   const short = date.slice(0, 8);
@@ -335,13 +337,25 @@ function r2SignedUrl(method, bucket, key) {
     'X-Amz-Expires': '300',
     'X-Amz-SignedHeaders': 'host',
   };
-  const query = Object.entries(params).sort(([a], [b]) => a.localeCompare(b))
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+  const query = Object.entries(params)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
   const hash = (v) => crypto.createHash('sha256').update(v).digest('hex');
   const hmac = (k, v) => crypto.createHmac('sha256', k).update(v).digest();
-  const canonical = [method, path, query, `host:${host}\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\n');
+  const canonical = [
+    method,
+    path,
+    query,
+    `host:${host}\n`,
+    'host',
+    'UNSIGNED-PAYLOAD',
+  ].join('\n');
   const string = ['AWS4-HMAC-SHA256', date, scope, hash(canonical)].join('\n');
-  const signingKey = hmac(hmac(hmac(hmac(`AWS4${R2_SECRET_ACCESS_KEY}`, short), 'auto'), 's3'), 'aws4_request');
+  const signingKey = hmac(
+    hmac(hmac(hmac(`AWS4${R2_SECRET_ACCESS_KEY}`, short), 'auto'), 's3'),
+    'aws4_request',
+  );
   return `https://${host}${path}?${query}&X-Amz-Signature=${crypto.createHmac('sha256', signingKey).update(string).digest('hex')}`;
 }
 async function storageDownload(bucket, objectKey, target) {
@@ -351,7 +365,8 @@ async function storageDownload(bucket, objectKey, target) {
 }
 async function storageUpload(bucket, objectKey, filePath) {
   const response = await fetch(r2SignedUrl('PUT', bucket, objectKey), {
-    method: 'PUT', body: await fsp.readFile(filePath),
+    method: 'PUT',
+    body: await fsp.readFile(filePath),
   });
   if (!response.ok) throw new Error(`R2 upload failed: ${response.status}`);
 }

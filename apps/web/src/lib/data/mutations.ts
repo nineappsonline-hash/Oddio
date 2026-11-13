@@ -617,7 +617,11 @@ export function reviewTrack(
   const now = new Date();
   const ownerId = ownerIdForTrack(db, track);
   if (decision === 'approve') {
-    if (!track.audio || !track.audio.objectKey || track.audio.processingStatus !== 'ready') {
+    if (
+      !track.audio ||
+      !track.audio.objectKey ||
+      track.audio.processingStatus !== 'ready'
+    ) {
       throw Errors.conflict('Audio must be uploaded and ready before approval');
     }
     track.reviewStatus = 'approved';

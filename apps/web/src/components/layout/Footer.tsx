@@ -12,8 +12,18 @@ export function Footer({ locale }: { locale: Locale }) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(700px_240px_at_20%_0%,rgba(157,92,255,0.1),transparent_70%)]" />
       <div className="relative mx-auto flex max-w-7xl flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-sm space-y-3">
-          <Link href={`/${locale}`} aria-label="Oddio home" className="inline-flex items-center rounded-xl transition-opacity hover:opacity-85">
-            <Image src="/oddio-logo-hq.png" alt="Oddio" width={132} height={132} className="h-20 w-20 object-contain sm:h-24 sm:w-24" />
+          <Link
+            href={`/${locale}`}
+            aria-label="Oddio home"
+            className="inline-flex items-center rounded-xl transition-opacity hover:opacity-85"
+          >
+            <Image
+              src="/oddio-logo-hq.png"
+              alt="Oddio"
+              width={132}
+              height={132}
+              className="h-20 w-20 object-contain sm:h-24 sm:w-24"
+            />
           </Link>
           <p>{t('footer.tagline')}</p>
           <p className="max-w-xs text-muted/70">{t('footer.aiPolicy')}</p>

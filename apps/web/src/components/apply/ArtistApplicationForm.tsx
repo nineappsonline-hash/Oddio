@@ -51,7 +51,12 @@ export function ArtistApplicationForm({
       toast(t('apply.submitted'), 'success');
       router.refresh();
     } catch (caught) {
-      toast(caught instanceof ApiClientError ? caught.message : 'Could not submit the application.', 'error');
+      toast(
+        caught instanceof ApiClientError
+          ? caught.message
+          : 'Could not submit the application.',
+        'error',
+      );
     } finally {
       setPending(false);
     }
