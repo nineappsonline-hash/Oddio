@@ -60,7 +60,9 @@ try {
         await input.fill('zzzzunlikelyreleasequery123');
         await input.press('Enter');
         await page.waitForURL(new RegExp(`/\\${locale}/search\\?q=`), { timeout: 15_000 });
-        assert.ok((await page.locator('main').innerText()).length > 20);
+        // Next.js may stream the route after the URL changes; wait for the
+        // actual no-results state rather than racing the navigation shell.
+        await page.getByText('zzzzunlikelyreleasequery123', { exact: true }).waitFor({ timeout: 15_000 });
         assert.equal(pageErrors.length, 0, pageErrors.join('; '));
       });
 
@@ -70,6 +72,17 @@ try {
         assert.ok(page.url().includes('/login?next='));
         assert.equal(pageErrors.length, 0, pageErrors.join('; '));
       });
+
+      if (locale === 'en' && viewport.width === 1366) {
+        await test('demo listener login and library navigation', async () => {
+          await page.locator('#login-email').fill('listener@demo.local');
+          await page.locator('#login-password').fill('demo1234');
+          await page.locator('form button[type="submit"]').first().click();
+          await page.waitForURL(/\\/en\\/library/, { timeout: 20_000 });
+          await page.getByRole('heading', { level: 1 }).waitFor();
+          assert.equal(pageErrors.length, 0, pageErrors.join('; '));
+        });
+      }
 
       await context.close();
     }
