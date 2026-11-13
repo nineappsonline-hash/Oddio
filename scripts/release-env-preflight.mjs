@@ -23,8 +23,8 @@ export function auditReleaseEnvironment(env) {
   }
   // The deployed serverless cron uses CRON_SECRET; MEDIA_WORKER_SECRET is only
   // relevant if a separately deployed media worker is configured.
-  if (!env.R2_BUCKET?.trim())
-    warnings.push('R2_BUCKET is not explicit: validate the default bucket exists');
+  // Original and streaming R2 bucket names are fixed in the signing module.
+  // R2_BUCKET is not required by this deployment mode.
   const canonical =
     env.NEXT_PUBLIC_SITE_URL ||
     (env.VERCEL_PROJECT_PRODUCTION_URL
