@@ -30,6 +30,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const trackId = track?.id;
   const playbackRequestId = usePlayer((state) => state.playbackRequestId);
   const pendingRestoreTime = useRef<number | null>(null);
+  const pendingRestoreTrackId = useRef<string | null>(null);
   const startSentRef = useRef(false);
   const isPlaying = usePlayer((state) => state.isPlaying);
   const volume = usePlayer((state) => state.volume);
@@ -43,6 +44,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const session = parsePlayerSession(window.sessionStorage.getItem(PLAYER_SESSION_KEY));
       if (session) {
         pendingRestoreTime.current = session.currentTime;
+        pendingRestoreTrackId.current = session.track?.id ?? null;
         usePlayer.setState({
           track: session.track,
           queue: session.queue,
@@ -226,14 +228,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     const onLoaded = () => {
       // A restored seek must wait for the new stream's metadata.
-      if (pendingRestoreTime.current !== null) {
+      if (pendingRestoreTime.current !== null && pendingRestoreTrackId.current === usePlayer.getState().track?.id) {
         const position = pendingRestoreTime.current;
         pendingRestoreTime.current = null;
+        pendingRestoreTrackId.current = null;
         const maximum = Number.isFinite(audio.duration) ? audio.duration : position;
         audio.currentTime = Math.min(Math.max(position, 0), maximum || 0);
         usePlayer.getState().setCurrentTime(audio.currentTime);
         audibleRef.current.lastTime = audio.currentTime;
       }
+      pendingRestoreTime.current = null;
+      pendingRestoreTrackId.current = null;
       usePlayer.getState().setBuffering(false);
       if (Number.isFinite(audio.duration)) {
         usePlayer.getState().setDuration(audio.duration);
