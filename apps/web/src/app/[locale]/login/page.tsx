@@ -8,6 +8,7 @@ import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { safeRedirect } from '@/lib/utils';
 import { LoginForm } from '@/components/auth/AuthForms';
+import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 
 export async function generateMetadata({
   params,
@@ -65,10 +66,7 @@ export default async function LoginPage({
         <div className="mt-6">
           <LoginForm locale={locale} next={next} initialError={initialError} />
         </div>
-        <div className="mt-4 flex items-center justify-between text-xs text-muted">
-          <span>{t('auth.orContinue')}</span>
-          <span className="opacity-60">Google · Apple · Facebook</span>
-        </div>
+        <SocialAuthButtons locale={locale} next={next} />
         <Link
           href={`/${locale}`}
           className="mt-6 block text-center text-xs text-muted hover:text-ink"
