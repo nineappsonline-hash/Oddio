@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createSeedDb } from '../seed';
-import { toSessionUser } from '../db';
-import { createReport, resolveReport, reviewTrack } from '../mutations';
+import { createSeedDb } from './seed';
+import { toSessionUser } from './db';
+import { createReport, resolveReport, reviewTrack } from './mutations';
 
 function setup() {
   const db = createSeedDb(new Date('2026-11-13T10:00:00.000Z'));
