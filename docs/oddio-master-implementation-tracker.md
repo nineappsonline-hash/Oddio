@@ -90,6 +90,12 @@ Exit gate: demonstrate improvements to discovery without deceptive AI claims.
 - [ ] Analytics privacy, rate limits, cost controls and backup restore drills.
 
 ## Phase 6 — Release and measurement
+- [x] Add Node HTTP bilingual release smoke suite and wire it into CI after the Next production build.
+- [x] Serve Sitemap from Supabase when not in demo mode and list Soundspace.
+- [x] Improve error recovery localization, loading-state accessibility and focus contrast.
+- [x] Create explicit launch Go/No-Go security, playback, UX, operational gates in docs/oddio-release-gates.md.
+- [ ] Verify full-repository Prettier formatting normalization and get green format check (63 pre-existing violations in last audit).
+- [ ] Verify real-browser E2E and external production service integration before merge.
 - [ ] Responsive, RTL, keyboard and screen-reader E2E test matrix.
 - [ ] Production-like canary / preview testing before rollout.
 - [ ] Success metrics: play starts, playback failures, search success, save reliability, day-7 return.
