@@ -45,6 +45,7 @@ function parseSrt(source:string):LyricCue[]{
 export function FullPlayer() {
   const t = useT();
   const [srt,setSrt]=useState<string|null>(null);
+  const [plainLyrics,setPlainLyrics]=useState<string|null>(null);
   const [lyricsLoading,setLyricsLoading]=useState(false);
   const [sideTab,setSideTab]=useState<'lyrics'|'queue'>('lyrics');
   const rtl = useLocale() === 'ar';
@@ -74,13 +75,14 @@ export function FullPlayer() {
   const clearQueue = usePlayer((state) => state.clearQueue);
 
   useEffect(()=>{
-    if(!track?.id){setSrt(null);setLyricsLoading(false);return;}
+    if(!track?.id){setSrt(null);setPlainLyrics(null);setLyricsLoading(false);return;}
     const controller=new AbortController();
     setSrt(null);
+    setPlainLyrics(null);
     setLyricsLoading(true);
     fetch('/api/tracks/'+encodeURIComponent(track.id)+'/synced-lyrics',{signal:controller.signal})
       .then(response=>response.ok?response.json():null)
-      .then(result=>{if(!controller.signal.aborted)setSrt(result?.data?.srt||null);})
+      .then(result=>{if(!controller.signal.aborted){setSrt(result?.data?.srt||null);setPlainLyrics(result?.data?.text||null);}})
       .catch(()=>{})
       .finally(()=>{if(!controller.signal.aborted)setLyricsLoading(false)});
     return ()=>controller.abort();
