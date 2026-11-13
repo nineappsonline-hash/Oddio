@@ -49,7 +49,9 @@ try {
         assert.equal(await page.locator('.oddio-featured-stage').count(), 1);
         assert.equal(await page.locator('.oddio-topbar-search').count(), 1);
         assert.equal(await page.locator('.oddio-listening-rail').count(), 1);
-        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
         assert.ok(overflow <= 2, `home layout horizontal overflow: ${overflow}px`);
         assert.equal(pageErrors.length, 0, pageErrors.join('; '));
       });
