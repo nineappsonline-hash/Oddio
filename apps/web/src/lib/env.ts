@@ -21,6 +21,20 @@ function num(value: string | undefined, fallback: number): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+/**
+ * Canonical links must never use localhost on a Vercel deployment just
+ * because NEXT_PUBLIC_SITE_URL was not set in the project settings.
+ * Prefer an explicit deployment-independent origin, then Vercel's
+ * production domain (also present in preview builds).
+ */
+export function resolveSiteUrl(explicit: string | undefined, productionDomain: string | undefined): string {
+  if (explicit?.trim()) return explicit.trim().replace(/\\/$/, '');
+  if (productionDomain && /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i.test(productionDomain) && productionDomain.includes('.')) {
+    return `https://${productionDomain}`;
+  }
+  return 'http://localhost:3000';
+}
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
@@ -39,7 +53,7 @@ export const demoMode =
       : !supabaseConfigured;
 
 export const env: ServerEnv = {
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  siteUrl: resolveSiteUrl(process.env.NEXT_PUBLIC_SITE_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL),
   demoMode,
   supabaseUrl,
   supabaseAnonKey,
