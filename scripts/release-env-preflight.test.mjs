@@ -18,12 +18,19 @@ const valid = {
 };
 
 test('production configuration passes without printing private values', () => {
-  assert.deepEqual(auditReleaseEnvironment(valid), { ready: true, blockers: [], warnings: [] });
+  assert.deepEqual(auditReleaseEnvironment(valid), {
+    ready: true,
+    blockers: [],
+    warnings: [],
+  });
 });
 
 test('demo mode and missing worker or storage settings block release', () => {
   const result = auditReleaseEnvironment({
-    ...valid, DEMO_MODE: 'true', MEDIA_WORKER_SECRET: '', R2_SECRET_ACCESS_KEY: '',
+    ...valid,
+    DEMO_MODE: 'true',
+    MEDIA_WORKER_SECRET: '',
+    R2_SECRET_ACCESS_KEY: '',
   });
   assert.equal(result.ready, false);
   assert.ok(result.blockers.some((message) => message.includes('DEMO_MODE')));
@@ -33,7 +40,8 @@ test('demo mode and missing worker or storage settings block release', () => {
 
 test('local or invalid canonical addresses block production release', () => {
   const result = auditReleaseEnvironment({
-    ...valid, NEXT_PUBLIC_SITE_URL: 'http://localhost:3000',
+    ...valid,
+    NEXT_PUBLIC_SITE_URL: 'http://localhost:3000',
   });
   assert.equal(result.ready, false);
   assert.ok(result.blockers.some((message) => message.includes('Canonical')));

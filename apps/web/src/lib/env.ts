@@ -27,12 +27,19 @@ function num(value: string | undefined, fallback: number): number {
  * Prefer an explicit deployment-independent origin, then Vercel's
  * production domain (also present in preview builds).
  */
-export function resolveSiteUrl(explicit: string | undefined, productionDomain: string | undefined): string {
+export function resolveSiteUrl(
+  explicit: string | undefined,
+  productionDomain: string | undefined,
+): string {
   if (explicit?.trim()) {
     const origin = explicit.trim();
     return origin.endsWith('/') ? origin.slice(0, -1) : origin;
   }
-  if (productionDomain && /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i.test(productionDomain) && productionDomain.includes('.')) {
+  if (
+    productionDomain &&
+    /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i.test(productionDomain) &&
+    productionDomain.includes('.')
+  ) {
     return `https://${productionDomain}`;
   }
   return 'http://localhost:3000';
@@ -56,7 +63,10 @@ export const demoMode =
       : !supabaseConfigured;
 
 export const env: ServerEnv = {
-  siteUrl: resolveSiteUrl(process.env.NEXT_PUBLIC_SITE_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL),
+  siteUrl: resolveSiteUrl(
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  ),
   demoMode,
   supabaseUrl,
   supabaseAnonKey,

@@ -21,29 +21,37 @@ export function auditReleaseEnvironment(env) {
   ]) {
     if (!env[key]?.trim()) blockers.push(`Missing required configuration: ${key}`);
   }
-  if (!env.CRON_SECRET?.trim()) warnings.push('CRON_SECRET is not set: scheduled endpoints require review');
-  if (!env.R2_BUCKET?.trim()) warnings.push('R2_BUCKET is not explicit: validate the default bucket exists');
-  const canonical = env.NEXT_PUBLIC_SITE_URL || (
-    env.VERCEL_PROJECT_PRODUCTION_URL
+  if (!env.CRON_SECRET?.trim())
+    warnings.push('CRON_SECRET is not set: scheduled endpoints require review');
+  if (!env.R2_BUCKET?.trim())
+    warnings.push('R2_BUCKET is not explicit: validate the default bucket exists');
+  const canonical =
+    env.NEXT_PUBLIC_SITE_URL ||
+    (env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : undefined
-  );
+      : undefined);
   try {
     const parsed = new URL(canonical || '');
     if (parsed.protocol !== 'https:' || !parsed.hostname.includes('.')) {
       blockers.push('Canonical site URL must use an HTTPS production domain');
     }
   } catch {
-    blockers.push('Neither a valid NEXT_PUBLIC_SITE_URL nor VERCEL_PROJECT_PRODUCTION_URL is configured');
+    blockers.push(
+      'Neither a valid NEXT_PUBLIC_SITE_URL nor VERCEL_PROJECT_PRODUCTION_URL is configured',
+    );
   }
   try {
     const supabase = new URL(env.NEXT_PUBLIC_SUPABASE_URL || '');
-    if (supabase.protocol !== 'https:') blockers.push('NEXT_PUBLIC_SUPABASE_URL must be HTTPS');
+    if (supabase.protocol !== 'https:')
+      blockers.push('NEXT_PUBLIC_SUPABASE_URL must be HTTPS');
   } catch {
-    if (env.NEXT_PUBLIC_SUPABASE_URL) blockers.push('NEXT_PUBLIC_SUPABASE_URL must be a valid URL');
+    if (env.NEXT_PUBLIC_SUPABASE_URL)
+      blockers.push('NEXT_PUBLIC_SUPABASE_URL must be a valid URL');
   }
   if (env.VERCEL_ENV && env.VERCEL_ENV !== 'production') {
-    warnings.push('This is not a production deployment: check the environment target before release');
+    warnings.push(
+      'This is not a production deployment: check the environment target before release',
+    );
   }
   return { blockers, warnings, ready: blockers.length === 0 };
 }
