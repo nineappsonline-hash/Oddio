@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getHistoryData, getLibraryData } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getSessionUser } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -45,7 +47,7 @@ export default async function LibraryPage({
   if (!user)
     redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/library`)}`);
   const viewer = { userId: user.id, roles: user.roles };
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const library = getLibraryData(db, viewer);
   const history = getHistoryData(db, viewer);
 
@@ -61,7 +63,13 @@ export default async function LibraryPage({
         }
       />
 
-      <section>
+      <nav aria-label={locale === 'ar' ? 'أقسام المكتبة' : 'Library sections'} className="flex flex-wrap gap-2">
+        <a href="#liked" className="chip">{t('library.likes')}</a>
+        <a href="#playlists" className="chip">{t('library.playlists')}</a>
+        <a href="#recent" className="chip">{t('library.history')}</a>
+      </nav>
+
+      <section id="liked" className="scroll-mt-24">
         <SectionHeader title={t('library.likes')} />
         {library.likedTracks.length === 0 ? (
           <EmptyState title={t('library.emptyLikes')} />
@@ -80,7 +88,7 @@ export default async function LibraryPage({
         )}
       </section>
 
-      <section>
+      <section id="playlists" className="scroll-mt-24">
         <SectionHeader
           title={t('library.playlists')}
           action={
@@ -122,7 +130,7 @@ export default async function LibraryPage({
         ) : null}
       </section>
 
-      <section>
+      <section id="recent" className="scroll-mt-24">
         <SectionHeader title={t('library.history')} />
         {history.length === 0 ? (
           <EmptyState title={t('library.emptyHistory')} />
