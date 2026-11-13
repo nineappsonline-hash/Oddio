@@ -32,6 +32,7 @@ export function SoundspaceStudio({ tracks }: { tracks: CatalogTrack[] }) {
   const ar = locale === 'ar';
   const [mood, setMood] = useState<SoundspaceMood>('all');
   const [discovery, setDiscovery] = useState<DiscoveryLevel>('balanced');
+  const [focusMode, setFocusMode] = useState(false);
   const play = usePlayer((state) => state.play);
   const picks = useMemo(() => buildSoundspace(tracks, mood, discovery), [tracks, mood, discovery]);
   const queue = picks.map((entry) => entry.track);
@@ -43,7 +44,14 @@ export function SoundspaceStudio({ tracks }: { tracks: CatalogTrack[] }) {
         <p className="mt-4 max-w-xl text-sm leading-7 text-muted">{ar ? 'اختار المود وحدد تحب تسمع المألوف ولا تكتشف صوت جديد. كل اختيار ليه سبب واضح.' : 'Choose your mood, then decide how adventurous your next listen should be. Every recommendation has a reason.'}</p>
       </div>
 
-      <div className="card space-y-6 p-5 sm:p-7">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-ink">{ar ? 'التحكم في تجربتك' : 'Make this space yours'}</h2>
+        <button type="button" aria-pressed={focusMode} onClick={() => setFocusMode((value) => !value)}
+          className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary transition hover:bg-primary/10">
+          {focusMode ? (ar ? 'إظهار الاختيارات' : 'Show controls') : (ar ? 'وضع الاستماع الهادئ' : 'Distraction-free mode')}
+        </button>
+      </div>
+      {!focusMode ? <div className="card space-y-6 p-5 sm:p-7">
         <fieldset>
           <legend className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink"><WandSparkles className="h-4 w-4 text-primary" />{ar ? 'المود دلوقتي' : 'Your mood right now'}</legend>
           <div className="flex flex-wrap gap-2">
@@ -77,9 +85,14 @@ export function SoundspaceStudio({ tracks }: { tracks: CatalogTrack[] }) {
             </button>
           ) : null}
         </div>
-      </div>
+      </div> : (
+        <div className="card flex items-center justify-between gap-3 p-5">
+          <p className="text-sm text-muted">{ar ? 'المود والاختيارات محفوظين لحد ما ترجع للوضع العادي.' : 'Your mood and discovery settings are preserved.'}</p>
+          {queue[0] ? <button type="button" onClick={() => play(queue[0]!, queue.slice(1))} className="min-h-11 shrink-0 rounded-full bg-primary px-5 text-sm font-semibold text-[#211518]">{ar ? 'تشغيل' : 'Play'}</button> : null}
+        </div>
+      )}
 
-      {picks.length ? (
+      {!focusMode && picks.length ? (
         <ol className="grid gap-3 md:grid-cols-2">
           {picks.map(({ track, why }, index) => (
             <li key={track.id} className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-surface p-3 transition hover:border-primary/30">
@@ -98,10 +111,16 @@ export function SoundspaceStudio({ tracks }: { tracks: CatalogTrack[] }) {
             </li>
           ))}
         </ol>
-      ) : (
+      ) : !focusMode ? (
         <div className="rounded-2xl border border-dashed border-white/20 p-8 text-center">
           <p className="text-sm text-muted">{ar ? 'لسه مفيش أغاني مناسبة للمود ده. جرّب مود تاني.' : 'No tracks match this mood yet. Try a different mood.'}</p>
           <button type="button" onClick={() => setMood('all')} className="mt-3 min-h-11 rounded-full px-4 text-sm font-semibold text-primary underline">{ar ? 'كل الأغاني' : 'Show everything'}</button>
+        </div>
+      ) : (
+        <div className="card flex min-h-44 flex-col items-center justify-center gap-4 p-6 text-center">
+          <p className="text-lg font-semibold text-ink">{ar ? 'الموسيقى وبس.' : 'Just the music.'}</p>
+          <p className="max-w-md text-sm leading-6 text-muted">{ar ? 'الاختيارات مخفية مؤقتًا. المشغل هيفضل متاح تحت، وتقدر ترجع للتحكم في أي وقت.' : 'The recommendations are hidden for now. Your persistent player remains available, and you can reopen controls anytime.'}</p>
+          {queue[0] ? <button type="button" onClick={() => play(queue[0]!, queue.slice(1))} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-6 font-semibold text-[#211518]"><Play className="h-4 w-4" fill="currentColor" />{ar ? 'شغّل الميكس' : 'Play this mix'}</button> : null}
         </div>
       )}
       <p className="text-xs leading-6 text-muted">{ar ? 'الاختيارات مبنية على مود الأغنية، تاريخ إصدارها وعدد مرات تشغيلها. مش بنستخدم بيانات شخصية أو ندّعي إنها توصيات ذكاء اصطناعي متدربة عليك.' : 'Selections use public track moods, release dates and play counts. This is an explainable mix, not an AI model trained on your private listening history.'}</p>
