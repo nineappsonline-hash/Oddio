@@ -17,6 +17,7 @@ import { MoodArtwork } from '@/components/music/MoodArtwork';
 import { HorizontalCarousel } from '@/components/ui/HorizontalCarousel';
 import { TrackCard } from '@/components/music/TrackCard';
 import { TrackRow } from '@/components/music/TrackRow';
+import { PlayButton } from '@/components/player/PlayButton';
 import { ArtistCard } from '@/components/music/ArtistCard';
 import { PlaylistCard } from '@/components/music/PlaylistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -60,37 +61,48 @@ export default async function HomePage({
 
   return (
     <div className="space-y-8">
-      <section className="relative isolate min-h-[310px] overflow-hidden rounded-[2rem] border border-fuchsia-400/30 bg-[#180b22] px-6 py-8 shadow-[0_18px_75px_#0008] sm:px-10 sm:py-10">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_78%_42%,#b12a8840,transparent_58%),linear-gradient(115deg,#1b0b27_12%,#250d30_62%,#090f28)]" />
-        <div className="pointer-events-none absolute inset-y-0 end-0 w-[55%] bg-cover bg-center opacity-75 [mask-image:linear-gradient(to_right,transparent,black_30%)]" style={{backgroundImage:"url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1200&q=85')"}} />
-        <div className="pointer-events-none absolute inset-y-0 end-0 w-[55%] bg-gradient-to-r from-[#1b0b27]/80 via-fuchsia-900/15 to-fuchsia-500/10" />
-        <div
-          className="pointer-events-none absolute -end-24 -top-28 h-80 w-80 animate-float-slow rounded-full opacity-40 blur-3xl"
-          style={{
-            background: hero
-              ? `radial-gradient(circle, ${hero.artwork.accent}, transparent 68%)`
-              : 'radial-gradient(circle, #9D5CFF, transparent 68%)',
-          }}
-        />
-        <div className="pointer-events-none absolute -bottom-32 -start-24 h-72 w-72 rounded-full bg-cyan/10 blur-3xl" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-
-        <div className="relative grid items-center gap-2 md:grid-cols-[1fr_0.8fr]">
-          <div className="relative z-10">
-
-            <h1 className="mt-2 max-w-xl text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl">
-              <span className="text-glow-gradient">{t('home.heroTitle')}</span>
+      <section className="oddio-editorial-hero relative isolate overflow-hidden rounded-[2rem] px-6 py-8 shadow-[0_24px_80px_#0007] sm:px-10 sm:py-12">
+        <div className="pointer-events-none absolute -end-16 -top-28 h-72 w-72 rounded-full bg-[#A95F52]/10 blur-3xl" aria-hidden="true" />
+        <div className="relative grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_minmax(220px,.64fr)]">
+          <div className="relative z-10 max-w-xl">
+            <p className="oddio-editorial-kicker text-[11px] font-bold sm:text-xs">{t('home.eyebrow')}</p>
+            <h1 className="oddio-editorial-headline mt-5 max-w-xl text-4xl sm:text-5xl lg:text-6xl">
+              {locale === 'ar' ? 'مساحتك الخاصة للموسيقى.' : 'Your own soundspace.'}
             </h1>
-            <p className="mt-2 max-w-xl text-xs leading-relaxed text-muted sm:text-sm">
-              {t('home.heroSubtitle')}
+            <p className="mt-5 max-w-md text-sm leading-7 text-[#DDC9C0] sm:text-base">
+              {locale === 'ar'
+                ? 'اكتشف صوتك المفضل، اسمع الجديد، وارجع للموسيقى اللي بتحبها. موسيقى AI مختارة بعناية.'
+                : 'Discover what moves you. Find new sounds, revisit favorites, and explore thoughtfully curated AI music.'}
             </p>
-
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              {hero ? (
+                <PlayButton track={hero} queue={heroQueue} size="lg" />
+              ) : null}
+              <Link
+                href={`/${locale}/discover`}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#EAB997]/45 px-5 text-sm font-semibold text-[#F8F0E9] transition hover:bg-white/10 focus-visible:outline"
+              >
+                {t('home.explore')} <ArrowRight className="ms-2 h-4 w-4 rtl:-scale-x-100" />
+              </Link>
+            </div>
           </div>
-
-          <div className="pointer-events-none hidden md:block" aria-hidden="true" />
+          <div className="relative mx-auto w-full max-w-[300px] sm:max-w-[360px]">
+            {hero ? (
+              <div className="oddio-editorial-cover relative mx-auto aspect-square max-w-[270px] overflow-hidden rounded-[1.5rem] border border-[#EAB997]/25 sm:max-w-[330px]">
+                <Artwork
+                  title={hero.title}
+                  url={hero.artwork.url}
+                  accent={hero.artwork.accent}
+                  className="h-full w-full"
+                  rounded="rounded-[1.5rem]"
+                />
+              </div>
+            ) : (
+              <div className="aspect-square rounded-[1.5rem] border border-[#EAB997]/20 bg-[radial-gradient(circle_at_60%_40%,#7E4B45,#26171B_65%)]" aria-hidden="true" />
+            )}
+            {hero ? <p className="mt-5 truncate text-center text-xs font-medium text-[#E4C4B1]">{hero.title} · {hero.artist?.name}</p> : null}
+          </div>
         </div>
-
-
       </section>
 
       {data.featured.length > 0 ? (
@@ -158,7 +170,7 @@ export default async function HomePage({
                   />
                   <div className="min-w-0 flex-1">
                     <Link
-                      href={`/tracks/${track.id}-${track.slug}`}
+                      href={`/${locale}/tracks/${track.id}-${track.slug}`}
                       className="block truncate text-xs font-semibold text-ink hover:underline"
                     >
                       {track.title}
