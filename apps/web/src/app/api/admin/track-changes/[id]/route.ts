@@ -5,7 +5,7 @@ export const runtime='nodejs';
 export async function POST(request:Request,{params}:{params:Promise<{id:string}>}) {
  try {
   assertSameOrigin(request);
-  const user=await requireRole(['admin','super_admin','moderator','content_reviewer']);
+  const user=await requireRole(['admin','super_admin','moderator']);
   const {id}=await params;
   const {decision,note}=await request.json() as {decision:string,note?:string};
   if(!['approved','rejected'].includes(decision)) throw Errors.invalid('Invalid decision.');
