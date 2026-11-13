@@ -1,0 +1,36 @@
+name: Phase 6 final single-file Prettier correction
+
+on:
+  pull_request:
+    branches:
+      - feature/oddio-creator-trust-v5
+
+permissions:
+  contents: write
+
+jobs:
+  correct:
+    if: github.repository == 'jimmydodo/oddio' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feature/oddio-release-qa-v6'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/oddio-release-qa-v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fix and verify remaining formatted route
+        run: |
+          npx prettier --write 'apps/web/src/app/api/studio/tracks/[id]/changes/route.ts'
+          npx prettier --check 'apps/web/src/app/api/studio/tracks/[id]/changes/route.ts'
+      - name: Commit only the target route
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 'apps/web/src/app/api/studio/tracks/[id]/changes/route.ts'
+          if ! git diff --cached --quiet; then
+            git commit -m "style: fix final Studio route formatting"
+            git push origin HEAD:feature/oddio-release-qa-v6
+          fi
