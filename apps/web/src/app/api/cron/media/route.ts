@@ -103,7 +103,7 @@ export async function GET(request: Request) {
         body: audio,
       });
       if (!stored.ok) throw new Error('Could not store streaming copy');
-      const { error: assetError } = await db
+      const { data: changedAssets, error: assetError } = await db
         .from('audio_assets')
         .update({
           kind: 'rendition',
@@ -113,8 +113,26 @@ export async function GET(request: Request) {
           sha256: crypto.createHash('sha256').update(audio).digest('hex'),
           processing_status: 'ready',
         })
-        .eq('track_id', trackId);
+        .eq('track_id', trackId)
+        .eq('kind', 'original')
+        .select('id');
       if (assetError) throw assetError;
+      if (!changedAssets?.length) {
+        // A previous run may have completed the asset update and crashed
+        // before marking the job succeeded. Accept only the exact same
+        // ready rendition, not an unrelated or missing audio asset.
+        const { data: completed, error: completedError } = await db
+          .from('audio_assets')
+          .select('id')
+          .eq('track_id', trackId)
+          .eq('kind', 'rendition')
+          .eq('object_key', key)
+          .eq('processing_status', 'ready')
+          .limit(1);
+        if (completedError || !completed?.length) {
+          throw new Error('No original audio asset available for processing');
+        }
+      }
       await db
         .from('jobs')
         .update({ state: 'succeeded', last_error: null })
