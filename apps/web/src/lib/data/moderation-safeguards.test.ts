@@ -5,6 +5,7 @@ import { createReport, resolveReport, reviewTrack } from './mutations';
 
 function setup() {
   const db = createSeedDb(new Date('2026-11-13T10:00:00.000Z'));
+  db.reports = []; // Isolate duplicate-report behavior from the pre-seeded demo reports.
   const listener = toSessionUser(db, db.users.find((user) => user.handle === 'nour')!);
   const moderator = toSessionUser(db, db.users.find((user) => user.roles.includes('moderator'))!);
   const admin = toSessionUser(db, db.users.find((user) => user.roles.includes('super_admin'))!);
