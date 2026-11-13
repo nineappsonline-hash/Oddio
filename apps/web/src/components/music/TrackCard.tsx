@@ -7,7 +7,7 @@ import { PlayButton } from '@/components/player/PlayButton';
 import { Badge } from '@/components/ui/Badge';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { usePlayer } from '@/lib/player-store';
-import { useT } from '@/i18n/use-translator';
+import { useLocale, useT } from '@/i18n/use-translator';
 
 export function TrackCard({
   track,
@@ -17,6 +17,7 @@ export function TrackCard({
   queue?: CatalogTrack[];
 }) {
   const t = useT();
+  const locale = useLocale();
   const isCurrent = usePlayer((state) => state.track?.id === track.id);
   const isPlaying = usePlayer((state) => state.isPlaying);
 
@@ -57,14 +58,14 @@ export function TrackCard({
       </div>
       <div className="mt-3 space-y-0.5 px-0.5">
         <Link
-          href={`/tracks/${track.id}-${track.slug}`}
+          href={`/${locale}/tracks/${track.id}-${track.slug}`}
           className="block truncate text-sm font-semibold text-ink transition group-hover:text-primary"
         >
           {track.title}
         </Link>
         {track.artist ? (
           <Link
-            href={`/artists/${track.artist.slug}`}
+            href={`/${locale}/artists/${track.artist.slug}`}
             className="block truncate text-xs text-muted transition hover:text-ink"
           >
             {track.artist.name}
