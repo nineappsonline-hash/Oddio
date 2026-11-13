@@ -35,6 +35,7 @@ export function PlayerBar() {
   const queueLength = usePlayer((state) => state.queue.length);
   const buffering = usePlayer((state) => state.buffering);
   const error = usePlayer((state) => state.error);
+  const retryPlayback = usePlayer((state) => state.retryPlayback);
   const toggle = usePlayer((state) => state.toggle);
   const next = usePlayer((state) => state.next);
   const previous = usePlayer((state) => state.previous);
@@ -51,7 +52,7 @@ export function PlayerBar() {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-16 z-40 overflow-hidden border-t border-white/10 bg-[#0d0d1a]/88 px-3 py-2.5 shadow-[0_-20px_60px_-30px_rgba(157,92,255,0.65)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6"
+      className="fixed inset-x-0 bottom-16 z-40 overflow-hidden border-t border-white/10 bg-[#1C1216]/95 px-3 py-2.5 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6"
       role="region"
       aria-label={t('player.miniPlayer')}
     >
@@ -64,12 +65,12 @@ export function PlayerBar() {
         }}
       />
       {error ? (
-        <p
-          className="mb-2 rounded-lg bg-danger/15 px-3 py-1.5 text-xs text-danger"
-          role="alert"
-        >
-          {error}
-        </p>
+        <div role="alert" className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-danger/25 bg-danger/10 px-3 py-2 text-xs text-ink">
+          <span>{rtl ? 'تعذّر تشغيل الأغنية. جرّب مرة تانية.' : 'Unable to play this track.'}</span>
+          <button type="button" onClick={retryPlayback} className="shrink-0 rounded-full border border-primary/50 px-3 py-1.5 font-semibold text-primary hover:bg-primary/10">
+            {t('common.retry')}
+          </button>
+        </div>
       ) : null}
       <div className="flex items-center gap-3">
         <button
@@ -92,7 +93,7 @@ export function PlayerBar() {
         <div className="min-w-0 flex-1 lg:flex-none lg:basis-56">
           <div className="flex items-center gap-1.5">
             <Link
-              href={`/tracks/${track.id}-${track.slug}`}
+              href={`/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
               className="block truncate text-sm font-semibold text-ink hover:underline"
             >
               {track.title}
@@ -105,7 +106,7 @@ export function PlayerBar() {
           </div>
           {track.artist ? (
             <Link
-              href={`/artists/${track.artist.slug}`}
+              href={`/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
               className="block truncate text-xs text-muted hover:text-ink"
             >
               {track.artist.name}
@@ -185,7 +186,7 @@ export function PlayerBar() {
               className="h-1 flex-1 shadow-[0_0_14px_rgba(157,92,255,0.45)]"
               aria-label={t('player.seek')}
               style={{
-                background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #9D5CFF ${progress}%, rgba(255,255,255,0.18) ${progress}%)`,
+                background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #EAB997 ${progress}%, rgba(255,255,255,0.18) ${progress}%)`,
               }}
             />
             <span className="w-10 text-[10px] tabular-nums text-muted">
