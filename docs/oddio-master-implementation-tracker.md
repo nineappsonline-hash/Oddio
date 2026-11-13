@@ -103,7 +103,7 @@ Status: **in progress**. Product source: EchoPlay Master Plan v1.1, adapted for 
 - [x] Improve error recovery localization, loading-state accessibility and focus contrast.
 - [x] Create explicit launch Go/No-Go security, playback, UX, operational gates in docs/oddio-release-gates.md.
 - [x] Normalize the repository using the pinned Prettier version on the Phase 6 review branch.
-- [ ] Confirm the full-repository format quality gate passes on the final commit.
+- [ ] Confirm the full-repository format quality gate passes on the final commit (one Studio route still requires correction).
 - [ ] Verify real-browser E2E and external production service integration before merge.
 - [ ] Responsive, RTL, keyboard and screen-reader E2E test matrix.
 - [ ] Production-like canary / preview testing before rollout.
