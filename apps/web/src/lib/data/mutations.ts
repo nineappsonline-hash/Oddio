@@ -526,7 +526,7 @@ export function createTrackFromUpload(
     if (existingTrack) return existingTrack;
   }
   if (input.audio.sha256 && db.tracks.some((existing) =>
-    existing.audio?.sha256 === input.audio.sha256 && existing.audio?.kind === 'original'
+    existing.audio?.sha256 === input.audio.sha256
   )) {
     throw Errors.conflict('This exact audio file has already been submitted.');
   }
