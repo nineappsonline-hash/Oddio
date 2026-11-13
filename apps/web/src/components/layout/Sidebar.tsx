@@ -100,12 +100,12 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
   }
 
   return (
-    <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 flex-col overflow-hidden border-e border-white/10 bg-[#0b0b16]/80 px-4 py-5 backdrop-blur-2xl lg:flex">
+    <aside className="fixed inset-y-0 start-0 z-40 hidden w-[244px] flex-col overflow-hidden border-e border-[#eab99719] bg-[#130f13] px-4 py-5 lg:flex">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-24 start-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-primary/25 blur-3xl"
       />
-      <div className="relative mb-8 px-2">
+      <div className="relative mb-9 px-2">
         <Logo locale={locale} />
       </div>
       <nav aria-label={t('nav.main')} className="flex-1 space-y-1">
@@ -122,18 +122,18 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
               className={cn(
                 'group/nav relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 text-sm font-medium transition duration-300',
                 active
-                  ? 'nav-active-glow bg-primary/15 text-ink'
-                  : 'text-muted hover:translate-x-0.5 hover:bg-white/5 hover:text-ink',
+                  ? 'bg-[#753f4a]/30 text-[#f8e7da]'
+                  : 'text-[#b6a5a1] hover:bg-[#ffffff0c] hover:text-[#f5ede8]',
               )}
               aria-current={active ? 'page' : undefined}
             >
               {active ? (
-                <span className="absolute inset-y-2 start-0 w-0.5 rounded-full bg-gradient-to-b from-primary via-cyan to-coral shadow-glow" />
+                <span className="absolute inset-y-2 start-0 w-0.5 rounded-full bg-[#eab997]" />
               ) : null}
               <Icon
                 className={cn(
                   'h-5 w-5 transition duration-300 group-hover/nav:scale-110',
-                  active ? 'text-primary drop-shadow-[0_0_8px_rgba(157,92,255,0.8)]' : '',
+                  active ? 'text-[#efb994]' : '',
                 )}
               />
               {item.label}
@@ -142,17 +142,34 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         })}
       </nav>
 
+      <section className="mt-4 border-t border-[#eab99718] pt-5" aria-label={locale === 'ar' ? 'مجموعة الموسيقى' : 'Your collection'}>
+        <div className="mb-3 flex items-center justify-between px-3">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#98858b]">{locale === 'ar' ? 'مجموعتك' : 'YOUR COLLECTION'}</p>
+          <Library size={14} className="text-[#b28a87]" aria-hidden="true"/>
+        </div>
+        {[
+          { label: locale === 'ar' ? 'الأغاني المفضلة' : 'Liked songs', href: `/${locale}/library`, symbol: '♥', color: '#673547' },
+          { label: locale === 'ar' ? 'على حسب مودك' : 'Made for your mood', href: `/${locale}/soundspace`, symbol: '♫', color: '#563a4c' },
+          { label: locale === 'ar' ? 'آخر الإصدارات' : 'New releases', href: `/${locale}/discover?sort=newest`, symbol: '✦', color: '#6a443c' },
+        ].map((item) => (
+          <Link key={item.href} href={item.href} prefetch={false} className="group flex items-center gap-3 rounded-xl px-2 py-2 text-xs font-semibold text-[#c5b4b0] transition hover:bg-white/5 hover:text-white">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg text-[#f5c9a8]" style={{ backgroundColor: item.color }}>{item.symbol}</span>
+            <span>{item.label}</span>
+          </Link>
+        ))}
+      </section>
+
       {!currentUser?.isArtistManager ? (
         <Link
           prefetch={false}
           href={`/${locale}/apply/artist`}
-          className="group/artist relative mt-4 flex items-center gap-3 overflow-hidden rounded-2xl border border-amber-200/50 bg-gradient-to-r from-[#f59e0b] via-[#fb7185] to-[#e879f9] px-3 py-3.5 text-[#21102a] shadow-[0_8px_32px_rgba(251,113,133,0.32)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_42px_rgba(251,113,133,0.55)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+          className="group/artist relative mt-4 flex items-center gap-3 overflow-hidden rounded-2xl border border-[#eab99740] bg-gradient-to-r from-[#57303d] to-[#2d1d28] px-3 py-3.5 text-[#f8e8df] transition duration-300 hover:-translate-y-0.5 hover:border-[#eab99780] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eab997]"
         >
           <span
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 group-hover/artist:translate-x-full"
           />
-          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/25 ring-1 ring-white/40">
+          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eab9971c] ring-1 ring-[#eab99740]">
             <Mic2 className="h-5 w-5" strokeWidth={2.5} />
           </span>
           <span className="relative min-w-0 flex-1">
@@ -207,7 +224,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
             <Link
               prefetch={false}
               href={`/${locale}/login`}
-              className="block rounded-xl bg-primary px-3 py-2 text-center text-sm font-semibold text-white transition hover:bg-primary-strong"
+              className="block rounded-xl bg-[#eab997] px-3 py-2 text-center text-sm font-semibold text-[#25171d] transition hover:bg-primary-strong"
             >
               {t('nav.login')}
             </Link>
