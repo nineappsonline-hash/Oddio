@@ -164,16 +164,44 @@ export function createReport(
     details: string;
   },
 ): Report {
-  let label = input.targetId;
+  let label = '';
   if (input.targetType === 'track') {
-    label = db.tracks.find((track) => track.id === input.targetId)?.title ?? label;
+    const track = db.tracks.find((item) => item.id === input.targetId);
+    if (
+      !track ||
+      !accessForTrack(db, track, { userId: actor.id, roles: actor.roles }).allowed
+    ) {
+      throw Errors.notFound('Track not found');
+    }
+    label = track.title;
   } else if (input.targetType === 'artist') {
-    label = db.artists.find((artist) => artist.id === input.targetId)?.name ?? label;
+    const artist = db.artists.find((item) => item.id === input.targetId);
+    if (!artist) throw Errors.notFound('Artist not found');
+    label = artist.name;
   } else {
-    label =
-      db.comments.find((comment) => comment.id === input.targetId)?.body.slice(0, 60) ??
-      label;
+    const comment = db.comments.find((item) => item.id === input.targetId);
+    if (!comment || comment.status === 'hidden')
+      throw Errors.notFound('Comment not found');
+    const track = db.tracks.find((item) => item.id === comment.trackId);
+    if (
+      !track ||
+      !accessForTrack(db, track, { userId: actor.id, roles: actor.roles }).allowed
+    ) {
+      throw Errors.notFound('Comment not found');
+    }
+    label = comment.body.slice(0, 60);
   }
+  // A second open report from the same user on the same content adds noise
+  // and makes the moderation queue less usable.
+  const pending = db.reports.some(
+    (report) =>
+      report.reporterId === actor.id &&
+      report.targetType === input.targetType &&
+      report.targetId === input.targetId &&
+      (report.status === 'open' || report.status === 'investigating'),
+  );
+  if (pending)
+    throw Errors.conflict('You already have a pending report for this content.');
   const report: Report = {
     id: crypto.randomUUID(),
     reporterId: actor.id,
@@ -182,12 +210,13 @@ export function createReport(
     targetId: input.targetId,
     targetLabel: label,
     reason: input.reason,
-    details: input.details,
+    details: input.details.trim(),
     status: 'open',
     resolution: '',
     createdAt: new Date().toISOString(),
   };
   db.reports.unshift(report);
+  audit(db, actor, 'report.created', 'report', report.id);
   return report;
 }
 
@@ -505,6 +534,12 @@ export function createTrackFromUpload(
     const existingTrack = db.tracks.find((track) => track.id === existingEvent.trackId);
     if (existingTrack) return existingTrack;
   }
+  if (
+    input.audio.sha256 &&
+    db.tracks.some((existing) => existing.audio?.sha256 === input.audio.sha256)
+  ) {
+    throw Errors.conflict('This exact audio file has already been submitted.');
+  }
   const quota = evaluateUploadQuota(
     db.uploadEvents.map((event) => ({
       userId: event.userId,
@@ -607,6 +642,9 @@ export function reviewTrack(
   staffActor(actor, ['admin', 'super_admin']);
   const track = db.tracks.find((item) => item.id === trackId);
   if (!track) throw Errors.notFound('Track not found');
+  if (decision !== 'approve' && reason.trim().length < 10) {
+    throw Errors.invalid('Provide a clear review reason of at least 10 characters.');
+  }
   if (
     !['pending_review', 'ready_for_review', 'changes_requested'].includes(
       track.reviewStatus,
@@ -687,8 +725,16 @@ export function resolveReport(
   staffActor(actor, ['moderator', 'admin', 'super_admin']);
   const report = db.reports.find((item) => item.id === reportId);
   if (!report) throw Errors.notFound('Report not found');
+  if (report.status === 'resolved' || report.status === 'dismissed') {
+    throw Errors.conflict('This report has already been closed.');
+  }
+  if (notes.trim().length < 10) {
+    throw Errors.invalid(
+      'Record at least 10 characters explaining the moderation decision.',
+    );
+  }
   report.status = resolution === 'resolve' ? 'resolved' : 'dismissed';
-  report.resolution = notes;
+  report.resolution = notes.trim();
   audit(db, actor, `report.${report.status}`, 'report', report.id);
   return report;
 }
