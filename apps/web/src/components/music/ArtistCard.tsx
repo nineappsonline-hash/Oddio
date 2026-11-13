@@ -13,7 +13,7 @@ export function ArtistCard({
 }) {
   return (
     <Link
-      href={`/artists/${artist.slug}`}
+      href={`/${locale}/artists/${artist.slug}`}
       className="group card card-hover flex flex-col items-center p-4 text-center"
     >
       <div className="relative">
@@ -54,7 +54,7 @@ export function ArtistCard({
 export function ArtistListRow({ artist, locale }: { artist: Artist; locale: Locale }) {
   return (
     <Link
-      href={`/artists/${artist.slug}`}
+      href={`/${locale}/artists/${artist.slug}`}
       className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/5"
     >
       <Avatar name={artist.name} accent={artist.accent} className="h-11 w-11" />
