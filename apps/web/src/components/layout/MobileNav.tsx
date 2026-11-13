@@ -42,12 +42,12 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
         <Logo locale={locale} compact />
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-ink">
-            AI Music
+            Oddio
           </p>
           <div className="flex items-center gap-1.5">
             <Equalizer bars={3} className="h-2.5 text-primary" />
             <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-muted">
-              {t('player.live')}
+              {locale === 'ar' ? 'موسيقى ليك' : 'YOUR MUSIC'}
             </span>
           </div>
         </div>
@@ -57,7 +57,7 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
           type="button"
           aria-label={locale === 'ar' ? 'افتح القائمة' : 'Open menu'}
           onClick={() => document.getElementById('oddio-mobile-menu-trigger')?.click()}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-fuchsia-400/35 bg-fuchsia-500/15 text-fuchsia-200 transition hover:bg-fuchsia-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-fuchsia-300"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#eab99750] bg-[#4d2b38] text-[#efbf9c] transition hover:bg-[#5b3542] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#eab997]"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -91,7 +91,7 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
           <Link
             prefetch={false}
             href={`/${locale}/login`}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-fuchsia-300/40 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500 px-4 py-2 text-xs font-bold text-white shadow-[0_5px_22px_rgba(192,38,211,0.3)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(192,38,211,0.5)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-300"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#eab99770] bg-[#eab997] px-4 py-2 text-xs font-bold text-[#24171d] transition hover:bg-[#f1c7aa] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eab997]"
           >
             <LogIn className="h-4 w-4" />
             {t('nav.login')}
@@ -142,7 +142,7 @@ export function MobileNav() {
     <>
       <nav
         aria-label={t('nav.main')}
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-white/10 bg-[#0b0b16]/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-white/10 bg-[#160f15]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl lg:hidden"
       >
         {items.map((item) => {
           const active = item.exact
@@ -161,12 +161,12 @@ export function MobileNav() {
               )}
             >
               {active ? (
-                <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-gradient-to-r from-primary via-cyan to-coral shadow-glow" />
+                <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-[#eab997]" />
               ) : null}
               <Icon
                 className={cn(
                   'h-5 w-5 transition duration-300 group-hover/mnav:-translate-y-0.5',
-                  active ? 'drop-shadow-[0_0_8px_rgba(157,92,255,0.9)]' : '',
+                  active ? 'drop-shadow-[0_0_8px_rgba(234,185,151,0.5)]' : '',
                 )}
               />
               {item.label}
@@ -181,7 +181,7 @@ export function MobileNav() {
           aria-expanded={menuOpen}
           className={cn(
             'flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold transition',
-            menuOpen ? 'text-fuchsia-300' : 'text-muted hover:text-ink',
+            menuOpen ? 'text-[#eab997]' : 'text-muted hover:text-ink',
           )}
         >
           <Menu className="h-5 w-5" />
@@ -200,11 +200,11 @@ export function MobileNav() {
             role="dialog"
             aria-modal="true"
             aria-label={locale === 'ar' ? 'القائمة' : 'Menu'}
-            className="absolute inset-y-0 start-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-e border-fuchsia-400/20 bg-[#151126] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
+            className="absolute inset-y-0 start-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-e border-[#eab9972c] bg-[#191219] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
           >
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-fuchsia-300">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#eab997]">
                   ODDIO
                 </p>
                 <h2 className="text-xl font-black text-white">
