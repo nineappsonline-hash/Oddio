@@ -23,6 +23,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run format
+      - run: npx prettier --write 'apps/web/src/app/api/studio/tracks/[id]/changes/route.ts'
       - run: npm run format:check
       - name: Commit formatting normalization
         run: |
