@@ -2288,3 +2288,10 @@ body {
   outline: 3px solid #e6fffc;
   outline-offset: 3px;
 }
+
+/* The exact glossy play artwork must float without a white circular plate. */
+.oddio-idle-play {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
