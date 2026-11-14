@@ -241,3 +241,31 @@ export function presignR2OriginalGet(objectKey: string) {
   );
   return `https://${host}${path}?${query}&X-Amz-Signature=${hmac(signingKey, stringToSign).toString('hex')}`;
 }
+
+/** Delete only a track-owned original or streaming rendition after a persisted rejection. */
+export function presignR2Delete(bucket: 'ai-music-originals' | 'ai-music-streaming', objectKey: string, trackId: string) {
+  if (!env.r2AccountId || !env.r2AccessKeyId || !env.r2SecretAccessKey) {
+    throw new AppError('storage_not_configured', 'R2 credentials are missing.', 503);
+  }
+  const valid = bucket === 'ai-music-originals'
+    ? new RegExp('^incoming/[a-f0-9-]+/' + trackId + '$').test(objectKey)
+    : objectKey.startsWith(trackId + '/') && /^[a-zA-Z0-9/_-]+\\.[a-zA-Z0-9]+$/.test(objectKey) && !objectKey.includes('..');
+  if (!/^[a-f0-9-]{36}$/.test(trackId) || !valid) throw new AppError('invalid_object_key', 'Cannot delete an unowned audio object.', 422);
+  const host = `${env.r2AccountId}.r2.cloudflarestorage.com`;
+  const timestamp = new Date().toISOString().replace(/[:-]|\\.\\d{3}/g, '');
+  const shortDate = timestamp.slice(0, 8);
+  const scope = `${shortDate}/auto/s3/aws4_request`;
+  const path = `/${bucket}/${objectKey.split('/').map(encodeURIComponent).join('/')}`;
+  const query = Object.entries({
+    'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+    'X-Amz-Credential': `${env.r2AccessKeyId}/${scope}`,
+    'X-Amz-Date': timestamp,
+    'X-Amz-Expires': '120',
+    'X-Amz-SignedHeaders': 'host',
+  }).sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
+  const canonical = ['DELETE', path, query, `host:${host}\\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\\n');
+  const toSign = ['AWS4-HMAC-SHA256', timestamp, scope, sha256(canonical)].join('\\n');
+  const signingKey = hmac(hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'), 'aws4_request');
+  return `https://${host}${path}?${query}&X-Amz-Signature=${hmac(signingKey, toSign).toString('hex')}`;
+}
