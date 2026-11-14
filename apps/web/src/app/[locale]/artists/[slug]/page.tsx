@@ -14,7 +14,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { Artwork } from '@/components/ui/Artwork';
 import { Badge } from '@/components/ui/Badge';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { PlayButton } from '@/components/player/PlayButton';
+import { GenrePlayAllButton } from '@/components/music/GenrePlayAllButton';
 import { FollowButton } from '@/components/community/FollowButton';
 import { ShareButton } from '@/components/community/ShareButton';
 import { ReportButton } from '@/components/community/ReportButton';
@@ -135,7 +135,7 @@ export default async function ArtistPage({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {featuredTrack ? <PlayButton track={featuredTrack} queue={queue} /> : null}
+            <GenrePlayAllButton tracks={queue} ar={locale === 'ar'} />
             <FollowButton
               artistId={artist.id}
               initialFollowing={isFollowing}
