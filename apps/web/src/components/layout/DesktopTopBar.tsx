@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Bell, Search, Headphones, UserRound } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { OddioGlyph } from '@/components/ui/OddioGlyph';
 import { useLocalePath } from '@/lib/use-locale-path';
 import { useSession } from '@/components/providers/SessionProvider';
 import { Avatar } from '@/components/ui/Artwork';
@@ -40,7 +41,7 @@ export function DesktopTopBar() {
         method="GET"
         role="search"
       >
-        <Search aria-hidden="true" size={18} />
+        <OddioGlyph name="search" size={20} className="oddio-glyph" />
         <input
           name="q"
           type="search"
@@ -58,7 +59,7 @@ export function DesktopTopBar() {
           href={`/${locale}/soundspace`}
           className="oddio-topbar-discover"
         >
-          <Headphones size={17} />
+          <OddioGlyph name="soundspace" size={19} className="oddio-glyph" />
           <span>{ar ? 'مساحتك' : 'My soundspace'}</span>
         </Link>
         {user ? (
@@ -69,7 +70,7 @@ export function DesktopTopBar() {
               aria-label={ar ? 'الإشعارات' : 'Notifications'}
               className="oddio-topbar-icon"
             >
-              <Bell size={19} />
+              <OddioGlyph name="notifications" size={20} className="oddio-glyph" />
             </Link>
             <Link
               prefetch={false}
@@ -85,7 +86,7 @@ export function DesktopTopBar() {
             href={`/${locale}/login`}
             className="oddio-topbar-account"
           >
-            <UserRound size={17} />
+            <OddioGlyph name="home" size={19} className="oddio-glyph" />
             <span>{ar ? 'دخول' : 'Log in'}</span>
           </Link>
         )}
