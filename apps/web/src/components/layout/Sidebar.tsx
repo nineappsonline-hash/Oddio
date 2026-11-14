@@ -1,19 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   ArrowUpRight,
   Sparkles,
-  BarChart3,
-  Compass,
-  Home,
   LayoutDashboard,
   Library,
   Mic2,
-  Search,
   Settings,
-  Shield,
 } from 'lucide-react';
 import type { SessionUser } from '@ai-music/contracts';
 import { useSession } from '@/components/providers/SessionProvider';
@@ -23,6 +17,7 @@ import { LogoutButton } from '@/components/layout/LogoutButton';
 import { useT } from '@/i18n/use-translator';
 import { useLocalePath } from '@/lib/use-locale-path';
 import { cn } from '@/lib/utils';
+import { OddioGlyph, type OddioGlyphName } from '@/components/ui/OddioGlyph';
 
 export function Logo({ locale, compact = false }: { locale: string; compact?: boolean }) {
   return (
@@ -32,16 +27,7 @@ export function Logo({ locale, compact = false }: { locale: string; compact?: bo
       className="group/logo inline-flex items-center gap-3"
       aria-label="Oddio"
     >
-      <span className="relative flex h-12 w-12 shrink-0">
-        <Image
-          src="/oddio-logo-hq.png"
-          alt="Oddio"
-          width={48}
-          height={48}
-          className="h-full w-full object-contain"
-          priority
-        />
-      </span>
+      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-[#262626] text-white"><OddioGlyph name="soundspace" size={31} className="oddio-glyph" /></span>
       {!compact ? (
         <span className="leading-tight">
           <span className="block text-sm font-black uppercase tracking-[0.18em] text-ink">
@@ -63,22 +49,22 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
   const currentUser = session.user ?? user;
 
   const items = [
-    { href: `/${locale}`, label: t('nav.home'), icon: Home, exact: true },
-    { href: `/${locale}/discover`, label: t('nav.discover'), icon: Compass },
+    { href: `/${locale}`, label: t('nav.home'), icon: 'home', exact: true },
+    { href: `/${locale}/discover`, label: t('nav.discover'), icon: 'discover' },
     {
       href: `/${locale}/soundspace`,
       label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace',
-      icon: Sparkles,
+      icon: 'soundspace',
     },
-    { href: `/${locale}/charts`, label: t('nav.charts'), icon: BarChart3 },
-    { href: `/${locale}/search`, label: t('nav.search'), icon: Search },
+    { href: `/${locale}/charts`, label: t('nav.charts'), icon: 'charts' },
+    { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
   ];
 
   if (currentUser) {
     items.push({
       href: `/${locale}/library`,
       label: t('nav.library'),
-      icon: Library,
+      icon: 'library',
       exact: false,
     });
   }
@@ -86,7 +72,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
     items.push({
       href: `/${locale}/studio`,
       label: t('nav.studio'),
-      icon: Mic2,
+      icon: 'studio',
       exact: false,
     });
   }
@@ -94,13 +80,13 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
     items.push({
       href: `/${locale}/admin`,
       label: t('nav.admin'),
-      icon: Shield,
+      icon: 'admin',
       exact: false,
     });
   }
 
   return (
-    <aside className="fixed inset-y-0 start-0 z-40 hidden w-[244px] flex-col overflow-y-auto overflow-x-hidden border-e border-[#eab99719] bg-[#130f13] px-4 py-5 lg:flex">
+    <aside className="fixed inset-y-0 start-0 z-40 hidden w-[244px] flex-col overflow-y-auto overflow-x-hidden border-e border-[#343434] bg-[#101010] px-4 py-5 lg:flex">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-24 start-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-primary/25 blur-3xl"
@@ -113,7 +99,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
           const active = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href);
-          const Icon = item.icon;
+          const glyph = item.icon as OddioGlyphName;
           return (
             <Link
               prefetch={false}
@@ -122,20 +108,15 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
               className={cn(
                 'group/nav relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 text-sm font-medium transition duration-300',
                 active
-                  ? 'bg-[#753f4a]/30 text-[#f8e7da]'
-                  : 'text-[#b6a5a1] hover:bg-[#ffffff0c] hover:text-[#f5ede8]',
+                  ? 'bg-[#272727] text-[#f7f7f7]'
+                  : 'text-[#a4a4a4] hover:bg-[#252525] hover:text-white',
               )}
               aria-current={active ? 'page' : undefined}
             >
               {active ? (
-                <span className="absolute inset-y-2 start-0 w-0.5 rounded-full bg-[#eab997]" />
+                <span className="absolute inset-y-2 start-0 w-0.5 rounded-full bg-[#f1f1f1]" />
               ) : null}
-              <Icon
-                className={cn(
-                  'h-5 w-5 transition duration-300 group-hover/nav:scale-110',
-                  active ? 'text-[#efb994]' : '',
-                )}
-              />
+              <span className="oddio-glyph-frame"><OddioGlyph name={glyph} size={20} className="oddio-glyph" /></span>
               {item.label}
             </Link>
           );
@@ -156,20 +137,20 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
           {
             label: locale === 'ar' ? 'الأغاني المفضلة' : 'Liked songs',
             href: `/${locale}/library`,
-            symbol: '♥',
-            color: '#673547',
+            symbol: 'liked',
+            color: '#303030',
           },
           {
             label: locale === 'ar' ? 'على حسب مودك' : 'Made for your mood',
             href: `/${locale}/soundspace`,
-            symbol: '♫',
-            color: '#563a4c',
+            symbol: 'soundspace',
+            color: '#3c3c3c',
           },
           {
             label: locale === 'ar' ? 'آخر الإصدارات' : 'New releases',
             href: `/${locale}/discover?sort=newest`,
-            symbol: '✦',
-            color: '#6a443c',
+            symbol: 'releases',
+            color: '#292929',
           },
         ].map((item) => (
           <Link
@@ -182,7 +163,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
               className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg text-[#f5c9a8]"
               style={{ backgroundColor: item.color }}
             >
-              {item.symbol}
+              <OddioGlyph name={item.symbol as OddioGlyphName} size={21} className="oddio-glyph" />
             </span>
             <span>{item.label}</span>
           </Link>
@@ -254,7 +235,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
             <Link
               prefetch={false}
               href={`/${locale}/login`}
-              className="block rounded-xl bg-[#eab997] px-3 py-2 text-center text-sm font-semibold text-[#25171d] transition hover:bg-primary-strong"
+              className="block rounded-xl bg-[#f1f1f1] px-3 py-2 text-center text-sm font-semibold text-[#151515] transition hover:bg-primary-strong"
             >
               {t('nav.login')}
             </Link>
