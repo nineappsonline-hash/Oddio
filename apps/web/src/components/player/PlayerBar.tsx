@@ -1,25 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  ListMusic,
-  Maximize2,
-  Pause,
-  Play,
-  Repeat,
-  Repeat1,
-  Shuffle,
-  SkipBack,
-  SkipForward,
-  Volume2,
-  VolumeX,
-} from 'lucide-react';
+import { Maximize2, Repeat, Repeat1, VolumeX } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { cn, formatDuration } from '@/lib/utils';
+import { OddioGlyph } from '@/components/ui/OddioGlyph';
 
 export function PlayerBar() {
   const t = useT();
@@ -46,13 +35,44 @@ export function PlayerBar() {
   const toggleShuffle = usePlayer((state) => state.toggleShuffle);
   const setExpanded = usePlayer((state) => state.setExpanded);
 
-  if (!track) return null;
+  if (!track) {
+    return (
+      <div
+        className="oddio-player-bar oddio-idle-player"
+        role="region"
+        aria-label={rtl ? 'مشغل أوديو' : 'Oddio music player'}
+      >
+        <div className="oddio-idle-cover">
+          <OddioGlyph name="queue" size={22} />
+        </div>
+        <div className="oddio-idle-details">
+          <strong>{rtl ? 'شغّل أي أغنية' : 'Your soundtrack starts here'}</strong>
+          <span>
+            {rtl
+              ? 'اختار أغنية علشان تبدأ الاستماع'
+              : 'Choose a track to start listening'}
+          </span>
+        </div>
+        <div className="oddio-idle-controls" aria-hidden="true">
+          <OddioGlyph name="previous" size={20} />
+          <span className="oddio-idle-play">
+            <OddioGlyph name="play" size={19} />
+          </span>
+          <OddioGlyph name="next" size={20} />
+        </div>
+        <div className="oddio-idle-track" aria-hidden="true">
+          <span />
+        </div>
+        <span className="oddio-idle-watermark">ODDIO / HUMAN CURATED</span>
+      </div>
+    );
+  }
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
     <div
-      className="fixed inset-x-0 bottom-16 z-40 overflow-hidden border-t border-white/10 bg-[#1C1216]/95 px-3 py-2.5 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6"
+      className="oddio-player-bar fixed inset-x-0 bottom-16 z-40 overflow-hidden border-t border-white/10 bg-[#181818]/95 px-3 py-2.5 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6"
       role="region"
       aria-label={t('player.miniPlayer')}
     >
@@ -135,7 +155,7 @@ export function PlayerBar() {
                 shuffle ? 'text-primary' : 'text-muted',
               )}
             >
-              <Shuffle className="h-4 w-4" />
+              <OddioGlyph name="soundspace" size={18} className="oddio-glyph" />
             </button>
             <button
               type="button"
@@ -143,18 +163,18 @@ export function PlayerBar() {
               aria-label={t('common.previous')}
               className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
             >
-              <SkipBack className="h-4 w-4" />
+              <OddioGlyph name="previous" size={19} className="oddio-glyph" />
             </button>
             <button
               type="button"
               onClick={toggle}
               aria-label={isPlaying ? t('common.pause') : t('common.play')}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white transition hover:bg-primary-strong"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] transition hover:bg-primary-strong"
             >
               {isPlaying ? (
-                <Pause className="h-5 w-5" fill="currentColor" />
+                <OddioGlyph name="pause" size={21} className="oddio-glyph" />
               ) : (
-                <Play className="ms-0.5 h-5 w-5" fill="currentColor" />
+                <OddioGlyph name="play" size={21} className="oddio-glyph" />
               )}
             </button>
             <button
@@ -163,7 +183,7 @@ export function PlayerBar() {
               aria-label={t('common.next')}
               className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
             >
-              <SkipForward className="h-4 w-4" />
+              <OddioGlyph name="next" size={19} className="oddio-glyph" />
             </button>
             <button
               type="button"
@@ -195,7 +215,7 @@ export function PlayerBar() {
               className="h-1 flex-1 shadow-[0_0_14px_rgba(157,92,255,0.45)]"
               aria-label={t('player.seek')}
               style={{
-                background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #EAB997 ${progress}%, rgba(255,255,255,0.18) ${progress}%)`,
+                background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #F2F2F2 ${progress}%, rgba(255,255,255,0.18) ${progress}%)`,
               }}
             />
             <span className="w-10 text-[10px] tabular-nums text-muted">
@@ -220,7 +240,7 @@ export function PlayerBar() {
             {muted || volume === 0 ? (
               <VolumeX className="h-4 w-4" />
             ) : (
-              <Volume2 className="h-4 w-4" />
+              <OddioGlyph name="volume" size={18} className="oddio-glyph" />
             )}
           </button>
           <input
@@ -233,7 +253,7 @@ export function PlayerBar() {
             className="w-24"
             aria-label={t('player.volume')}
             style={{
-              background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #9D5CFF ${
+              background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #F2F2F2 ${
                 (muted ? 0 : volume) * 100
               }%, rgba(255,255,255,0.18) ${(muted ? 0 : volume) * 100}%)`,
             }}
@@ -244,7 +264,7 @@ export function PlayerBar() {
             aria-label={t('player.queue')}
             className="relative rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
           >
-            <ListMusic className="h-4 w-4" />
+            <OddioGlyph name="queue" size={19} className="oddio-glyph" />
             {queueLength > 0 ? (
               <span className="absolute -end-0.5 -top-0.5 rounded-full bg-primary px-1 text-[9px] font-bold text-white">
                 {queueLength}

@@ -40,6 +40,35 @@ try {
       const pageErrors = [];
       page.on('pageerror', (error) => pageErrors.push(error.message));
 
+      await test(`${label} editorial home layout and viewport`, async () => {
+        const response = await page.goto(`${base}/${locale}`, {
+          waitUntil: 'domcontentloaded',
+        });
+        assert.equal(response?.status(), 200);
+        await page.locator('.oddio-home-feature-grid').waitFor();
+        assert.equal(await page.locator('.oddio-featured-stage').count(), 1);
+        assert.equal(await page.locator('.oddio-topbar-search').count(), 1);
+        assert.equal(await page.locator('.oddio-listening-rail').count(), 1);
+        assert.equal(
+          await page.locator('.oddio-listening-rail').isVisible(),
+          viewport.width >= 1320,
+          'Listening rail visibility does not match the desktop breakpoint',
+        );
+        assert.equal(
+          await page.locator('.oddio-topbar-search').isVisible(),
+          viewport.width >= 1024,
+          'Persistent search should appear on desktop, not inside mobile chrome',
+        );
+        await page.locator('.oddio-idle-player').waitFor({ state: 'visible' });
+        assert.equal(await page.locator('.oddio-home-intro h1').count(), 1);
+        assert.equal(await page.locator('.oddio-home-dashboard').count(), 1);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        assert.ok(overflow <= 2, `home layout horizontal overflow: ${overflow}px`);
+        assert.equal(pageErrors.length, 0, pageErrors.join('; '));
+      });
+
       await test(`${label} soundspace controls`, async () => {
         const response = await page.goto(`${base}/${locale}/soundspace`, {
           waitUntil: 'domcontentloaded',
@@ -76,7 +105,7 @@ try {
           waitUntil: 'domcontentloaded',
         });
         assert.equal(search?.status(), 200);
-        const input = page.locator('input[name="q"]');
+        const input = page.locator('main input[name="q"]');
         await input.fill('zzzzunlikelyreleasequery123');
         await input.press('Enter');
         await page.waitForURL(new RegExp(`/\\${locale}/search\\?q=`), {
@@ -101,13 +130,38 @@ try {
 
       if (locale === 'en' && viewport.width === 1366) {
         await test('demo listener login and library navigation', async () => {
+          // Do not submit an SSR form until React has attached its handlers.
+          // Slow WebKit hydration can otherwise swallow a user click.
+          await page.locator('form[data-login-hydrated="true"]').waitFor({
+            state: 'visible',
+            timeout: 20_000,
+          });
           await page.locator('#login-email').fill('listener@demo.local');
           await page.locator('#login-password').fill('demo1234');
+          const loginResponse = page.waitForResponse(
+            (response) =>
+              response.url().endsWith('/api/auth/login') &&
+              response.request().method() === 'POST',
+            { timeout: 15_000 },
+          );
           await page.locator('form button[type="submit"]').first().click();
-          await page.waitForURL((url) => url.pathname === '/en/library', {
-            timeout: 20_000,
-            waitUntil: 'domcontentloaded',
-          });
+          const loginResult = await loginResponse;
+          assert.equal(loginResult.status(), 200, 'Demo credentials must authorize');
+          const storedSession = (await context.cookies()).find(
+            (cookie) => cookie.name === 'aim_session',
+          );
+          assert.ok(storedSession, 'Session cookie was rejected by the test browser');
+          try {
+            await page.waitForURL((url) => url.pathname === '/en/library', {
+              timeout: 20_000,
+              waitUntil: 'domcontentloaded',
+            });
+          } catch (error) {
+            const alerts = await page.locator('[role="alert"]').allTextContents();
+            throw new Error(
+              `Session cookie exists but browser did not reach Library. Current URL: ${page.url()}; alerts: ${alerts.join(' | ')}; runtime errors: ${pageErrors.join(' | ')}; ${error instanceof Error ? error.message : String(error)}`,
+            );
+          }
           await page.getByRole('heading', { level: 1 }).waitFor();
           assert.equal(pageErrors.length, 0, pageErrors.join('; '));
         });

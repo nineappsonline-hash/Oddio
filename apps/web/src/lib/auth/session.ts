@@ -3,7 +3,7 @@ import { locales } from '@ai-music/contracts';
 import { cookies } from 'next/headers';
 import type { NextResponse } from 'next/server';
 import type { Viewer } from '@ai-music/db';
-import { demoMode } from '@/lib/env';
+import { demoMode, env } from '@/lib/env';
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { verifySessionToken, signSessionToken } from './token';
 import { findUserById, readDb, toSessionUser } from '@/lib/data/db';
@@ -15,7 +15,9 @@ export function setDemoSession(response: NextResponse, userId: string): void {
   response.cookies.set(SESSION_COOKIE, signSessionToken(userId), {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    // WebKit rejects Secure cookies on HTTP test origins. Keep them enabled
+    // for every HTTPS deployment, including production and Vercel previews.
+    secure: process.env.NODE_ENV === 'production' && env.siteUrl.startsWith('https://'),
     path: '/',
     maxAge: 60 * 60 * 24 * 30,
   });
@@ -25,7 +27,7 @@ export function clearSessionCookie(response: NextResponse): void {
   response.cookies.set(SESSION_COOKIE, '', {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production' && env.siteUrl.startsWith('https://'),
     path: '/',
     maxAge: 0,
   });

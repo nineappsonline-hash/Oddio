@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ArrowUpRight, Compass, SlidersHorizontal } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { searchQuery } from '@ai-music/contracts';
@@ -10,7 +11,6 @@ import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { TrackCard } from '@/components/music/TrackCard';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -77,12 +77,45 @@ export default async function DiscoverPage({
   ].filter(Boolean);
 
   return (
-    <div>
-      <PageHeader title={t('discover.title')} subtitle={t('discover.subtitle')} />
+    <div className="oddio-explore-page">
+      <header className="oddio-explore-heading">
+        <div>
+          <p className="oddio-micro-label">
+            <Compass size={14} /> {locale === 'ar' ? 'خريطة الموسيقى' : 'THE SOUND ATLAS'}
+          </p>
+          <h1>{t('discover.title')}</h1>
+          <p>{t('discover.subtitle')}</p>
+        </div>
+        <Link href={`/${locale}/soundspace`} className="oddio-explore-mood-link">
+          {locale === 'ar' ? 'موسيقى على مزاجك' : 'Explore your mood'}{' '}
+          <ArrowUpRight size={16} />
+        </Link>
+      </header>
+      <section
+        className="oddio-explore-shortcuts"
+        aria-label={locale === 'ar' ? 'أنواع موسيقى' : 'Browse genres'}
+      >
+        {home.genres.slice(0, 6).map((genre, index) => (
+          <Link
+            key={genre.id}
+            href={`/${locale}/genres/${genre.slug}`}
+            className={`oddio-explore-shortcut oddio-explore-shortcut-${index % 6}`}
+          >
+            <span>{genreLabel(genre)}</span>
+            <ArrowUpRight size={17} aria-hidden="true" />
+          </Link>
+        ))}
+      </section>
+      <div className="oddio-explore-filter-label">
+        <SlidersHorizontal size={16} />
+        <span>
+          {locale === 'ar' ? 'فلتر الموسيقى حسب اختيارك' : 'REFINE YOUR DISCOVERY'}
+        </span>
+      </div>
 
       <form
         method="get"
-        className="card mb-8 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5"
+        className="oddio-explore-filter-card mb-8 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5"
         action={`/${locale}/discover`}
       >
         <label className="block text-xs font-semibold uppercase tracking-wide text-muted sm:col-span-2 lg:col-span-5">
@@ -165,7 +198,7 @@ export default async function DiscoverPage({
         </div>
       </form>
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <div className="oddio-explore-results-label mb-4 flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted">
           {t('discover.results', { count: String(results.total) })}
         </p>
@@ -175,12 +208,12 @@ export default async function DiscoverPage({
         <EmptyState title={t('discover.empty')} />
       ) : (
         <>
-          <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="oddio-explore-results-grid mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {results.tracks.slice(0, 10).map((track) => (
               <TrackCard key={track.id} track={track} queue={results.tracks} />
             ))}
           </div>
-          <div className="card divide-y divide-white/5 p-2">
+          <div className="oddio-explore-track-list divide-y divide-white/5 p-2">
             {results.tracks.map((track, index) => (
               <TrackRow
                 key={track.id}
