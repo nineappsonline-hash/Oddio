@@ -446,6 +446,8 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
     entityType: text(row.entity_type, 'track') as FeaturedSlotRecord['entityType'],
     entityId: text(row.entity_id),
     rank: num(row.rank),
+    startAt: typeof row.start_at === 'string' ? row.start_at : null,
+    endAt: typeof row.end_at === 'string' ? row.end_at : null,
   }));
 
   const auditLogs = auditRows.map((row) => ({
@@ -949,6 +951,8 @@ const SPECS: CollectionSpec[] = [
       entity_type: slot.entityType,
       entity_id: slot.entityId,
       rank: slot.rank,
+      start_at: slot.startAt ?? null,
+      end_at: slot.endAt ?? null,
     }),
   },
   {
