@@ -1,13 +1,21 @@
 export function normalizeSlug(input: string): string {
-  return input
+  const ascii = input
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/['’]/g, '')
-    .replace(/[^a-z0-9\u0600-\u06FF]+/g, '-')
+    .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .replace(/-{2,}/g, '-')
-    .slice(0, 80);
+    .slice(0, 64);
+  // Database slugs only allow ASCII. Preserve distinct non-Latin titles via a stable suffix.
+  if (!/[^\x00-\x7F]/.test(input)) return ascii;
+  let hash = 2166136261;
+  for (const char of input.normalize('NFKC')) {
+    hash ^= char.codePointAt(0)!;
+    hash = Math.imul(hash, 16777619);
+  }
+  return `${ascii || 'track'}-${(hash >>> 0).toString(36)}`;
 }
 
 export function uniqueSlug(base: string, taken: Iterable<string>): string {
