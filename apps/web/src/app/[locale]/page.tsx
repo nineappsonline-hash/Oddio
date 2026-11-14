@@ -174,7 +174,7 @@ export default async function HomePage({
             <p className="oddio-micro-label">{ar ? 'ابدأ من هنا' : 'FIND YOUR SOUND'}</p>
             <h2>{ar ? 'استكشف حسب النوع' : 'Explore by genre'}</h2>
           </div>
-          <Link href={`/${locale}/discover`} className="oddio-section-action">
+          <Link href={`/${locale}/genres`} className="oddio-section-action">
             {ar ? 'شوف الكل' : 'See all'}{' '}
             <ArrowRight size={16} className="rtl:-scale-x-100" />
           </Link>
