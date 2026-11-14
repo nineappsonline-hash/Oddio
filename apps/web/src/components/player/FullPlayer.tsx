@@ -74,6 +74,8 @@ export function FullPlayer() {
   const [srt, setSrt] = useState<string | null>(null);
   const [plainLyrics, setPlainLyrics] = useState<string | null>(null);
   const [lyricsLoading, setLyricsLoading] = useState(false);
+  const [generatingLyrics, setGeneratingLyrics] = useState(false);
+  const [lyricsMessage, setLyricsMessage] = useState('');
   const [controlNotice, setControlNotice] = useState('');
   useEffect(() => {
     if (!controlNotice) return;
@@ -124,6 +126,7 @@ export function FullPlayer() {
     const controller = new AbortController();
     setSrt(null);
     setPlainLyrics(null);
+    setLyricsMessage('');
     setLyricsLoading(true);
     fetch('/api/tracks/' + encodeURIComponent(track.id) + '/synced-lyrics', {
       signal: controller.signal,
@@ -141,6 +144,26 @@ export function FullPlayer() {
       });
     return () => controller.abort();
   }, [track?.id]);
+  async function generateLyrics() {
+    if (!track || generatingLyrics) return;
+    setGeneratingLyrics(true);
+    setLyricsMessage(rtl ? 'جاري استخراج الكلمات والتوقيتات…' : 'Generating timed lyrics…');
+    try {
+      const response = await fetch('/api/tracks/' + encodeURIComponent(track.id) + '/generate-lyrics', { method: 'POST' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result?.error?.message || 'Generation failed');
+      if (result?.data?.status === 'ready' && result.data.srt) {
+        setSrt(result.data.srt);
+        setPlainLyrics(result.data.text || null);
+        setLyricsMessage(rtl ? 'تم حفظ الكلمات لكل المستمعين' : 'Lyrics saved for all listeners');
+      } else if (result?.data?.status === 'processing') {
+        setLyricsMessage(rtl ? 'التوليد شغال بالفعل. جرّب تفتح الكلمات بعد شوية.' : 'Already generating. Check again shortly.');
+      } else {
+        setLyricsMessage(result?.data?.message || (rtl ? 'التوليد غير متاح حاليًا' : 'Generation unavailable'));
+      }
+    } catch (error) { setLyricsMessage(error instanceof Error ? error.message : 'Generation failed'); }
+    finally { setGeneratingLyrics(false); }
+  }
   const cues = useMemo(() => (srt ? parseSrt(srt) : []), [srt]);
   const activeCue = cues.findIndex(
     (cue) => currentTime >= cue.start && currentTime < cue.end,
@@ -527,9 +550,11 @@ export function FullPlayer() {
                     </p>
                     <p className="text-xs leading-relaxed text-muted">
                       {rtl
-                        ? 'هتظهر هنا بعد ما الفنان يرفع ملف SRT ويوافق عليه الأدمن.'
-                        : 'Synced lyrics will appear here once the artist uploads an SRT file and an admin approves it.'}
+                        ? 'اضغط على الزرار علشان الـAI يستخرج الكلمات مرة واحدة ويحفظها.'
+                        : 'Generate timed lyrics once and save them for everyone.'}
                     </p>
+                    <button type="button" onClick={generateLyrics} disabled={generatingLyrics} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{generatingLyrics ? (rtl ? 'جاري التوليد…' : 'Generating…') : '✨ Generate Lyrics'}</button>
+                    {lyricsMessage ? <p role="status" className="text-xs text-primary">{lyricsMessage}</p> : null}
                   </div>
                 )}
               </div>
