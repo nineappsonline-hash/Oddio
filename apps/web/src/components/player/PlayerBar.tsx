@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import { useEffect, useState } from 'react';
 import { Maximize2, Repeat, Repeat1, VolumeX } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
@@ -60,7 +61,7 @@ export function PlayerBar() {
         <div className="oddio-idle-controls" aria-hidden="true">
           <OddioGlyph name="previous" size={20} />
           <span className="oddio-idle-play">
-            <OddioGlyph name="play" size={19} />
+            <OddioPlayIcon size={23} />
           </span>
           <OddioGlyph name="next" size={20} />
         </div>
@@ -184,7 +185,7 @@ export function PlayerBar() {
               {isPlaying ? (
                 <OddioGlyph name="pause" size={21} className="oddio-glyph" />
               ) : (
-                <OddioGlyph name="play" size={21} className="oddio-glyph" />
+                <OddioPlayIcon size={32} />
               )}
             </button>
             <button
