@@ -8,6 +8,7 @@ import {
 } from '@/lib/api-helpers';
 import { serviceClient } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
+import { canRetryMediaJob } from '@/lib/media/retry-policy';
 
 export const runtime = 'nodejs';
 
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
       .eq('type', 'media.transcode')
       .maybeSingle();
     if (error) throw error;
-    if (!job || job.state !== 'failed' || job.attempts >= job.max_attempts) {
+    if (!canRetryMediaJob(job)) {
       return jsonOk({ retried: false, reason: 'not_retryable' }, undefined, 409);
     }
     const { data: updated, error: updateError } = await db
