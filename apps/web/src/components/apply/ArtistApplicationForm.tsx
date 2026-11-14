@@ -34,16 +34,18 @@ export function ArtistApplicationForm({
   const [rights, setRights] = useState(false);
   const [pending, setPending] = useState(false);
   const [step, setStep] = useState(1);
+  const [draftLoaded, setDraftLoaded] = useState(false);
   useEffect(() => {
     if (defaults || resubmit) return;
     try {
       const saved = JSON.parse(localStorage.getItem('oddio-artist-draft') || 'null');
       if (saved) { setDisplayName(saved.displayName || ''); setDescription(saved.description || ''); setPortfolioUrl(saved.portfolioUrl || ''); setContactEmail(saved.contactEmail || ''); }
     } catch { /* ignore invalid draft */ }
+    setDraftLoaded(true);
   }, [defaults, resubmit]);
   useEffect(() => {
-    if (!resubmit) localStorage.setItem('oddio-artist-draft', JSON.stringify({ displayName, description, portfolioUrl, contactEmail }));
-  }, [displayName, description, portfolioUrl, contactEmail, resubmit]);
+    if (draftLoaded && !resubmit) localStorage.setItem('oddio-artist-draft', JSON.stringify({ displayName, description, portfolioUrl, contactEmail }));
+  }, [displayName, description, portfolioUrl, contactEmail, resubmit, draftLoaded]);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
