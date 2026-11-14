@@ -618,7 +618,12 @@ export async function persistChanges(before: DemoDb, after: DemoDb): Promise<voi
     }
 
     if (spec.after && touched.length > 0) {
-      await spec.after(client, touched);
+      // Hooks need the domain entities (audio, moods, social links), not flattened SQL rows.
+      const touchedKeys = new Set(touched.map((row) => rowKey(row, spec.pk)));
+      const entities = spec.rows(after).filter((entity) =>
+        touchedKeys.has(rowKey(spec.toRow(entity as Row), spec.pk)),
+      );
+      await spec.after(client, entities);
     }
   }
 }
