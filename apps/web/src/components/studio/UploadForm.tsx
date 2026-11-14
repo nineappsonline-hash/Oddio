@@ -190,7 +190,16 @@ export function UploadForm({
         form.set('objectKey', grant.objectKey);
         form.set('bytes', String(audioFile.size));
         form.set('contentType', audioFile.type || 'audio/mpeg');
-        await apiRequest('/api/studio/uploads/finalize', { method: 'POST', body: form });
+        const finalized = await apiRequest<{ id: string }>('/api/studio/uploads/finalize', { method: 'POST', body: form });
+        if (artworkFile) {
+          const artworkForm = new FormData();
+          artworkForm.set('artwork', artworkFile);
+          try {
+            await apiRequest(`/api/studio/tracks/${finalized.id}/artwork`, { method: 'POST', body: artworkForm });
+          } catch (artworkError) {
+            toast(locale === 'ar' ? 'تم رفع الأغنية لكن تعذّر حفظ الغلاف. تواصل مع الدعم لإضافته.' : 'Track submitted, but artwork could not be saved. Contact support to add it.', 'error');
+          }
+        }
       } else {
         await apiRequest('/api/studio/tracks', { method: 'POST', body: form });
       }
@@ -409,7 +418,7 @@ export function UploadForm({
             locale={locale}
           />
         </Field>
-        {production && <p className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-3 text-xs text-amber-100">{locale === 'ar' ? 'تنبيه: الغلاف المرفوع متاح للمعاينة حاليًا، لكنه لا يُحفظ مع الأغنية في وضع الإنتاج. سيتم استخدام لون الغلاف لحين تفعيل تخزين الصور.' : 'Note: Uploaded artwork is preview-only in production right now. The selected accent color will be used until artwork storage is supported.'}</p>}
+
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label={t('studio.visibility')} htmlFor="upload-visibility">
             <SearchableSelect
