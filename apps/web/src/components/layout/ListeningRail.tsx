@@ -1,20 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Headphones,
-  ListMusic,
-  Pause,
-  Play,
-  SkipForward,
-  Disc3,
-  ArrowUpRight,
-  Waves,
-} from 'lucide-react';
+import { Disc3, ArrowUpRight } from 'lucide-react';
 import { useLocalePath } from '@/lib/use-locale-path';
 import { usePlayer } from '@/lib/player-store';
 import { Artwork } from '@/components/ui/Artwork';
 import { formatDuration } from '@/lib/utils';
+import { OddioGlyph } from '@/components/ui/OddioGlyph';
 
 /** A real, live Now Playing / Next Up column, not static demo song names. */
 export function ListeningRail() {
@@ -35,7 +27,7 @@ export function ListeningRail() {
     >
       <div className="oddio-rail-heading">
         <div className="oddio-rail-heading-icon">
-          <Waves size={17} />
+          <OddioGlyph name="soundspace" size={20} className="oddio-glyph" />
         </div>
         <div>
           <p className="oddio-micro-label">{ar ? 'غرفة الاستماع' : 'LISTENING ROOM'}</p>
@@ -91,9 +83,9 @@ export function ListeningRail() {
               className="oddio-rail-play"
             >
               {playing ? (
-                <Pause size={19} fill="currentColor" />
+                <OddioGlyph name="pause" size={21} className="oddio-glyph" />
               ) : (
-                <Play size={19} fill="currentColor" />
+                <OddioGlyph name="play" size={21} className="oddio-glyph" />
               )}
             </button>
             <button
@@ -102,7 +94,7 @@ export function ListeningRail() {
               onClick={() => next()}
               className="oddio-rail-next"
             >
-              <SkipForward size={18} />
+              <OddioGlyph name="next" size={20} className="oddio-glyph" />
             </button>
             <span className="oddio-rail-duration">
               {formatDuration(track.durationMs)}
@@ -112,7 +104,7 @@ export function ListeningRail() {
       ) : (
         <div className="oddio-rail-empty">
           <span className="oddio-rail-empty-disc">
-            <Headphones size={46} strokeWidth={1.4} />
+            <OddioGlyph name="soundspace" size={46} className="oddio-glyph" />
           </span>
           <h3>{ar ? 'الموسيقى مستنياك' : 'Let the music find you.'}</h3>
           <p>
@@ -128,7 +120,7 @@ export function ListeningRail() {
 
       <div className="oddio-rail-queue-header">
         <span className="flex items-center gap-2">
-          <ListMusic size={17} />
+          <OddioGlyph name="queue" size={20} className="oddio-glyph" />
           {ar ? 'التالي في الطابور' : 'Next up'}
         </span>
         <span>{queue.length}</span>
