@@ -246,7 +246,7 @@ export default async function DiscoverPage({
       )}
 
       {results.artists.length > 0 ? (
-        <section className="mt-10">
+        <section id="artists" className="mt-10 scroll-mt-24">
           <h2 className="mb-3 text-lg font-bold text-ink">{t('common.artists')}</h2>
           <div className="flex flex-wrap gap-2">
             {results.artists.map((artist) => (
