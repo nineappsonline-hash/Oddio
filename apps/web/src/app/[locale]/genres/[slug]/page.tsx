@@ -10,6 +10,8 @@ import { getViewer } from '@/lib/auth/session';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { TrackCard } from '@/components/music/TrackCard';
+import { ArtistCard } from '@/components/music/ArtistCard';
+import { GenrePlayAllButton } from '@/components/music/GenrePlayAllButton';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -71,7 +73,18 @@ export default async function GenrePage({
         b.qualifiedPlays - a.qualifiedPlays,
     )
     .slice(0, 5);
-  const artists = new Set(all.map((track) => track.artistId)).size;
+  const genreArtistIds = new Set(all.map((track) => track.artistId));
+  const artists = genreArtistIds.size;
+  const featuredArtists = db.artists
+    .filter((artist) => genreArtistIds.has(artist.id))
+    .map((artist) => ({
+      ...artist,
+      trackCount: all.filter((track) => track.artistId === artist.id).length,
+      followerCount: db.artistFollows.filter((follow) => follow.artistId === artist.id).length,
+      genrePlays: all.filter((track) => track.artistId === artist.id).reduce((sum, track) => sum + track.qualifiedPlays, 0),
+    }))
+    .sort((a, b) => b.genrePlays - a.genrePlays || b.trackCount - a.trackCount)
+    .slice(0, 5);
 
   const section = (
     id: string,
@@ -122,6 +135,7 @@ export default async function GenrePage({
             <span className="rounded-full border border-white/25 bg-black/40 px-4 py-2">{all.length} {ar ? 'أغنية' : 'tracks'}</span>
             <span className="rounded-full border border-white/25 bg-black/40 px-4 py-2">{artists} {ar ? 'فنان' : 'artists'}</span>
           </div>
+          <div className="pt-3"><GenrePlayAllButton tracks={byPlays} ar={ar} /></div>
         </div>
       </header>
 
@@ -130,6 +144,7 @@ export default async function GenrePage({
           ['trending', ar ? 'الرائج الآن' : 'Trending now'],
           ['recent', ar ? 'أضيفت مؤخرًا' : 'Recently added'],
           ['popular', ar ? 'الأكثر تشغيلًا' : 'Most played'],
+          ['artists', ar ? 'فنانون مميزون' : 'Featured artists'],
           ['all-tracks', ar ? 'كل الأغاني' : 'All tracks'],
         ].map(([id, title]) => (
           <a key={id} href={`#${id}`} className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-ink transition hover:border-primary/60 hover:bg-primary/15">
@@ -144,7 +159,24 @@ export default async function GenrePage({
         <>
           {section('trending', ar ? 'الرائج الآن' : 'Trending now', ar ? 'الأكثر استماعًا خلال آخر 7 أيام' : 'Most qualified listens in the last 7 days', trending)}
           {section('recent', ar ? 'أضيفت مؤخرًا' : 'Recently added', ar ? 'أحدث الإصدارات في النوع ده' : 'Fresh releases from this genre', newest.slice(0, 5))}
-          {section('popular', ar ? 'الأكثر تشغيلًا' : 'Most played', ar ? 'الأعلى في إجمالي مرات الاستماع المؤهلة' : 'Ranked by all-time qualified plays', byPlays.slice(0, 5))}
+          <section id="popular" className="scroll-mt-24 space-y-4">
+            <div><h2 className="text-xl font-black text-ink sm:text-2xl">{ar ? 'الأكثر تشغيلًا' : 'Most played'}</h2><p className="mt-1 text-sm text-muted">{ar ? 'أفضل الأغاني حسب إجمالي الاستماعات المؤهلة' : 'Ranked by all-time qualified plays'}</p></div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {byPlays.slice(0, 3).map((track, index) => (
+                <div key={track.id} className="relative rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/20 to-white/[0.03] p-3">
+                  <span className="absolute end-4 top-4 z-20 rounded-full border border-white/20 bg-black/70 px-3 py-1 text-sm font-black text-white">#{index + 1}</span>
+                  <TrackCard track={track} queue={byPlays} />
+                </div>
+              ))}
+            </div>
+            {byPlays.length > 3 && <div className="card divide-y divide-white/5 p-2">{byPlays.slice(3, 10).map((track, index) => <TrackRow key={track.id} track={track} queue={byPlays} index={index + 3} locale={locale} />)}</div>}
+          </section>
+          {featuredArtists.length > 0 && (
+            <section id="artists" className="scroll-mt-24 space-y-4">
+              <div><h2 className="text-xl font-black text-ink sm:text-2xl">{ar ? 'فنانون مميزون' : 'Featured artists'}</h2><p className="mt-1 text-sm text-muted">{ar ? 'فنانون عندهم أغاني في النوع ده، مرتبين حسب الاستماع' : 'Artists in this genre, ranked by qualified plays'}</p></div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{featuredArtists.map((artist) => <ArtistCard key={artist.id} artist={artist} locale={locale} />)}</div>
+            </section>
+          )}
           <section id="all-tracks" className="scroll-mt-24 space-y-4">
             <div>
               <h2 className="text-xl font-black text-ink sm:text-2xl">{ar ? 'كل الأغاني' : 'All tracks'}</h2>
