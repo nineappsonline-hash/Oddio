@@ -290,9 +290,8 @@ export function AdminCommentToggle({
   const router = useRouter();
   const { toast } = useToast();
   const [pending, setPending] = useState(false);
-  const next = status === 'hidden' ? 'visible' : 'hidden';
 
-  async function onClick() {
+  async function onClick(next: 'visible' | 'hidden') {
     setPending(true);
     try {
       await apiRequest(`/api/admin/comments/${commentId}/status`, {
@@ -312,9 +311,10 @@ export function AdminCommentToggle({
   }
 
   return (
-    <Button size="sm" variant="outline" onClick={onClick} loading={pending}>
-      {next === 'hidden' ? t('admin.hideComment') : t('admin.unhideComment')}
-    </Button>
+    <div className="flex flex-wrap gap-2">
+      {status !== 'visible' ? <Button size="sm" variant="outline" onClick={() => onClick('visible')} loading={pending}>{status === 'pending' ? 'Approve' : t('admin.unhideComment')}</Button> : null}
+      {status !== 'hidden' ? <Button size="sm" variant="outline" onClick={() => onClick('hidden')} loading={pending}>{status === 'pending' ? 'Reject' : t('admin.hideComment')}</Button> : null}
+    </div>
   );
 }
 
