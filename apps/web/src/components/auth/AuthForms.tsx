@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ApiClientError, apiRequest } from '@/lib/client-api';
 import { useToast } from '@/components/providers/ToastProvider';
@@ -119,6 +119,8 @@ export function LoginForm({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState(initialError ?? '');
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -128,7 +130,7 @@ export function LoginForm({
 
   return (
     <>
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} data-login-hydrated={hydrated} className="space-y-4">
         <Field label={t('auth.email')} htmlFor="login-email">
           <input
             id="login-email"
@@ -158,7 +160,7 @@ export function LoginForm({
             {localError || error}
           </p>
         ) : null}
-        <Button type="submit" loading={pending} className="w-full">
+        <Button type="submit" disabled={!hydrated} loading={pending} className="w-full">
           {t('auth.signIn')}
         </Button>
       </form>
