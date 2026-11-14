@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { CheckCircle2, FileAudio2, ImageIcon } from 'lucide-react';
 
 type Props = {
   kind: 'audio' | 'image';
@@ -27,18 +28,18 @@ export function FileDropzone({ kind, file, onFile, locale, required }: Props) {
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState('');
   const isAudio = kind === 'audio';
-  const maxBytes = (isAudio ? 100 : 5) * 1024 * 1024;
+  const maxBytes = (isAudio ? 25 : 5) * 1024 * 1024;
   const accept = isAudio
-    ? '.mp3,.wav,.flac,.aiff,audio/*'
+    ? '.mp3,audio/mpeg'
     : 'image/png,image/jpeg,image/webp,image/gif';
-  const allowed = isAudio ? audioTypes : imageTypes;
+  const allowed = isAudio ? ['audio/mpeg', 'audio/mp3'] : imageTypes;
 
   function choose(candidate: File | null) {
     setDragging(false);
     if (!candidate) return;
     const ext = candidate.name.split('.').pop()?.toLowerCase() ?? '';
     const extensionAllowed = isAudio
-      ? ['mp3', 'wav', 'flac', 'aiff', 'aif'].includes(ext)
+      ? ['mp3'].includes(ext)
       : ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
     if (!extensionAllowed || (candidate.type && !allowed.includes(candidate.type))) {
       setError(locale === 'ar' ? 'صيغة الملف غير مدعومة' : 'Unsupported file format');
@@ -47,7 +48,7 @@ export function FileDropzone({ kind, file, onFile, locale, required }: Props) {
     if (candidate.size > maxBytes || candidate.size === 0) {
       setError(
         locale === 'ar'
-          ? `حجم الملف لازم يكون أقل من ${isAudio ? 100 : 5} ميجابايت`
+          ? `حجم الملف لازم يكون أقل من ${isAudio ? 25 : 5} ميجابايت`
           : `File must be under ${isAudio ? 100 : 5} MB`,
       );
       return;
@@ -98,12 +99,11 @@ export function FileDropzone({ kind, file, onFile, locale, required }: Props) {
           event.preventDefault();
           choose(event.dataTransfer.files?.[0] ?? null);
         }}
-        className={`cursor-pointer rounded-xl border-2 border-dashed px-5 py-8 text-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${dragging ? 'border-primary bg-primary/15' : 'border-white/20 bg-white/[0.03] hover:border-primary/70'}`}
+        className={`cursor-pointer rounded-2xl border-2 px-5 py-8 text-center transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${dragging ? 'scale-[1.01] border-primary bg-primary/20' : file ? 'border-emerald-400/70 bg-emerald-400/[0.09] shadow-[0_0_24px_rgba(52,211,153,0.09)]' : 'border-dashed border-white/20 bg-white/[0.03] hover:border-primary/70'}`}
       >
-        <div aria-hidden="true" className="mb-2 text-3xl">
-          {isAudio ? '♫' : '▧'}
-        </div>
-        <p className="font-semibold text-ink">
+        <div aria-hidden="true" className="mb-3 flex justify-center">{file ? <CheckCircle2 className="h-11 w-11 text-emerald-400" /> : isAudio ? <FileAudio2 className="h-11 w-11 text-violet-300" /> : <ImageIcon className="h-11 w-11 text-violet-300" />}</div>
+        {file && <p role="status" className="mb-2 text-sm font-extrabold text-emerald-300">{locale === 'ar' ? '✓ تم اختيار الملف بنجاح' : '✓ File selected successfully'}</p>}
+        <p className={`break-all font-semibold ${file ? 'text-white' : 'text-ink'}`}>
           {file
             ? file.name
             : locale === 'ar'
@@ -112,11 +112,11 @@ export function FileDropzone({ kind, file, onFile, locale, required }: Props) {
         </p>
         <p className="mt-1 text-xs text-muted">
           {isAudio
-            ? 'MP3, WAV, FLAC, AIFF · max 100 MB'
+            ? 'MP3 · max 25 MB'
             : 'PNG, JPEG, WEBP, GIF · max 5 MB'}
         </p>
         {file && (
-          <p className="mt-2 text-xs text-primary">
+          <p className="mt-2 text-xs font-semibold text-emerald-300">
             {(file.size / 1024 / 1024).toFixed(2)} MB ·{' '}
             {locale === 'ar' ? 'اضغط للتغيير' : 'Click to replace'}
           </p>
