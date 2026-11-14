@@ -160,19 +160,21 @@ export function accessibleTracksForArtist(
 export function getHomeData(db: DemoDb, viewer: Viewer): HomeData {
   const now = new Date();
   const listable = listableTracks(db, viewer, now);
-  const heroSlot = db.featuredSlots.find(
-    (slot) => slot.slot === 'hero' && slot.entityType === 'track',
-  );
+  const heroSlot = db.featuredSlots
+    .filter((slot) => slot.slot === 'hero' && slot.entityType === 'track')
+    .sort((a, b) => a.rank - b.rank)
+    .find((slot) => listable.some((track) => track.id === slot.entityId));
   const hero = heroSlot
     ? (listable.find((track) => track.id === heroSlot.entityId) ?? null)
     : null;
-  const editorialIds = new Set(
-    db.featuredSlots
-      .filter((slot) => slot.slot === 'editorial' && slot.entityType === 'track')
-      .sort((a, b) => a.rank - b.rank)
-      .map((slot) => slot.entityId),
-  );
-  const featured = listable.filter((track) => editorialIds.has(track.id));
+  const editorialIds = db.featuredSlots
+    .filter((slot) => slot.slot === 'editorial' && slot.entityType === 'track')
+    .sort((a, b) => a.rank - b.rank)
+    .map((slot) => slot.entityId);
+  const listableById = new Map(listable.map((track) => [track.id, track]));
+  const featured = editorialIds
+    .map((id) => listableById.get(id))
+    .filter((track): track is CatalogTrack => Boolean(track));
 
   const trending = [...listable]
     .sort((a, b) => b.qualifiedPlays - a.qualifiedPlays)
