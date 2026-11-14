@@ -37,6 +37,7 @@ export function UploadForm({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [genreId, setGenreId] = useState(genres[0]?.id ?? '');
+  const [selectedGenres, setSelectedGenres] = useState<string[]>(genres[0]?.id ? [genres[0].id] : []);
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [languageCode, setLanguageCode] = useState('ar');
   const [countryCode, setCountryCode] = useState('');
@@ -103,6 +104,10 @@ export function UploadForm({
           genres.some((g) => g.id === draft.genreId)
         )
           setGenreId(draft.genreId);
+        if (Array.isArray(draft.selectedGenres)) {
+          const restored = draft.selectedGenres.filter((id): id is string => typeof id === 'string' && genres.some((genre) => genre.id === id)).slice(0, 5);
+          if (restored.length) { setSelectedGenres(restored); setGenreId(restored[0]); }
+        } else if (typeof draft.genreId === 'string' && genres.some((genre) => genre.id === draft.genreId)) setSelectedGenres([draft.genreId]);
         if (Array.isArray(draft.selectedMoods))
           setSelectedMoods(
             draft.selectedMoods
@@ -145,6 +150,7 @@ export function UploadForm({
           title,
           description,
           genreId,
+          selectedGenres,
           selectedMoods,
           languageCode,
           countryCode,
@@ -167,6 +173,7 @@ export function UploadForm({
     title,
     description,
     genreId,
+    selectedGenres,
     selectedMoods,
     languageCode,
     countryCode,
@@ -179,6 +186,14 @@ export function UploadForm({
     artworkAccent,
   ]);
   const artistAlbums = albums.filter((album) => album.artistId === artistId);
+
+  function toggleGenre(id: string) {
+    setSelectedGenres((current) => {
+      const next = current.includes(id) ? current.length > 1 ? current.filter((item) => item !== id) : current : [...current, id].slice(0, 5);
+      setGenreId(next[0] ?? '');
+      return next;
+    });
+  }
 
   function toggleMood(id: string) {
     setSelectedMoods((current) =>
@@ -238,6 +253,7 @@ export function UploadForm({
     form.set('title', title);
     form.set('description', description);
     form.set('genreId', genreId);
+    form.set('genres', selectedGenres.join(','));
     form.set('moods', selectedMoods.join(','));
     form.set('languageCode', languageCode);
     form.set('countryCode', countryCode);
@@ -415,18 +431,14 @@ export function UploadForm({
             />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t('studio.genre')} htmlFor="upload-genre">
-              <SearchableSelect
-                id="upload-genre"
-                locale={locale}
-                value={genreId}
-                onChange={setGenreId}
-                options={genres.map((genre) => ({
-                  value: genre.id,
-                  label: locale === 'ar' ? genre.labelAr : genre.labelEn,
-                }))}
-                required
-              />
+            <Field label={t('studio.genre')} hint={locale === 'ar' ? 'اختار لحد 5 أنواع موسيقية' : 'Select up to 5 genres'}>
+              <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                {genres.filter((genre) => genre.active).map((genre) => {
+                  const active = selectedGenres.includes(genre.id);
+                  return <button key={genre.id} type="button" aria-pressed={active} onClick={() => toggleGenre(genre.id)} className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${active ? 'border-violet-400 bg-violet-500/25 text-white' : 'border-white/15 bg-white/5 text-muted hover:border-violet-400/50'}`}>{active ? '✓ ' : '+ '}{locale === 'ar' ? genre.labelAr : genre.labelEn}</button>;
+                })}
+              </div>
+              <p className="mt-2 text-xs text-violet-300">{selectedGenres.length}/5 {locale === 'ar' ? 'أنواع مختارة · أول نوع هو الأساسي' : 'selected · first is primary'}</p>
             </Field>
             <Field label={t('studio.language')} htmlFor="upload-language">
               <SearchableSelect
@@ -443,7 +455,7 @@ export function UploadForm({
               />
             </Field>
           </div>
-          <Field label={t('studio.moods')} hint="Up to 5">
+          <Field label={t('studio.moods')} hint={locale === 'ar' ? 'اختار لحد 5 حالات مزاجية' : 'Select up to 5 moods'}>
             <div className="flex flex-wrap gap-2">
               {moods.map((mood) => {
                 const active = selectedMoods.includes(mood.id);
@@ -464,6 +476,7 @@ export function UploadForm({
                 );
               })}
             </div>
+            <p className="mt-2 text-xs text-violet-300">{selectedMoods.length}/5 {locale === 'ar' ? 'حالات مختارة' : 'moods selected'}</p>
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('studio.productionType')} htmlFor="upload-production">
