@@ -156,7 +156,6 @@ export function PlayerBar() {
               type="button"
               onClick={() => { toggleShuffle(); setControlNotice(rtl ? (shuffle ? 'إيقاف التشغيل العشوائي' : 'تشغيل عشوائي') : (shuffle ? 'Shuffle off' : 'Shuffle on')); }}
               aria-label={t('player.shuffle')}
-              title={t('player.shuffle')}
               title={shuffle ? (rtl ? 'إيقاف التشغيل العشوائي' : 'Disable shuffle') : t('player.shuffle')}
               aria-pressed={shuffle}
               className={cn(
@@ -201,7 +200,6 @@ export function PlayerBar() {
               type="button"
               onClick={() => { cycleRepeat(); const mode = repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off'; setControlNotice(rtl ? (mode === 'off' ? 'التكرار متوقف' : mode === 'all' ? 'تكرار كل الأغاني' : 'تكرار الأغنية الحالية') : (mode === 'off' ? 'Repeat off' : mode === 'all' ? 'Repeat all' : 'Repeat one')); }}
               aria-label={t('player.repeat')}
-              title={t('player.repeat')}
               title={repeat === 'off' ? (rtl ? 'تكرار كل الأغاني' : 'Repeat all') : repeat === 'all' ? (rtl ? 'تكرار أغنية واحدة' : 'Repeat one') : (rtl ? 'إيقاف التكرار' : 'Disable repeat')}
               className={cn(
                 'rounded-full p-1.5 transition hover:bg-white/10 sm:p-2',
