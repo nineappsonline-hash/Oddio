@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { staffRoleValues } from '@ai-music/contracts';
 import { mutateDb } from '@/lib/data/db';
+import { loadDbFromSupabase, persistChanges } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { setUserRole } from '@/lib/data/mutations';
 import {
   assertSameOrigin,
@@ -25,7 +27,13 @@ export async function POST(
     const user = await requireRole(['super_admin']);
     const { id } = await context.params;
     const input = await parseBody(request, schema);
-    mutateDb((db) => setUserRole(db, user, id, input.role));
+    if (demoMode) mutateDb((db) => setUserRole(db, user, id, input.role));
+    else {
+      const before = await loadDbFromSupabase();
+      const after = structuredClone(before);
+      setUserRole(after, user, id, input.role);
+      await persistChanges(before, after);
+    }
     return jsonOk({ ok: true });
   } catch (error) {
     return jsonError(error);
