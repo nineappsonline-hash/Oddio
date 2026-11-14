@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getAdminData } from '@/lib/data/queries';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -35,8 +37,8 @@ export default async function AdminFeaturedPage({
   const locale = raw;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
-  if (user.roles.length === 0) redirect(`/${locale}`);
-  const db = readDb();
+  if (!user.roles.some((role) => role === 'admin' || role === 'super_admin')) redirect(`/${locale}`);
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const data = getAdminData(db, user.roles[0]!);
   const tracks = db.tracks
     .filter((track) => track.publishStatus === 'published')
@@ -51,11 +53,14 @@ export default async function AdminFeaturedPage({
   ]);
 
   return (
-    <AdminFeaturedManager
+    <div className="space-y-5">
+      <header className="card p-5"><h1 className="text-xl font-bold text-ink">{locale === 'ar' ? 'إدارة المحتوى المميز' : 'Featured & editorial content'}</h1><p className="mt-2 text-sm text-muted">{locale === 'ar' ? 'اختَر الأغاني وقوائم التشغيل التي تظهر في أقسام العرض المميزة. التغييرات تُحفظ في قاعدة بيانات الإنتاج.' : 'Manage highlighted tracks and playlists. Changes are saved to the production database.'}</p><p className="mt-2 text-xs text-muted">{data.featuredSlots.length} {locale === 'ar' ? 'عنصر مميز حاليًا' : 'current featured placements'}</p></header>
+      <AdminFeaturedManager
       slots={data.featuredSlots}
       tracks={tracks}
       playlists={playlists}
       labels={labels}
     />
+    </div>
   );
 }
