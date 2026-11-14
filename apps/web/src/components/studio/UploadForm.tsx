@@ -409,6 +409,7 @@ export function UploadForm({
             locale={locale}
           />
         </Field>
+        {production && <p className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-3 text-xs text-amber-100">{locale === 'ar' ? 'تنبيه: الغلاف المرفوع متاح للمعاينة حاليًا، لكنه لا يُحفظ مع الأغنية في وضع الإنتاج. سيتم استخدام لون الغلاف لحين تفعيل تخزين الصور.' : 'Note: Uploaded artwork is preview-only in production right now. The selected accent color will be used until artwork storage is supported.'}</p>}
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label={t('studio.visibility')} htmlFor="upload-visibility">
             <SearchableSelect
