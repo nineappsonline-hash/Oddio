@@ -361,6 +361,7 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
     userName: displayName(text(row.user_id)),
     trackId: text(row.track_id),
     body: text(row.body),
+    timestampSeconds: row.timestamp_seconds == null ? null : num(row.timestamp_seconds),
     status: text(row.status, 'visible') as Comment['status'],
     createdAt: iso(row.created_at),
   }));
@@ -874,6 +875,7 @@ const SPECS: CollectionSpec[] = [
       user_id: comment.userId,
       track_id: comment.trackId,
       body: comment.body,
+      timestamp_seconds: comment.timestampSeconds ?? null,
       status: comment.status,
     }),
   },
