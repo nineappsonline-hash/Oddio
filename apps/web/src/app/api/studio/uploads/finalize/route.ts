@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const user = await getSessionUser();
     if (!user) throw Errors.unauthorized();
     if (!user.isArtistManager) throw Errors.forbidden();
-    rateLimit(`finalize:${user.id}`, 12, 60 * 60_000);
+    rateLimit(`finalize:${user.id}`, 120, 60 * 60_000);
     const form = await request.formData();
     assertUploadAttestations({
       rightsConfirmed: field(form, 'rightsConfirmed'),
