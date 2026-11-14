@@ -60,6 +60,8 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
     },
     { href: `/${locale}/charts`, label: t('nav.charts'), icon: 'charts' },
     { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
+    { href: `/${locale}/genres`, label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres', icon: 'discover' },
+    { href: `/${locale}/discover#artists`, label: locale === 'ar' ? 'الفنانون' : 'Artists', icon: 'studio' },
   ];
 
   if (currentUser) {
@@ -100,7 +102,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         {items.map((item) => {
           const active = item.exact
             ? pathname === item.href
-            : pathname.startsWith(item.href);
+            : pathname.startsWith(item.href.split('#')[0]) && !item.href.includes('#');
           const glyph = item.icon as OddioGlyphName;
           return (
             <Link
