@@ -137,7 +137,7 @@ export function MobileNav() {
     <>
       <nav
         aria-label={t('nav.main')}
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-white/10 bg-[#151515]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid h-[calc(72px+env(safe-area-inset-bottom))] grid-cols-5 border-t border-white/10 bg-[#151515]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl lg:hidden"
       >
         {items.map((item) => {
           const active = item.exact
