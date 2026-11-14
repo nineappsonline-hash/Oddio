@@ -139,6 +139,7 @@ export interface Track {
   slug: string;
   description: string;
   genreId: string;
+  genreIds?: string[];
   moodIds: string[];
   languageCode: string;
   countryCode: string;
@@ -334,6 +335,7 @@ export const trackDraftInput = z.object({
   albumId: z.string().uuid().nullable().optional(),
   title: z.string().trim().min(1).max(160),
   genreId: z.string().uuid(),
+  genreIds: z.array(z.string().uuid()).min(1).max(5).optional(),
   moodIds: z.array(z.string().uuid()).max(5).default([]),
   languageCode: z.string().trim().min(2).max(8),
   countryCode: z.string().trim().max(2).default(''),
