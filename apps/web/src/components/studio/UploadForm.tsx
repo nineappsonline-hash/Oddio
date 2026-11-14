@@ -164,12 +164,12 @@ export function UploadForm({
     <form onSubmit={onSubmit} className="mx-auto max-w-5xl space-y-5">
       <div className="rounded-3xl border border-violet-400/20 bg-gradient-to-r from-[#241b35] to-[#102d3a] p-5 sm:p-7">
         <p className="text-xs font-bold tracking-[.2em] text-violet-300">ODDIO / CREATOR STUDIO</p>
-        <h2 className="mt-2 text-2xl font-black text-white">{locale === 'ar' ? ['ارفع أغنيتك', 'خلّيها مميزة', 'راجع وانشر'][step - 1] : ['Drop your track', 'Make it yours', 'Preview & submit'][step - 1]}</h2>
+        <h2 className="mt-2 text-2xl font-black text-white">{locale === 'ar' ? ['اختار الفنان', 'تفاصيل الأغنية', 'ارفع وراجع'][step - 1] : ['Choose your artist', 'Track details', 'Upload & review'][step - 1]}</h2>
         <p className="mt-2 text-sm text-white/60">{locale === 'ar' ? '3 خطوات بسيطة لإرسال أغنيتك للمراجعة' : 'Three simple steps to send your track for review.'}</p>
         <div className="mt-5 flex gap-2">{[1, 2, 3].map(n => <span key={n} className={n <= step ? 'h-1.5 flex-1 rounded-full bg-violet-400' : 'h-1.5 flex-1 rounded-full bg-white/15'} />)}</div>
         <p className="mt-2 text-xs text-white/60">{step}/3</p>
       </div>
-      <div className={step === 1 ? 'space-y-5' : 'hidden'}>
+      <fieldset disabled={step !== 1} className={step === 1 ? 'space-y-5' : 'hidden'}>
       <div className="card relative space-y-4 p-5 has-[button[aria-expanded=true]]:z-50">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
           {t('studio.selectArtist')}
@@ -206,8 +206,8 @@ export function UploadForm({
         </div>
       </div>
 
-      </div>
-      <div className={step === 2 ? 'space-y-5' : 'hidden'}>
+      </fieldset>
+      <fieldset disabled={step !== 2} className={step === 2 ? 'space-y-5' : 'hidden'}>
       <div className="card relative space-y-4 p-5 has-[button[aria-expanded=true]]:z-50">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
           {t('studio.metadata')}
@@ -334,8 +334,8 @@ export function UploadForm({
         </Field>
       </div>
 
-      </div>
-      <div className={step === 3 ? 'space-y-5' : 'hidden'}>
+      </fieldset>
+      <fieldset disabled={step !== 3} className={step === 3 ? 'space-y-5' : 'hidden'}>
       <div className="card relative space-y-4 p-5 has-[button[aria-expanded=true]]:z-50">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
           {t('studio.audioFile')}
@@ -443,10 +443,10 @@ export function UploadForm({
           {t('studio.upload')}
         </Button>
       </div>
-      </div>
+      </fieldset>
       <div className="sticky bottom-3 z-20 flex gap-3 rounded-2xl border border-violet-400/20 bg-[#191622]/95 p-3 shadow-xl backdrop-blur">
         {step > 1 && <button type="button" onClick={() => { setStep(step === 3 ? 2 : 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="rounded-xl border border-white/20 px-5 py-3 text-sm font-bold text-white">{locale === 'ar' ? 'رجوع' : 'Back'}</button>}
-        {step < 3 && <button type="button" onClick={() => { if (step === 1 && !title.trim()) { toast(locale === 'ar' ? 'اكتب اسم الأغنية أولًا' : 'Enter a track title first', 'error'); return; } if (step === 2 && !audioFile) { toast(locale === 'ar' ? 'ارفع ملف MP3 أولًا' : 'Upload your MP3 first', 'error'); return; } setStep(step === 1 ? 2 : 3); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-cyan-700 px-5 py-3 text-sm font-bold text-white">{locale === 'ar' ? 'متابعة' : 'Continue →'}</button>}
+        {step < 3 && <button type="button" onClick={() => { if (step === 1 && !artistId) { toast(locale === 'ar' ? 'اختار الفنان أولًا' : 'Select an artist first', 'error'); return; } if (step === 2 && !title.trim()) { toast(locale === 'ar' ? 'اكتب اسم الأغنية أولًا' : 'Enter a track title first', 'error'); return; } setStep(step === 1 ? 2 : 3); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-cyan-700 px-5 py-3 text-sm font-bold text-white">{locale === 'ar' ? 'متابعة' : 'Continue →'}</button>}
       </div>
     </form>
   );
