@@ -31,7 +31,7 @@ export default async function SystemHealthPage({
     database = 'reachable';
     const cutoff = checkedAt.getTime() - 24 * 60 * 60 * 1000;
     uploads24h = db.uploadEvents.filter((event) => new Date(event.createdAt).getTime() >= cutoff).length;
-    playback24h = db.playbackEvents.filter((event) => new Date(event.createdAt).getTime() >= cutoff).length;
+    playback24h = db.playbackEvents.filter((event) => new Date(event.occurredAt).getTime() >= cutoff).length;
     queuedTracks = db.tracks.filter((track) => track.publishStatus !== 'published').length;
   } catch {
     // Keep the diagnostic page accessible even when its database is unavailable.
