@@ -306,7 +306,7 @@ export function FullPlayer() {
                 onClick={toggle}
                 aria-label={isPlaying ? t('common.pause') : t('common.play')}
               title={isPlaying ? t('common.pause') : t('common.play')}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-background shadow-glow transition hover:scale-105"
+                className={isPlaying ? "flex h-16 w-16 items-center justify-center rounded-full bg-white text-background transition hover:scale-105" : "flex h-16 w-16 items-center justify-center rounded-full bg-transparent transition hover:scale-105"}
               >
                 {isPlaying ? (
                   <Pause className="h-7 w-7" fill="currentColor" />
