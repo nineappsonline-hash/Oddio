@@ -41,7 +41,12 @@ export function AdminFeaturedManager({
   const [pending, setPending] = useState(false);
   const [schedules, setSchedules] = useState<Record<string, { start: string; end: string }>>({});
   const scheduleKey = (item: Slot) => item.id;
-  const toInputDate = (value?: string | null) => value ? value.slice(0, 16) : '';
+  const toInputDate = (value?: string | null) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  };
   async function saveSchedule(item: Slot) {
     const values = schedules[scheduleKey(item)] ?? { start: toInputDate(item.startAt), end: toInputDate(item.endAt) };
     setPending(true);
