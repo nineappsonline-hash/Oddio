@@ -244,10 +244,15 @@ export function FullPlayer() {
                       <span>🎤 {rtl ? 'كلمات الأغنية' : 'Lyrics'}</span>
                       <button type="button" onClick={() => setMobileLyricsOpen(false)} className="rounded-lg bg-white/10 px-3 py-1.5">{rtl ? 'إغلاق' : 'Close'}</button>
                     </div>
-                    <div className="scroll-thin min-h-0 flex-1 overflow-y-auto">
-                      {lyricsLoading ? <p className="text-sm text-white/70">{rtl ? 'جاري التحميل…' : 'Loading…'}</p> : cues.length ? cues.map((cue, index) => (
-                        <button key={index} type="button" onClick={() => seek(cue.start)} className={cn('block w-full rounded-lg px-2 py-2 text-start text-sm leading-relaxed', index === activeCue ? 'bg-primary/20 font-bold text-primary' : 'text-white/70')}>{cue.text}</button>
-                      )) : (
+                    <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+                      {lyricsLoading ? <p className="text-sm text-white/70">{rtl ? 'جاري التحميل…' : 'Loading…'}</p> : cues.length ? (
+                        <div aria-live="off" className="flex w-full flex-col items-center justify-center px-2 text-center">
+                          <div className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-fuchsia-300/70"><Mic2 className="h-3.5 w-3.5" /> {rtl ? 'كلمات متزامنة' : 'LIVE LYRICS'}</div>
+                          <p key={activeCue} dir="auto" className="transition-all duration-300 text-balance text-center text-xl font-extrabold leading-relaxed text-white drop-shadow-[0_0_20px_rgba(188,103,255,0.55)] sm:text-2xl">
+                            {activeCue >= 0 ? cues[activeCue]?.text : '♪'}
+                          </p>
+                        </div>
+                      ) : (
                         <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
                           <p className="text-sm text-white/80">{rtl ? 'مفيش كلمات محفوظة للأغنية' : 'No saved lyrics yet'}</p>
                           <button type="button" disabled={generatingLyrics} onClick={generateLyrics} className="rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white disabled:opacity-50">{generatingLyrics ? (rtl ? 'جاري التوليد…' : 'Generating…') : '✨ Generate Lyrics'}</button>
@@ -258,7 +263,13 @@ export function FullPlayer() {
                   </div>
                 ) : null}
               </div>
-              <div className="relative z-30 mt-2 flex items-center justify-between gap-2 lg:hidden"><button type="button" aria-expanded={mobileLyricsOpen} aria-controls="oddio-mobile-lyrics" onClick={(event) => { event.preventDefault(); event.stopPropagation(); setMobileLyricsOpen((value) => !value); }} className="relative z-30 touch-manipulation cursor-pointer rounded-full border border-primary/40 bg-primary/15 px-4 py-2 text-sm font-bold text-primary">🎤 {mobileLyricsOpen ? (rtl ? "إخفاء الكلمات" : "Hide lyrics") : (rtl ? "كلمات الأغنية" : "Lyrics")}</button></div>
+              <div className="relative z-30 mt-3 flex items-center justify-center lg:hidden">
+                <button type="button" aria-expanded={mobileLyricsOpen} aria-controls="oddio-mobile-lyrics" onClick={(event) => { event.preventDefault(); event.stopPropagation(); setMobileLyricsOpen((value) => !value); }} className={cn("relative z-30 inline-flex min-h-11 touch-manipulation cursor-pointer items-center justify-center gap-2.5 rounded-full border px-5 py-2.5 text-sm font-semibold shadow-lg backdrop-blur-md transition-all duration-200 active:scale-95", mobileLyricsOpen ? "border-fuchsia-400/50 bg-gradient-to-r from-violet-600/80 to-fuchsia-600/80 text-white shadow-fuchsia-500/20" : "border-white/15 bg-white/[0.08] text-white/90 hover:border-fuchsia-400/40 hover:bg-white/[0.14]")}>
+                  <Mic2 className="h-4 w-4 text-fuchsia-200" />
+                  <span>{mobileLyricsOpen ? (rtl ? "إخفاء الكلمات" : "Hide lyrics") : (rtl ? "عرض الكلمات" : "Show lyrics")}</span>
+                  <span className={cn("h-1.5 w-1.5 rounded-full", mobileLyricsOpen ? "bg-cyan-300" : "bg-fuchsia-400/70")} />
+                </button>
+              </div>
               <div className="mt-3 hidden h-8 items-end justify-center gap-1 sm:flex">
                 <Equalizer
                   bars={28}
@@ -545,23 +556,11 @@ export function FullPlayer() {
                     {rtl ? 'جارٍ تحميل الكلمات…' : 'Loading lyrics…'}
                   </p>
                 ) : cues.length > 0 ? (
-                  <div className="space-y-2 py-2">
-                    {cues.map((cue, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => seek(cue.start)}
-                        aria-current={index === activeCue ? 'true' : undefined}
-                        className={cn(
-                          'block w-full rounded-xl px-4 py-3 text-start text-base leading-relaxed transition hover:bg-white/10',
-                          index === activeCue
-                            ? 'bg-primary/15 font-black text-primary ring-1 ring-primary/20'
-                            : 'text-muted',
-                        )}
-                      >
-                        {cue.text}
-                      </button>
-                    ))}
+                  <div className="flex min-h-64 flex-col items-center justify-center px-4 text-center">
+                    <span className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-primary/70">{rtl ? 'كلمات متزامنة' : 'LIVE LYRICS'}</span>
+                    <p key={activeCue} dir="auto" className="text-balance text-center text-2xl font-extrabold leading-relaxed text-ink transition-all duration-300">
+                      {activeCue >= 0 ? cues[activeCue]?.text : '♪'}
+                    </p>
                   </div>
                 ) : (
                   <div className="flex min-h-56 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/15 px-6 text-center">
