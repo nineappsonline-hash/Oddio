@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { assertSameOrigin, jsonError, jsonOk, parseBody, requireRole } from '@/lib/api-helpers';
+import {
+  assertSameOrigin,
+  jsonError,
+  jsonOk,
+  parseBody,
+  requireRole,
+} from '@/lib/api-helpers';
 import { serviceClient } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 
@@ -12,7 +18,8 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
     const actor = await requireRole(['admin', 'super_admin']);
     const { jobId } = await parseBody(request, schema);
-    if (demoMode) return jsonOk({ retried: false, reason: 'unavailable_in_demo' }, undefined, 409);
+    if (demoMode)
+      return jsonOk({ retried: false, reason: 'unavailable_in_demo' }, undefined, 409);
 
     const db = serviceClient();
     const { data: job, error } = await db
@@ -36,7 +43,8 @@ export async function POST(request: Request) {
       .select('id')
       .maybeSingle();
     if (updateError) throw updateError;
-    if (!updated) return jsonOk({ retried: false, reason: 'already_changed' }, undefined, 409);
+    if (!updated)
+      return jsonOk({ retried: false, reason: 'already_changed' }, undefined, 409);
     const { error: auditError } = await db.from('audit_logs').insert({
       actor_id: actor.id,
       action: 'media.retry_requested',
@@ -44,7 +52,10 @@ export async function POST(request: Request) {
       entity_id: job.id,
     });
     if (auditError) {
-      console.error('[media-retry] queue update succeeded but audit insert failed', auditError);
+      console.error(
+        '[media-retry] queue update succeeded but audit insert failed',
+        auditError,
+      );
       return jsonOk({ retried: true, auditRecorded: false });
     }
     return jsonOk({ retried: true, auditRecorded: true });
