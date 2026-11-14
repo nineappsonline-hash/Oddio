@@ -2261,3 +2261,30 @@ body {
     transform: none !important;
   }
 }
+
+/* A single cool accent for account entry, distinct from the artist's gold CTA. */
+.oddio-topbar .oddio-topbar-account,
+.oddio-login-cta {
+  color: #102529;
+  background: linear-gradient(125deg, #d0f2f1 0%, #a2d9d7 55%, #7cb9c2 100%);
+  border: 1px solid #d9f8f2;
+  box-shadow: 0 3px 14px rgba(126, 189, 193, 0.18);
+}
+.oddio-topbar .oddio-topbar-account {
+  min-width: 105px;
+  height: 40px;
+  padding-inline: 17px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.oddio-topbar .oddio-topbar-account:hover,
+.oddio-login-cta:hover {
+  color: #091d20;
+  background: linear-gradient(125deg, #edfffd 0%, #beece9 55%, #95ced1 100%);
+  box-shadow: 0 5px 20px rgba(126, 189, 193, 0.26);
+}
+.oddio-topbar .oddio-topbar-account:focus-visible,
+.oddio-login-cta:focus-visible {
+  outline: 3px solid #e6fffc;
+  outline-offset: 3px;
+}
