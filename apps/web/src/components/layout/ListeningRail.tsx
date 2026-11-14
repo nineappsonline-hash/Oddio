@@ -124,9 +124,19 @@ export function ListeningRail() {
           <OddioGlyph name="queue" size={20} className="oddio-glyph" />
           {ar ? 'التالي في الطابور' : 'Next up'}
         </span>
-        <span>{queue.length}</span>
+        <button type="button" onClick={() => { window.dispatchEvent(new Event('oddio:open-queue')); setExpanded(true); }} className="rounded-lg border border-white/15 px-2.5 py-1 text-xs font-semibold text-white transition hover:border-primary hover:text-primary" aria-label={ar ? 'افتح قائمة التشغيل' : 'Open queue'}>{queue.length} ↗</button>
       </div>
       <div className="oddio-rail-queue" aria-live="polite">
+        {track ? (
+          <div className="mb-2 flex items-center gap-2 rounded-xl border border-primary/50 bg-primary/15 p-2.5">
+            <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-primary" />
+            <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="h-9 w-9 shrink-0" rounded="rounded-lg" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-[10px] font-bold uppercase tracking-wide text-primary">{ar ? 'بتشتغل دلوقتي' : 'Now playing'}</span>
+              <span className="block truncate text-xs font-bold text-white">{track.title}</span>
+            </span>
+          </div>
+        ) : null}
         {queue.length ? (
           queue.slice(0, 5).map((item, index) => (
             <button
