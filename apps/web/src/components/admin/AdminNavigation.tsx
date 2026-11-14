@@ -27,6 +27,7 @@ const groups: Group[] = [
   ] },
   { en: 'ANALYTICS', ar: 'التحليلات', items: [
     { href: '/analytics', en: 'Platform analytics', ar: 'تحليلات المنصة', roles: ['admin', 'super_admin'] },
+    { href: '/analytics/listening', en: 'Listening trends', ar: 'اتجاهات الاستماع', roles: ['admin', 'super_admin'] },
   ] },
   { en: 'SYSTEM & SECURITY', ar: 'النظام والأمان', items: [
     { href: '/audit', en: 'Audit log', ar: 'سجل العمليات', roles: ['admin', 'super_admin'] },
