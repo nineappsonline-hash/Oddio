@@ -283,12 +283,17 @@ export function UploadForm({
           }),
           headers: { 'Content-Type': 'application/json' },
         });
-        const uploaded = await fetch(grant.uploadUrl, {
-          method: 'PUT',
-          headers: grant.headers,
-          body: audioFile,
-        });
-        if (!uploaded.ok) throw new Error('Audio transfer to storage failed.');
+        let uploaded: Response;
+        try {
+          uploaded = await fetch(grant.uploadUrl, {
+            method: 'PUT',
+            headers: grant.headers,
+            body: audioFile,
+          });
+        } catch {
+          throw new Error(locale === 'ar' ? 'تعذّر الاتصال بمخزن الملفات. تأكد من إعدادات CORS في Cloudflare R2 للسماح لموقع oddio.online برفع الملفات، ثم حاول مرة أخرى.' : 'Could not reach audio storage. Check Cloudflare R2 CORS settings to allow uploads from oddio.online, then try again.');
+        }
+        if (!uploaded.ok) throw new Error(locale === 'ar' ? `فشل رفع الصوت إلى التخزين (HTTP ${uploaded.status}). حاول مرة أخرى.` : `Audio storage rejected the upload (HTTP ${uploaded.status}). Please try again.`);
         form.delete('audio');
         form.delete('artwork');
         form.set('objectKey', grant.objectKey);
