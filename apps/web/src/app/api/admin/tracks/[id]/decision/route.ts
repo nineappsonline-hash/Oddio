@@ -4,7 +4,7 @@ import { mutateDb } from '@/lib/data/db';
 import { loadDbFromSupabase, persistChanges } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { reviewTrack } from '@/lib/data/mutations';
-import { presignR2OriginalGet, presignR2StreamingPut } from '@/lib/storage/r2-presign';
+import { presignR2Delete, presignR2OriginalGet, presignR2StreamingPut } from '@/lib/storage/r2-presign';
 import { AppError } from '@/lib/errors';
 import {
   assertSameOrigin,
@@ -139,6 +139,25 @@ export async function POST(
       }
       track = reviewTrack(after, user, id, input.decision, input.reason);
       await persistChanges(before, after);
+      if (input.decision === 'reject' && candidate?.audio?.objectKey) {
+        // Rejection is persisted first. Never remove an object still referenced by another track.
+        const key = candidate.audio.objectKey;
+        const referencedElsewhere = after.tracks.some((item) => item.id !== id && item.audio?.objectKey === key);
+        if (!referencedElsewhere) {
+          const bucket = key.startsWith('incoming/') ? 'ai-music-originals' : 'ai-music-streaming';
+          try {
+            const response = await fetch(presignR2Delete(bucket, key, id), {
+              method: 'DELETE',
+              signal: AbortSignal.timeout(12000),
+            });
+            if (!response.ok && response.status !== 404) {
+              console.error('Rejected track storage cleanup failed', { trackId: id, status: response.status });
+            }
+          } catch (error) {
+            console.error('Rejected track storage cleanup failed', { trackId: id, error });
+          }
+        }
+      }
     }
     return jsonOk({ track });
   } catch (error) {
