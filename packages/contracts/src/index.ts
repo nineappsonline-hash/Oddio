@@ -208,6 +208,7 @@ export interface Comment {
   userName: string;
   trackId: string;
   body: string;
+  timestampSeconds?: number | null;
   status: 'visible' | 'hidden' | 'pending';
   createdAt: string;
 }
@@ -351,6 +352,7 @@ export type TrackDraftInput = z.infer<typeof trackDraftInput>;
 
 export const commentInput = z.object({
   body: z.string().trim().min(1).max(2000),
+  timestampSeconds: z.number().int().min(0).max(86400).nullable().optional(),
 });
 export type CommentInput = z.infer<typeof commentInput>;
 
