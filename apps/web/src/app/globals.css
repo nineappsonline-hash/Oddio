@@ -19,8 +19,11 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   background-color: #0a0a0a;
-  background-image:
-    radial-gradient(1100px 600px at 12% -10%, rgba(157, 92, 255, 0.16), transparent 60%),
+  background-image: radial-gradient(
+      1100px 600px at 12% -10%,
+      rgba(157, 92, 255, 0.16),
+      transparent 60%
+    ),
     radial-gradient(900px 500px at 90% 0%, rgba(65, 217, 255, 0.08), transparent 55%),
     radial-gradient(700px 500px at 50% 120%, rgba(255, 114, 94, 0.08), transparent 60%);
   background-attachment: fixed;
@@ -56,8 +59,7 @@ a {
 @layer components {
   .card {
     @apply rounded-card border border-white/10 shadow-card backdrop-blur;
-    background:
-      linear-gradient(150deg, rgba(32, 32, 56, 0.78), rgba(11, 11, 22, 0.92)),
+    background: linear-gradient(150deg, rgba(32, 32, 56, 0.78), rgba(11, 11, 22, 0.92)),
       radial-gradient(120% 120% at 0% 0%, rgba(157, 92, 255, 0.08), transparent 55%);
   }
 
@@ -160,8 +162,7 @@ input[type='range']::-moz-range-thumb {
 /* ------------------------------------------------------------------ */
 
 .ambient-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+  background-image: linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
   background-size: 64px 64px;
   -webkit-mask-image: radial-gradient(
@@ -173,8 +174,11 @@ input[type='range']::-moz-range-thumb {
 }
 
 .ambient-stars {
-  background-image:
-    radial-gradient(1.5px 1.5px at 12% 24%, rgba(255, 255, 255, 0.7), transparent 60%),
+  background-image: radial-gradient(
+      1.5px 1.5px at 12% 24%,
+      rgba(255, 255, 255, 0.7),
+      transparent 60%
+    ),
     radial-gradient(1px 1px at 28% 68%, rgba(157, 92, 255, 0.8), transparent 60%),
     radial-gradient(1.5px 1.5px at 47% 18%, rgba(65, 217, 255, 0.75), transparent 60%),
     radial-gradient(1px 1px at 63% 52%, rgba(255, 255, 255, 0.45), transparent 60%),
@@ -518,7 +522,13 @@ input[type='range']::-moz-range-thumb {
 }
 
 .marquee-mask {
-  -webkit-mask-image: linear-gradient(90deg, transparent, #080808 7%, #080808 93%, transparent);
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #080808 7%,
+    #080808 93%,
+    transparent
+  );
   mask-image: linear-gradient(90deg, transparent, #080808 7%, #080808 93%, transparent);
 }
 
@@ -703,8 +713,11 @@ input[type='range']::-moz-range-thumb {
 }
 body {
   background-color: #0a0a0a;
-  background-image:
-    radial-gradient(850px 520px at 83% -12%, rgba(110, 38, 53, 0.24), transparent 69%),
+  background-image: radial-gradient(
+      850px 520px at 83% -12%,
+      rgba(110, 38, 53, 0.24),
+      transparent 69%
+    ),
     radial-gradient(900px 650px at 0% 100%, rgba(186, 111, 84, 0.08), transparent 72%);
 }
 ::selection {
@@ -728,8 +741,11 @@ body {
   }
 }
 .oddio-editorial-hero {
-  background:
-    radial-gradient(ellipse at 79% 24%, rgba(190, 105, 79, 0.16), transparent 58%),
+  background: radial-gradient(
+      ellipse at 79% 24%,
+      rgba(190, 105, 79, 0.16),
+      transparent 58%
+    ),
     linear-gradient(125deg, #141414 4%, #1d1d1d 60%, #0e0e0e 100%);
   border: 1px solid rgba(234, 185, 151, 0.22);
 }
@@ -2140,37 +2156,118 @@ body {
   --oddio-copper: #f1f1f1;
   --oddio-border: #343434;
 }
-body { background: #080808 !important; color: #f7f7f7; }
-.oddio-workspace, .oddio-main-content { background: #0b0b0b; }
-.oddio-topbar { background: #0b0b0bf2; border-color: #292929; }
-.oddio-topbar-search, .oddio-topbar-history button,
-.oddio-topbar-icon, .oddio-topbar-account { background-color: #1e1e1e; border-color: #303030; }
-.oddio-listening-rail { background: #131313; border-color: #303030; }
-.oddio-featured-stage { background: linear-gradient(115deg, #222 0%, #303030 62%, #171717 100%); border-color: #444; }
-.oddio-featured-disc { background: repeating-radial-gradient(circle, #161616 0 9px, #343434 10px 11px); }
-.oddio-featured-tile, .oddio-creator-banner, .oddio-curated-empty {
-  background: linear-gradient(130deg,#242424,#151515); border-color: #383838;
+body {
+  background: #080808 !important;
+  color: #f7f7f7;
 }
-.oddio-featured-tile:hover,.oddio-creator-banner:hover { background: #292929; }
-.oddio-featured-tile .oddio-tile-icon { background: #343434; border-color: #555; }
-.oddio-explore-shortcut-0 { background: linear-gradient(135deg,#424242,#202020); }
-.oddio-explore-shortcut-1 { background: linear-gradient(135deg,#373737,#181818); }
-.oddio-explore-shortcut-2 { background: linear-gradient(135deg,#545454,#272727); }
-.oddio-explore-shortcut-3 { background: linear-gradient(135deg,#303030,#151515); }
-.oddio-explore-shortcut-4 { background: linear-gradient(135deg,#484848,#202020); }
-.oddio-explore-shortcut-5 { background: linear-gradient(135deg,#383838,#191919); }
-.oddio-rail-play, .oddio-stage-play, .oddio-idle-play, .oddio-search-submit {
-  background: #f2f2f2 !important; color: #111 !important;
+.oddio-workspace,
+.oddio-main-content {
+  background: #0b0b0b;
 }
-.oddio-player-bar, .oddio-idle-player { background: #181818f7 !important; border-color: #343434; }
-.oddio-idle-cover { background: linear-gradient(135deg,#444,#1d1d1d); }
-.oddio-rail-queue-item:hover,.oddio-genre-tile:hover,.oddio-mood-card:hover { border-color: #828282; }
-.oddio-glyph { flex-shrink: 0; transition: transform 220ms ease, opacity 220ms ease; }
-.group\/nav:hover .oddio-glyph { transform: rotate(-9deg) scale(1.09); }
-[dir='rtl'] .group\/nav:hover .oddio-glyph { transform: rotate(9deg) scale(1.09); }
-.oddio-glyph-frame { display: inline-grid; place-items: center; width: 32px; height: 32px; border: 1px solid #363636; border-radius: 10px; background: #1a1a1a; }
-[aria-current='page'] .oddio-glyph-frame { background: #424242; border-color: #777; }
+.oddio-topbar {
+  background: #0b0b0bf2;
+  border-color: #292929;
+}
+.oddio-topbar-search,
+.oddio-topbar-history button,
+.oddio-topbar-icon,
+.oddio-topbar-account {
+  background-color: #1e1e1e;
+  border-color: #303030;
+}
+.oddio-listening-rail {
+  background: #131313;
+  border-color: #303030;
+}
+.oddio-featured-stage {
+  background: linear-gradient(115deg, #222 0%, #303030 62%, #171717 100%);
+  border-color: #444;
+}
+.oddio-featured-disc {
+  background: repeating-radial-gradient(circle, #161616 0 9px, #343434 10px 11px);
+}
+.oddio-featured-tile,
+.oddio-creator-banner,
+.oddio-curated-empty {
+  background: linear-gradient(130deg, #242424, #151515);
+  border-color: #383838;
+}
+.oddio-featured-tile:hover,
+.oddio-creator-banner:hover {
+  background: #292929;
+}
+.oddio-featured-tile .oddio-tile-icon {
+  background: #343434;
+  border-color: #555;
+}
+.oddio-explore-shortcut-0 {
+  background: linear-gradient(135deg, #424242, #202020);
+}
+.oddio-explore-shortcut-1 {
+  background: linear-gradient(135deg, #373737, #181818);
+}
+.oddio-explore-shortcut-2 {
+  background: linear-gradient(135deg, #545454, #272727);
+}
+.oddio-explore-shortcut-3 {
+  background: linear-gradient(135deg, #303030, #151515);
+}
+.oddio-explore-shortcut-4 {
+  background: linear-gradient(135deg, #484848, #202020);
+}
+.oddio-explore-shortcut-5 {
+  background: linear-gradient(135deg, #383838, #191919);
+}
+.oddio-rail-play,
+.oddio-stage-play,
+.oddio-idle-play,
+.oddio-search-submit {
+  background: #f2f2f2 !important;
+  color: #111 !important;
+}
+.oddio-player-bar,
+.oddio-idle-player {
+  background: #181818f7 !important;
+  border-color: #343434;
+}
+.oddio-idle-cover {
+  background: linear-gradient(135deg, #444, #1d1d1d);
+}
+.oddio-rail-queue-item:hover,
+.oddio-genre-tile:hover,
+.oddio-mood-card:hover {
+  border-color: #828282;
+}
+.oddio-glyph {
+  flex-shrink: 0;
+  transition:
+    transform 220ms ease,
+    opacity 220ms ease;
+}
+.group\/nav:hover .oddio-glyph {
+  transform: rotate(-9deg) scale(1.09);
+}
+[dir='rtl'] .group\/nav:hover .oddio-glyph {
+  transform: rotate(9deg) scale(1.09);
+}
+.oddio-glyph-frame {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #363636;
+  border-radius: 10px;
+  background: #1a1a1a;
+}
+[aria-current='page'] .oddio-glyph-frame {
+  background: #424242;
+  border-color: #777;
+}
 @media (prefers-reduced-motion: reduce) {
- .oddio-glyph { transition: none !important; }
- .group\/nav:hover .oddio-glyph { transform: none !important; }
+  .oddio-glyph {
+    transition: none !important;
+  }
+  .group\/nav:hover .oddio-glyph {
+    transform: none !important;
+  }
 }
