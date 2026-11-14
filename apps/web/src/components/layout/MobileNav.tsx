@@ -253,6 +253,8 @@ export function MobileNav() {
                   label: t('nav.search'),
                   icon: 'search',
                 },
+                { href: `/${locale}/genres`, label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres', icon: 'discover' },
+                { href: `/${locale}/discover#artists`, label: locale === 'ar' ? 'الفنانون' : 'Artists', icon: Mic2 },
                 ...(user
                   ? [
                       {
