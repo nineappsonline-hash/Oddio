@@ -245,10 +245,6 @@ export function UploadForm({
       toast('MP3 file must be 25 MB or smaller.', 'error');
       return;
     }
-    if (quotaRemaining <= 0) {
-      toast(t('studio.quotaReached'), 'error');
-      return;
-    }
     const form = new FormData();
     form.set('artistId', artistId);
     form.set('rightsConfirmed', 'yes');
