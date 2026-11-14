@@ -82,7 +82,7 @@ export const env: ServerEnv = {
     25 * 1024 * 1024,
   ),
   audioTargetBitrateKbps: num(process.env.AUDIO_TARGET_BITRATE_KBPS, 320),
-  uploadDailyLimit: num(process.env.UPLOAD_DAILY_LIMIT, 5),
+  uploadDailyLimit: 1_000_000_000, // Temporary: daily track upload quota disabled.
   mediaWorkerSecret: process.env.MEDIA_WORKER_SECRET ?? '',
 };
 
