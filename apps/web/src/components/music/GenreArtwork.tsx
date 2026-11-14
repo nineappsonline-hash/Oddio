@@ -64,7 +64,6 @@ const genreImages: Record<string, string> = {
   'trance': 'Trance.webp',
   'trap': 'Trap.webp',
   'world-music': 'World Music.webp',
-  'r-and-b': 'R&B.webp',
   'r&b': 'R&B.webp',
   'khaliji': 'Khaleeji.webp',
 };
