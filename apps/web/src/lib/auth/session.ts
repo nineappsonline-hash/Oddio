@@ -17,7 +17,8 @@ export function setDemoSession(response: NextResponse, userId: string): void {
     sameSite: 'lax',
     // WebKit rejects Secure cookies on HTTP test origins. Keep them enabled
     // for every HTTPS deployment, including production and Vercel previews.
-    secure: process.env.NODE_ENV === 'production' && env.siteUrl.startsWith('https://'),
+    secure:
+      process.env.NODE_ENV === 'production' && env.siteUrl.startsWith('https://'),
     path: '/',
     maxAge: 60 * 60 * 24 * 30,
   });
@@ -27,7 +28,8 @@ export function clearSessionCookie(response: NextResponse): void {
   response.cookies.set(SESSION_COOKIE, '', {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production' && env.siteUrl.startsWith('https://'),
+    secure:
+      process.env.NODE_ENV === 'production' && env.siteUrl.startsWith('https://'),
     path: '/',
     maxAge: 0,
   });
