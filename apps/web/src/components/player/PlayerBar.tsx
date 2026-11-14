@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { Maximize2, Repeat, Repeat1, VolumeX } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
@@ -12,6 +13,9 @@ import { OddioGlyph } from '@/components/ui/OddioGlyph';
 
 export function PlayerBar() {
   const t = useT();
+  const [controlNotice, setControlNotice] = useState('');
+  useEffect(() => { if (!controlNotice) return; const timer = window.setTimeout(() => setControlNotice(''), 2000); return () => window.clearTimeout(timer); }, [controlNotice]);
+
   const rtl = useLocale() === 'ar';
   const track = usePlayer((state) => state.track);
   const isPlaying = usePlayer((state) => state.isPlaying);
@@ -75,7 +79,9 @@ export function PlayerBar() {
       className="oddio-player-bar fixed inset-x-0 bottom-16 z-40 overflow-hidden border-t border-white/10 bg-[#181818]/95 px-3 py-2.5 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6"
       role="region"
       aria-label={t('player.miniPlayer')}
+              title={t('player.miniPlayer')}
     >
+      {controlNotice ? <div role="status" aria-live="polite" className="absolute bottom-full mb-3 left-1/2 z-[90] -translate-x-1/2 whitespace-nowrap rounded-full border border-primary/40 bg-[#242027] px-4 py-2 text-sm font-bold text-white shadow-xl">{controlNotice}</div> : null}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/80 to-transparent" />
       <div
         aria-hidden="true"
@@ -107,6 +113,7 @@ export function PlayerBar() {
           onClick={() => setExpanded(true)}
           className="group/art relative shrink-0"
           aria-label={t('player.expand')}
+              title={t('player.expand')}
         >
           {isPlaying ? (
             <span className="absolute -inset-1 animate-pulse-ring rounded-xl border border-primary/50" />
@@ -147,8 +154,10 @@ export function PlayerBar() {
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               type="button"
-              onClick={toggleShuffle}
+              onClick={() => { toggleShuffle(); setControlNotice(rtl ? (shuffle ? 'إيقاف التشغيل العشوائي' : 'تشغيل عشوائي') : (shuffle ? 'Shuffle off' : 'Shuffle on')); }}
               aria-label={t('player.shuffle')}
+              title={t('player.shuffle')}
+              title={shuffle ? (rtl ? 'إيقاف التشغيل العشوائي' : 'Disable shuffle') : t('player.shuffle')}
               aria-pressed={shuffle}
               className={cn(
                 'rounded-full p-1.5 transition hover:bg-white/10 sm:p-2',
@@ -161,6 +170,7 @@ export function PlayerBar() {
               type="button"
               onClick={previous}
               aria-label={t('common.previous')}
+              title={t('common.previous')}
               className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
             >
               <OddioGlyph name="previous" size={19} className="oddio-glyph" />
@@ -169,6 +179,7 @@ export function PlayerBar() {
               type="button"
               onClick={toggle}
               aria-label={isPlaying ? t('common.pause') : t('common.play')}
+              title={isPlaying ? t('common.pause') : t('common.play')}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] transition hover:bg-primary-strong"
             >
               {isPlaying ? (
@@ -181,14 +192,17 @@ export function PlayerBar() {
               type="button"
               onClick={() => next()}
               aria-label={t('common.next')}
+              title={t('common.next')}
               className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
             >
               <OddioGlyph name="next" size={19} className="oddio-glyph" />
             </button>
             <button
               type="button"
-              onClick={cycleRepeat}
+              onClick={() => { cycleRepeat(); const mode = repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off'; setControlNotice(rtl ? (mode === 'off' ? 'التكرار متوقف' : mode === 'all' ? 'تكرار كل الأغاني' : 'تكرار الأغنية الحالية') : (mode === 'off' ? 'Repeat off' : mode === 'all' ? 'Repeat all' : 'Repeat one')); }}
               aria-label={t('player.repeat')}
+              title={t('player.repeat')}
+              title={repeat === 'off' ? (rtl ? 'تكرار كل الأغاني' : 'Repeat all') : repeat === 'all' ? (rtl ? 'تكرار أغنية واحدة' : 'Repeat one') : (rtl ? 'إيقاف التكرار' : 'Disable repeat')}
               className={cn(
                 'rounded-full p-1.5 transition hover:bg-white/10 sm:p-2',
                 repeat !== 'off' ? 'text-primary' : 'text-muted',
@@ -214,6 +228,7 @@ export function PlayerBar() {
               onChange={(event) => seek(Number(event.target.value))}
               className="h-1 flex-1 shadow-[0_0_14px_rgba(157,92,255,0.45)]"
               aria-label={t('player.seek')}
+              title={t('player.seek')}
               style={{
                 background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #F2F2F2 ${progress}%, rgba(255,255,255,0.18) ${progress}%)`,
               }}
@@ -235,6 +250,7 @@ export function PlayerBar() {
             type="button"
             onClick={toggleMute}
             aria-label={t('player.volume')}
+              title={t('player.volume')}
             className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
           >
             {muted || volume === 0 ? (
@@ -252,6 +268,7 @@ export function PlayerBar() {
             onChange={(event) => setVolume(Number(event.target.value))}
             className="w-24"
             aria-label={t('player.volume')}
+              title={t('player.volume')}
             style={{
               background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #F2F2F2 ${
                 (muted ? 0 : volume) * 100
@@ -262,6 +279,7 @@ export function PlayerBar() {
             type="button"
             onClick={() => setExpanded(true)}
             aria-label={t('player.queue')}
+              title={t('player.queue')}
             className="relative rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
           >
             <OddioGlyph name="queue" size={19} className="oddio-glyph" />
@@ -278,6 +296,7 @@ export function PlayerBar() {
           onClick={() => setExpanded(true)}
           className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink lg:hidden"
           aria-label={t('player.expand')}
+              title={t('player.expand')}
         >
           <Maximize2 className="h-4 w-4" />
         </button>
