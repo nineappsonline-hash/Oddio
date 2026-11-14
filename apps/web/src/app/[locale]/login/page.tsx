@@ -53,9 +53,9 @@ export default async function LoginPage({
         <Image
           src="/oddio-logo-hq.png"
           alt="Oddio"
-          width={220}
-          height={220}
-          className="mb-6 h-48 w-48 object-contain"
+          width={360}
+          height={120}
+          className="mb-6 h-28 w-80 object-contain object-left"
           priority
         />
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
@@ -70,9 +70,9 @@ export default async function LoginPage({
         <Image
           src="/oddio-logo-hq.png"
           alt="Oddio"
-          width={100}
-          height={100}
-          className="mx-auto mb-5 h-20 w-20 object-contain lg:hidden"
+          width={240}
+          height={80}
+          className="mx-auto mb-5 h-16 w-48 object-contain lg:hidden"
         />
         <h2 className="text-2xl font-bold text-ink">{t('auth.loginTitle')}</h2>
         <p className="mt-1 text-sm text-muted">{t('auth.loginSubtitle')}</p>
