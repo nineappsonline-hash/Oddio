@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci
+      - run: npm install --no-save --package-lock=false playwright@1.58.2
       - run: npx playwright install --with-deps chromium
       - name: Inspect actual live rendered genre artwork
         run: |
