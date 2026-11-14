@@ -2,7 +2,7 @@
 
 import { useT } from '@/i18n/use-translator';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { apiRequest } from '@/lib/client-api';
 import { useToast } from '@/components/providers/ToastProvider';
@@ -37,8 +37,15 @@ export function AdminFeaturedManager({
   const params = useParams();
   const ar = params.locale === 'ar';
   const [statusFilter, setStatusFilter] = useState<'all' | 'scheduled' | 'active' | 'expired'>('all');
-  const [now] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    const refresh = () => setNow(Date.now());
+    refresh();
+    const timer = window.setInterval(refresh, 30000);
+    return () => window.clearInterval(timer);
+  }, []);
   const statusFor = (item: Slot): 'scheduled' | 'active' | 'expired' => {
+    if (now === null) return 'active';
     if (item.endAt && Date.parse(item.endAt) <= now) return 'expired';
     if (item.startAt && Date.parse(item.startAt) > now) return 'scheduled';
     return 'active';
@@ -61,11 +68,17 @@ export function AdminFeaturedManager({
   };
   async function saveSchedule(item: Slot) {
     const values = schedules[scheduleKey(item)] ?? { start: toInputDate(item.startAt), end: toInputDate(item.endAt) };
+    const startMs = values.start ? new Date(values.start).getTime() : null;
+    const endMs = values.end ? new Date(values.end).getTime() : null;
+    if ((startMs !== null && !Number.isFinite(startMs)) || (endMs !== null && !Number.isFinite(endMs)) || (startMs !== null && endMs !== null && startMs >= endMs)) {
+      toast(ar ? 'تأكد من صحة المواعيد وأن النهاية بعد البداية.' : 'Check the dates: end must be after start.', 'error');
+      return;
+    }
     setPending(true);
     try {
       await apiRequest('/api/admin/featured', {
         method: 'POST',
-        body: JSON.stringify({ slot: item.slot, entityType: item.entityType, entityId: item.entityId, action: 'schedule', startAt: values.start ? new Date(values.start).toISOString() : null, endAt: values.end ? new Date(values.end).toISOString() : null }),
+        body: JSON.stringify({ slot: item.slot, entityType: item.entityType, entityId: item.entityId, action: 'schedule', startAt: startMs === null ? null : new Date(startMs).toISOString(), endAt: endMs === null ? null : new Date(endMs).toISOString() }),
       });
       toast(t('admin.featuredUpdated'), 'success');
       router.refresh();
