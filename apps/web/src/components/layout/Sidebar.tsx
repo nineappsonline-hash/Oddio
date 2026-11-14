@@ -27,7 +27,9 @@ export function Logo({ locale, compact = false }: { locale: string; compact?: bo
       className="group/logo inline-flex items-center gap-3"
       aria-label="Oddio"
     >
-      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-[#262626] text-white"><OddioGlyph name="soundspace" size={31} className="oddio-glyph" /></span>
+      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-[#262626] text-white">
+        <OddioGlyph name="soundspace" size={31} className="oddio-glyph" />
+      </span>
       {!compact ? (
         <span className="leading-tight">
           <span className="block text-sm font-black uppercase tracking-[0.18em] text-ink">
@@ -116,7 +118,9 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
               {active ? (
                 <span className="absolute inset-y-2 start-0 w-0.5 rounded-full bg-[#f1f1f1]" />
               ) : null}
-              <span className="oddio-glyph-frame"><OddioGlyph name={glyph} size={20} className="oddio-glyph" /></span>
+              <span className="oddio-glyph-frame">
+                <OddioGlyph name={glyph} size={20} className="oddio-glyph" />
+              </span>
               {item.label}
             </Link>
           );
@@ -163,7 +167,11 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
               className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg text-[#f5c9a8]"
               style={{ backgroundColor: item.color }}
             >
-              <OddioGlyph name={item.symbol as OddioGlyphName} size={21} className="oddio-glyph" />
+              <OddioGlyph
+                name={item.symbol as OddioGlyphName}
+                size={21}
+                className="oddio-glyph"
+              />
             </span>
             <span>{item.label}</span>
           </Link>
