@@ -2,11 +2,7 @@ import Link from 'next/link';
 import {
   ArrowRight,
   ArrowUpRight,
-  Headphones,
-  Mic2,
   Disc3,
-  Waves,
-  Radio,
 } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
 import { getHomeData } from '@/lib/data/queries';
@@ -27,6 +23,7 @@ import { ArtistCard } from '@/components/music/ArtistCard';
 import { PlaylistCard } from '@/components/music/PlaylistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { notFound } from 'next/navigation';
+import { OddioGlyph } from '@/components/ui/OddioGlyph';
 
 export async function generateMetadata({
   params,
@@ -110,7 +107,7 @@ export default async function HomePage({
           </div>
           <div className="oddio-featured-copy">
             <p className="oddio-stage-label">
-              <Radio size={13} />
+              <OddioGlyph name="soundspace" size={15} />
               {ar ? 'اختيار أوديو' : 'THE ODDIO EDIT'}
             </p>
             <h2>
@@ -162,7 +159,7 @@ export default async function HomePage({
           className="oddio-featured-tile oddio-featured-mood"
         >
           <span className="oddio-tile-icon">
-            <Waves size={23} />
+            <OddioGlyph name="soundspace" size={23} />
           </span>
           <div>
             <p className="oddio-micro-label">{ar ? 'عيش المود' : 'MADE FOR YOUR MOOD'}</p>
@@ -336,7 +333,7 @@ export default async function HomePage({
             </div>
           ) : (
             <Link href={`/${locale}/soundspace`} className="oddio-curated-empty">
-              <Headphones size={35} strokeWidth={1.2} />
+              <OddioGlyph name="library" size={35} />
               <strong>
                 {ar ? 'اكتشف موسيقى جديدة' : 'A playlist for every feeling.'}
               </strong>
@@ -373,7 +370,7 @@ export default async function HomePage({
 
       <Link href={`/${locale}/apply/artist`} className="oddio-creator-banner">
         <span className="oddio-creator-icon">
-          <Mic2 size={22} />
+          <OddioGlyph name="studio" size={22} />
         </span>
         <span>
           <strong>{ar ? 'بتعمل موسيقى AI؟' : 'Creating AI music?'}</strong>
