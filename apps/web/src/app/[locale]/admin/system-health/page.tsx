@@ -4,6 +4,7 @@ import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase, serviceClient } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { isLocale } from '@/i18n/config';
+import { RetryMediaJobButton } from '@/components/admin/RetryMediaJobButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -134,6 +135,7 @@ export default async function SystemHealthPage({
                 <th scope="col" className="p-3 text-start">{ar ? 'الحالة' : 'State'}</th>
                 <th scope="col" className="p-3 text-start">{ar ? 'المحاولات' : 'Attempts'}</th>
                 <th scope="col" className="p-3 text-start">{ar ? 'آخر تحديث' : 'Updated'}</th>
+                <th scope="col" className="p-3 text-start">{ar ? 'الإجراء' : 'Action'}</th>
               </tr></thead>
               <tbody>{problemJobs.map((job) => (
                 <tr key={job.id} className="border-t border-white/10">
@@ -141,6 +143,7 @@ export default async function SystemHealthPage({
                   <td className="p-3">{job.state === 'running' ? (ar ? 'متوقفة' : 'Stale') : job.state === 'dead' ? (ar ? 'استنفدت المحاولات' : 'Exhausted') : (ar ? 'فشلت' : 'Failed')}</td>
                   <td className="p-3">{job.attempts} / {job.max_attempts}</td>
                   <td className="p-3"><time dateTime={job.updated_at}>{job.updated_at}</time></td>
+                  <td className="p-3">{job.state === 'failed' && job.attempts < job.max_attempts ? <RetryMediaJobButton jobId={job.id} ar={ar} /> : '—'}</td>
                 </tr>
               ))}</tbody>
             </table>
