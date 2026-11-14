@@ -28,7 +28,8 @@ export function clearSessionCookie(response: NextResponse): void {
   response.cookies.set(SESSION_COOKIE, '', {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure:
+      process.env.NODE_ENV === 'production' && env.siteUrl.startsWith('https://'),
     path: '/',
     maxAge: 0,
   });
