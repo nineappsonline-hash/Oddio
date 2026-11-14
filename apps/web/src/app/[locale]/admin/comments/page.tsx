@@ -49,7 +49,7 @@ export default async function AdminCommentsPage({
   const data = getAdminData(db, user.roles[0]!);
   const trackTitle = new Map(db.tracks.map((track) => [track.id, track.title]));
   const q = (filters.q ?? '').trim().toLocaleLowerCase();
-  const status = filters.status ?? 'all';
+  const status = filters.status ?? 'pending';
   const comments = data.comments.filter(
     (comment) =>
       (status === 'all' || comment.status === status) &&
@@ -70,7 +70,8 @@ export default async function AdminCommentsPage({
           {locale === 'ar' ? 'الحالة' : 'Status'}
           <select name="status" defaultValue={status} className="input mt-1 min-w-40">
             <option value="all">All</option>
-            <option value="visible">Visible</option>
+            <option value="pending">Pending approval</option>
+            <option value="visible">Approved</option>
             <option value="hidden">Hidden</option>
           </select>
         </label>
@@ -103,7 +104,7 @@ export default async function AdminCommentsPage({
                 {comment.body}
               </p>
               <p className="mt-1 text-[11px] text-muted">
-                {trackTitle.get(comment.trackId) ?? comment.trackId}
+                {comment.timestampSeconds != null ? `${Math.floor(comment.timestampSeconds / 60)}:${String(comment.timestampSeconds % 60).padStart(2, '0')} · ` : ''}{trackTitle.get(comment.trackId) ?? comment.trackId}
               </p>
             </div>
             <AdminCommentToggle commentId={comment.id} status={comment.status} />
