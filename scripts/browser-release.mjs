@@ -130,6 +130,12 @@ try {
 
       if (locale === 'en' && viewport.width === 1366) {
         await test('demo listener login and library navigation', async () => {
+          // Do not submit an SSR form until React has attached its handlers.
+          // Slow WebKit hydration can otherwise swallow a user click.
+          await page.locator('form[data-login-hydrated="true"]').waitFor({
+            state: 'visible',
+            timeout: 20_000,
+          });
           await page.locator('#login-email').fill('listener@demo.local');
           await page.locator('#login-password').fill('demo1234');
           const loginResponse = page.waitForResponse(
