@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
-import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { loadDbFromSupabase, serviceClient } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { isLocale } from '@/i18n/config';
 
@@ -36,6 +36,29 @@ export default async function SystemHealthPage({
   } catch {
     // Keep the diagnostic page accessible even when its database is unavailable.
   }
+  let mediaJobs: { queued: number; running: number; failed: number; dead: number; stale: number } | null = null;
+  if (!demoMode) {
+    try {
+      const { data, error } = await serviceClient()
+        .from('jobs')
+        .select('state,updated_at')
+        .eq('type', 'media.transcode')
+        .in('state', ['queued', 'running', 'failed', 'dead'])
+        .limit(1000);
+      if (error) throw error;
+      const jobs = data ?? [];
+      const cutoff = checkedAt.getTime() - 20 * 60_000;
+      mediaJobs = {
+        queued: jobs.filter((job) => job.state === 'queued').length,
+        running: jobs.filter((job) => job.state === 'running').length,
+        failed: jobs.filter((job) => job.state === 'failed').length,
+        dead: jobs.filter((job) => job.state === 'dead').length,
+        stale: jobs.filter((job) => job.state === 'running' && Date.parse(job.updated_at) < cutoff).length,
+      };
+    } catch {
+      // Unknown is safer than reporting a healthy queue when the query fails.
+    }
+  }
   const metrics = [
     { en: 'Database read', ar: 'قراءة قاعدة البيانات', value: database === 'reachable' ? (ar ? 'متاح' : 'Reachable') : (ar ? 'غير متاح' : 'Unavailable') },
     { en: 'Uploads (24h)', ar: 'عمليات الرفع (24 ساعة)', value: uploads24h },
@@ -60,6 +83,25 @@ export default async function SystemHealthPage({
           </div>
         ))}
       </div>
+      <section className="space-y-3">
+        <h3 className="text-lg font-bold text-ink">{ar ? 'معالجة الصوت' : 'Audio processing queue'}</h3>
+        <p className="text-sm text-muted">{ar ? 'لقطة من أول 1000 مهمة معالجة؛ لا تعني أن العامل يعمل حاليًا.' : 'Snapshot of up to 1,000 media jobs; does not confirm the worker is online.'}</p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {([
+            ['queued', ar ? 'في الانتظار' : 'Queued'],
+            ['running', ar ? 'قيد المعالجة' : 'Running'],
+            ['failed', ar ? 'فشلت ويمكن إعادة محاولتها' : 'Retryable failures'],
+            ['dead', ar ? 'فشلت نهائيًا' : 'Exhausted retries'],
+            ['stale', ar ? 'مهام متوقفة أكثر من 20 دقيقة' : 'Stale >20 min'],
+          ] as const).map(([key, label]) => (
+            <div key={key} className={`rounded-xl border p-4 ${mediaJobs && mediaJobs[key] > 0 && (key === 'dead' || key === 'stale') ? 'border-red-400/40 bg-red-500/10' : 'border-white/10 bg-white/5'}`}>
+              <p className="text-xs text-muted">{label}</p>
+              <p className="mt-2 text-2xl font-bold text-ink">{mediaJobs?.[key] ?? '—'}</p>
+            </div>
+          ))}
+        </div>
+        {!mediaJobs && <p role="status" className="text-sm text-amber-300">{ar ? 'بيانات قائمة المعالجة غير متاحة حاليًا.' : 'Processing queue data is currently unavailable.'}</p>}
+      </section>
       <p className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-muted">
         {ar ? 'نجاح قراءة قاعدة البيانات لا يؤكد حالة معالجة الصوت أو التخزين أو توفر الخدمات الخارجية. يلزم إضافة فحوص مستقلة لهذه الخدمات.' : 'A successful database read does not verify audio processing, storage, or external service availability. Those require separate health checks.'}
       </p>
