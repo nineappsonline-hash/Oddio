@@ -10,7 +10,7 @@ const schema = z.object({ jobId: z.string().uuid() });
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
-    await requireRole(['admin', 'super_admin']);
+    const actor = await requireRole(['admin', 'super_admin']);
     const { jobId } = await parseBody(request, schema);
     if (demoMode) return jsonOk({ retried: false, reason: 'unavailable_in_demo' }, undefined, 409);
 
@@ -37,7 +37,17 @@ export async function POST(request: Request) {
       .maybeSingle();
     if (updateError) throw updateError;
     if (!updated) return jsonOk({ retried: false, reason: 'already_changed' }, undefined, 409);
-    return jsonOk({ retried: true });
+    const { error: auditError } = await db.from('audit_logs').insert({
+      actor_id: actor.id,
+      action: 'media.retry_requested',
+      entity_type: 'job',
+      entity_id: job.id,
+    });
+    if (auditError) {
+      console.error('[media-retry] queue update succeeded but audit insert failed', auditError);
+      return jsonOk({ retried: true, auditRecorded: false });
+    }
+    return jsonOk({ retried: true, auditRecorded: true });
   } catch (error) {
     return jsonError(error);
   }
