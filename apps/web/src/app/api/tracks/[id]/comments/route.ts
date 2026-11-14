@@ -1,5 +1,6 @@
 import { commentInput } from '@ai-music/contracts';
-import { readDb, mutateDb } from '@/lib/data/db';
+import { readDb, mutateDb, demoMode } from '@/lib/data/db';
+import { loadDbFromSupabase, persistChanges } from '@/lib/data/supabase-store';
 import { createComment } from '@/lib/data/mutations';
 import {
   assertSameOrigin,
@@ -20,7 +21,7 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const db = readDb();
+    const db = demoMode ? readDb() : await loadDbFromSupabase();
     const viewer = await getViewer();
     const track = db.tracks.find((item) => item.id === id);
     if (!track || !accessForTrack(db, track, viewer).allowed) {
@@ -45,7 +46,15 @@ export async function POST(
     rateLimit(`comment:${user.id}`, 10, 60_000);
     const { id } = await context.params;
     const input = await parseBody(request, commentInput);
-    const comment = mutateDb((db) => createComment(db, user, id, input.body));
+    let comment;
+    if (demoMode) {
+      comment = mutateDb((db) => createComment(db, user, id, input.body, input.timestampSeconds));
+    } else {
+      const db = await loadDbFromSupabase();
+      const before = structuredClone(db);
+      comment = createComment(db, user, id, input.body, input.timestampSeconds);
+      await persistChanges(before, db);
+    }
     return jsonOk({ comment });
   } catch (error) {
     return jsonError(error);
