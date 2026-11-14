@@ -32,25 +32,33 @@ export async function generateMetadata({
 
 export default async function AdminReportsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ q?: string; status?: string }>;
 }) {
   const { locale: raw } = await params;
   if (!isLocale(raw)) redirect('/en');
   const locale = raw;
   const t = createTranslator(locale);
+  const filters = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   if (user.roles.length === 0) redirect(`/${locale}`);
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const data = getAdminData(db, user.roles[0]!);
+  const q = (filters.q ?? '').trim().toLocaleLowerCase();
+  const status = filters.status ?? 'all';
+  const reports = data.openReports.filter((report) => (status === 'all' || report.status === status) && (!q || [report.targetLabel, report.reason, report.reporterName, report.details ?? ''].some((value) => value.toLocaleLowerCase().includes(q)))).sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
   return (
-    <div className="space-y-3">
-      {data.openReports.length === 0 ? (
+    <div className="space-y-5">
+      <header className="card p-5"><h2 className="text-xl font-bold text-ink">{locale === "ar" ? "مركز البلاغات" : "Report queue"}</h2><p className="mt-1 text-xs text-muted">{locale === "ar" ? "البلاغات المفتوحة وقيد التحقيق، الأقدم أولًا." : "Open and investigating reports, oldest first."}</p>
+        <form method="get" className="mt-4 flex flex-wrap items-end gap-3"><label className="min-w-48 flex-1 text-xs text-muted">{locale === "ar" ? "بحث" : "Search"}<input name="q" defaultValue={filters.q ?? ""} className="input mt-1 w-full" /></label><label className="text-xs text-muted">{locale === "ar" ? "الحالة" : "Status"}<select name="status" defaultValue={status} className="input mt-1 min-w-40"><option value="all">All</option><option value="open">Open</option><option value="investigating">Investigating</option></select></label><button type="submit" className="rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white">{locale === "ar" ? "تطبيق" : "Apply"}</button></form><p className="mt-3 text-xs text-muted">{reports.length} / {data.openReports.length}</p></header>
+      {reports.length === 0 ? (
         <EmptyState title={t('admin.noReports')} />
       ) : (
-        data.openReports.map((report) => (
+        reports.map((report) => (
           <article key={report.id} className="card space-y-3 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
@@ -71,6 +79,7 @@ export default async function AdminReportsPage({
                 {report.details}
               </p>
             ) : null}
+            {Date.now() - new Date(report.createdAt).getTime() >= 48 * 3600000 && <p className="text-xs font-bold text-amber-300">{locale === 'ar' ? 'البلاغ منتظر أكثر من 48 ساعة' : 'Waiting over 48 hours'}</p>}
             <AdminReportActions reportId={report.id} />
           </article>
         ))
