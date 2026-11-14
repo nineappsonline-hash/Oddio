@@ -84,13 +84,13 @@ export function ListeningRail() {
               className={
                 playing
                   ? 'oddio-rail-play'
-                  : 'oddio-rail-play !border-0 !bg-transparent !p-0 !shadow-none'
+                  : 'oddio-rail-play oddio-rail-play-logo'
               }
             >
               {playing ? (
                 <OddioGlyph name="pause" size={21} className="oddio-glyph" />
               ) : (
-                <OddioPlayIcon size={52} />
+                <OddioPlayIcon size={76} />
               )}
             </button>
             <button
