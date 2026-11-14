@@ -27,9 +27,9 @@ export function PlayButton({
   const active = current && isPlaying;
 
   const sizes = {
-    sm: 'h-8 w-8',
-    md: 'h-11 w-11',
-    lg: 'h-14 w-14',
+    sm: 'h-12 w-12',
+    md: 'h-16 w-16',
+    lg: 'h-20 w-20',
   } as const;
 
   return (
