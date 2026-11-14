@@ -76,6 +76,7 @@ export function FullPlayer() {
   const [lyricsLoading, setLyricsLoading] = useState(false);
   const [generatingLyrics, setGeneratingLyrics] = useState(false);
   const [lyricsMessage, setLyricsMessage] = useState('');
+  const [mobileLyricsOpen, setMobileLyricsOpen] = useState(false);
   const [controlNotice, setControlNotice] = useState('');
   useEffect(() => {
     if (!controlNotice) return;
@@ -127,6 +128,7 @@ export function FullPlayer() {
     setSrt(null);
     setPlainLyrics(null);
     setLyricsMessage('');
+    setMobileLyricsOpen(false);
     setLyricsLoading(true);
     fetch('/api/tracks/' + encodeURIComponent(track.id) + '/synced-lyrics', {
       signal: controller.signal,
@@ -215,7 +217,7 @@ export function FullPlayer() {
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
           <div>
-            <div className="relative mx-auto max-w-md">
+            <div className="relative mx-auto max-w-[min(100%,44vh)] sm:max-w-md lg:max-w-md">
               <div
                 aria-hidden="true"
                 className="absolute -inset-6 rounded-[2.5rem] opacity-50 blur-3xl"
@@ -236,8 +238,28 @@ export function FullPlayer() {
                   aria-hidden="true"
                   className="pointer-events-none absolute -inset-24 animate-spin-slow opacity-40 [background:conic-gradient(from_0deg,transparent_0deg,rgba(157,92,255,0.5)_70deg,transparent_140deg,rgba(65,217,255,0.4)_240deg,transparent_300deg)]"
                 />
+                {mobileLyricsOpen ? (
+                  <div className="absolute inset-1.5 z-20 flex flex-col rounded-[1.35rem] bg-[#130e20]/95 p-4 backdrop-blur-xl lg:hidden">
+                    <div className="mb-2 flex items-center justify-between text-sm font-bold text-white">
+                      <span>🎤 {rtl ? 'كلمات الأغنية' : 'Lyrics'}</span>
+                      <button type="button" onClick={() => setMobileLyricsOpen(false)} className="rounded-lg bg-white/10 px-3 py-1.5">{rtl ? 'إغلاق' : 'Close'}</button>
+                    </div>
+                    <div className="scroll-thin min-h-0 flex-1 overflow-y-auto">
+                      {lyricsLoading ? <p className="text-sm text-white/70">{rtl ? 'جاري التحميل…' : 'Loading…'}</p> : cues.length ? cues.map((cue, index) => (
+                        <button key={index} type="button" onClick={() => seek(cue.start)} className={cn('block w-full rounded-lg px-2 py-2 text-start text-sm leading-relaxed', index === activeCue ? 'bg-primary/20 font-bold text-primary' : 'text-white/70')}>{cue.text}</button>
+                      )) : (
+                        <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+                          <p className="text-sm text-white/80">{rtl ? 'مفيش كلمات محفوظة للأغنية' : 'No saved lyrics yet'}</p>
+                          <button type="button" disabled={generatingLyrics} onClick={generateLyrics} className="rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white disabled:opacity-50">{generatingLyrics ? (rtl ? 'جاري التوليد…' : 'Generating…') : '✨ Generate Lyrics'}</button>
+                          {lyricsMessage ? <p role="status" className="text-xs text-white/80">{lyricsMessage}</p> : null}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
               </div>
-              <div className="mt-5 flex h-8 items-end justify-center gap-1">
+              <div className="mt-2 flex items-center justify-between gap-2 lg:hidden"><button type="button" onClick={() => setMobileLyricsOpen((value) => !value)} className="rounded-full border border-primary/40 bg-primary/15 px-4 py-2 text-sm font-bold text-primary">🎤 {mobileLyricsOpen ? (rtl ? "إخفاء الكلمات" : "Hide lyrics") : (rtl ? "كلمات الأغنية" : "Lyrics")}</button></div>
+              <div className="mt-3 hidden h-8 items-end justify-center gap-1 sm:flex">
                 <Equalizer
                   bars={28}
                   paused={!isPlaying}
@@ -285,8 +307,6 @@ export function FullPlayer() {
               </div>
             </div>
 
-            <TimedComments key={track.id} trackId={track.id} />
-
             {error ? (
               <div
                 role="alert"
@@ -302,7 +322,7 @@ export function FullPlayer() {
                 </button>
               </div>
             ) : null}
-            <div className="mt-6">
+            <div className="mt-4">
               <input
                 type="range"
                 min={0}
@@ -368,12 +388,12 @@ export function FullPlayer() {
                 onClick={toggle}
                 aria-label={isPlaying ? t('common.pause') : t('common.play')}
                 title={isPlaying ? t('common.pause') : t('common.play')}
-                className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105"
+                className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-28 sm:w-28"
               >
                 {isPlaying ? (
-                  <span className="flex h-24 w-24 items-center justify-center rounded-full bg-white text-background"><Pause className="h-7 w-7" fill="currentColor" /></span>
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-background sm:h-24 sm:w-24"><Pause className="h-7 w-7" fill="currentColor" /></span>
                 ) : (
-                  <OddioPlayIcon size={112} />
+                  <span className="scale-[0.7] sm:scale-100"><OddioPlayIcon size={112} /></span>
                 )}
               </button>
               <button
@@ -473,6 +493,7 @@ export function FullPlayer() {
             <p className="mt-4 text-center text-[11px] text-muted">
               {t('player.qualifiedHint')}
             </p>
+            <div className="mt-5"><TimedComments key={track.id} trackId={track.id} /></div>
           </div>
 
           <aside
