@@ -2,6 +2,10 @@ import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getGenrePage } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
+import Link from 'next/link';
+import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -18,7 +22,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, slug } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getGenrePage(db, { userId: null, roles: [] }, slug);
   const label = page
     ? safeLocale === 'ar'
@@ -43,13 +47,15 @@ export default async function GenrePage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getGenrePage(db, viewer, slug);
   if (!page) notFound();
   const label = locale === 'ar' ? page.genre.labelAr : page.genre.labelEn;
 
   return (
     <div>
+      <Link href={`/${locale}/genres`} className="mb-5 inline-block text-sm font-semibold text-primary hover:underline">← {locale === 'ar' ? 'كل الأنواع الموسيقية' : 'All genres'}</Link>
+      <div className="relative mb-6 h-40 overflow-hidden rounded-2xl border border-white/10 sm:h-52"><GenreArtwork slug={page.genre.slug} /><div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" /></div>
       <PageHeader
         eyebrow={t('discover.genre')}
         title={label}
