@@ -723,7 +723,7 @@ const SPECS: CollectionSpec[] = [
       slug: track.slug,
       description: track.description,
       genre_id: track.genreId,
-      genre_ids: track.genreIds?.length ? track.genreIds : [track.genreId],
+      genre_ids: Array.isArray(track.genreIds) && track.genreIds.length > 0 ? track.genreIds : [track.genreId],
       language_code: track.languageCode,
       country_code: track.countryCode,
       production_type: track.productionType,
