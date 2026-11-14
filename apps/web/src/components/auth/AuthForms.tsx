@@ -182,6 +182,24 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
   const t = useT();
   const [displayName, setDisplayName] = useState('');
   const [handle, setHandle] = useState('');
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'error'>('idle');
+  const [submitting, setSubmitting] = useState(false);
+  useEffect(() => {
+    const username = handle.trim().toLowerCase();
+    if (!username) { setUsernameStatus('idle'); return; }
+    if (!/^[a-z0-9_](?:[a-z0-9_.-]{1,28}[a-z0-9_])?$/.test(username)) { setUsernameStatus('invalid'); return; }
+    const controller = new AbortController();
+    setUsernameStatus('checking');
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/auth/username?username=${encodeURIComponent(username)}`, { signal: controller.signal });
+        if (!response.ok) throw new Error('check failed');
+        const result = await response.json() as { available: boolean };
+        setUsernameStatus(result.available ? 'available' : 'taken');
+      } catch { if (!controller.signal.aborted) setUsernameStatus('error'); }
+    }, 400);
+    return () => { controller.abort(); window.clearTimeout(timer); };
+  }, [handle]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [signupComplete, setSignupComplete] = useState(false);
@@ -190,6 +208,8 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setSignupError(null);
+    if (usernameStatus !== 'available') { setSignupError('Please choose an available username.'); return; }
+    setSubmitting(true);
     try {
       const result = await apiRequest<{ emailed?: boolean }>('/api/auth/signup', {
         method: 'POST',
@@ -209,7 +229,7 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
       setSignupError(
         caught instanceof ApiClientError ? caught.message : 'Could not create account',
       );
-    }
+    } finally { setSubmitting(false); }
   }
 
   if (signupComplete) {
@@ -242,17 +262,24 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
           />
         </Field>
         <Field
-          label={t('auth.handle')}
-          hint={t('auth.handleHint')}
+          label={locale === 'ar' ? 'اسم المستخدم' : 'Username'}
+          hint={locale === 'ar' ? '3–30 حرفًا: حروف إنجليزية صغيرة وأرقام و _ . -' : '3–30 characters: lowercase letters, numbers, _ . -'}
           htmlFor="signup-handle"
         >
           <input
             id="signup-handle"
+            required
+            minLength={3}
+            maxLength={30}
+            aria-describedby="username-availability"
             value={handle}
-            onChange={(event) => setHandle(event.target.value)}
+            onChange={(event) => setHandle(event.target.value.toLowerCase())}
             className="input"
             autoComplete="username"
           />
+          <p id="username-availability" role="status" aria-live="polite" className={`mt-1 text-xs ${usernameStatus === "available" ? "text-emerald-400" : usernameStatus === "taken" || usernameStatus === "invalid" ? "text-rose-400" : "text-muted"}`}>
+            {usernameStatus === "checking" ? (locale === "ar" ? "جاري التحقق..." : "Checking availability...") : usernameStatus === "available" ? (locale === "ar" ? "✓ اسم المستخدم متاح" : "✓ Username available") : usernameStatus === "taken" ? (locale === "ar" ? "✕ اسم المستخدم مستخدم بالفعل" : "✕ Username already taken") : usernameStatus === "invalid" ? (locale === "ar" ? "اسم المستخدم غير صالح" : "Invalid username format") : usernameStatus === "error" ? (locale === "ar" ? "تعذر التحقق، حاول مجددًا" : "Could not check availability") : ""}
+          </p>
         </Field>
         <Field label={t('auth.email')} htmlFor="signup-email">
           <input
@@ -286,7 +313,7 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
             {signupError}
           </p>
         ) : null}
-        <Button type="submit" loading={false} className="w-full">
+        <Button type="submit" disabled={usernameStatus !== "available" || submitting} loading={submitting} className="w-full">
           {t('auth.createAccount')}
         </Button>
       </form>
