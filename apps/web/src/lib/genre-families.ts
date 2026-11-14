@@ -13,7 +13,8 @@ const families = [
       'rai', 'dabke', 'arabic-classical', 'arabic-folk', 'arabic-rap',
       'arabic-hip-hop', 'oriental', 'nasheed', 'arabic', 'egyptian',
       'egyptian-pop', 'arabic-indie', 'arabic-rock', 'arabic-jazz',
-      'sha3by', 'maghrebi', 'andalusian', 'arabesk',
+      'sha3by', 'maghrebi', 'andalusian', 'arabesk', 'bedouin',
+      'nubian', 'sufi',
     ],
   },
   {
@@ -53,7 +54,7 @@ const families = [
       'drum-bass', 'dnb', 'dance', 'electro', 'synthwave',
       'future-bass', 'hardstyle', 'breakbeat', 'garage',
       'uk-garage', 'downtempo', 'trip-hop', 'progressive-house',
-      'psytrance', 'minimal-techno',
+      'psytrance', 'minimal-techno', 'experimental',
     ],
   },
   {
