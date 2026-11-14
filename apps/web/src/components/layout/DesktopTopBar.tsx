@@ -86,7 +86,7 @@ export function DesktopTopBar() {
             href={`/${locale}/login`}
             className="oddio-topbar-account"
           >
-            <OddioGlyph name="home" size={19} className="oddio-glyph" />
+            <OddioGlyph name="account" size={19} className="oddio-glyph" />
             <span>{ar ? 'دخول' : 'Log in'}</span>
           </Link>
         )}
