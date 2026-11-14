@@ -1,0 +1,36 @@
+name: Temporary Oddio layout formatting pass
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.repository == 'jimmydodo/oddio' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'design/oddio-editorial-layout-v9'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: design/oddio-editorial-layout-v9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Normalize current app layout files
+        run: |
+          npx prettier --write 'apps/web/src/app/[locale]/discover/page.tsx' 'apps/web/src/app/[locale]/search/page.tsx' apps/web/src/app/globals.css
+          npm run format:check
+      - name: Commit and push reviewed formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if ! git diff --cached --quiet; then
+            git commit -m "style: normalize new discover and search layout"
+            git push origin HEAD:design/oddio-editorial-layout-v9
+          fi
