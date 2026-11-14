@@ -333,7 +333,7 @@ export function PlayerBar() {
           />
           <button
             type="button"
-            onClick={() => setExpanded(true)}
+            onClick={() => { window.dispatchEvent(new Event('oddio:open-queue')); setExpanded(true); }}
             aria-label={t('player.queue')}
             title={t('player.queue')}
             className="relative rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
