@@ -1,7 +1,13 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-export function TrackChangeModeration({ id, locale = 'en' }: { id: string; locale?: string }) {
+export function TrackChangeModeration({
+  id,
+  locale = 'en',
+}: {
+  id: string;
+  locale?: string;
+}) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const router = useRouter();

@@ -183,23 +183,39 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
   const t = useT();
   const [displayName, setDisplayName] = useState('');
   const [handle, setHandle] = useState('');
-  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'error'>('idle');
+  const [usernameStatus, setUsernameStatus] = useState<
+    'idle' | 'checking' | 'available' | 'taken' | 'invalid' | 'error'
+  >('idle');
   const [submitting, setSubmitting] = useState(false);
   useEffect(() => {
     const username = handle.trim().toLowerCase();
-    if (!username) { setUsernameStatus('idle'); return; }
-    if (!/^[a-z0-9_](?:[a-z0-9_.-]{1,28}[a-z0-9_])?$/.test(username)) { setUsernameStatus('invalid'); return; }
+    if (!username) {
+      setUsernameStatus('idle');
+      return;
+    }
+    if (!/^[a-z0-9_](?:[a-z0-9_.-]{1,28}[a-z0-9_])?$/.test(username)) {
+      setUsernameStatus('invalid');
+      return;
+    }
     const controller = new AbortController();
     setUsernameStatus('checking');
     const timer = window.setTimeout(async () => {
       try {
-        const response = await fetch(`/api/auth/username?username=${encodeURIComponent(username)}`, { signal: controller.signal });
+        const response = await fetch(
+          `/api/auth/username?username=${encodeURIComponent(username)}`,
+          { signal: controller.signal },
+        );
         if (!response.ok) throw new Error('check failed');
-        const result = await response.json() as { available: boolean };
+        const result = (await response.json()) as { available: boolean };
         setUsernameStatus(result.available ? 'available' : 'taken');
-      } catch { if (!controller.signal.aborted) setUsernameStatus('error'); }
+      } catch {
+        if (!controller.signal.aborted) setUsernameStatus('error');
+      }
     }, 400);
-    return () => { controller.abort(); window.clearTimeout(timer); };
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
   }, [handle]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -210,8 +226,20 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setSignupError(null);
-    if (usernameStatus !== 'available') { setSignupError(locale === 'ar' ? 'اختار اسم مستخدم متاح.' : 'Please choose an available username.'); return; }
-    if (password !== confirmPassword) { setSignupError(locale === 'ar' ? 'كلمتا المرور غير متطابقتين.' : 'Passwords do not match.'); return; }
+    if (usernameStatus !== 'available') {
+      setSignupError(
+        locale === 'ar'
+          ? 'اختار اسم مستخدم متاح.'
+          : 'Please choose an available username.',
+      );
+      return;
+    }
+    if (password !== confirmPassword) {
+      setSignupError(
+        locale === 'ar' ? 'كلمتا المرور غير متطابقتين.' : 'Passwords do not match.',
+      );
+      return;
+    }
     setSubmitting(true);
     try {
       const result = await apiRequest<{ emailed?: boolean }>('/api/auth/signup', {
@@ -232,7 +260,9 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
       setSignupError(
         caught instanceof ApiClientError ? caught.message : 'Could not create account',
       );
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (signupComplete) {
@@ -266,7 +296,11 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
         </Field>
         <Field
           label={locale === 'ar' ? 'اسم المستخدم' : 'Username'}
-          hint={locale === 'ar' ? '3–30 حرفًا: حروف إنجليزية صغيرة وأرقام و _ . -' : '3–30 characters: lowercase letters, numbers, _ . -'}
+          hint={
+            locale === 'ar'
+              ? '3–30 حرفًا: حروف إنجليزية صغيرة وأرقام و _ . -'
+              : '3–30 characters: lowercase letters, numbers, _ . -'
+          }
           htmlFor="signup-handle"
         >
           <input
@@ -280,8 +314,33 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
             className="input"
             autoComplete="username"
           />
-          <p id="username-availability" role="status" aria-live="polite" className={`mt-1 text-xs ${usernameStatus === "available" ? "text-emerald-400" : usernameStatus === "taken" || usernameStatus === "invalid" ? "text-rose-400" : "text-muted"}`}>
-            {usernameStatus === "checking" ? (locale === "ar" ? "جاري التحقق..." : "Checking availability...") : usernameStatus === "available" ? (locale === "ar" ? "✓ اسم المستخدم متاح" : "✓ Username available") : usernameStatus === "taken" ? (locale === "ar" ? "✕ اسم المستخدم مستخدم بالفعل" : "✕ Username already taken") : usernameStatus === "invalid" ? (locale === "ar" ? "اسم المستخدم غير صالح" : "Invalid username format") : usernameStatus === "error" ? (locale === "ar" ? "تعذر التحقق، حاول مجددًا" : "Could not check availability") : ""}
+          <p
+            id="username-availability"
+            role="status"
+            aria-live="polite"
+            className={`mt-1 text-xs ${usernameStatus === 'available' ? 'text-emerald-400' : usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'text-rose-400' : 'text-muted'}`}
+          >
+            {usernameStatus === 'checking'
+              ? locale === 'ar'
+                ? 'جاري التحقق...'
+                : 'Checking availability...'
+              : usernameStatus === 'available'
+                ? locale === 'ar'
+                  ? '✓ اسم المستخدم متاح'
+                  : '✓ Username available'
+                : usernameStatus === 'taken'
+                  ? locale === 'ar'
+                    ? '✕ اسم المستخدم مستخدم بالفعل'
+                    : '✕ Username already taken'
+                  : usernameStatus === 'invalid'
+                    ? locale === 'ar'
+                      ? 'اسم المستخدم غير صالح'
+                      : 'Invalid username format'
+                    : usernameStatus === 'error'
+                      ? locale === 'ar'
+                        ? 'تعذر التحقق، حاول مجددًا'
+                        : 'Could not check availability'
+                      : ''}
           </p>
         </Field>
         <Field label={t('auth.email')} htmlFor="signup-email">
@@ -311,7 +370,10 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
             autoComplete="new-password"
           />
         </Field>
-        <Field label={locale === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password'} htmlFor="signup-confirm-password">
+        <Field
+          label={locale === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password'}
+          htmlFor="signup-confirm-password"
+        >
           <PasswordInput
             locale={locale}
             id="signup-confirm-password"
@@ -323,8 +385,21 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
             aria-invalid={confirmPassword.length > 0 && password !== confirmPassword}
             aria-describedby="signup-password-match"
           />
-          <p id="signup-password-match" role="status" aria-live="polite" className={`mt-1 text-xs ${confirmPassword && password !== confirmPassword ? 'text-rose-400' : 'text-emerald-400'}`}>
-            {confirmPassword ? (password === confirmPassword ? (locale === 'ar' ? '✓ كلمتا المرور متطابقتان' : '✓ Passwords match') : (locale === 'ar' ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match')) : ''}
+          <p
+            id="signup-password-match"
+            role="status"
+            aria-live="polite"
+            className={`mt-1 text-xs ${confirmPassword && password !== confirmPassword ? 'text-rose-400' : 'text-emerald-400'}`}
+          >
+            {confirmPassword
+              ? password === confirmPassword
+                ? locale === 'ar'
+                  ? '✓ كلمتا المرور متطابقتان'
+                  : '✓ Passwords match'
+                : locale === 'ar'
+                  ? 'كلمتا المرور غير متطابقتين'
+                  : 'Passwords do not match'
+              : ''}
           </p>
         </Field>
         {signupError ? (
@@ -332,7 +407,17 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
             {signupError}
           </p>
         ) : null}
-        <Button type="submit" disabled={usernameStatus !== "available" || submitting || password.length < 8 || password !== confirmPassword} loading={submitting} className="w-full">
+        <Button
+          type="submit"
+          disabled={
+            usernameStatus !== 'available' ||
+            submitting ||
+            password.length < 8 ||
+            password !== confirmPassword
+          }
+          loading={submitting}
+          className="w-full"
+        >
           {t('auth.createAccount')}
         </Button>
       </form>

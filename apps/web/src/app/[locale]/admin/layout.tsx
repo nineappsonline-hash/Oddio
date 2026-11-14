@@ -19,7 +19,8 @@ export default async function AdminLayout({
   const t = createTranslator(locale);
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/admin`)}`);
-  if (!user.roles.length) return <EmptyState title={t('admin.noAccess')} body={t('admin.noAccessBody')} />;
+  if (!user.roles.length)
+    return <EmptyState title={t('admin.noAccess')} body={t('admin.noAccessBody')} />;
 
   return (
     <div className="space-y-6">
@@ -28,14 +29,23 @@ export default async function AdminLayout({
         <aside className="rounded-2xl border border-white/10 bg-white/[0.035] p-3 lg:sticky lg:top-24">
           <details className="group lg:hidden">
             <summary className="cursor-pointer list-none rounded-xl bg-primary/10 px-3 py-3 text-sm font-bold text-ink marker:hidden">
-              <span aria-hidden="true">☰ </span>{locale === 'ar' ? 'أقسام الإدارة' : 'Admin sections'}
-              <span className="float-end text-muted" aria-hidden="true">⌄</span>
+              <span aria-hidden="true">☰ </span>
+              {locale === 'ar' ? 'أقسام الإدارة' : 'Admin sections'}
+              <span className="float-end text-muted" aria-hidden="true">
+                ⌄
+              </span>
             </summary>
-            <div className="pt-4"><AdminNavigation locale={locale} roles={user.roles} /></div>
+            <div className="pt-4">
+              <AdminNavigation locale={locale} roles={user.roles} />
+            </div>
           </details>
-          <div className="hidden lg:block"><AdminNavigation locale={locale} roles={user.roles} /></div>
+          <div className="hidden lg:block">
+            <AdminNavigation locale={locale} roles={user.roles} />
+          </div>
         </aside>
-        <main id="admin-content" className="min-w-0 space-y-6">{children}</main>
+        <main id="admin-content" className="min-w-0 space-y-6">
+          {children}
+        </main>
       </div>
     </div>
   );

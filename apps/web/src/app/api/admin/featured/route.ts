@@ -45,11 +45,17 @@ export async function POST(request: Request) {
 
 function applyFeatured(db: DemoDb, actor: SessionUser, input: z.infer<typeof schema>) {
   if (input.action === 'schedule') {
-    const item = db.featuredSlots.find((entry) => entry.slot === input.slot && entry.entityType === input.entityType && entry.entityId === input.entityId);
+    const item = db.featuredSlots.find(
+      (entry) =>
+        entry.slot === input.slot &&
+        entry.entityType === input.entityType &&
+        entry.entityId === input.entityId,
+    );
     if (!item) throw new Error('Featured item not found');
     const start = input.startAt ? Date.parse(input.startAt) : null;
     const end = input.endAt ? Date.parse(input.endAt) : null;
-    if (start !== null && end !== null && start >= end) throw new Error('End date must be later than start date');
+    if (start !== null && end !== null && start >= end)
+      throw new Error('End date must be later than start date');
     item.startAt = input.startAt ?? null;
     item.endAt = input.endAt ?? null;
     audit(db, actor, 'featured.scheduled', input.entityType, input.entityId);
@@ -59,13 +65,18 @@ function applyFeatured(db: DemoDb, actor: SessionUser, input: z.infer<typeof sch
     setFeatured(db, actor, { ...input, action: input.action });
     return;
   }
-  const siblings = db.featuredSlots.filter((item) => item.slot === input.slot)
+  const siblings = db.featuredSlots
+    .filter((item) => item.slot === input.slot)
     .sort((a, b) => a.rank - b.rank || a.id.localeCompare(b.id));
-  const index = siblings.findIndex((item) => item.entityType === input.entityType && item.entityId === input.entityId);
+  const index = siblings.findIndex(
+    (item) => item.entityType === input.entityType && item.entityId === input.entityId,
+  );
   if (index < 0) throw new Error('Featured item not found');
   const target = index + (input.action === 'move_up' ? -1 : 1);
   if (target < 0 || target >= siblings.length) return;
   [siblings[index], siblings[target]] = [siblings[target]!, siblings[index]!];
-  siblings.forEach((item, rank) => { item.rank = rank; });
+  siblings.forEach((item, rank) => {
+    item.rank = rank;
+  });
   audit(db, actor, 'featured.reordered', input.entityType, input.entityId);
 }

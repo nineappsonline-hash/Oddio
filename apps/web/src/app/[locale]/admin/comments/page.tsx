@@ -50,15 +50,39 @@ export default async function AdminCommentsPage({
   const trackTitle = new Map(db.tracks.map((track) => [track.id, track.title]));
   const q = (filters.q ?? '').trim().toLocaleLowerCase();
   const status = filters.status ?? 'all';
-  const comments = data.comments.filter((comment) => (status === 'all' || comment.status === status) && (!q || [comment.body, comment.userName, trackTitle.get(comment.trackId) ?? ''].some((value) => value.toLocaleLowerCase().includes(q))));
+  const comments = data.comments.filter(
+    (comment) =>
+      (status === 'all' || comment.status === status) &&
+      (!q ||
+        [comment.body, comment.userName, trackTitle.get(comment.trackId) ?? ''].some(
+          (value) => value.toLocaleLowerCase().includes(q),
+        )),
+  );
 
   return (
     <div className="space-y-5">
       <form method="get" className="card flex flex-wrap items-end gap-3 p-5">
-        <label className="min-w-48 flex-1 text-xs text-muted">{locale === "ar" ? "بحث في التعليقات" : "Search comments"}<input name="q" defaultValue={filters.q ?? ""} className="input mt-1 w-full" /></label>
-        <label className="text-xs text-muted">{locale === "ar" ? "الحالة" : "Status"}<select name="status" defaultValue={status} className="input mt-1 min-w-40"><option value="all">All</option><option value="visible">Visible</option><option value="hidden">Hidden</option></select></label>
-        <button type="submit" className="rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white">{locale === "ar" ? "تطبيق" : "Apply"}</button>
-        <span className="text-xs text-muted">{comments.length} / {data.comments.length}</span>
+        <label className="min-w-48 flex-1 text-xs text-muted">
+          {locale === 'ar' ? 'بحث في التعليقات' : 'Search comments'}
+          <input name="q" defaultValue={filters.q ?? ''} className="input mt-1 w-full" />
+        </label>
+        <label className="text-xs text-muted">
+          {locale === 'ar' ? 'الحالة' : 'Status'}
+          <select name="status" defaultValue={status} className="input mt-1 min-w-40">
+            <option value="all">All</option>
+            <option value="visible">Visible</option>
+            <option value="hidden">Hidden</option>
+          </select>
+        </label>
+        <button
+          type="submit"
+          className="rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white"
+        >
+          {locale === 'ar' ? 'تطبيق' : 'Apply'}
+        </button>
+        <span className="text-xs text-muted">
+          {comments.length} / {data.comments.length}
+        </span>
       </form>
       {comments.length === 0 ? (
         <EmptyState title={t('admin.commentsEmpty')} />

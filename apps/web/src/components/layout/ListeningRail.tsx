@@ -81,7 +81,11 @@ export function ListeningRail() {
               type="button"
               aria-label={playing ? (ar ? 'إيقاف مؤقت' : 'Pause') : ar ? 'تشغيل' : 'Play'}
               onClick={toggle}
-              className={playing ? "oddio-rail-play" : "oddio-rail-play !border-0 !bg-transparent !p-0 !shadow-none"}
+              className={
+                playing
+                  ? 'oddio-rail-play'
+                  : 'oddio-rail-play !border-0 !bg-transparent !p-0 !shadow-none'
+              }
             >
               {playing ? (
                 <OddioGlyph name="pause" size={21} className="oddio-glyph" />

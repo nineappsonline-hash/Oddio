@@ -195,7 +195,14 @@ export function MobileNav() {
           >
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Image src="/oddio-gradient-play-logo.png" alt="Oddio" width={112} height={42} className="h-12 w-28 object-contain" priority />
+                <Image
+                  src="/oddio-gradient-play-logo.png"
+                  alt="Oddio"
+                  width={112}
+                  height={42}
+                  className="h-12 w-28 object-contain"
+                  priority
+                />
                 <h2 className="text-base font-bold text-[#ded7eb]">
                   {locale === 'ar' ? 'القائمة الرئيسية' : 'Main Menu'}
                 </h2>
@@ -298,10 +305,23 @@ export function MobileNav() {
                   key={href}
                   href={href}
                   onClick={() => setMenuOpen(false)}
-                  className={cn("flex min-h-12 items-center gap-3 rounded-xl border px-3.5 text-sm font-semibold transition", pathname === href ? "border-[#7e64b3]/60 bg-[#292139] text-white" : "border-[#35323e] bg-[#1b1b22] text-[#e9e7ef] hover:border-[#79649c] hover:bg-[#282331]")}
+                  className={cn(
+                    'flex min-h-12 items-center gap-3 rounded-xl border px-3.5 text-sm font-semibold transition',
+                    pathname === href
+                      ? 'border-[#7e64b3]/60 bg-[#292139] text-white'
+                      : 'border-[#35323e] bg-[#1b1b22] text-[#e9e7ef] hover:border-[#79649c] hover:bg-[#282331]',
+                  )}
                 >
                   <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[#4b405d] bg-[#292335] text-[#c4aceb]">
-                    {typeof Icon === 'string' ? <OddioGlyph name={Icon as OddioGlyphName} size={19} className="oddio-glyph" /> : <Icon className="h-5 w-5" />}
+                    {typeof Icon === 'string' ? (
+                      <OddioGlyph
+                        name={Icon as OddioGlyphName}
+                        size={19}
+                        className="oddio-glyph"
+                      />
+                    ) : (
+                      <Icon className="h-5 w-5" />
+                    )}
                   </span>
                   {label}
                 </Link>

@@ -40,15 +40,30 @@ export default async function AdminVerificationPage({
   const t = createTranslator(locale);
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
-  if (!user.roles.some((role) => role === 'admin' || role === 'super_admin')) redirect(`/${locale}`);
+  if (!user.roles.some((role) => role === 'admin' || role === 'super_admin'))
+    redirect(`/${locale}`);
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const data = getAdminData(db, user.roles[0]!);
   const artistName = new Map(db.artists.map((artist) => [artist.id, artist.name]));
-  const requests = [...data.pendingVerification].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const requests = [...data.pendingVerification].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
 
   return (
     <div className="space-y-5">
-      <header className="card p-5"><h2 className="text-xl font-bold text-ink">{locale === "ar" ? "طلبات توثيق الفنانين" : "Artist verification queue"}</h2><p className="mt-1 text-xs text-muted">{locale === "ar" ? "راجع الأدلة قبل الموافقة أو الرفض. الطلبات الأقدم أولًا." : "Review evidence before approving or rejecting. Oldest first."}</p><p className="mt-3 text-sm font-bold text-primary">{requests.length} {locale === "ar" ? "طلب معلق" : "pending requests"}</p></header>
+      <header className="card p-5">
+        <h2 className="text-xl font-bold text-ink">
+          {locale === 'ar' ? 'طلبات توثيق الفنانين' : 'Artist verification queue'}
+        </h2>
+        <p className="mt-1 text-xs text-muted">
+          {locale === 'ar'
+            ? 'راجع الأدلة قبل الموافقة أو الرفض. الطلبات الأقدم أولًا.'
+            : 'Review evidence before approving or rejecting. Oldest first.'}
+        </p>
+        <p className="mt-3 text-sm font-bold text-primary">
+          {requests.length} {locale === 'ar' ? 'طلب معلق' : 'pending requests'}
+        </p>
+      </header>
       {requests.length === 0 ? (
         <EmptyState title={t('admin.noVerification')} />
       ) : (
@@ -62,7 +77,13 @@ export default async function AdminVerificationPage({
                 {request.evidence} · {formatDate(request.createdAt, locale)}
               </p>
             </div>
-            {Date.now() - new Date(request.createdAt).getTime() >= 48 * 3600000 && <p className="text-xs font-bold text-amber-300">{locale === 'ar' ? 'الطلب منتظر أكثر من 48 ساعة' : 'Waiting over 48 hours'}</p>}
+            {Date.now() - new Date(request.createdAt).getTime() >= 48 * 3600000 && (
+              <p className="text-xs font-bold text-amber-300">
+                {locale === 'ar'
+                  ? 'الطلب منتظر أكثر من 48 ساعة'
+                  : 'Waiting over 48 hours'}
+              </p>
+            )}
             <AdminVerificationActions requestId={request.id} />
           </article>
         ))

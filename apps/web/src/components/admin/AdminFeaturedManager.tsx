@@ -36,7 +36,9 @@ export function AdminFeaturedManager({
   const router = useRouter();
   const params = useParams();
   const ar = params.locale === 'ar';
-  const [statusFilter, setStatusFilter] = useState<'all' | 'scheduled' | 'active' | 'expired'>('all');
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'scheduled' | 'active' | 'expired'
+  >('all');
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     const refresh = () => setNow(Date.now());
@@ -51,34 +53,58 @@ export function AdminFeaturedManager({
     return 'active';
   };
   const statusLabel = (status: 'scheduled' | 'active' | 'expired') =>
-    ar ? ({ scheduled: 'مجدول', active: 'نشط', expired: 'منتهي' }[status]) :
-      ({ scheduled: 'Scheduled', active: 'Active', expired: 'Expired' }[status]);
+    ar
+      ? { scheduled: 'مجدول', active: 'نشط', expired: 'منتهي' }[status]
+      : { scheduled: 'Scheduled', active: 'Active', expired: 'Expired' }[status];
   const { toast } = useToast();
   const [slot, setSlot] = useState<'hero' | 'editorial' | 'playlist'>('hero');
   const [entityType, setEntityType] = useState<'track' | 'playlist'>('track');
   const [entityId, setEntityId] = useState(tracks[0]?.id ?? '');
   const [pending, setPending] = useState(false);
-  const [schedules, setSchedules] = useState<Record<string, { start: string; end: string }>>({});
+  const [schedules, setSchedules] = useState<
+    Record<string, { start: string; end: string }>
+  >({});
   const scheduleKey = (item: Slot) => item.id;
   const toInputDate = (value?: string | null) => {
     if (!value) return '';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return '';
-    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16);
   };
   async function saveSchedule(item: Slot) {
-    const values = schedules[scheduleKey(item)] ?? { start: toInputDate(item.startAt), end: toInputDate(item.endAt) };
+    const values = schedules[scheduleKey(item)] ?? {
+      start: toInputDate(item.startAt),
+      end: toInputDate(item.endAt),
+    };
     const startMs = values.start ? new Date(values.start).getTime() : null;
     const endMs = values.end ? new Date(values.end).getTime() : null;
-    if ((startMs !== null && !Number.isFinite(startMs)) || (endMs !== null && !Number.isFinite(endMs)) || (startMs !== null && endMs !== null && startMs >= endMs)) {
-      toast(ar ? 'تأكد من صحة المواعيد وأن النهاية بعد البداية.' : 'Check the dates: end must be after start.', 'error');
+    if (
+      (startMs !== null && !Number.isFinite(startMs)) ||
+      (endMs !== null && !Number.isFinite(endMs)) ||
+      (startMs !== null && endMs !== null && startMs >= endMs)
+    ) {
+      toast(
+        ar
+          ? 'تأكد من صحة المواعيد وأن النهاية بعد البداية.'
+          : 'Check the dates: end must be after start.',
+        'error',
+      );
       return;
     }
     setPending(true);
     try {
       await apiRequest('/api/admin/featured', {
         method: 'POST',
-        body: JSON.stringify({ slot: item.slot, entityType: item.entityType, entityId: item.entityId, action: 'schedule', startAt: startMs === null ? null : new Date(startMs).toISOString(), endAt: endMs === null ? null : new Date(endMs).toISOString() }),
+        body: JSON.stringify({
+          slot: item.slot,
+          entityType: item.entityType,
+          entityId: item.entityId,
+          action: 'schedule',
+          startAt: startMs === null ? null : new Date(startMs).toISOString(),
+          endAt: endMs === null ? null : new Date(endMs).toISOString(),
+        }),
       });
       toast(t('admin.featuredUpdated'), 'success');
       router.refresh();
@@ -93,9 +119,15 @@ export function AdminFeaturedManager({
   const orderedSlots = [...slots]
     .filter((item) => statusFilter === 'all' || statusFor(item) === statusFilter)
     .sort((a, b) => a.slot.localeCompare(b.slot) || a.rank - b.rank);
-  const allOrderedSlots = [...slots].sort((a, b) => a.slot.localeCompare(b.slot) || a.rank - b.rank);
+  const allOrderedSlots = [...slots].sort(
+    (a, b) => a.slot.localeCompare(b.slot) || a.rank - b.rank,
+  );
 
-  async function update(targetSlot: Slot, action: 'add' | 'remove' | 'move_up' | 'move_down', targetId: string) {
+  async function update(
+    targetSlot: Slot,
+    action: 'add' | 'remove' | 'move_up' | 'move_down',
+    targetId: string,
+  ) {
     setPending(true);
     try {
       await apiRequest('/api/admin/featured', {
@@ -190,10 +222,23 @@ export function AdminFeaturedManager({
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">
           {t('admin.featured')}
         </h2>
-        <div className="mb-4 flex flex-wrap gap-2" aria-label={ar ? 'تصفية حالة الحملات' : 'Filter campaign status'}>
+        <div
+          className="mb-4 flex flex-wrap gap-2"
+          aria-label={ar ? 'تصفية حالة الحملات' : 'Filter campaign status'}
+        >
           {(['all', 'scheduled', 'active', 'expired'] as const).map((status) => (
-            <button key={status} type="button" aria-pressed={statusFilter === status} onClick={() => setStatusFilter(status)} className={`rounded-lg border px-3 py-1.5 text-xs ${statusFilter === status ? 'border-primary bg-primary/15 text-ink' : 'border-white/10 text-muted'}`}>
-              {status === 'all' ? (ar ? 'الكل' : 'All') : statusLabel(status)} ({status === 'all' ? slots.length : slots.filter((item) => statusFor(item) === status).length})
+            <button
+              key={status}
+              type="button"
+              aria-pressed={statusFilter === status}
+              onClick={() => setStatusFilter(status)}
+              className={`rounded-lg border px-3 py-1.5 text-xs ${statusFilter === status ? 'border-primary bg-primary/15 text-ink' : 'border-white/10 text-muted'}`}
+            >
+              {status === 'all' ? (ar ? 'الكل' : 'All') : statusLabel(status)} (
+              {status === 'all'
+                ? slots.length
+                : slots.filter((item) => statusFor(item) === status).length}
+              )
             </button>
           ))}
         </div>
@@ -208,27 +253,92 @@ export function AdminFeaturedManager({
               >
                 <span className="min-w-0 text-xs">
                   <Badge tone="primary">{item.slot}</Badge>
-                  <span className="ms-2 rounded-md border border-white/15 px-2 py-0.5 text-[10px] font-semibold text-muted">{statusLabel(statusFor(item))}</span>
+                  <span className="ms-2 rounded-md border border-white/15 px-2 py-0.5 text-[10px] font-semibold text-muted">
+                    {statusLabel(statusFor(item))}
+                  </span>
                   <span className="ms-2 truncate text-ink">
                     {labels[item.entityId] ?? item.entityId}
                   </span>
                 </span>
                 <div className="flex shrink-0 items-center gap-1">
-                <Button size="sm" variant="ghost" onClick={() => update(item, 'move_up', item.entityId)} loading={pending} disabled={allOrderedSlots.filter((entry) => entry.slot === item.slot)[0]?.id === item.id} aria-label={ar ? "نقل العنصر لأعلى" : "Move featured item up"}>↑</Button>
-                <Button size="sm" variant="ghost" onClick={() => update(item, 'move_down', item.entityId)} loading={pending} disabled={orderedSlots.filter((entry) => entry.slot === item.slot).at(-1)?.id === item.id} aria-label={ar ? "نقل العنصر لأسفل" : "Move featured item down"}>↓</Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => update(item, 'remove', item.entityId)}
-                  loading={pending}
-                >
-                  {t('admin.removeFeatured')}
-                </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => update(item, 'move_up', item.entityId)}
+                    loading={pending}
+                    disabled={
+                      allOrderedSlots.filter((entry) => entry.slot === item.slot)[0]
+                        ?.id === item.id
+                    }
+                    aria-label={ar ? 'نقل العنصر لأعلى' : 'Move featured item up'}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => update(item, 'move_down', item.entityId)}
+                    loading={pending}
+                    disabled={
+                      orderedSlots.filter((entry) => entry.slot === item.slot).at(-1)
+                        ?.id === item.id
+                    }
+                    aria-label={ar ? 'نقل العنصر لأسفل' : 'Move featured item down'}
+                  >
+                    ↓
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => update(item, 'remove', item.entityId)}
+                    loading={pending}
+                  >
+                    {t('admin.removeFeatured')}
+                  </Button>
                 </div>
                 <div className="flex w-full flex-wrap items-end gap-2 border-t border-white/10 pt-2">
-                  <label className="text-xs text-muted">{ar ? "البداية (التوقيت المحلي)" : "Start (local)"}<input type="datetime-local" className="input mt-1 block" value={(schedules[item.id]?.start ?? toInputDate(item.startAt))} onChange={(event) => setSchedules((prev) => ({ ...prev, [item.id]: { start: event.target.value, end: prev[item.id]?.end ?? toInputDate(item.endAt) } }))} /></label>
-                  <label className="text-xs text-muted">{ar ? "النهاية (التوقيت المحلي)" : "End (local)"}<input type="datetime-local" className="input mt-1 block" value={(schedules[item.id]?.end ?? toInputDate(item.endAt))} onChange={(event) => setSchedules((prev) => ({ ...prev, [item.id]: { start: prev[item.id]?.start ?? toInputDate(item.startAt), end: event.target.value } }))} /></label>
-                  <Button size="sm" variant="ghost" onClick={() => saveSchedule(item)} loading={pending}>{ar ? "حفظ الجدولة" : "Save schedule"}</Button>
+                  <label className="text-xs text-muted">
+                    {ar ? 'البداية (التوقيت المحلي)' : 'Start (local)'}
+                    <input
+                      type="datetime-local"
+                      className="input mt-1 block"
+                      value={schedules[item.id]?.start ?? toInputDate(item.startAt)}
+                      onChange={(event) =>
+                        setSchedules((prev) => ({
+                          ...prev,
+                          [item.id]: {
+                            start: event.target.value,
+                            end: prev[item.id]?.end ?? toInputDate(item.endAt),
+                          },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label className="text-xs text-muted">
+                    {ar ? 'النهاية (التوقيت المحلي)' : 'End (local)'}
+                    <input
+                      type="datetime-local"
+                      className="input mt-1 block"
+                      value={schedules[item.id]?.end ?? toInputDate(item.endAt)}
+                      onChange={(event) =>
+                        setSchedules((prev) => ({
+                          ...prev,
+                          [item.id]: {
+                            start: prev[item.id]?.start ?? toInputDate(item.startAt),
+                            end: event.target.value,
+                          },
+                        }))
+                      }
+                    />
+                  </label>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => saveSchedule(item)}
+                    loading={pending}
+                  >
+                    {ar ? 'حفظ الجدولة' : 'Save schedule'}
+                  </Button>
                 </div>
               </li>
             ))

@@ -23,7 +23,11 @@ const schema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(8).max(200),
   displayName: z.string().trim().min(1).max(80),
-  handle: z.string().trim().toLowerCase().regex(/^[a-z0-9_](?:[a-z0-9_.-]{1,28}[a-z0-9_])?$/),
+  handle: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z0-9_](?:[a-z0-9_.-]{1,28}[a-z0-9_])?$/),
 });
 
 export async function POST(request: Request) {
@@ -33,7 +37,8 @@ export async function POST(request: Request) {
     const input = await parseBody(request, schema);
 
     if (demoMode) {
-      if (readDb().users.some((user) => user.handle.toLowerCase() === input.handle)) throw Errors.conflict('Username already taken.');
+      if (readDb().users.some((user) => user.handle.toLowerCase() === input.handle))
+        throw Errors.conflict('Username already taken.');
       const existing = findUserByEmail(readDb(), input.email);
       if (existing) throw Errors.conflict('An account with this email already exists.');
       const result = mutateDb((db) => {
@@ -76,7 +81,11 @@ export async function POST(request: Request) {
 
     const supabase = await getSupabaseServer();
     if (!supabase) throw Errors.server('Authentication is not configured');
-    const { data: existingUsername, error: usernameError } = await supabase.from('profiles').select('handle').eq('handle', input.handle).limit(1);
+    const { data: existingUsername, error: usernameError } = await supabase
+      .from('profiles')
+      .select('handle')
+      .eq('handle', input.handle)
+      .limit(1);
     if (usernameError) throw Errors.server('Could not verify username availability.');
     if (existingUsername?.length) throw Errors.conflict('Username already taken.');
     const { error } = await supabase.auth.signUp({

@@ -28,7 +28,10 @@ export async function POST(
     const { id } = await context.params;
     const input = await parseBody(request, schema);
     let verification;
-    if (demoMode) verification = mutateDb((db) => decideVerification(db, user, id, input.decision, input.notes));
+    if (demoMode)
+      verification = mutateDb((db) =>
+        decideVerification(db, user, id, input.decision, input.notes),
+      );
     else {
       const before = await loadDbFromSupabase();
       const after = structuredClone(before);

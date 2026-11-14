@@ -37,7 +37,8 @@ export default async function AdminFeaturedPage({
   const locale = raw;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
-  if (!user.roles.some((role) => role === 'admin' || role === 'super_admin')) redirect(`/${locale}`);
+  if (!user.roles.some((role) => role === 'admin' || role === 'super_admin'))
+    redirect(`/${locale}`);
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const data = getAdminData(db, user.roles[0]!);
   const tracks = db.tracks
@@ -54,13 +55,26 @@ export default async function AdminFeaturedPage({
 
   return (
     <div className="space-y-5">
-      <header className="card p-5"><h1 className="text-xl font-bold text-ink">{locale === 'ar' ? 'إدارة المحتوى المميز' : 'Featured & editorial content'}</h1><p className="mt-2 text-sm text-muted">{locale === 'ar' ? 'اختَر الأغاني وقوائم التشغيل التي تظهر في أقسام العرض المميزة. التغييرات تُحفظ في قاعدة بيانات الإنتاج.' : 'Manage highlighted tracks and playlists. Changes are saved to the production database.'}</p><p className="mt-2 text-xs text-muted">{data.featuredSlots.length} {locale === 'ar' ? 'عنصر مميز حاليًا' : 'current featured placements'}</p></header>
+      <header className="card p-5">
+        <h1 className="text-xl font-bold text-ink">
+          {locale === 'ar' ? 'إدارة المحتوى المميز' : 'Featured & editorial content'}
+        </h1>
+        <p className="mt-2 text-sm text-muted">
+          {locale === 'ar'
+            ? 'اختَر الأغاني وقوائم التشغيل التي تظهر في أقسام العرض المميزة. التغييرات تُحفظ في قاعدة بيانات الإنتاج.'
+            : 'Manage highlighted tracks and playlists. Changes are saved to the production database.'}
+        </p>
+        <p className="mt-2 text-xs text-muted">
+          {data.featuredSlots.length}{' '}
+          {locale === 'ar' ? 'عنصر مميز حاليًا' : 'current featured placements'}
+        </p>
+      </header>
       <AdminFeaturedManager
-      slots={data.featuredSlots}
-      tracks={tracks}
-      playlists={playlists}
-      labels={labels}
-    />
+        slots={data.featuredSlots}
+        tracks={tracks}
+        playlists={playlists}
+        labels={labels}
+      />
     </div>
   );
 }

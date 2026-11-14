@@ -51,7 +51,9 @@ export async function generateMetadata({
     description,
     applicationName: 'Oddio',
     icons: {
-      icon: [{ url: '/glossy-gradient-play-loop-logo.png', type: 'image/png', sizes: 'any' }],
+      icon: [
+        { url: '/glossy-gradient-play-loop-logo.png', type: 'image/png', sizes: 'any' },
+      ],
       shortcut: '/glossy-gradient-play-loop-logo.png',
       apple: '/glossy-gradient-play-loop-logo.png',
     },
