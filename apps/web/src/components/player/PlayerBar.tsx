@@ -61,7 +61,7 @@ export function PlayerBar() {
         <div className="oddio-idle-controls" aria-hidden="true">
           <OddioGlyph name="previous" size={20} />
           <span className="oddio-idle-play">
-            <OddioPlayIcon size={48} />
+            <OddioPlayIcon size={72} />
           </span>
           <OddioGlyph name="next" size={20} />
         </div>
@@ -180,12 +180,12 @@ export function PlayerBar() {
               onClick={toggle}
               aria-label={isPlaying ? t('common.pause') : t('common.play')}
               title={isPlaying ? t('common.pause') : t('common.play')}
-              className={isPlaying ? "flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] transition" : "flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition hover:scale-105"}
+              className={isPlaying ? "flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] transition" : "flex h-[88px] w-[88px] shrink-0 items-center justify-center rounded-full bg-transparent transition hover:scale-105"}
             >
               {isPlaying ? (
                 <OddioGlyph name="pause" size={21} className="oddio-glyph" />
               ) : (
-                <OddioPlayIcon size={60} />
+                <OddioPlayIcon size={90} />
               )}
             </button>
             <button
