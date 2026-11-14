@@ -103,7 +103,9 @@ export default async function DiscoverPage({
               {locale === 'ar' ? 'استكشف عالم الموسيقى' : 'EXPLORE THE SOUND MAP'}
             </p>
             <h2 className="mt-1 text-xl font-bold text-ink sm:text-2xl">
-              {locale === 'ar' ? 'اختار نوع الموسيقى اللي بتحبه' : 'Browse by music family'}
+              {locale === 'ar'
+                ? 'اختار نوع الموسيقى اللي بتحبه'
+                : 'Browse by music family'}
             </h2>
           </div>
           <p className="text-xs text-muted">
@@ -116,7 +118,11 @@ export default async function DiscoverPage({
           {genreFamilies.map((family, index) => (
             <details
               key={family.id}
-              open={query.genre ? family.genres.some((genre) => genre.slug === query.genre) : undefined}
+              open={
+                query.genre
+                  ? family.genres.some((genre) => genre.slug === query.genre)
+                  : undefined
+              }
               className="group/family min-w-0 self-start overflow-hidden rounded-2xl border border-[#343434] bg-[#191919] transition-colors open:border-[#747474] hover:border-[#585858]"
             >
               <summary className="flex min-h-[112px] cursor-pointer list-none items-start justify-between gap-3 p-4 marker:hidden [&::-webkit-details-marker]:hidden">
@@ -135,7 +141,10 @@ export default async function DiscoverPage({
                   <span className="rounded-full border border-[#454545] bg-[#2a2a2a] px-2 py-1 text-[11px] font-bold text-white">
                     {family.genres.length}
                   </span>
-                  <span aria-hidden="true" className="text-lg text-[#d7d7d7] transition-transform group-open/family:rotate-45">
+                  <span
+                    aria-hidden="true"
+                    className="text-lg text-[#d7d7d7] transition-transform group-open/family:rotate-45"
+                  >
                     +
                   </span>
                 </span>
