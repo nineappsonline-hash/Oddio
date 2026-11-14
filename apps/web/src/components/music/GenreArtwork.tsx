@@ -122,18 +122,18 @@ export function GenreArtwork({ slug }: Props) {
       aria-hidden="true"
       className="absolute inset-0 overflow-hidden"
       style={{
-        background: `radial-gradient(ellipse at 72% 25%, hsl(${(hue + 65) % 360} 70% 44% / .65), transparent 58%), linear-gradient(140deg, hsl(${hue} 63% 35%), #090817)`,
+        background: photo
+          ? `url("${photo}") center / cover no-repeat`
+          : `radial-gradient(ellipse at 72% 25%, hsl(${(hue + 65) % 360} 70% 44% / .65), transparent 58%), linear-gradient(140deg, hsl(${hue} 63% 35%), #090817)`,
       }}
     >
-      <div className="absolute -right-8 -top-10 h-44 w-44 rounded-full border-[18px] border-white/10 rotate-12" />
-      <div className="absolute left-4 top-3 text-[110px] leading-none opacity-60 drop-shadow-[0_8px_25px_rgba(0,0,0,.5)] transition-transform duration-700 group-hover:scale-110">
-        {motif}
-      </div>
-      {photo && (
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
-          style={{ backgroundImage: `url("${photo}")` }}
-        />
+      {!photo && (
+        <>
+          <div className="absolute -right-8 -top-10 h-44 w-44 rotate-12 rounded-full border-[18px] border-white/10" />
+          <div className="absolute left-4 top-3 text-[110px] leading-none opacity-60 drop-shadow-[0_8px_25px_rgba(0,0,0,.5)]">
+            {motif}
+          </div>
+        </>
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/5" />
     </div>
