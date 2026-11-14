@@ -7,6 +7,7 @@ import { usePlayer } from '@/lib/player-store';
 import { Artwork } from '@/components/ui/Artwork';
 import { formatDuration } from '@/lib/utils';
 import { OddioGlyph } from '@/components/ui/OddioGlyph';
+import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 
 /** A real, live Now Playing / Next Up column, not static demo song names. */
 export function ListeningRail() {
@@ -80,12 +81,12 @@ export function ListeningRail() {
               type="button"
               aria-label={playing ? (ar ? 'إيقاف مؤقت' : 'Pause') : ar ? 'تشغيل' : 'Play'}
               onClick={toggle}
-              className="oddio-rail-play"
+              className={playing ? "oddio-rail-play" : "oddio-rail-play !border-0 !bg-transparent !p-0 !shadow-none"}
             >
               {playing ? (
                 <OddioGlyph name="pause" size={21} className="oddio-glyph" />
               ) : (
-                <OddioGlyph name="play" size={21} className="oddio-glyph" />
+                <OddioPlayIcon size={52} />
               )}
             </button>
             <button
