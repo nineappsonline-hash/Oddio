@@ -25,6 +25,9 @@ const groups: Group[] = [
   { en: 'PEOPLE & ACCESS', ar: 'المستخدمون والصلاحيات', items: [
     { href: '/users', en: 'Users & quotas', ar: 'المستخدمون وحصص الرفع', roles: ['admin', 'super_admin'] },
   ] },
+  { en: 'ANALYTICS', ar: 'التحليلات', items: [
+    { href: '/analytics', en: 'Platform analytics', ar: 'تحليلات المنصة', roles: ['admin', 'super_admin'] },
+  ] },
   { en: 'SYSTEM & SECURITY', ar: 'النظام والأمان', items: [
     { href: '/audit', en: 'Audit log', ar: 'سجل العمليات', roles: ['admin', 'super_admin'] },
   ] },
