@@ -14,6 +14,7 @@ import { buildMetadata } from '@/lib/seo';
 import { TrackCard } from '@/components/music/TrackCard';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { groupGenres } from '@/lib/genre-families';
 
 export async function generateMetadata({
   params,
@@ -67,6 +68,7 @@ export default async function DiscoverPage({
   const results = searchCatalog(db, viewer, query);
   const genreLabel = (item: { labelEn: string; labelAr: string }) =>
     locale === 'ar' ? item.labelAr : item.labelEn;
+  const genreFamilies = groupGenres(home.genres);
   const activeFilters = [
     query.q,
     query.genre,
@@ -92,19 +94,70 @@ export default async function DiscoverPage({
         </Link>
       </header>
       <section
-        className="oddio-explore-shortcuts"
-        aria-label={locale === 'ar' ? 'أنواع موسيقى' : 'Browse genres'}
+        className="mb-8"
+        aria-label={locale === 'ar' ? 'تصفح عائلات الموسيقى' : 'Browse genre families'}
       >
-        {home.genres.slice(0, 6).map((genre, index) => (
-          <Link
-            key={genre.id}
-            href={`/${locale}/genres/${genre.slug}`}
-            className={`oddio-explore-shortcut oddio-explore-shortcut-${index % 6}`}
-          >
-            <span>{genreLabel(genre)}</span>
-            <ArrowUpRight size={17} aria-hidden="true" />
-          </Link>
-        ))}
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="oddio-micro-label">
+              {locale === 'ar' ? 'استكشف عالم الموسيقى' : 'EXPLORE THE SOUND MAP'}
+            </p>
+            <h2 className="mt-1 text-xl font-bold text-ink sm:text-2xl">
+              {locale === 'ar' ? 'اختار نوع الموسيقى اللي بتحبه' : 'Browse by music family'}
+            </h2>
+          </div>
+          <p className="text-xs text-muted">
+            {locale === 'ar'
+              ? `${home.genres.length} نوع موسيقي`
+              : `${home.genres.length} genres to explore`}
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {genreFamilies.map((family, index) => (
+            <details
+              key={family.id}
+              open={query.genre ? family.genres.some((genre) => genre.slug === query.genre) : undefined}
+              className="group/family min-w-0 self-start overflow-hidden rounded-2xl border border-[#343434] bg-[#191919] transition-colors open:border-[#747474] hover:border-[#585858]"
+            >
+              <summary className="flex min-h-[112px] cursor-pointer list-none items-start justify-between gap-3 p-4 marker:hidden [&::-webkit-details-marker]:hidden">
+                <span className="flex min-w-0 flex-col gap-2">
+                  <span className="text-[10px] font-bold tracking-[0.19em] text-[#a5a5a5]">
+                    {String(index + 1).padStart(2, '0')} / ODDIO
+                  </span>
+                  <strong className="text-base font-extrabold leading-snug text-[#f5f5f5]">
+                    {locale === 'ar' ? family.ar : family.en}
+                  </strong>
+                  <span className="text-xs leading-relaxed text-[#a3a3a3]">
+                    {locale === 'ar' ? family.descriptionAr : family.descriptionEn}
+                  </span>
+                </span>
+                <span className="flex shrink-0 flex-col items-center gap-2">
+                  <span className="rounded-full border border-[#454545] bg-[#2a2a2a] px-2 py-1 text-[11px] font-bold text-white">
+                    {family.genres.length}
+                  </span>
+                  <span aria-hidden="true" className="text-lg text-[#d7d7d7] transition-transform group-open/family:rotate-45">
+                    +
+                  </span>
+                </span>
+              </summary>
+              <div className="flex flex-wrap gap-2 border-t border-[#343434] px-4 py-4">
+                {family.genres.map((genre) => (
+                  <Link
+                    key={genre.id}
+                    href={`/${locale}/genres/${genre.slug}`}
+                    className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[#424242] bg-[#252525] px-3 py-2 text-xs font-semibold text-[#ececec] transition hover:border-[#9c9c9c] hover:bg-[#353535] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d0f2f1]"
+                  >
+                    {genreLabel(genre)}
+                    <span className="text-[10px] font-normal text-[#b3b3b3]">
+                      {genre.count}
+                    </span>
+                    <ArrowUpRight size={12} aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
       </section>
       <div className="oddio-explore-filter-label">
         <SlidersHorizontal size={16} />
@@ -137,10 +190,14 @@ export default async function DiscoverPage({
             className="input mt-1.5 h-10"
           >
             <option value="">{t('common.all')}</option>
-            {home.genres.map((genre) => (
-              <option key={genre.id} value={genre.slug}>
-                {genreLabel(genre)}
-              </option>
+            {genreFamilies.map((family) => (
+              <optgroup key={family.id} label={locale === 'ar' ? family.ar : family.en}>
+                {family.genres.map((genre) => (
+                  <option key={genre.id} value={genre.slug}>
+                    {genreLabel(genre)}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </label>
