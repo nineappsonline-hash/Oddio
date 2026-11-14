@@ -39,6 +39,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const key = `${id}/cover.${TYPES[file.type]}`;
     const { error: uploadError } = await db.storage.from(BUCKET).upload(key, bytes, { contentType: file.type, upsert: true, cacheControl: '60' });
     if (uploadError) throw new Error(`Artwork storage failed: ${uploadError.message}`);
+    const oldKeys = ['png', 'jpg', 'webp', 'gif'].filter(ext => ext !== TYPES[file.type]).map(ext => `${id}/cover.${ext}`);
+    await db.storage.from(BUCKET).remove(oldKeys);
     const artworkUrl = `/api/studio/tracks/${id}/artwork`;
     const { error: updateError } = await db.from('tracks').update({ artwork_url: artworkUrl }).eq('id', id);
     if (updateError) throw new Error(`Unable to attach artwork: ${updateError.message}`);
