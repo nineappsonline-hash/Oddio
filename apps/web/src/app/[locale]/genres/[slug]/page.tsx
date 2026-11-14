@@ -108,7 +108,7 @@ export default async function GenrePage({
       </Link>
 
       <header className="relative isolate flex min-h-64 flex-col justify-end overflow-hidden rounded-3xl border border-white/10 bg-[#171420] p-6 sm:min-h-80 sm:p-10">
-        <GenreArtwork slug={page.genre.slug} />
+        <GenreArtwork slug={page.genre.slug} index={0} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/10" aria-hidden="true" />
         <div className="relative z-10 max-w-2xl space-y-3">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/75">
