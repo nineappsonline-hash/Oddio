@@ -7,10 +7,8 @@ import { demoMode } from '@/lib/env';
 import Link from 'next/link';
 import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { getViewer } from '@/lib/auth/session';
-import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { TrackCard } from '@/components/music/TrackCard';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -32,10 +30,12 @@ export async function generateMetadata({
   return buildMetadata({
     locale: safeLocale,
     title: label,
-    description: `${label} — ${createTranslator(safeLocale)('app.shortTagline')}`,
+    description: `${label} — Oddio music discovery`,
     path: `/genres/${slug}`,
   });
 }
+
+export const dynamic = 'force-dynamic';
 
 export default async function GenrePage({
   params,
@@ -45,42 +45,117 @@ export default async function GenrePage({
   const { locale: raw, slug } = await params;
   if (!isLocale(raw)) notFound();
   const locale = raw;
-  const t = createTranslator(locale);
+  const ar = locale === 'ar';
   const viewer = await getViewer();
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getGenrePage(db, viewer, slug);
   if (!page) notFound();
-  const label = locale === 'ar' ? page.genre.labelAr : page.genre.labelEn;
+
+  const label = ar ? page.genre.labelAr : page.genre.labelEn;
+  const all = page.tracks;
+  const byPlays = [...all].sort((a, b) => b.qualifiedPlays - a.qualifiedPlays);
+  const newest = [...all].sort(
+    (a, b) => Date.parse(b.releaseAt) - Date.parse(a.releaseAt),
+  );
+  const since = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const weeklyPlays = new Map<string, number>();
+  for (const event of db.playbackEvents) {
+    if (!event.qualified || Date.parse(event.occurredAt) < since) continue;
+    weeklyPlays.set(event.trackId, (weeklyPlays.get(event.trackId) ?? 0) + 1);
+  }
+  const trending = [...all]
+    .filter((track) => (weeklyPlays.get(track.id) ?? 0) > 0)
+    .sort(
+      (a, b) =>
+        (weeklyPlays.get(b.id) ?? 0) - (weeklyPlays.get(a.id) ?? 0) ||
+        b.qualifiedPlays - a.qualifiedPlays,
+    )
+    .slice(0, 5);
+  const artists = new Set(all.map((track) => track.artistId)).size;
+
+  const section = (
+    id: string,
+    title: string,
+    subtitle: string,
+    tracks: typeof all,
+  ) => (
+    <section id={id} className="space-y-4 scroll-mt-24">
+      <div>
+        <h2 className="text-xl font-black tracking-tight text-ink sm:text-2xl">{title}</h2>
+        <p className="mt-1 text-sm text-muted">{subtitle}</p>
+      </div>
+      {tracks.length ? (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {tracks.map((track) => (
+            <TrackCard key={track.id} track={track} queue={tracks} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-7 text-sm text-muted">
+          {ar ? 'مفيش أغاني في القسم ده حاليًا.' : 'No tracks in this section yet.'}
+        </div>
+      )}
+    </section>
+  );
 
   return (
-    <div>
-      <Link href={`/${locale}/genres`} className="mb-5 inline-block text-sm font-semibold text-primary hover:underline">← {locale === 'ar' ? 'كل الأنواع الموسيقية' : 'All genres'}</Link>
-      <div className="relative mb-6 h-40 overflow-hidden rounded-2xl border border-white/10 sm:h-52"><GenreArtwork slug={page.genre.slug} /><div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" /></div>
-      <PageHeader
-        eyebrow={t('discover.genre')}
-        title={label}
-        subtitle={t('discover.results', { count: String(page.tracks.length) })}
-      />
-      {page.tracks.length === 0 ? (
-        <EmptyState title={t('discover.empty')} />
+    <div className="space-y-9 pb-12">
+      <Link
+        href={`/${locale}/genres`}
+        className="inline-flex text-sm font-semibold text-primary hover:underline"
+      >
+        {ar ? '← كل أنواع الموسيقى' : '← All genres'}
+      </Link>
+
+      <header className="relative isolate flex min-h-64 flex-col justify-end overflow-hidden rounded-3xl border border-white/10 bg-[#171420] p-6 sm:min-h-80 sm:p-10">
+        <GenreArtwork slug={page.genre.slug} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/10" aria-hidden="true" />
+        <div className="relative z-10 max-w-2xl space-y-3">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/75">
+            {ar ? 'اكتشف النوع الموسيقي' : 'EXPLORE THE SOUND'}
+          </p>
+          <h1 className="text-4xl font-black text-white drop-shadow-lg sm:text-6xl">{label}</h1>
+          <p className="text-sm text-white/80">
+            {ar ? 'اكتشف أحدث وأشهر الأغاني في النوع ده.' : 'The latest releases and most-loved tracks in one place.'}
+          </p>
+          <div className="flex flex-wrap gap-2 pt-2 text-xs font-semibold text-white">
+            <span className="rounded-full border border-white/25 bg-black/40 px-4 py-2">{all.length} {ar ? 'أغنية' : 'tracks'}</span>
+            <span className="rounded-full border border-white/25 bg-black/40 px-4 py-2">{artists} {ar ? 'فنان' : 'artists'}</span>
+          </div>
+        </div>
+      </header>
+
+      <nav aria-label={ar ? 'أقسام النوع الموسيقي' : 'Genre sections'} className="flex flex-wrap gap-2">
+        {[
+          ['trending', ar ? 'الرائج الآن' : 'Trending now'],
+          ['recent', ar ? 'أضيفت مؤخرًا' : 'Recently added'],
+          ['popular', ar ? 'الأكثر تشغيلًا' : 'Most played'],
+          ['all-tracks', ar ? 'كل الأغاني' : 'All tracks'],
+        ].map(([id, title]) => (
+          <a key={id} href={`#${id}`} className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-ink transition hover:border-primary/60 hover:bg-primary/15">
+            {title}
+          </a>
+        ))}
+      </nav>
+
+      {all.length === 0 ? (
+        <EmptyState title={ar ? 'مفيش أغاني متاحة في النوع ده لسه.' : 'No tracks available in this genre yet.'} />
       ) : (
         <>
-          <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {page.tracks.slice(0, 10).map((track) => (
-              <TrackCard key={track.id} track={track} queue={page.tracks} />
-            ))}
-          </div>
-          <div className="card divide-y divide-white/5 p-2">
-            {page.tracks.map((track, index) => (
-              <TrackRow
-                key={track.id}
-                track={track}
-                queue={page.tracks}
-                index={index}
-                locale={locale}
-              />
-            ))}
-          </div>
+          {section('trending', ar ? 'الرائج الآن' : 'Trending now', ar ? 'الأكثر استماعًا خلال آخر 7 أيام' : 'Most qualified listens in the last 7 days', trending)}
+          {section('recent', ar ? 'أضيفت مؤخرًا' : 'Recently added', ar ? 'أحدث الإصدارات في النوع ده' : 'Fresh releases from this genre', newest.slice(0, 5))}
+          {section('popular', ar ? 'الأكثر تشغيلًا' : 'Most played', ar ? 'الأعلى في إجمالي مرات الاستماع المؤهلة' : 'Ranked by all-time qualified plays', byPlays.slice(0, 5))}
+          <section id="all-tracks" className="scroll-mt-24 space-y-4">
+            <div>
+              <h2 className="text-xl font-black text-ink sm:text-2xl">{ar ? 'كل الأغاني' : 'All tracks'}</h2>
+              <p className="mt-1 text-sm text-muted">{all.length} {ar ? 'أغنية متاحة' : 'available tracks'}</p>
+            </div>
+            <div className="card divide-y divide-white/5 p-2">
+              {newest.map((track, index) => (
+                <TrackRow key={track.id} track={track} queue={newest} index={index} locale={locale} />
+              ))}
+            </div>
+          </section>
         </>
       )}
     </div>
