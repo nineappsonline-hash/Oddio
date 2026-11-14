@@ -58,15 +58,24 @@ export default async function SearchPage({
     <div className="oddio-explore-page oddio-search-page">
       <header className="oddio-explore-heading">
         <div>
-          <p className="oddio-micro-label"><SearchIcon size={14} /> {locale === 'ar' ? 'دور على صوتك' : 'DISCOVER THE UNEXPECTED'}</p>
+          <p className="oddio-micro-label">
+            <SearchIcon size={14} />{' '}
+            {locale === 'ar' ? 'دور على صوتك' : 'DISCOVER THE UNEXPECTED'}
+          </p>
           <h1>{t('search.title')}</h1>
           <p>{t('search.hint')}</p>
         </div>
         <Link href={`/${locale}/soundspace`} className="oddio-explore-mood-link">
-          <Headphones size={16} />{locale === 'ar' ? 'استكشف حسب المود' : 'Find your mood'} <ArrowUpRight size={16} />
+          <Headphones size={16} />
+          {locale === 'ar' ? 'استكشف حسب المود' : 'Find your mood'}{' '}
+          <ArrowUpRight size={16} />
         </Link>
       </header>
-      <form method="get" action={`/${locale}/search`} className="oddio-search-form mb-8 flex gap-2">
+      <form
+        method="get"
+        action={`/${locale}/search`}
+        className="oddio-search-form mb-8 flex gap-2"
+      >
         <input
           type="search"
           name="q"

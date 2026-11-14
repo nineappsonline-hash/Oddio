@@ -80,23 +80,37 @@ export default async function DiscoverPage({
     <div className="oddio-explore-page">
       <header className="oddio-explore-heading">
         <div>
-          <p className="oddio-micro-label"><Compass size={14} /> {locale === 'ar' ? 'خريطة الموسيقى' : 'THE SOUND ATLAS'}</p>
+          <p className="oddio-micro-label">
+            <Compass size={14} /> {locale === 'ar' ? 'خريطة الموسيقى' : 'THE SOUND ATLAS'}
+          </p>
           <h1>{t('discover.title')}</h1>
           <p>{t('discover.subtitle')}</p>
         </div>
         <Link href={`/${locale}/soundspace`} className="oddio-explore-mood-link">
-          {locale === 'ar' ? 'موسيقى على مزاجك' : 'Explore your mood'} <ArrowUpRight size={16} />
+          {locale === 'ar' ? 'موسيقى على مزاجك' : 'Explore your mood'}{' '}
+          <ArrowUpRight size={16} />
         </Link>
       </header>
-      <section className="oddio-explore-shortcuts" aria-label={locale === 'ar' ? 'أنواع موسيقى' : 'Browse genres'}>
+      <section
+        className="oddio-explore-shortcuts"
+        aria-label={locale === 'ar' ? 'أنواع موسيقى' : 'Browse genres'}
+      >
         {home.genres.slice(0, 6).map((genre, index) => (
-          <Link key={genre.id} href={`/${locale}/genres/${genre.slug}`} className={`oddio-explore-shortcut oddio-explore-shortcut-${index % 6}`}>
-            <span>{genreLabel(genre)}</span><ArrowUpRight size={17} aria-hidden="true" />
+          <Link
+            key={genre.id}
+            href={`/${locale}/genres/${genre.slug}`}
+            className={`oddio-explore-shortcut oddio-explore-shortcut-${index % 6}`}
+          >
+            <span>{genreLabel(genre)}</span>
+            <ArrowUpRight size={17} aria-hidden="true" />
           </Link>
         ))}
       </section>
-      <div className="oddio-explore-filter-label"><SlidersHorizontal size={16} />
-        <span>{locale === 'ar' ? 'فلتر الموسيقى حسب اختيارك' : 'REFINE YOUR DISCOVERY'}</span>
+      <div className="oddio-explore-filter-label">
+        <SlidersHorizontal size={16} />
+        <span>
+          {locale === 'ar' ? 'فلتر الموسيقى حسب اختيارك' : 'REFINE YOUR DISCOVERY'}
+        </span>
       </div>
 
       <form
