@@ -177,7 +177,7 @@ export function FullPlayer() {
 
   return (
     <div
-      className="fixed inset-0 z-[60] overflow-y-auto bg-background scroll-thin"
+      className="fixed inset-0 z-[60] w-full max-w-full overflow-x-clip overflow-y-auto overscroll-x-none bg-background scroll-thin"
       role="dialog"
       aria-modal="true"
       aria-label={t('player.fullPlayer')}
@@ -198,7 +198,7 @@ export function FullPlayer() {
           {controlNotice}
         </div>
       ) : null}
-      <div className="relative mx-auto max-w-6xl px-4 py-5 sm:px-8 sm:py-8">
+      <div className="relative mx-auto w-full min-w-0 max-w-6xl overflow-x-clip px-4 py-5 sm:px-8 sm:py-8">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-muted">
             <ListMusic className="h-4 w-4" />
@@ -215,8 +215,8 @@ export function FullPlayer() {
           </button>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-          <div>
+        <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <div className="min-w-0">
             <div className="relative mx-auto max-w-[min(100%,44vh)] sm:max-w-md lg:max-w-md">
               <div
                 aria-hidden="true"
@@ -278,7 +278,7 @@ export function FullPlayer() {
                 />
               </div>
             </div>
-            <div className="mt-6 flex items-start justify-between gap-4">
+            <div className="mt-6 flex min-w-0 items-start justify-between gap-2 sm:gap-4">
               <div className="min-w-0">
                 <h1 className="truncate text-2xl font-black tracking-tight text-ink sm:text-3xl">
                   {track.title}
@@ -354,7 +354,7 @@ export function FullPlayer() {
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-center gap-3 sm:gap-5">
+            <div className="mt-4 flex min-w-0 items-center justify-center gap-1 sm:gap-5">
               <button
                 type="button"
                 onClick={() => {
