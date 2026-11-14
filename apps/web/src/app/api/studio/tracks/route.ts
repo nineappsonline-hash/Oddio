@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         403,
       );
     }
-    rateLimit(`upload:${user.id}`, 12, 60 * 60_000);
+    rateLimit(`upload:${user.id}`, 120, 60 * 60_000);
 
     const form = await request.formData();
     assertUploadAttestations({
