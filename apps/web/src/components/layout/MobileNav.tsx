@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import {
   Bell,
@@ -190,14 +191,12 @@ export function MobileNav() {
             role="dialog"
             aria-modal="true"
             aria-label={locale === 'ar' ? 'القائمة' : 'Menu'}
-            className="absolute inset-y-0 start-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-e border-[#eab9972c] bg-[#151515] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
+            className="absolute inset-y-0 start-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-e border-[#604b83]/50 bg-[#101015] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
           >
             <div className="mb-5 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#eab997]">
-                  ODDIO
-                </p>
-                <h2 className="text-xl font-black text-white">
+              <div className="flex items-center gap-3">
+                <Image src="/oddio-gradient-play-logo.png" alt="Oddio" width={112} height={42} className="h-12 w-28 object-contain" priority />
+                <h2 className="text-base font-bold text-[#ded7eb]">
                   {locale === 'ar' ? 'القائمة الرئيسية' : 'Main Menu'}
                 </h2>
               </div>
@@ -215,7 +214,7 @@ export function MobileNav() {
                 prefetch={false}
                 href={`/${locale}/apply/artist`}
                 onClick={() => setMenuOpen(false)}
-                className="mb-4 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-400 to-fuchsia-500 px-4 py-4 font-black text-[#241029] shadow-[0_8px_30px_rgba(244,114,182,0.25)]"
+                className="mb-4 flex items-center gap-3 rounded-2xl border border-[#8461b8]/60 bg-gradient-to-r from-[#38264f] via-[#29203f] to-[#15384a] px-4 py-4 font-bold text-white shadow-[0_8px_26px_rgba(90,54,156,0.22)] transition hover:border-[#b29be1] hover:brightness-125"
               >
                 <Mic2 className="h-6 w-6" />
                 <span className="flex-1">
@@ -230,7 +229,7 @@ export function MobileNav() {
                 {
                   href: `/${locale}/discover`,
                   label: t('nav.discover'),
-                  icon: 'soundspace',
+                  icon: 'discover',
                 },
                 {
                   href: `/${locale}/soundspace`,
@@ -240,7 +239,7 @@ export function MobileNav() {
                 {
                   href: `/${locale}/charts`,
                   label: t('nav.charts'),
-                  icon: BarChart3,
+                  icon: 'charts',
                 },
                 {
                   href: `/${locale}/search`,
@@ -299,9 +298,11 @@ export function MobileNav() {
                   key={href}
                   href={href}
                   onClick={() => setMenuOpen(false)}
-                  className="flex min-h-12 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-semibold text-white transition hover:border-fuchsia-400/40 hover:bg-white/10"
+                  className={cn("flex min-h-12 items-center gap-3 rounded-xl border px-3.5 text-sm font-semibold transition", pathname === href ? "border-[#7e64b3]/60 bg-[#292139] text-white" : "border-[#35323e] bg-[#1b1b22] text-[#e9e7ef] hover:border-[#79649c] hover:bg-[#282331]")}
                 >
-                  <Icon className="h-5 w-5 text-fuchsia-300" />
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[#4b405d] bg-[#292335] text-[#c4aceb]">
+                    {typeof Icon === 'string' ? <OddioGlyph name={Icon as OddioGlyphName} size={19} className="oddio-glyph" /> : <Icon className="h-5 w-5" />}
+                  </span>
                   {label}
                 </Link>
               ))}
@@ -314,7 +315,7 @@ export function MobileNav() {
                 prefetch={false}
                 href={`/${locale}/login`}
                 onClick={() => setMenuOpen(false)}
-                className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-sm font-black text-white shadow-lg"
+                className="oddio-login-cta mt-4 flex min-h-12 items-center justify-center gap-2 rounded-xl text-sm font-black text-white"
               >
                 <LogIn className="h-4 w-4" />
                 {t('nav.login')}
