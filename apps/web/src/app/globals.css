@@ -1670,7 +1670,9 @@ body {
   }
 }
 @media (min-width: 1320px) {
-  .oddio-workspace { padding-inline-end: 300px; }
+  .oddio-workspace {
+    padding-inline-end: 300px;
+  }
   .oddio-listening-rail {
     display: block;
   }
