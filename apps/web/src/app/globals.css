@@ -2262,13 +2262,15 @@ body {
   }
 }
 
-/* A single cool accent for account entry, distinct from the artist's gold CTA. */
+/* Login CTA: restrained violet-to-cyan glow matching the Oddio logo. */
 .oddio-topbar .oddio-topbar-account,
 .oddio-login-cta {
-  color: #102529;
-  background: linear-gradient(125deg, #d0f2f1 0%, #a2d9d7 55%, #7cb9c2 100%);
-  border: 1px solid #d9f8f2;
-  box-shadow: 0 3px 14px rgba(126, 189, 193, 0.18);
+  color: #f9f6ff;
+  background: linear-gradient(115deg, #55318a 0%, #493b93 50%, #18617a 100%);
+  border: 1px solid #9679d1;
+  border-radius: 13px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 5px 18px rgba(99,63,172,.22);
+  transition: background .2s ease, box-shadow .2s ease, transform .2s ease, border-color .2s ease;
 }
 .oddio-topbar .oddio-topbar-account {
   min-width: 105px;
@@ -2279,13 +2281,15 @@ body {
 }
 .oddio-topbar .oddio-topbar-account:hover,
 .oddio-login-cta:hover {
-  color: #091d20;
-  background: linear-gradient(125deg, #edfffd 0%, #beece9 55%, #95ced1 100%);
-  box-shadow: 0 5px 20px rgba(126, 189, 193, 0.26);
+  color: #fff;
+  background: linear-gradient(115deg, #7045ac 0%, #5d4ab3 50%, #207b96 100%);
+  border-color: #b6a0ee;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 7px 23px rgba(111,75,195,.35);
+  transform: translateY(-1px);
 }
 .oddio-topbar .oddio-topbar-account:focus-visible,
 .oddio-login-cta:focus-visible {
-  outline: 3px solid #e6fffc;
+  outline: 3px solid #b6a0ee;
   outline-offset: 3px;
 }
 
