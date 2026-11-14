@@ -1,0 +1,33 @@
+name: Temporary Oddio search design formatting
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  normalize:
+    if: github.repository == 'jimmydodo/oddio' && github.head_ref == 'design/oddio-editorial-layout-v9' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: design/oddio-editorial-layout-v9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format search, discovery and dashboard smoke
+        run: |
+          npx prettier --write 'apps/web/src/app/[locale]/discover/page.tsx' 'apps/web/src/app/[locale]/search/page.tsx' 'apps/web/src/app/globals.css' scripts/browser-release.mjs
+          npm run format:check
+      - name: Commit reviewed formatting corrections
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if ! git diff --cached --quiet; then
+            git commit -m "style: normalize dashboard search and discovery"
+            git push origin HEAD:design/oddio-editorial-layout-v9
+          fi
