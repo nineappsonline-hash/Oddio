@@ -28,19 +28,7 @@ export function Logo({ locale, compact = false }: { locale: string; compact?: bo
       className="group/logo inline-flex items-center gap-3"
       aria-label="Oddio"
     >
-      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center">
-        <Image src="/oddio-gradient-play-logo.png" alt="Oddio" width={48} height={48} className="h-full w-full object-contain" priority />
-      </span>
-      {!compact ? (
-        <span className="leading-tight">
-          <span className="block text-sm font-black uppercase tracking-[0.18em] text-ink">
-            Oddio
-          </span>
-          <span className="block text-[9px] font-semibold uppercase tracking-[0.28em] text-primary/80">
-            {locale === 'ar' ? 'مختارة بإيد بشر' : 'Human curated'}
-          </span>
-        </span>
-      ) : null}
+      <Image src="/oddio-gradient-play-logo.png" alt="Oddio" width={198} height={66} className={compact ? 'h-10 w-[120px] object-contain object-left' : 'h-[58px] w-[188px] object-contain object-left'} priority />
     </Link>
   );
 }
