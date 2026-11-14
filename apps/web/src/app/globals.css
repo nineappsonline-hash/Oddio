@@ -1040,6 +1040,9 @@ body {
   padding: 0;
   transition: transform 180ms ease;
 }
+.oddio-rail-play-logo img {
+  mix-blend-mode: darken;
+}
 .oddio-rail-play-logo:hover {
   transform: scale(1.06);
 }
