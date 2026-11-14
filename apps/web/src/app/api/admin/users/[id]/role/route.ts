@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { staffRoleValues } from '@ai-music/contracts';
 import { mutateDb } from '@/lib/data/db';
-import { loadDbFromSupabase, persistChanges } from '@/lib/data/supabase-store';
+import { loadDbFromSupabase, persistChanges, serviceClient } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { setUserRole } from '@/lib/data/mutations';
 import {
@@ -32,7 +32,14 @@ export async function POST(
       const before = await loadDbFromSupabase();
       const after = structuredClone(before);
       setUserRole(after, user, id, input.role);
-      await persistChanges(before, after);
+      const db = serviceClient();
+      const { error: deleteError } = await db.from('staff_roles').delete().eq('user_id', id);
+      if (deleteError) throw new Error(`Failed to update staff role: ${deleteError.message}`);
+      if (input.role) {
+        const { error: insertError } = await db.from('staff_roles').insert({ user_id: id, role: input.role });
+        if (insertError) throw new Error(`Failed to assign staff role: ${insertError.message}`);
+      }
+      await persistChanges(before, { ...after, users: before.users });
     }
     return jsonOk({ ok: true });
   } catch (error) {
