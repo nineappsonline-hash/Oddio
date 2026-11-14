@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ChevronDown,
@@ -310,7 +311,7 @@ export function FullPlayer() {
                 {isPlaying ? (
                   <Pause className="h-7 w-7" fill="currentColor" />
                 ) : (
-                  <Play className="ms-1 h-7 w-7" fill="currentColor" />
+                  <OddioPlayIcon size={46} />
                 )}
               </button>
               <button
