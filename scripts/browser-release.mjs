@@ -145,10 +145,17 @@ try {
             (cookie) => cookie.name === 'aim_session',
           );
           assert.ok(storedSession, 'Session cookie was rejected by the test browser');
-          await page.waitForURL((url) => url.pathname === '/en/library', {
-            timeout: 20_000,
-            waitUntil: 'domcontentloaded',
-          });
+          try {
+            await page.waitForURL((url) => url.pathname === '/en/library', {
+              timeout: 20_000,
+              waitUntil: 'domcontentloaded',
+            });
+          } catch (error) {
+            const alerts = await page.locator('[role="alert"]').allTextContents();
+            throw new Error(
+              `Session cookie exists but browser did not reach Library. Current URL: ${page.url()}; alerts: ${alerts.join(' | ')}; runtime errors: ${pageErrors.join(' | ')}; ${error instanceof Error ? error.message : String(error)}`,
+            );
+          }
           await page.getByRole('heading', { level: 1 }).waitFor();
           assert.equal(pageErrors.length, 0, pageErrors.join('; '));
         });
