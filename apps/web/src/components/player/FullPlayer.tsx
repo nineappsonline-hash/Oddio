@@ -25,6 +25,7 @@ import { Artwork } from '@/components/ui/Artwork';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Badge } from '@/components/ui/Badge';
 import { LikeButton } from '@/components/community/LikeButton';
+import { DislikeButton } from '@/components/community/DislikeButton';
 import { TimedComments } from '@/components/community/TimedComments';
 import { ShareButton } from '@/components/community/ShareButton';
 import { Equalizer } from '@/components/visuals/Equalizer';
@@ -249,12 +250,12 @@ export function FullPlayer() {
                   trackId={track.id}
                   label={t('track.addToPlaylist')}
                 />
-                <LikeButton
+                <div className="flex items-center gap-2"><LikeButton
                   trackId={track.id}
                   initialLiked={track.isLiked}
                   initialCount={track.likeCount}
                   compact
-                />
+                /><DislikeButton trackId={track.id} /></div>
                 <span className="text-xs text-muted">
                   {formatNumber(track.qualifiedPlays)} {t('common.plays')}
                 </span>
