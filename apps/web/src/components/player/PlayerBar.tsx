@@ -349,8 +349,19 @@ export function PlayerBar() {
 
         <button
           type="button"
+          onClick={() => { window.dispatchEvent(new Event('oddio:open-queue')); setExpanded(true); }}
+          className="relative shrink-0 rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink lg:hidden"
+          aria-label={t('player.queue')}
+          title={t('player.queue')}
+        >
+          <OddioGlyph name="queue" size={20} className="oddio-glyph" />
+          {queueLength > 0 ? <span className="absolute -end-0.5 -top-0.5 rounded-full bg-primary px-1 text-[9px] font-bold text-white">{queueLength}</span> : null}
+        </button>
+
+        <button
+          type="button"
           onClick={() => setExpanded(true)}
-          className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink lg:hidden"
+          className="hidden rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink sm:inline-flex lg:hidden"
           aria-label={t('player.expand')}
           title={t('player.expand')}
         >
