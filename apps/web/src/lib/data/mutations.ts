@@ -149,7 +149,7 @@ export function createComment(
     trackId,
     body: trimmed,
     timestampSeconds: timestampSeconds ?? null,
-    status: SPAM_PATTERN.test(trimmed) ? 'pending' : 'visible',
+    status: 'pending',
     createdAt: new Date().toISOString(),
   };
   db.comments.unshift(comment);
