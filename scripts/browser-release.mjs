@@ -133,7 +133,8 @@ try {
           await page.locator('#login-email').fill('listener@demo.local');
           await page.locator('#login-password').fill('demo1234');
           const loginResponse = page.waitForResponse(
-            (response) => response.url().endsWith('/api/auth/login') &&
+            (response) =>
+              response.url().endsWith('/api/auth/login') &&
               response.request().method() === 'POST',
             { timeout: 15_000 },
           );
