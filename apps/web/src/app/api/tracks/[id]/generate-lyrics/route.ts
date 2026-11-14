@@ -30,6 +30,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const { data: track, error } = await db.from('tracks').select('id,synced_lyrics_srt,lyrics_text,publish_status,visibility').eq('id', id).single();
     if (error || !track || track.publish_status !== 'published' || track.visibility !== 'public') return jsonOk({ status: 'unavailable' });
     if (track.synced_lyrics_srt || track.lyrics_text) return jsonOk({ status: 'ready', srt: track.synced_lyrics_srt, text: track.lyrics_text });
+    // Recover abandoned jobs after a function timeout; preserve completed jobs.
+    await db.from('track_lyrics_jobs').delete().eq('track_id', id).eq('status', 'processing').lt('created_at', new Date(Date.now() - 3 * 60_000).toISOString());
     const { error: claimError } = await db.from('track_lyrics_jobs').insert({ track_id: id, status: 'processing' });
     if (claimError) {
       if (claimError.code === '23505') return jsonOk({ status: 'processing' });
