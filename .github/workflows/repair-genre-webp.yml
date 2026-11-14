@@ -47,6 +47,21 @@ jobs:
           if failures:
               raise SystemExit('Some artwork cannot be decoded. Original files were preserved; upload valid replacements.')
           PY
+      - name: Check production image URLs
+        run: |
+          python - <<'PY'
+          import urllib.request
+          from urllib.parse import quote
+          names = ['Acoustic.webp', 'Afrobeats.webp', 'Arabic Classical.webp', 'Blues.webp', 'Classical.webp', 'Ambient.webp']
+          for name in names:
+              url = 'https://oddio.online/genres/' + quote(name)
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Oddio-asset-check'}), timeout=20) as response:
+                      header = response.read(16)
+                      print(f'{name}: HTTP {response.status}, content-type={response.headers.get("content-type")}, WEBP-header={header.startswith(bytes.fromhex("52494646")) and header[8:12] == b"WEBP"}')
+              except Exception as error:
+                  print(f'{name}: URL FAILED: {error}')
+          PY
       - name: Commit repaired WebP files
         run: |
           if ! git diff --quiet -- apps/web/public/genres; then
