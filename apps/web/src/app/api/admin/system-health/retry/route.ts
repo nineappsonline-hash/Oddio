@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       .eq('type', 'media.transcode')
       .maybeSingle();
     if (error) throw error;
-    if (!canRetryMediaJob(job)) {
+    if (!job || !canRetryMediaJob(job)) {
       return jsonOk({ retried: false, reason: 'not_retryable' }, undefined, 409);
     }
     const { data: updated, error: updateError } = await db
