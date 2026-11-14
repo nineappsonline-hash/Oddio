@@ -17,6 +17,8 @@ type Slot = {
   entityType: 'track' | 'artist' | 'playlist';
   entityId: string;
   rank: number;
+  startAt?: string | null;
+  endAt?: string | null;
 };
 
 export function AdminFeaturedManager({
@@ -37,6 +39,25 @@ export function AdminFeaturedManager({
   const [entityType, setEntityType] = useState<'track' | 'playlist'>('track');
   const [entityId, setEntityId] = useState(tracks[0]?.id ?? '');
   const [pending, setPending] = useState(false);
+  const [schedules, setSchedules] = useState<Record<string, { start: string; end: string }>>({});
+  const scheduleKey = (item: Slot) => item.id;
+  const toInputDate = (value?: string | null) => value ? value.slice(0, 16) : '';
+  async function saveSchedule(item: Slot) {
+    const values = schedules[scheduleKey(item)] ?? { start: toInputDate(item.startAt), end: toInputDate(item.endAt) };
+    setPending(true);
+    try {
+      await apiRequest('/api/admin/featured', {
+        method: 'POST',
+        body: JSON.stringify({ slot: item.slot, entityType: item.entityType, entityId: item.entityId, action: 'schedule', startAt: values.start ? new Date(values.start).toISOString() : null, endAt: values.end ? new Date(values.end).toISOString() : null }),
+      });
+      toast(t('admin.featuredUpdated'), 'success');
+      router.refresh();
+    } catch {
+      toast('Could not save campaign dates. Check the start and end times.', 'error');
+    } finally {
+      setPending(false);
+    }
+  }
 
   const options = entityType === 'track' ? tracks : playlists;
   const orderedSlots = [...slots].sort((a, b) => a.slot.localeCompare(b.slot) || a.rank - b.rank);
@@ -143,7 +164,7 @@ export function AdminFeaturedManager({
             orderedSlots.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center justify-between gap-2 rounded-lg bg-white/5 px-3 py-2"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/5 px-3 py-2"
               >
                 <span className="min-w-0 text-xs">
                   <Badge tone="primary">{item.slot}</Badge>
@@ -162,6 +183,11 @@ export function AdminFeaturedManager({
                 >
                   {t('admin.removeFeatured')}
                 </Button>
+                </div>
+                <div className="flex w-full flex-wrap items-end gap-2 border-t border-white/10 pt-2">
+                  <label className="text-xs text-muted">Start (local)<input type="datetime-local" className="input mt-1 block" value={(schedules[item.id]?.start ?? toInputDate(item.startAt))} onChange={(event) => setSchedules((prev) => ({ ...prev, [item.id]: { start: event.target.value, end: prev[item.id]?.end ?? toInputDate(item.endAt) } }))} /></label>
+                  <label className="text-xs text-muted">End (local)<input type="datetime-local" className="input mt-1 block" value={(schedules[item.id]?.end ?? toInputDate(item.endAt))} onChange={(event) => setSchedules((prev) => ({ ...prev, [item.id]: { start: prev[item.id]?.start ?? toInputDate(item.startAt), end: event.target.value } }))} /></label>
+                  <Button size="sm" variant="ghost" onClick={() => saveSchedule(item)} loading={pending}>Save schedule</Button>
                 </div>
               </li>
             ))
