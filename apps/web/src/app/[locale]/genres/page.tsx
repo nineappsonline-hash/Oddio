@@ -27,7 +27,7 @@ export default async function GenresPage({ params }: { params: Promise<{ locale:
   if (!isLocale(locale)) notFound();
   const ar = locale === 'ar';
   const db = demoMode ? readDb() : await loadDbFromSupabase();
-  const genres = [...db.genres].sort((a, b) => (ar ? a.labelAr : a.labelEn).localeCompare(ar ? b.labelAr : b.labelEn));
+  const genres = db.genres.filter((genre) => genre.active).sort((a, b) => (ar ? a.labelAr : a.labelEn).localeCompare(ar ? b.labelAr : b.labelEn));
   return (
     <div className="space-y-8 pb-12">
       <header className="space-y-3">
