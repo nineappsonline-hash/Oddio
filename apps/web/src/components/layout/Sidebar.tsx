@@ -242,8 +242,9 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
             <Link
               prefetch={false}
               href={`/${locale}/login`}
-              className="block rounded-xl bg-[#f1f1f1] px-3 py-2 text-center text-sm font-semibold text-[#151515] transition hover:bg-primary-strong"
+              className="oddio-login-cta flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-center text-sm font-extrabold transition"
             >
+              <OddioGlyph name="account" size={18} className="oddio-glyph" />
               {t('nav.login')}
             </Link>
             <Link
