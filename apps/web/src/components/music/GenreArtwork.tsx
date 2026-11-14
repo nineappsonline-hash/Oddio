@@ -108,7 +108,7 @@ function normalizedGenre(slug: string) {
 }
 function photoForGenre(slug: string): string | null {
   const image = genreImages[normalizedGenre(slug)];
-  return image ? `/genres/${encodeURIComponent(image)}` : null;
+  return image ? `/genres/${encodeURIComponent(image)}?v=genre-artwork-20261114` : null;
 }
 
 export function GenreArtwork({ slug }: Props) {
