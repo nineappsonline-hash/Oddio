@@ -1,4 +1,5 @@
 import type { SVGProps } from 'react';
+import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 
 /**
  * Oddio Signal Glyphs — original geometric symbols inspired by
@@ -36,6 +37,7 @@ export function OddioGlyph({
   size?: number;
   title?: string;
 }) {
+  if (name === 'play') return <OddioPlayIcon size={size} className={props.className} />;
   const shapes: Record<OddioGlyphName, React.ReactNode> = {
     account: (
       <>
