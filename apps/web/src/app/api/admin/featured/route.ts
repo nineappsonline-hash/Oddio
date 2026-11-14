@@ -4,7 +4,8 @@ import { loadDbFromSupabase, persistChanges } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { setFeatured } from '@/lib/data/mutations';
 import type { DemoDb } from '@/lib/data/types';
-import type { SessionUser } from '@/lib/auth/session';
+import type { SessionUser } from '@ai-music/contracts';
+import { audit } from '@/lib/data/db';
 import {
   assertSameOrigin,
   jsonError,
@@ -53,5 +54,5 @@ function applyFeatured(db: DemoDb, actor: SessionUser, input: z.infer<typeof sch
   if (target < 0 || target >= siblings.length) return;
   [siblings[index], siblings[target]] = [siblings[target]!, siblings[index]!];
   siblings.forEach((item, rank) => { item.rank = rank; });
-  db.auditLog.push({ id: crypto.randomUUID(), actorId: actor.id, action: 'featured.reordered', targetType: input.entityType, targetId: input.entityId, createdAt: new Date().toISOString() } as DemoDb['auditLog'][number]);
+  audit(db, actor, 'featured.reordered', input.entityType, input.entityId);
 }
