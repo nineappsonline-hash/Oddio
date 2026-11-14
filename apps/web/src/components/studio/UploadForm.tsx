@@ -2,7 +2,7 @@
 
 import { useT } from '@/i18n/use-translator';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Artist, Genre, Locale, Mood } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
@@ -58,6 +58,36 @@ export function UploadForm({
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [voiceConfirmed, setVoiceConfirmed] = useState(false);
 
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const draftKey = 'oddio-upload-draft-v1';
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (raw) {
+        const draft = JSON.parse(raw) as Record<string, unknown>;
+        if (typeof draft.artistId === 'string' && artists.some(a => a.id === draft.artistId)) setArtistId(draft.artistId);
+        if (typeof draft.title === 'string') setTitle(draft.title);
+        if (typeof draft.description === 'string') setDescription(draft.description);
+        if (typeof draft.genreId === 'string' && genres.some(g => g.id === draft.genreId)) setGenreId(draft.genreId);
+        if (Array.isArray(draft.selectedMoods)) setSelectedMoods(draft.selectedMoods.filter((v): v is string => typeof v === 'string').slice(0, 5));
+        if (typeof draft.languageCode === 'string') setLanguageCode(draft.languageCode);
+        if (typeof draft.countryCode === 'string') setCountryCode(draft.countryCode);
+        if (draft.productionType === 'fully_ai' || draft.productionType === 'ai_assisted') setProductionType(draft.productionType);
+        if (typeof draft.aiTools === 'string') setAiTools(draft.aiTools);
+        if (typeof draft.lyrics === 'string') setLyrics(draft.lyrics);
+        if (typeof draft.credits === 'string') setCredits(draft.credits);
+        if (draft.visibility === 'public' || draft.visibility === 'unlisted' || draft.visibility === 'private') setVisibility(draft.visibility);
+        if (typeof draft.releaseAt === 'string') setReleaseAt(draft.releaseAt);
+        if (typeof draft.artworkAccent === 'string' && /^#[0-9a-f]{6}$/i.test(draft.artworkAccent)) setArtworkAccent(draft.artworkAccent);
+      }
+    } catch { /* ignore malformed local draft */ }
+    setDraftLoaded(true);
+  }, [artists, genres]);
+  useEffect(() => {
+    if (!draftLoaded) return;
+    try { localStorage.setItem(draftKey, JSON.stringify({ artistId, title, description, genreId, selectedMoods, languageCode, countryCode, productionType, aiTools, lyrics, credits, visibility, releaseAt, artworkAccent })); } catch { /* storage may be unavailable */ }
+  }, [draftLoaded, artistId, title, description, genreId, selectedMoods, languageCode, countryCode, productionType, aiTools, lyrics, credits, visibility, releaseAt, artworkAccent]);
   const artistAlbums = albums.filter((album) => album.artistId === artistId);
 
   function toggleMood(id: string) {
@@ -149,6 +179,7 @@ export function UploadForm({
       } else {
         await apiRequest('/api/studio/tracks', { method: 'POST', body: form });
       }
+      try { localStorage.removeItem(draftKey); } catch { /* storage unavailable */ }
       toast(t('studio.uploadSuccess'), 'success');
       router.push(`/${locale}/studio/tracks`);
       router.refresh();
@@ -306,6 +337,8 @@ export function UploadForm({
             />
           </Field>
         </div>
+        <button type="button" aria-expanded={advancedOpen} onClick={() => setAdvancedOpen(!advancedOpen)} className="flex w-full items-center justify-between rounded-xl border border-violet-400/20 bg-white/5 p-4 text-sm font-semibold text-violet-200">{locale === 'ar' ? 'تفاصيل إضافية (اختياري)' : 'Advanced details (optional)'}<span>{advancedOpen ? '−' : '+'}</span></button>
+        <div className={advancedOpen ? 'space-y-4' : 'hidden'}>
         <Field label={t('studio.aiTools')} htmlFor="upload-tools">
           <input
             id="upload-tools"
@@ -332,6 +365,7 @@ export function UploadForm({
             onChange={(event) => setCredits(event.target.value)}
           />
         </Field>
+        </div>
       </div>
 
       </fieldset>
@@ -395,6 +429,11 @@ export function UploadForm({
             />
           </Field>
         </div>
+        <div className="rounded-2xl border border-violet-400/20 bg-gradient-to-br from-[#29203c] to-[#152d39] p-4">
+          <p className="mb-3 text-xs font-bold tracking-widest text-violet-200">{locale === 'ar' ? 'معاينة الأغنية' : 'TRACK PREVIEW'}</p>
+          <div className="flex items-center gap-4"><div className="grid h-20 w-20 shrink-0 place-items-center rounded-xl text-3xl text-white" style={{ backgroundColor: artworkAccent }}>♫</div><div className="min-w-0"><p className="truncate font-bold text-white">{title || 'Untitled track'}</p><p className="text-sm text-white/60">{artists.find(a => a.id === artistId)?.name || 'Oddio Artist'}</p><p className="mt-1 text-xs text-violet-200">{audioFile ? audioFile.name : (locale === 'ar' ? 'ارفع ملف MP3 للمتابعة' : 'Add an MP3 to continue')}</p></div></div>
+          {audioFile && <audio className="mt-4 w-full" controls src={URL.createObjectURL(audioFile)} />}
+        </div>
         <fieldset className="space-y-3 rounded-2xl border border-primary/25 bg-primary/5 p-4">
           <legend className="px-1 text-sm font-bold text-ink">
             {locale === 'ar' ? 'إقرار حقوق المحتوى' : 'Creator rights declaration'}
@@ -444,9 +483,10 @@ export function UploadForm({
         </Button>
       </div>
       </fieldset>
+      <p className="text-xs text-muted">{locale === 'ar' ? 'يتم حفظ البيانات محليًا. ملفات الصوت والصور يجب اختيارها مجددًا عند الرجوع.' : 'Details save on this device. Audio and artwork files must be selected again when returning.'}</p>
       <div className="sticky bottom-3 z-20 flex gap-3 rounded-2xl border border-violet-400/20 bg-[#191622]/95 p-3 shadow-xl backdrop-blur">
         {step > 1 && <button type="button" onClick={() => { setStep(step === 3 ? 2 : 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="rounded-xl border border-white/20 px-5 py-3 text-sm font-bold text-white">{locale === 'ar' ? 'رجوع' : 'Back'}</button>}
-        {step < 3 && <button type="button" onClick={() => { if (step === 1 && !artistId) { toast(locale === 'ar' ? 'اختار الفنان أولًا' : 'Select an artist first', 'error'); return; } if (step === 2 && !title.trim()) { toast(locale === 'ar' ? 'اكتب اسم الأغنية أولًا' : 'Enter a track title first', 'error'); return; } setStep(step === 1 ? 2 : 3); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-cyan-700 px-5 py-3 text-sm font-bold text-white">{locale === 'ar' ? 'متابعة' : 'Continue →'}</button>}
+        {step < 3 && <button type="button" onClick={() => { if (step === 1 && !artistId) { toast(locale === 'ar' ? 'اختار الفنان أولًا' : 'Select an artist first', 'error'); return; } if (step === 2 && (!title.trim() || !genreId)) { toast(locale === 'ar' ? 'اكتب اسم الأغنية أولًا' : 'Enter a track title first', 'error'); return; } setStep(step === 1 ? 2 : 3); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-cyan-700 px-5 py-3 text-sm font-bold text-white">{locale === 'ar' ? 'متابعة' : 'Continue →'}</button>}
       </div>
     </form>
   );
