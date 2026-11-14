@@ -42,7 +42,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const oldKeys = ['png', 'jpg', 'webp', 'gif'].filter(ext => ext !== TYPES[file.type]).map(ext => `${id}/cover.${ext}`);
     await db.storage.from(BUCKET).remove(oldKeys);
     const artworkUrl = `/api/studio/tracks/${id}/artwork`;
-    const { error: updateError } = await db.from('tracks').update({ artwork_url: artworkUrl }).eq('id', id);
+    const { error: updateError } = await db.from('tracks').update({ artwork_key: artworkUrl }).eq('id', id);
     if (updateError) throw new Error(`Unable to attach artwork: ${updateError.message}`);
     return jsonOk({ artworkUrl });
   } catch (error) { return jsonError(error); }
@@ -53,8 +53,8 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     const { id } = await context.params;
     if (!/^[a-f0-9-]{36}$/i.test(id)) throw Errors.notFound('Artwork not found');
     const db = serviceClient();
-    const { data: track } = await db.from('tracks').select('artwork_url').eq('id', id).single();
-    if (track?.artwork_url !== `/api/studio/tracks/${id}/artwork`) throw Errors.notFound('Artwork not found');
+    const { data: track } = await db.from('tracks').select('artwork_key').eq('id', id).single();
+    if (track?.artwork_key !== `/api/studio/tracks/${id}/artwork`) throw Errors.notFound('Artwork not found');
     for (const ext of ['png', 'jpg', 'webp', 'gif']) {
       const { data, error } = await db.storage.from(BUCKET).download(`${id}/cover.${ext}`);
       if (!error && data) return new Response(data, { headers: { 'Content-Type': data.type || `image/${ext === 'jpg' ? 'jpeg' : ext}`, 'Cache-Control': 'public, max-age=60' } });
