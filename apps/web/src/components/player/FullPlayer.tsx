@@ -71,6 +71,8 @@ export function FullPlayer() {
   const [srt, setSrt] = useState<string | null>(null);
   const [plainLyrics, setPlainLyrics] = useState<string | null>(null);
   const [lyricsLoading, setLyricsLoading] = useState(false);
+  const [controlNotice, setControlNotice] = useState('');
+  useEffect(() => { if (!controlNotice) return; const timer = window.setTimeout(() => setControlNotice(''), 2000); return () => window.clearTimeout(timer); }, [controlNotice]);
   const [sideTab, setSideTab] = useState<'lyrics' | 'queue'>('lyrics');
   const rtl = useLocale() === 'ar';
   const expanded = usePlayer((state) => state.expanded);
@@ -142,6 +144,7 @@ export function FullPlayer() {
       role="dialog"
       aria-modal="true"
       aria-label={t('player.fullPlayer')}
+              title={t('player.fullPlayer')}
     >
       <div
         className="pointer-events-none fixed inset-0 opacity-70"
@@ -149,6 +152,7 @@ export function FullPlayer() {
           background: `radial-gradient(900px 600px at 15% 0%, ${accent}55, transparent 60%), radial-gradient(800px 600px at 90% 100%, rgba(65,217,255,0.15), transparent 60%)`,
         }}
       />
+      {controlNotice ? <div role="status" aria-live="polite" className="fixed bottom-24 left-1/2 z-[90] -translate-x-1/2 whitespace-nowrap rounded-full border border-primary/40 bg-[#242027] px-4 py-2 text-sm font-bold text-white shadow-xl">{controlNotice}</div> : null}
       <div className="relative mx-auto max-w-6xl px-4 py-5 sm:px-8 sm:py-8">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-muted">
@@ -160,6 +164,7 @@ export function FullPlayer() {
             onClick={() => setExpanded(false)}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-muted transition hover:bg-white/10 hover:text-ink"
             aria-label={t('player.minimize')}
+              title={t('player.minimize')}
           >
             <ChevronDown className="h-5 w-5" />
           </button>
@@ -261,6 +266,7 @@ export function FullPlayer() {
                 onChange={(event) => seek(Number(event.target.value))}
                 className="w-full shadow-[0_0_18px_rgba(255,255,255,0.18)]"
                 aria-label={t('player.seek')}
+              title={t('player.seek')}
                 style={{
                   background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #fff ${progress}%, rgba(255,255,255,0.2) ${progress}%)`,
                 }}
@@ -274,8 +280,10 @@ export function FullPlayer() {
             <div className="mt-4 flex items-center justify-center gap-3 sm:gap-5">
               <button
                 type="button"
-                onClick={toggleShuffle}
+                onClick={() => { toggleShuffle(); setControlNotice(rtl ? (shuffle ? 'إيقاف التشغيل العشوائي' : 'تشغيل عشوائي') : (shuffle ? 'Shuffle off' : 'Shuffle on')); }}
                 aria-label={t('player.shuffle')}
+              title={t('player.shuffle')}
+              title={shuffle ? (rtl ? 'إيقاف التشغيل العشوائي' : 'Disable shuffle') : t('player.shuffle')}
                 aria-pressed={shuffle}
                 className={cn(
                   'rounded-full p-2.5 transition hover:bg-white/10',
@@ -288,6 +296,7 @@ export function FullPlayer() {
                 type="button"
                 onClick={previous}
                 aria-label={t('common.previous')}
+              title={t('common.previous')}
                 className="rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink"
               >
                 <SkipBack className="h-6 w-6" />
@@ -296,6 +305,7 @@ export function FullPlayer() {
                 type="button"
                 onClick={toggle}
                 aria-label={isPlaying ? t('common.pause') : t('common.play')}
+              title={isPlaying ? t('common.pause') : t('common.play')}
                 className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-background shadow-glow transition hover:scale-105"
               >
                 {isPlaying ? (
@@ -308,14 +318,17 @@ export function FullPlayer() {
                 type="button"
                 onClick={() => next()}
                 aria-label={t('common.next')}
+              title={t('common.next')}
                 className="rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink"
               >
                 <SkipForward className="h-6 w-6" />
               </button>
               <button
                 type="button"
-                onClick={cycleRepeat}
+                onClick={() => { cycleRepeat(); const mode = repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off'; setControlNotice(rtl ? (mode === 'off' ? 'التكرار متوقف' : mode === 'all' ? 'تكرار كل الأغاني' : 'تكرار الأغنية الحالية') : (mode === 'off' ? 'Repeat off' : mode === 'all' ? 'Repeat all' : 'Repeat one')); }}
                 aria-label={t('player.repeat')}
+              title={t('player.repeat')}
+              title={repeat === 'off' ? (rtl ? 'تكرار كل الأغاني' : 'Repeat all') : repeat === 'all' ? (rtl ? 'تكرار أغنية واحدة' : 'Repeat one') : (rtl ? 'إيقاف التكرار' : 'Disable repeat')}
                 className={cn(
                   'rounded-full p-2.5 transition hover:bg-white/10',
                   repeat !== 'off' ? 'text-primary' : 'text-muted',
@@ -335,6 +348,7 @@ export function FullPlayer() {
                   type="button"
                   onClick={toggleMute}
                   aria-label={t('player.volume')}
+              title={t('player.volume')}
                   className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
                 >
                   {muted || volume === 0 ? (
@@ -352,6 +366,7 @@ export function FullPlayer() {
                   onChange={(event) => setVolume(Number(event.target.value))}
                   className="w-28"
                   aria-label={t('player.volume')}
+              title={t('player.volume')}
                 />
               </div>
               <label className="flex cursor-pointer items-center gap-2 text-xs text-muted">
@@ -455,6 +470,7 @@ export function FullPlayer() {
               <div
                 role="tabpanel"
                 aria-label={t('player.queue')}
+              title={t('player.queue')}
                 className="flex min-h-0 flex-1 flex-col"
               >
                 <div className="mb-3 flex items-center justify-between">
@@ -470,6 +486,7 @@ export function FullPlayer() {
                       onClick={clearQueue}
                       className="rounded-full p-1.5 text-muted transition hover:bg-white/10 hover:text-ink"
                       aria-label={t('player.clearQueue')}
+              title={t('player.clearQueue')}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -512,6 +529,7 @@ export function FullPlayer() {
                           onClick={() => removeFromQueue(item.id)}
                           className="rounded-full p-1.5 text-muted opacity-0 transition hover:bg-white/10 hover:text-ink group-hover:opacity-100"
                           aria-label={t('player.removeFromQueue')}
+              title={t('player.removeFromQueue')}
                         >
                           <X className="h-4 w-4" />
                         </button>
