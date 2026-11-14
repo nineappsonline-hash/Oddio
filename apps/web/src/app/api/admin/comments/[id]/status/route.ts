@@ -21,7 +21,7 @@ export async function POST(
 ) {
   try {
     assertSameOrigin(request);
-    const user = await requireRole(['moderator', 'admin', 'super_admin']);
+    const user = await requireRole(['admin', 'super_admin']);
     const { id } = await context.params;
     const input = await parseBody(request, schema);
     let comment;
