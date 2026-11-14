@@ -21,9 +21,9 @@ export function Footer({ locale }: { locale: Locale }) {
             <Image
               src="/oddio-logo-hq.png"
               alt="Oddio"
-              width={132}
-              height={132}
-              className="h-20 w-20 object-contain sm:h-24 sm:w-24"
+              width={240}
+              height={80}
+              className="h-16 w-48 object-contain object-left sm:w-56"
             />
           </Link>
           <p>{t('footer.tagline')}</p>
