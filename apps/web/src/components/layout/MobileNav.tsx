@@ -35,7 +35,15 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-background/70 px-4 py-3 backdrop-blur-2xl lg:hidden">
-      <div className="flex items-center gap-2.5">
+      <div className="flex min-w-0 items-center gap-2.5">
+        <button
+          type="button"
+          aria-label={locale === 'ar' ? 'افتح القائمة' : 'Open menu'}
+          onClick={() => document.getElementById('oddio-mobile-menu-trigger')?.click()}
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#eab99750] bg-[#262626] text-[#eaeaea] transition hover:bg-[#383838] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#eab997]"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
         <Logo locale={locale} compact />
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-ink">Oddio</p>
@@ -48,14 +56,6 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
         </div>
       </div>
       <div className="flex items-center gap-1">
-        <button
-          type="button"
-          aria-label={locale === 'ar' ? 'افتح القائمة' : 'Open menu'}
-          onClick={() => document.getElementById('oddio-mobile-menu-trigger')?.click()}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#eab99750] bg-[#262626] text-[#eaeaea] transition hover:bg-[#383838] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#eab997]"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
         <Link
           prefetch={false}
           href={`/${locale}/search`}
