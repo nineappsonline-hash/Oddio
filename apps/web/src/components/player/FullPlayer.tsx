@@ -196,6 +196,7 @@ export function FullPlayer() {
               <div className="relative overflow-hidden rounded-3xl border border-white/10 p-1.5">
                 <Artwork
                   title={track.title}
+                  animated={isPlaying && !track.artwork.url}
                   url={track.artwork.url}
                   accent={accent}
                   className="aspect-square w-full shadow-glow"
