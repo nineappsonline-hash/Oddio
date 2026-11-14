@@ -124,9 +124,6 @@ export function togglePlaylistFollow(
   return true;
 }
 
-const SPAM_PATTERN =
-  /(free followers|check my profile|bit\.ly|t\.me\/|whatsapp|telegram|buy now|casino|viagra|fuck|shit|bitch|cunt|كس[م]|شرموط|متناك|عرص|قحبة|ابن\s*الكلب)/i;
-
 export function createComment(
   db: DemoDb,
   actor: SessionUser,
