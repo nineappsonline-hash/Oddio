@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getAdminData } from '@/lib/data/queries';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -40,7 +42,7 @@ export default async function AdminDashboard({
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   if (user.roles.length === 0) redirect(`/${locale}`);
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const data = getAdminData(db, user.roles[0]!);
 
   const stats = [
