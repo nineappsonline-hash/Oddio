@@ -44,11 +44,16 @@ export function ArtistApplicationForm({
     setDraftLoaded(true);
   }, [defaults, resubmit]);
   useEffect(() => {
-    if (draftLoaded && !resubmit) localStorage.setItem('oddio-artist-draft', JSON.stringify({ displayName, description, portfolioUrl, contactEmail }));
+    if (draftLoaded && !resubmit) { try { localStorage.setItem('oddio-artist-draft', JSON.stringify({ displayName, description, portfolioUrl, contactEmail })); } catch { /* storage unavailable */ } }
   }, [displayName, description, portfolioUrl, contactEmail, resubmit, draftLoaded]);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (pending) return;
+    if (displayName.trim().length < 2 || description.trim().length < 40 || !contactEmail.trim() || !rights) {
+      toast(locale === 'ar' ? 'راجع بيانات الفنان وإقرار الحقوق قبل الإرسال.' : 'Check your artist details and rights declaration before submitting.', 'error');
+      return;
+    }
     setPending(true);
     try {
       await apiRequest('/api/artist-applications', {
@@ -61,7 +66,7 @@ export function ArtistApplicationForm({
           rightsDeclared: rights,
         }),
       });
-      localStorage.removeItem('oddio-artist-draft');
+      try { localStorage.removeItem('oddio-artist-draft'); } catch { /* storage unavailable */ }
       toast(t('apply.submitted'), 'success');
       router.refresh();
     } catch (caught) {
