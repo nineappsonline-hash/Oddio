@@ -248,7 +248,7 @@ export function presignR2Delete(bucket: 'ai-music-originals' | 'ai-music-streami
     throw new AppError('storage_not_configured', 'R2 credentials are missing.', 503);
   }
   const valid = bucket === 'ai-music-originals'
-    ? new RegExp('^incoming/[a-f0-9-]+/' + trackId + '$').test(objectKey)
+    ? /^incoming\/[a-f0-9-]+\/[a-f0-9-]+$/.test(objectKey)
     : objectKey.startsWith(trackId + '/') && /^[a-zA-Z0-9/_-]+\\.[a-zA-Z0-9]+$/.test(objectKey) && !objectKey.includes('..');
   if (!/^[a-f0-9-]{36}$/.test(trackId) || !valid) throw new AppError('invalid_object_key', 'Cannot delete an unowned audio object.', 422);
   const host = `${env.r2AccountId}.r2.cloudflarestorage.com`;
