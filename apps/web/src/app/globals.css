@@ -1031,6 +1031,18 @@ body {
   background: var(--oddio-copper);
   color: #171717;
 }
+.oddio-rail-play-logo {
+  width: 76px;
+  height: 76px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  transition: transform 180ms ease;
+}
+.oddio-rail-play-logo:hover {
+  transform: scale(1.06);
+}
 .oddio-rail-next {
   display: grid;
   place-items: center;
