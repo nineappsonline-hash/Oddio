@@ -160,7 +160,11 @@ export function accessibleTracksForArtist(
 export function getHomeData(db: DemoDb, viewer: Viewer): HomeData {
   const now = new Date();
   const listable = listableTracks(db, viewer, now);
+  const isActive = (slot: DemoDb['featuredSlots'][number]) =>
+    (!slot.startAt || Date.parse(slot.startAt) <= now.getTime()) &&
+    (!slot.endAt || Date.parse(slot.endAt) > now.getTime());
   const heroSlot = db.featuredSlots
+    .filter(isActive)
     .filter((slot) => slot.slot === 'hero' && slot.entityType === 'track')
     .sort((a, b) => a.rank - b.rank)
     .find((slot) => listable.some((track) => track.id === slot.entityId));
@@ -168,6 +172,7 @@ export function getHomeData(db: DemoDb, viewer: Viewer): HomeData {
     ? (listable.find((track) => track.id === heroSlot.entityId) ?? null)
     : null;
   const editorialIds = db.featuredSlots
+    .filter(isActive)
     .filter((slot) => slot.slot === 'editorial' && slot.entityType === 'track')
     .sort((a, b) => a.rank - b.rank)
     .map((slot) => slot.entityId);
