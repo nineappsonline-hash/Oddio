@@ -1,10 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Disc3,
-  ArrowUpRight,
-} from 'lucide-react';
+import { Disc3, ArrowUpRight } from 'lucide-react';
 import { useLocalePath } from '@/lib/use-locale-path';
 import { usePlayer } from '@/lib/player-store';
 import { Artwork } from '@/components/ui/Artwork';
