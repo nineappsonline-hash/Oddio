@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
@@ -121,7 +122,7 @@ export default async function SystemHealthPage({
         {!mediaJobs && <p role="status" className="text-sm text-amber-300">{ar ? 'بيانات قائمة المعالجة غير متاحة حاليًا.' : 'Processing queue data is currently unavailable.'}</p>}
       </section>
       <section className="space-y-3">
-        <h3 className="text-lg font-bold text-ink">{ar ? 'تفاصيل المهام المتعثرة' : 'Problem job diagnostics'}</h3>
+        <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="text-lg font-bold text-ink">{ar ? 'تفاصيل المهام المتعثرة' : 'Problem job diagnostics'}</h3><Link href={`/${locale}/admin/audit?q=media.retry_requested`} className="text-sm font-semibold text-primary hover:underline">{ar ? 'سجل إعادة المحاولات' : 'Retry history'}</Link></div>
         <p className="text-sm text-muted">{ar ? 'أحدث 50 مهمة فاشلة أو قيد التشغيل؛ تُعرض المهام المتوقفة فقط من حالات التشغيل. لا تُعرض رسائل الأخطاء الداخلية.' : 'Up to 50 recent failed or running jobs; running jobs appear only when stale. Internal error messages are not exposed.'}</p>
         {problemJobs === null ? (
           <p role="status" className="text-sm text-amber-300">{ar ? 'تفاصيل المهام غير متاحة.' : 'Job details are unavailable.'}</p>
