@@ -157,8 +157,7 @@ export function accessibleTracksForArtist(
     .map((track) => enrichTrack(db, track, viewer, now));
 }
 
-export function getHomeData(db: DemoDb, viewer: Viewer): HomeData {
-  const now = new Date();
+export function getHomeData(db: DemoDb, viewer: Viewer, now = new Date()): HomeData {
   const listable = listableTracks(db, viewer, now);
   const isActive = (slot: DemoDb['featuredSlots'][number]) =>
     (!slot.startAt || Date.parse(slot.startAt) <= now.getTime()) &&
