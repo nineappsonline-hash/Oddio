@@ -79,6 +79,11 @@ export function FullPlayer() {
     return () => window.clearTimeout(timer);
   }, [controlNotice]);
   const [sideTab, setSideTab] = useState<'lyrics' | 'queue'>('lyrics');
+  useEffect(() => {
+    const showQueue = () => setSideTab('queue');
+    window.addEventListener('oddio:open-queue', showQueue);
+    return () => window.removeEventListener('oddio:open-queue', showQueue);
+  }, []);
   const rtl = useLocale() === 'ar';
   const expanded = usePlayer((state) => state.expanded);
   const track = usePlayer((state) => state.track);
@@ -549,6 +554,15 @@ export function FullPlayer() {
                       <Trash2 className="h-4 w-4" />
                     </button>
                   ) : null}
+                </div>
+                <div className="mb-3 flex items-center gap-3 rounded-xl border border-primary/50 bg-primary/15 p-3">
+                  <Equalizer bars={3} paused={!isPlaying} className="h-5 shrink-0 text-primary" />
+                  <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="h-10 w-10 shrink-0" rounded="rounded-lg" />
+                  <div className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-bold uppercase text-primary">{rtl ? 'بتشتغل دلوقتي' : 'Now playing'}</span>
+                    <span className="block truncate text-sm font-bold text-white">{track.title}</span>
+                    <span className="block truncate text-xs text-muted">{track.artist?.name ?? '—'}</span>
+                  </div>
                 </div>
                 {queue.length === 0 ? (
                   <p className="rounded-xl border border-dashed border-white/10 p-4 text-xs text-muted">
