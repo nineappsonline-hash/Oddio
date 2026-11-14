@@ -81,6 +81,12 @@ const groups: Group[] = [
     ar: 'النظام والأمان',
     items: [
       {
+        href: '/system-health',
+        en: 'System health',
+        ar: 'حالة النظام',
+        roles: ['admin', 'super_admin'],
+      },
+      {
         href: '/audit',
         en: 'Audit log',
         ar: 'سجل العمليات',
