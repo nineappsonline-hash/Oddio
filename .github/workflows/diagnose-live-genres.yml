@@ -1,0 +1,40 @@
+name: Diagnose live genre cards
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/diagnose-live-genres.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Inspect actual live rendered genre artwork
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({headless:true});
+            const page = await browser.newPage();
+            await page.goto('https://oddio.online/en/genres', {waitUntil:'networkidle',timeout:60000});
+            for(const name of ['Acoustic','Afrobeats','Arabic Classical','Blues','Classical','Ambient']) {
+              const card=page.getByRole('link').filter({has:page.getByText(name,{exact:true})}).first();
+              const result=await card.evaluate(async el=>{
+                const nodes=[el,...el.querySelectorAll('*')];
+                const backgrounds=nodes.map(n=>({tag:n.tagName,cls:String(n.className).slice(0,110),background:getComputedStyle(n).backgroundImage})).filter(n=>n.background!=='none');
+                const urls=backgrounds.flatMap(b=>[...b.background.matchAll(/url\\(["']?([^"')]+)["']?\\)/g)].map(m=>m[1]));
+                const checks=await Promise.all(urls.map(async url=>{try{const r=await fetch(url);return {url,status:r.status,type:r.headers.get('content-type'),bytes:(await r.arrayBuffer()).byteLength}}catch(e){return {url,error:String(e)}}}));
+                return {backgrounds,checks};
+              });
+              console.log('GENRE_DIAGNOSTIC',name,JSON.stringify(result));
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
