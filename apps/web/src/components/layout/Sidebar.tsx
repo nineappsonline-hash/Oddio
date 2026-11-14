@@ -93,10 +93,10 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         aria-hidden="true"
         className="pointer-events-none absolute -top-24 start-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-primary/25 blur-3xl"
       />
-      <div className="relative mb-9 px-2">
+      <div className="relative mb-7 shrink-0 px-2">
         <Logo locale={locale} />
       </div>
-      <nav aria-label={t('nav.main')} className="flex-1 space-y-1">
+      <nav aria-label={t('nav.main')} className="shrink-0 space-y-1">
         {items.map((item) => {
           const active = item.exact
             ? pathname === item.href
@@ -128,7 +128,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
       </nav>
 
       <section
-        className="mt-4 border-t border-[#eab99718] pt-5"
+        className="mt-4 shrink-0 border-t border-white/10 pt-4"
         aria-label={locale === 'ar' ? 'مجموعة الموسيقى' : 'Your collection'}
       >
         <div className="mb-3 flex items-center justify-between px-3">
@@ -182,29 +182,28 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         <Link
           prefetch={false}
           href={`/${locale}/apply/artist`}
-          className="group/artist relative mt-4 flex items-center gap-3 overflow-hidden rounded-2xl border border-[#eab99740] bg-gradient-to-r from-[#57303d] to-[#2d1d28] px-3 py-3.5 text-[#f8e8df] transition duration-300 hover:-translate-y-0.5 hover:border-[#eab99780] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eab997]"
+          className="group/artist relative mt-4 flex min-h-[86px] shrink-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#F5D991]/70 bg-gradient-to-br from-[#F8DE98] via-[#E8BF61] to-[#BC8830] px-3 py-3 text-[#211708] shadow-[0_8px_26px_rgba(186,134,39,0.20)] transition duration-300 hover:-translate-y-0.5 hover:from-[#FFE8A9] hover:via-[#F0CC76] hover:to-[#C9973B] hover:shadow-[0_12px_32px_rgba(186,134,39,0.32)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFE5A3]"
         >
           <span
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 group-hover/artist:translate-x-full"
           />
-          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eab9971c] ring-1 ring-[#eab99740]">
-            <Mic2 className="h-5 w-5" strokeWidth={2.5} />
+          <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#392711]/20 bg-[#342309]/10">
+            <OddioGlyph name="studio" size={24} className="oddio-glyph" />
           </span>
-          <span className="relative min-w-0 flex-1">
-            <span className="block text-[10px] font-black uppercase tracking-[0.14em] opacity-75">
-              <Sparkles className="me-1 inline h-3 w-3" />
+          <span className="relative flex min-w-0 flex-1 flex-col justify-center gap-1">
+            <span className="block text-[9px] font-extrabold uppercase leading-tight tracking-[0.09em] text-[#65450E]">
               {locale === 'ar' ? 'ابدأ مشوارك' : 'YOUR STAGE AWAITS'}
             </span>
-            <span className="block text-sm font-black leading-5">
+            <span className="block text-[13px] font-black leading-[1.25] text-[#211708]">
               {locale === 'ar' ? 'كن فنانًا' : 'Become an Artist'}
             </span>
           </span>
-          <ArrowUpRight className="relative h-5 w-5 shrink-0 transition-transform group-hover/artist:-translate-y-0.5 group-hover/artist:translate-x-0.5" />
+          <ArrowUpRight className="relative h-[18px] w-[18px] shrink-0 transition-transform group-hover/artist:-translate-y-0.5 group-hover/artist:translate-x-0.5" />
         </Link>
       ) : null}
 
-      <div className="mt-4 space-y-1 border-t border-white/10 pt-4">
+      <div className="mt-4 shrink-0 space-y-1 border-t border-white/10 pt-4">
         <Link
           prefetch={false}
           href={`/${locale}/notifications`}
@@ -224,7 +223,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         <LocaleSwitcher />
       </div>
 
-      <div className="mt-4 border-t border-white/10 pt-4">
+      <div className="mt-4 shrink-0 border-t border-white/10 pt-4">
         {currentUser ? (
           <div className="space-y-2">
             <div className="flex items-center gap-2.5 px-1">
