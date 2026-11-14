@@ -39,8 +39,9 @@ export function AdminFeaturedManager({
   const [pending, setPending] = useState(false);
 
   const options = entityType === 'track' ? tracks : playlists;
+  const orderedSlots = [...slots].sort((a, b) => a.slot.localeCompare(b.slot) || a.rank - b.rank);
 
-  async function update(targetSlot: Slot, action: 'add' | 'remove', targetId: string) {
+  async function update(targetSlot: Slot, action: 'add' | 'remove' | 'move_up' | 'move_down', targetId: string) {
     setPending(true);
     try {
       await apiRequest('/api/admin/featured', {
@@ -139,7 +140,7 @@ export function AdminFeaturedManager({
           {slots.length === 0 ? (
             <li className="text-sm text-muted">{t('common.none')}</li>
           ) : (
-            slots.map((item) => (
+            orderedSlots.map((item) => (
               <li
                 key={item.id}
                 className="flex items-center justify-between gap-2 rounded-lg bg-white/5 px-3 py-2"
@@ -150,6 +151,9 @@ export function AdminFeaturedManager({
                     {labels[item.entityId] ?? item.entityId}
                   </span>
                 </span>
+                <div className="flex shrink-0 items-center gap-1">
+                <Button size="sm" variant="ghost" onClick={() => update(item, 'move_up', item.entityId)} loading={pending} disabled={orderedSlots.filter((entry) => entry.slot === item.slot)[0]?.id === item.id} aria-label="Move featured item up">↑</Button>
+                <Button size="sm" variant="ghost" onClick={() => update(item, 'move_down', item.entityId)} loading={pending} disabled={orderedSlots.filter((entry) => entry.slot === item.slot).at(-1)?.id === item.id} aria-label="Move featured item down">↓</Button>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -158,6 +162,7 @@ export function AdminFeaturedManager({
                 >
                   {t('admin.removeFeatured')}
                 </Button>
+                </div>
               </li>
             ))
           )}
