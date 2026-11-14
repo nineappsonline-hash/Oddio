@@ -1,5 +1,6 @@
 import { commentInput } from '@ai-music/contracts';
-import { readDb, mutateDb, demoMode } from '@/lib/data/db';
+import { readDb, mutateDb } from '@/lib/data/db';
+import { demoMode } from '@/lib/env';
 import { loadDbFromSupabase, persistChanges } from '@/lib/data/supabase-store';
 import { createComment } from '@/lib/data/mutations';
 import {
