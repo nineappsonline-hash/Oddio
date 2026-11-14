@@ -38,9 +38,9 @@ export default async function GenresPage({ params }: { params: Promise<{ locale:
       </header>
       {genres.length ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {genres.map((genre) => (
+          {genres.map((genre, index) => (
             <Link key={genre.id} href={`/${locale}/genres/${genre.slug}`} className="group relative isolate aspect-[1.25] overflow-hidden rounded-2xl border border-white/10 bg-[#171420] transition duration-200 hover:-translate-y-1 hover:border-primary/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-              <GenreArtwork slug={genre.slug} />
+              <GenreArtwork slug={genre.slug} index={index} />
               <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" aria-hidden="true" />
               <span className="absolute bottom-4 start-4 z-10 text-base font-extrabold text-white drop-shadow-md sm:text-lg">{ar ? genre.labelAr : genre.labelEn}</span>
               <ArrowUpRight size={18} aria-hidden="true" className="absolute end-4 top-4 z-10 text-white drop-shadow-md rtl:-scale-x-100" />
