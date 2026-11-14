@@ -10,6 +10,7 @@ import { loginHref } from '@/lib/use-locale-path';
 import type { Locale } from '@ai-music/contracts';
 import { useT } from '@/i18n/use-translator';
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
+import { PasswordInput } from '@/components/auth/PasswordInput';
 
 function useAuth(locale: Locale, next: string) {
   const { toast } = useToast();
@@ -144,9 +145,9 @@ export function LoginForm({
           />
         </Field>
         <Field label={t('auth.password')} htmlFor="login-password">
-          <input
+          <PasswordInput
+            locale={locale}
             id="login-password"
-            type="password"
             autoComplete="current-password"
             required
             value={password}
@@ -202,13 +203,15 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
   }, [handle]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [signupComplete, setSignupComplete] = useState(false);
   const [signupError, setSignupError] = useState<string | null>(null);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setSignupError(null);
-    if (usernameStatus !== 'available') { setSignupError('Please choose an available username.'); return; }
+    if (usernameStatus !== 'available') { setSignupError(locale === 'ar' ? 'اختار اسم مستخدم متاح.' : 'Please choose an available username.'); return; }
+    if (password !== confirmPassword) { setSignupError(locale === 'ar' ? 'كلمتا المرور غير متطابقتين.' : 'Passwords do not match.'); return; }
     setSubmitting(true);
     try {
       const result = await apiRequest<{ emailed?: boolean }>('/api/auth/signup', {
@@ -297,9 +300,9 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
           hint={t('auth.passwordHint')}
           htmlFor="signup-password"
         >
-          <input
+          <PasswordInput
+            locale={locale}
             id="signup-password"
-            type="password"
             required
             minLength={8}
             value={password}
@@ -308,12 +311,28 @@ export function SignupForm({ locale, next }: { locale: Locale; next: string }) {
             autoComplete="new-password"
           />
         </Field>
+        <Field label={locale === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm password'} htmlFor="signup-confirm-password">
+          <PasswordInput
+            locale={locale}
+            id="signup-confirm-password"
+            required
+            minLength={8}
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            autoComplete="new-password"
+            aria-invalid={confirmPassword.length > 0 && password !== confirmPassword}
+            aria-describedby="signup-password-match"
+          />
+          <p id="signup-password-match" role="status" aria-live="polite" className={`mt-1 text-xs ${confirmPassword && password !== confirmPassword ? 'text-rose-400' : 'text-emerald-400'}`}>
+            {confirmPassword ? (password === confirmPassword ? (locale === 'ar' ? '✓ كلمتا المرور متطابقتان' : '✓ Passwords match') : (locale === 'ar' ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match')) : ''}
+          </p>
+        </Field>
         {signupError ? (
           <p className="rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger">
             {signupError}
           </p>
         ) : null}
-        <Button type="submit" disabled={usernameStatus !== "available" || submitting} loading={submitting} className="w-full">
+        <Button type="submit" disabled={usernameStatus !== "available" || submitting || password.length < 8 || password !== confirmPassword} loading={submitting} className="w-full">
           {t('auth.createAccount')}
         </Button>
       </form>
