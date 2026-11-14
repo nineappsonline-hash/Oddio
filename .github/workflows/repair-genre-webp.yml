@@ -47,6 +47,19 @@ jobs:
           if failures:
               raise SystemExit('Some artwork cannot be decoded. Original files were preserved; upload valid replacements.')
           PY
+      - name: Inspect representative image pixels
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          import base64, io
+          for name in ['Acoustic.webp', 'Afrobeats.webp', 'Arabic Classical.webp', 'Blues.webp', 'Classical.webp', 'Ambient.webp']:
+              image = Image.open(Path('apps/web/public/genres') / name).convert('RGB')
+              image.thumbnail((160,160))
+              buffer = io.BytesIO()
+              image.save(buffer, format='JPEG', quality=55)
+              print('THUMBNAIL ' + name + ' ' + base64.b64encode(buffer.getvalue()).decode())
+          PY
       - name: Check production image URLs
         run: |
           python - <<'PY'
