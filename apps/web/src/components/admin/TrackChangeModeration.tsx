@@ -1,10 +1,11 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-export function TrackChangeModeration({ id }: { id: string }) {
+export function TrackChangeModeration({ id, locale = 'en' }: { id: string; locale?: string }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const router = useRouter();
+  const ar = locale === 'ar';
   async function decide(decision: 'approved' | 'rejected') {
     setBusy(true);
     setMessage('');
@@ -30,14 +31,14 @@ export function TrackChangeModeration({ id }: { id: string }) {
         onClick={() => void decide('approved')}
         className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
       >
-        Approve
+        {ar ? 'موافقة' : 'Approve'}
       </button>
       <button
         disabled={busy}
         onClick={() => void decide('rejected')}
         className="rounded-lg bg-rose-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
       >
-        Reject
+        {ar ? 'رفض' : 'Reject'}
       </button>
       {message ? (
         <span role="alert" className="text-xs text-rose-300">
