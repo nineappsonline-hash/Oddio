@@ -76,7 +76,7 @@ export function PlayerBar() {
 
   return (
     <div
-      className="oddio-player-bar fixed inset-x-0 bottom-16 z-40 overflow-hidden border-t border-white/10 bg-[#181818]/95 px-3 py-2.5 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6"
+      className="oddio-player-bar fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-40 overflow-visible border-t border-white/10 bg-[#181818]/95 px-3 py-2.5 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6"
       role="region"
       aria-label={t('player.miniPlayer')}
               title={t('player.miniPlayer')}
