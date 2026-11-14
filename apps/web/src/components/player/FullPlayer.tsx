@@ -25,6 +25,7 @@ import { Artwork } from '@/components/ui/Artwork';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Badge } from '@/components/ui/Badge';
 import { LikeButton } from '@/components/community/LikeButton';
+import { TimedComments } from '@/components/community/TimedComments';
 import { ShareButton } from '@/components/community/ShareButton';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { cn, formatDuration, formatNumber } from '@/lib/utils';
@@ -259,6 +260,8 @@ export function FullPlayer() {
                 </span>
               </div>
             </div>
+
+            <TimedComments key={track.id} trackId={track.id} />
 
             {error ? (
               <div
