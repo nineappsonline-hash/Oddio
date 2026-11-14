@@ -1040,9 +1040,6 @@ body {
   padding: 0;
   transition: transform 180ms ease;
 }
-.oddio-rail-play-logo img {
-  mix-blend-mode: darken;
-}
 .oddio-rail-play-logo:hover {
   transform: scale(1.06);
 }
@@ -2223,7 +2220,7 @@ body {
 .oddio-explore-shortcut-5 {
   background: linear-gradient(135deg, #383838, #191919);
 }
-.oddio-rail-play,
+.oddio-rail-play:not(.oddio-rail-play-logo),
 .oddio-stage-play,
 .oddio-idle-play,
 .oddio-search-submit {
