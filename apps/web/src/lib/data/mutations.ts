@@ -485,6 +485,7 @@ export interface NewTrackInput {
   title: string;
   description: string;
   genreId: string;
+  genreIds?: string[];
   moodIds: string[];
   languageCode: string;
   countryCode: string;
@@ -566,6 +567,7 @@ export function createTrackFromUpload(
     slug,
     description: input.description.trim(),
     genreId: input.genreId,
+    genreIds: input.genreIds?.length ? input.genreIds : [input.genreId],
     moodIds: input.moodIds,
     languageCode: input.languageCode,
     countryCode: input.countryCode,
