@@ -12,6 +12,7 @@ import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { TrackCard } from '@/components/music/TrackCard';
+import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -101,8 +102,9 @@ export default async function DiscoverPage({
             href={`/${locale}/genres/${genre.slug}`}
             className={`oddio-explore-shortcut oddio-explore-shortcut-${index % 6}`}
           >
-            <span>{genreLabel(genre)}</span>
-            <ArrowUpRight size={17} aria-hidden="true" />
+            <GenreArtwork slug={genre.slug} index={index} />
+            <span className="relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{genreLabel(genre)}</span>
+            <ArrowUpRight className="relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" size={17} aria-hidden="true" />
           </Link>
         ))}
       </section>
