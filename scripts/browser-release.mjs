@@ -49,6 +49,19 @@ try {
         assert.equal(await page.locator('.oddio-featured-stage').count(), 1);
         assert.equal(await page.locator('.oddio-topbar-search').count(), 1);
         assert.equal(await page.locator('.oddio-listening-rail').count(), 1);
+        assert.equal(
+          await page.locator('.oddio-listening-rail').isVisible(),
+          viewport.width >= 1320,
+          'Listening rail visibility does not match the desktop breakpoint',
+        );
+        assert.equal(
+          await page.locator('.oddio-topbar-search').isVisible(),
+          viewport.width >= 1024,
+          'Persistent search should appear on desktop, not inside mobile chrome',
+        );
+        await page.locator('.oddio-idle-player').waitFor({ state: 'visible' });
+        assert.equal(await page.locator('.oddio-home-intro h1').count(), 1);
+        assert.equal(await page.locator('.oddio-home-dashboard').count(), 1);
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         );
