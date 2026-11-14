@@ -20,7 +20,7 @@ export default async function AdminAnalyticsPage({ params }: { params: Promise<{
   const now = Date.now();
   const last30 = now - 30 * 86400000;
   const last7 = now - 7 * 86400000;
-  const published = db.tracks.filter((track) => track.status === 'published');
+  const published = db.tracks.filter((track) => track.publishStatus === 'published');
   const sessions30 = db.playbackSessions.filter((session) => new Date(session.lastSeenAt).getTime() >= last30);
   const sessions7 = sessions30.filter((session) => new Date(session.lastSeenAt).getTime() >= last7);
   const listeners30 = new Set(sessions30.map((session) => session.userId).filter(Boolean)).size;
