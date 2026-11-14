@@ -62,6 +62,8 @@ export interface FeaturedSlotRecord {
   entityType: 'track' | 'artist' | 'playlist';
   entityId: string;
   rank: number;
+  startAt?: string | null;
+  endAt?: string | null;
 }
 
 export interface QuotaLimitRecord {
