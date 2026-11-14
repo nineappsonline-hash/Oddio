@@ -1,7 +1,3 @@
-'use client';
-
-import { useState } from 'react';
-
 type Props = { slug: string; index: number };
 
 // Locally hosted artwork supplied for each genre.
@@ -116,7 +112,6 @@ function photoForGenre(slug: string): string | null {
 }
 
 export function GenreArtwork({ slug }: Props) {
-  const [failed, setFailed] = useState(false);
   const normalized = normalizedGenre(slug);
   const photo = photoForGenre(slug);
   const hash = [...normalized].reduce((n, ch) => (n * 33 + ch.charCodeAt(0)) >>> 0, 5381);
@@ -134,14 +129,10 @@ export function GenreArtwork({ slug }: Props) {
       <div className="absolute left-4 top-3 text-[110px] leading-none opacity-60 drop-shadow-[0_8px_25px_rgba(0,0,0,.5)] transition-transform duration-700 group-hover:scale-110">
         {motif}
       </div>
-      {photo && !failed && (
-        <img
-          src={photo}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          onError={() => setFailed(true)}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+      {photo && (
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
+          style={{ backgroundImage: `url("${photo}")` }}
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/5" />
