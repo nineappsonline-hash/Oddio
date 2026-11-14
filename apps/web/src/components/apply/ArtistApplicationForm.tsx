@@ -81,7 +81,7 @@ export function ArtistApplicationForm({
       <h2 className="text-2xl font-black text-white">{step === 1 ? (locale === 'ar' ? 'اصنع هويتك الفنية' : 'Create your artist identity') : (locale === 'ar' ? 'راجع طلبك' : 'Review your application')}</h2>
       <div className="flex gap-2"><span className="h-1.5 flex-1 rounded-full bg-violet-500" /><span className={step === 2 ? "h-1.5 flex-1 rounded-full bg-violet-500" : "h-1.5 flex-1 rounded-full bg-white/10"} /></div>
       <p className="text-xs text-muted">{locale === 'ar' ? 'خطوة' : 'Step'} {step}/2</p>
-      <div className={step === 1 ? 'space-y-4' : 'hidden'}>
+      <fieldset disabled={step !== 1} className={step === 1 ? 'space-y-4' : 'hidden'}>
       <Field label={t('apply.displayName')} htmlFor="apply-name">
         <input
           id="apply-name"
@@ -128,7 +128,7 @@ export function ArtistApplicationForm({
           onChange={(event) => setContactEmail(event.target.value)}
         />
       </Field>
-      </div>
+      </fieldset>
       {step === 1 ? <Button type="submit" size="lg" className="w-full">{locale === 'ar' ? 'متابعة للمراجعة' : 'Continue to review →'}</Button> : <>
       <div className="space-y-2 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm"><p className="font-bold text-white">{displayName}</p><p className="whitespace-pre-wrap text-muted">{description}</p><p className="break-all text-muted">{contactEmail}</p>{portfolioUrl && <p className="break-all text-violet-300">{portfolioUrl}</p>}</div>
       <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-white/5 p-3 text-xs leading-relaxed text-ink/85">
