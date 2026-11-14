@@ -1,12 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Maximize2,
-  Repeat,
-  Repeat1,
-  VolumeX,
-} from 'lucide-react';
+import { Maximize2, Repeat, Repeat1, VolumeX } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
