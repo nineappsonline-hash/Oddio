@@ -1,0 +1,58 @@
+name: Diagnose and repair genre WebP artwork
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/repair-genre-webp.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  verify-and-repair:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'Pillow==11.3.0'
+      - name: Validate image payloads and repair non-WebP files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image, UnidentifiedImageError
+          import io
+          root = Path('apps/web/public/genres')
+          failures = []
+          repaired = []
+          for path in sorted(root.glob('*.webp')):
+              data = path.read_bytes()
+              try:
+                  with Image.open(io.BytesIO(data)) as im:
+                      im.load()
+                      fmt = im.format
+                      dimensions = im.size
+                      if fmt != 'WEBP':
+                          fixed = im.convert('RGB')
+                          fixed.save(path, 'WEBP', quality=90, method=6)
+                          repaired.append(path.name)
+                      print(f'{path.name}: detected={fmt}, dimensions={dimensions}, repaired={fmt != "WEBP"}')
+              except Exception as exc:
+                  failures.append((path.name, str(exc)))
+          print(f'Validated {len(list(root.glob("*.webp")))} images; repaired {len(repaired)}')
+          for name, reason in failures:
+              print(f'INVALID {name}: {reason}')
+          if failures:
+              raise SystemExit('Some artwork cannot be decoded. Original files were preserved; upload valid replacements.')
+          PY
+      - name: Commit repaired WebP files
+        run: |
+          if ! git diff --quiet -- apps/web/public/genres; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add apps/web/public/genres
+            git commit -m "fix: re-encode mislabeled genre artwork as real WebP"
+            git push
+          fi
