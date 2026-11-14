@@ -23,7 +23,8 @@ export type OddioGlyphName =
   | 'pause'
   | 'next'
   | 'previous'
-  | 'volume';
+  | 'volume'
+  | 'account';
 
 export function OddioGlyph({
   name,
@@ -36,6 +37,13 @@ export function OddioGlyph({
   title?: string;
 }) {
   const shapes: Record<OddioGlyphName, React.ReactNode> = {
+    account: (
+      <>
+        <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z" />
+        <circle cx="12" cy="10" r="2.5" />
+        <path d="M7.5 16c1.3-2.6 7.7-2.6 9 0" />
+      </>
+    ),
     home: (
       <>
         <path d="M3 12 12 4l9 8-9 8-9-8Z" />
