@@ -227,14 +227,26 @@ export function MobileNav() {
             <div className="grid gap-2">
               {[
                 { href: `/${locale}`, label: t('nav.home'), icon: 'home' },
-                { href: `/${locale}/discover`, label: t('nav.discover'), icon: 'soundspace' },
+                {
+                  href: `/${locale}/discover`,
+                  label: t('nav.discover'),
+                  icon: 'soundspace',
+                },
                 {
                   href: `/${locale}/soundspace`,
                   label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace',
                   icon: 'soundspace',
                 },
-                { href: `/${locale}/charts`, label: t('nav.charts'), icon: BarChart3 },
-                { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
+                {
+                  href: `/${locale}/charts`,
+                  label: t('nav.charts'),
+                  icon: BarChart3,
+                },
+                {
+                  href: `/${locale}/search`,
+                  label: t('nav.search'),
+                  icon: 'search',
+                },
                 ...(user
                   ? [
                       {
@@ -255,10 +267,22 @@ export function MobileNav() {
                     ]
                   : []),
                 ...(user?.isArtistManager
-                  ? [{ href: `/${locale}/studio`, label: t('nav.studio'), icon: Mic2 }]
+                  ? [
+                      {
+                        href: `/${locale}/studio`,
+                        label: t('nav.studio'),
+                        icon: Mic2,
+                      },
+                    ]
                   : []),
                 ...(user && user.roles.length > 0
-                  ? [{ href: `/${locale}/admin`, label: t('nav.admin'), icon: Shield }]
+                  ? [
+                      {
+                        href: `/${locale}/admin`,
+                        label: t('nav.admin'),
+                        icon: Shield,
+                      },
+                    ]
                   : []),
                 ...(!user
                   ? [
