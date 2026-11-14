@@ -1,10 +1,19 @@
-import type { SVGProps } from 'react';
+import type { ImgHTMLAttributes } from 'react';
 
-/** Displays the exact user-uploaded Glossy Gradient Play Loop Logo artwork. */
-export function OddioPlayIcon({ size = 24, ...props }: SVGProps<SVGSVGElement> & { size?: number }) {
+/** Render the original Glossy Gradient Play Loop Logo PNG directly, without SVG raster resampling. */
+export function OddioPlayIcon({ size = 24, style, ...props }: Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'width' | 'height'> & { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" aria-hidden="true" {...props}>
-      <image href="/glossy-gradient-play-loop-logo.png" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid meet" />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/glossy-gradient-play-loop-logo.png"
+      alt=""
+      aria-hidden="true"
+      width={size}
+      height={size}
+      draggable={false}
+      decoding="async"
+      style={{ width: size, height: size, objectFit: 'contain', maxWidth: 'none', flexShrink: 0, ...style }}
+      {...props}
+    />
   );
 }
