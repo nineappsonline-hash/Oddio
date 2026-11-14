@@ -171,20 +171,20 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         <Link
           prefetch={false}
           href={`/${locale}/apply/artist`}
-          className="group/artist relative mt-4 flex min-h-[86px] shrink-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#F5D991]/70 bg-gradient-to-br from-[#F8DE98] via-[#E8BF61] to-[#BC8830] px-3 py-3 text-[#211708] shadow-[0_8px_26px_rgba(186,134,39,0.20)] transition duration-300 hover:-translate-y-0.5 hover:from-[#FFE8A9] hover:via-[#F0CC76] hover:to-[#C9973B] hover:shadow-[0_12px_32px_rgba(186,134,39,0.32)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFE5A3]"
+          className="group/artist relative mt-4 flex min-h-[86px] shrink-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#7451a4]/60 bg-gradient-to-br from-[#292039] via-[#20192f] to-[#121923] px-3 py-3 text-white shadow-[0_8px_28px_rgba(103,58,183,0.16)] transition duration-300 hover:-translate-y-0.5 hover:border-[#ae80eb]/80 hover:from-[#38264f] hover:via-[#282039] hover:to-[#142737] hover:shadow-[0_12px_34px_rgba(113,65,192,0.28)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b49afa]"
         >
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 group-hover/artist:translate-x-full"
+            className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-gradient-to-r from-transparent via-[#a982ef]/20 to-transparent transition-transform duration-700 group-hover/artist:translate-x-full"
           />
-          <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#392711]/20 bg-[#342309]/10">
+          <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#a47ae3]/35 bg-gradient-to-br from-[#633da1]/50 to-[#164e6b]/45 text-[#c7b5ff]">
             <OddioGlyph name="studio" size={24} className="oddio-glyph" />
           </span>
           <span className="relative flex min-w-0 flex-1 flex-col justify-center gap-1">
-            <span className="block text-[9px] font-extrabold uppercase leading-tight tracking-[0.09em] text-[#65450E]">
+            <span className="block text-[9px] font-extrabold uppercase leading-tight tracking-[0.09em] text-[#b6a1ce]">
               {locale === 'ar' ? 'ابدأ مشوارك' : 'YOUR STAGE AWAITS'}
             </span>
-            <span className="block text-[13px] font-black leading-[1.25] text-[#211708]">
+            <span className="block text-[13px] font-black leading-[1.25] text-[#f9f6ff]">
               {locale === 'ar' ? 'كن فنانًا' : 'Become an Artist'}
             </span>
           </span>
