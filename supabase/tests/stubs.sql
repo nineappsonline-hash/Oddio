@@ -47,7 +47,9 @@ $$;
 create table storage.buckets (
   id text primary key,
   name text,
-  public boolean default false
+  public boolean default false,
+  file_size_limit bigint,
+  allowed_mime_types text[]
 );
 
 create table storage.objects (
