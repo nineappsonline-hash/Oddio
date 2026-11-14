@@ -106,7 +106,11 @@ export function UploadForm({
           setGenreId(draft.genreId);
         if (Array.isArray(draft.selectedGenres)) {
           const restored = draft.selectedGenres.filter((id): id is string => typeof id === 'string' && genres.some((genre) => genre.id === id)).slice(0, 5);
-          if (restored.length) { setSelectedGenres(restored); setGenreId(restored[0]); }
+          const primary = restored[0];
+          if (primary) {
+            setSelectedGenres(restored);
+            setGenreId(primary);
+          }
         } else if (typeof draft.genreId === 'string' && genres.some((genre) => genre.id === draft.genreId)) setSelectedGenres([draft.genreId]);
         if (Array.isArray(draft.selectedMoods))
           setSelectedMoods(
