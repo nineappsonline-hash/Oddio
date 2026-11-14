@@ -715,7 +715,7 @@ export function updateCommentStatus(
   commentId: string,
   status: 'visible' | 'hidden',
 ): Comment {
-  staffActor(actor, ['moderator', 'admin', 'super_admin']);
+  staffActor(actor, ['admin', 'super_admin']);
   const comment = db.comments.find((item) => item.id === commentId);
   if (!comment) throw Errors.notFound('Comment not found');
   comment.status = status;
