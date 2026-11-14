@@ -180,7 +180,7 @@ export function PlayerBar() {
               onClick={toggle}
               aria-label={isPlaying ? t('common.pause') : t('common.play')}
               title={isPlaying ? t('common.pause') : t('common.play')}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] transition hover:bg-primary-strong"
+              className={isPlaying ? "flex h-10 w-10 items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] transition" : "flex h-10 w-10 items-center justify-center rounded-full bg-transparent transition hover:scale-105"}
             >
               {isPlaying ? (
                 <OddioGlyph name="pause" size={21} className="oddio-glyph" />
