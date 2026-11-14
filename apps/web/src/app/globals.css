@@ -1669,7 +1669,8 @@ body {
     inset-inline-start: 244px !important;
   }
 }
-@media (min-width: 1536px) {
+@media (min-width: 1320px) {
+  .oddio-workspace { padding-inline-end: 300px; }
   .oddio-listening-rail {
     display: block;
   }
@@ -1898,7 +1899,7 @@ body {
     height: 85px;
   }
 }
-@media (min-width: 1536px) {
+@media (min-width: 1320px) {
   .oddio-idle-player {
     inset-inline-end: 300px;
   }
