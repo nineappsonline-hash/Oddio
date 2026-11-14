@@ -520,6 +520,10 @@ export function createTrackFromUpload(
   input: NewTrackInput,
 ): Track {
   const artist = ownedArtist(db, actor, input.artistId);
+  const genreIds = input.genreIds?.length ? input.genreIds : [input.genreId];
+  if (new Set(genreIds).size !== genreIds.length || !genreIds.includes(input.genreId) || genreIds.length > 5 || genreIds.some((id) => !db.genres.some((genre) => genre.id === id && genre.active))) {
+    throw Errors.invalid('Select 1 to 5 valid genres, including the primary genre.');
+  }
   if (!userIsArtistManager(db, actor.id)) {
     throw new AppError(
       'artist_application_required',
@@ -567,7 +571,7 @@ export function createTrackFromUpload(
     slug,
     description: input.description.trim(),
     genreId: input.genreId,
-    genreIds: input.genreIds?.length ? input.genreIds : [input.genreId],
+    genreIds,
     moodIds: input.moodIds,
     languageCode: input.languageCode,
     countryCode: input.countryCode,
