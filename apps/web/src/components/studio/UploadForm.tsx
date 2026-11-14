@@ -165,6 +165,7 @@ export function UploadForm({
     if (artworkFile) form.set('artwork', artworkFile);
     setPending(true);
     try {
+      let artworkFailed = false;
       if (production) {
         const grant = await apiRequest<{
           uploadUrl: string;
@@ -196,15 +197,15 @@ export function UploadForm({
           artworkForm.set('artwork', artworkFile);
           try {
             await apiRequest(`/api/studio/tracks/${finalized.id}/artwork`, { method: 'POST', body: artworkForm });
-          } catch (artworkError) {
-            toast(locale === 'ar' ? 'تم رفع الأغنية لكن تعذّر حفظ الغلاف. تواصل مع الدعم لإضافته.' : 'Track submitted, but artwork could not be saved. Contact support to add it.', 'error');
+          } catch {
+            artworkFailed = true;
           }
         }
       } else {
         await apiRequest('/api/studio/tracks', { method: 'POST', body: form });
       }
       try { localStorage.removeItem(draftKey); } catch { /* storage unavailable */ }
-      toast(t('studio.uploadSuccess'), 'success');
+      toast(artworkFailed ? (locale === 'ar' ? 'تم إرسال الأغنية لكن تعذّر حفظ الغلاف. تواصل مع الدعم.' : 'Track submitted, but artwork could not be saved. Contact support.') : t('studio.uploadSuccess'), artworkFailed ? 'error' : 'success');
       router.push(`/${locale}/studio/tracks`);
       router.refresh();
     } catch (caught) {
