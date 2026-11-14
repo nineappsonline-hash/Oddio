@@ -59,6 +59,8 @@ export function UploadForm({
   const [voiceConfirmed, setVoiceConfirmed] = useState(false);
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
+  useEffect(() => { if (!audioFile) { setAudioPreviewUrl(null); return; } const url = URL.createObjectURL(audioFile); setAudioPreviewUrl(url); return () => URL.revokeObjectURL(url); }, [audioFile]);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const draftKey = 'oddio-upload-draft-v1';
   useEffect(() => {
@@ -432,7 +434,7 @@ export function UploadForm({
         <div className="rounded-2xl border border-violet-400/20 bg-gradient-to-br from-[#29203c] to-[#152d39] p-4">
           <p className="mb-3 text-xs font-bold tracking-widest text-violet-200">{locale === 'ar' ? 'معاينة الأغنية' : 'TRACK PREVIEW'}</p>
           <div className="flex items-center gap-4"><div className="grid h-20 w-20 shrink-0 place-items-center rounded-xl text-3xl text-white" style={{ backgroundColor: artworkAccent }}>♫</div><div className="min-w-0"><p className="truncate font-bold text-white">{title || 'Untitled track'}</p><p className="text-sm text-white/60">{artists.find(a => a.id === artistId)?.name || 'Oddio Artist'}</p><p className="mt-1 text-xs text-violet-200">{audioFile ? audioFile.name : (locale === 'ar' ? 'ارفع ملف MP3 للمتابعة' : 'Add an MP3 to continue')}</p></div></div>
-          {audioFile && <audio className="mt-4 w-full" controls src={URL.createObjectURL(audioFile)} />}
+          {audioPreviewUrl && <audio className="mt-4 w-full" controls src={audioPreviewUrl} />}
         </div>
         <fieldset className="space-y-3 rounded-2xl border border-primary/25 bg-primary/5 p-4">
           <legend className="px-1 text-sm font-bold text-ink">
