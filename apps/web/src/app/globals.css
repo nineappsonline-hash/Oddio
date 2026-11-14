@@ -2295,3 +2295,8 @@ body {
   box-shadow: none !important;
   border: 0 !important;
 }
+
+/* Prominent original play artwork: never add a white disc behind the PNG. */
+.oddio-idle-play { width: 76px !important; height: 76px !important; overflow: visible; }
+.oddio-idle-play img { width: 72px; height: 72px; }
+@media (max-width: 480px) { .oddio-idle-play { width: 62px !important; height: 62px !important; } }
