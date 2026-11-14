@@ -20,7 +20,9 @@ const schema = z.object({
   slot: z.enum(['hero', 'editorial', 'playlist']),
   entityType: z.enum(['track', 'artist', 'playlist']),
   entityId: z.string().min(1),
-  action: z.enum(['add', 'remove', 'move_up', 'move_down']),
+  action: z.enum(['add', 'remove', 'move_up', 'move_down', 'schedule']),
+  startAt: z.string().datetime({ offset: true }).nullable().optional(),
+  endAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
 export async function POST(request: Request) {
@@ -42,6 +44,17 @@ export async function POST(request: Request) {
 }
 
 function applyFeatured(db: DemoDb, actor: SessionUser, input: z.infer<typeof schema>) {
+  if (input.action === 'schedule') {
+    const item = db.featuredSlots.find((entry) => entry.slot === input.slot && entry.entityType === input.entityType && entry.entityId === input.entityId);
+    if (!item) throw new Error('Featured item not found');
+    const start = input.startAt ? Date.parse(input.startAt) : null;
+    const end = input.endAt ? Date.parse(input.endAt) : null;
+    if (start !== null && end !== null && start >= end) throw new Error('End date must be later than start date');
+    item.startAt = input.startAt ?? null;
+    item.endAt = input.endAt ?? null;
+    audit(db, actor, 'featured.scheduled', input.entityType, input.entityId);
+    return;
+  }
   if (input.action === 'add' || input.action === 'remove') {
     setFeatured(db, actor, { ...input, action: input.action });
     return;
