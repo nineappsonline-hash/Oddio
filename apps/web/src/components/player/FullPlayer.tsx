@@ -239,7 +239,7 @@ export function FullPlayer() {
                   className="pointer-events-none absolute -inset-24 animate-spin-slow opacity-40 [background:conic-gradient(from_0deg,transparent_0deg,rgba(157,92,255,0.5)_70deg,transparent_140deg,rgba(65,217,255,0.4)_240deg,transparent_300deg)]"
                 />
                 {mobileLyricsOpen ? (
-                  <div className="absolute inset-1.5 z-20 flex flex-col rounded-[1.35rem] bg-[#130e20]/95 p-4 backdrop-blur-xl lg:hidden">
+                  <div id="oddio-mobile-lyrics" className="absolute inset-1.5 z-40 flex flex-col rounded-[1.35rem] bg-[#130e20]/95 p-4 backdrop-blur-xl lg:hidden">
                     <div className="mb-2 flex items-center justify-between text-sm font-bold text-white">
                       <span>🎤 {rtl ? 'كلمات الأغنية' : 'Lyrics'}</span>
                       <button type="button" onClick={() => setMobileLyricsOpen(false)} className="rounded-lg bg-white/10 px-3 py-1.5">{rtl ? 'إغلاق' : 'Close'}</button>
@@ -258,7 +258,7 @@ export function FullPlayer() {
                   </div>
                 ) : null}
               </div>
-              <div className="mt-2 flex items-center justify-between gap-2 lg:hidden"><button type="button" onClick={() => setMobileLyricsOpen((value) => !value)} className="rounded-full border border-primary/40 bg-primary/15 px-4 py-2 text-sm font-bold text-primary">🎤 {mobileLyricsOpen ? (rtl ? "إخفاء الكلمات" : "Hide lyrics") : (rtl ? "كلمات الأغنية" : "Lyrics")}</button></div>
+              <div className="relative z-30 mt-2 flex items-center justify-between gap-2 lg:hidden"><button type="button" aria-expanded={mobileLyricsOpen} aria-controls="oddio-mobile-lyrics" onClick={(event) => { event.preventDefault(); event.stopPropagation(); setMobileLyricsOpen((value) => !value); }} className="relative z-30 touch-manipulation cursor-pointer rounded-full border border-primary/40 bg-primary/15 px-4 py-2 text-sm font-bold text-primary">🎤 {mobileLyricsOpen ? (rtl ? "إخفاء الكلمات" : "Hide lyrics") : (rtl ? "كلمات الأغنية" : "Lyrics")}</button></div>
               <div className="mt-3 hidden h-8 items-end justify-center gap-1 sm:flex">
                 <Equalizer
                   bars={28}
