@@ -125,13 +125,14 @@ export function togglePlaylistFollow(
 }
 
 const SPAM_PATTERN =
-  /(free followers|check my profile|bit\.ly|t\.me\/|whatsapp|telegram|buy now|casino|viagra)/i;
+  /(free followers|check my profile|bit\.ly|t\.me\/|whatsapp|telegram|buy now|casino|viagra|fuck|shit|bitch|cunt|كس[م]|شرموط|متناك|عرص|قحبة|ابن\s*الكلب)/i;
 
 export function createComment(
   db: DemoDb,
   actor: SessionUser,
   trackId: string,
   body: string,
+  timestampSeconds?: number | null,
 ): Comment {
   const track = db.tracks.find((item) => item.id === trackId);
   if (!track) throw Errors.notFound('Track not found');
@@ -147,6 +148,7 @@ export function createComment(
     userName: actor.displayName,
     trackId,
     body: trimmed,
+    timestampSeconds: timestampSeconds ?? null,
     status: SPAM_PATTERN.test(trimmed) ? 'pending' : 'visible',
     createdAt: new Date().toISOString(),
   };
