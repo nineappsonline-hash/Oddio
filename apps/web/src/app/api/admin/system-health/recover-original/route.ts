@@ -45,10 +45,16 @@ export async function POST(request: Request) {
     if (!response.ok || !response.body) return jsonOk({ recovered: false, reason: 'r2_read_failed' }, undefined, 422);
     const hash = crypto.createHash('sha256');
     let bytes = 0;
-    for await (const chunk of response.body) {
-      bytes += chunk.length;
-      if (bytes > expectedBytes) throw new Error('R2 audio size changed during verification');
-      hash.update(chunk);
+    const reader = response.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > expectedBytes) {
+        await reader.cancel();
+        throw new Error('R2 audio size changed during verification');
+      }
+      hash.update(value);
     }
     if (bytes !== expectedBytes) throw new Error('R2 audio size mismatch');
     const sha256 = hash.digest('hex');
