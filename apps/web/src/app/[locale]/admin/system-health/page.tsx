@@ -59,6 +59,23 @@ export default async function SystemHealthPage({
       // Unknown is safer than reporting a healthy queue when the query fails.
     }
   }
+  let problemJobs: Array<{ id: string; state: string; attempts: number; max_attempts: number; updated_at: string; last_error: string | null }> | null = null;
+  if (!demoMode) {
+    try {
+      const { data, error } = await serviceClient()
+        .from('jobs')
+        .select('id,state,attempts,max_attempts,updated_at,last_error')
+        .eq('type', 'media.transcode')
+        .in('state', ['failed', 'dead', 'running'])
+        .order('updated_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      const staleCutoff = checkedAt.getTime() - 20 * 60_000;
+      problemJobs = (data ?? []).filter((job) => job.state !== 'running' || Date.parse(job.updated_at) < staleCutoff);
+    } catch {
+      // Keep diagnostics read-only and distinguish unknown from no failures.
+    }
+  }
   const metrics = [
     { en: 'Database read', ar: 'قراءة قاعدة البيانات', value: database === 'reachable' ? (ar ? 'متاح' : 'Reachable') : (ar ? 'غير متاح' : 'Unavailable') },
     { en: 'Uploads (24h)', ar: 'عمليات الرفع (24 ساعة)', value: uploads24h },
@@ -101,6 +118,34 @@ export default async function SystemHealthPage({
           ))}
         </div>
         {!mediaJobs && <p role="status" className="text-sm text-amber-300">{ar ? 'بيانات قائمة المعالجة غير متاحة حاليًا.' : 'Processing queue data is currently unavailable.'}</p>}
+      </section>
+      <section className="space-y-3">
+        <h3 className="text-lg font-bold text-ink">{ar ? 'تفاصيل المهام المتعثرة' : 'Problem job diagnostics'}</h3>
+        <p className="text-sm text-muted">{ar ? 'أحدث 50 مهمة فاشلة أو قيد التشغيل؛ تُعرض المهام المتوقفة فقط من حالات التشغيل. لا تُعرض رسائل الأخطاء الداخلية.' : 'Up to 50 recent failed or running jobs; running jobs appear only when stale. Internal error messages are not exposed.'}</p>
+        {problemJobs === null ? (
+          <p role="status" className="text-sm text-amber-300">{ar ? 'تفاصيل المهام غير متاحة.' : 'Job details are unavailable.'}</p>
+        ) : problemJobs.length === 0 ? (
+          <p className="text-sm text-muted">{ar ? 'لا توجد مهام متعثرة في النتائج الأخيرة.' : 'No problem jobs in the latest results.'}</p>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-white/10">
+            <table className="w-full min-w-[640px] text-start text-sm">
+              <thead className="bg-white/5 text-muted"><tr>
+                <th scope="col" className="p-3 text-start">{ar ? 'معرّف المهمة' : 'Job ID'}</th>
+                <th scope="col" className="p-3 text-start">{ar ? 'الحالة' : 'State'}</th>
+                <th scope="col" className="p-3 text-start">{ar ? 'المحاولات' : 'Attempts'}</th>
+                <th scope="col" className="p-3 text-start">{ar ? 'آخر تحديث' : 'Updated'}</th>
+              </tr></thead>
+              <tbody>{problemJobs.map((job) => (
+                <tr key={job.id} className="border-t border-white/10">
+                  <td className="p-3 font-mono text-xs">{job.id}</td>
+                  <td className="p-3">{job.state === 'running' ? (ar ? 'متوقفة' : 'Stale') : job.state === 'dead' ? (ar ? 'استنفدت المحاولات' : 'Exhausted') : (ar ? 'فشلت' : 'Failed')}</td>
+                  <td className="p-3">{job.attempts} / {job.max_attempts}</td>
+                  <td className="p-3"><time dateTime={job.updated_at}>{job.updated_at}</time></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        )}
       </section>
       <p className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-muted">
         {ar ? 'نجاح قراءة قاعدة البيانات لا يؤكد حالة معالجة الصوت أو التخزين أو توفر الخدمات الخارجية. يلزم إضافة فحوص مستقلة لهذه الخدمات.' : 'A successful database read does not verify audio processing, storage, or external service availability. Those require separate health checks.'}
