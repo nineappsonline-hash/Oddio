@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Search as SearchIcon, ArrowUpRight, Headphones } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { searchQuery } from '@ai-music/contracts';
@@ -10,7 +11,6 @@ import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { TrackRow } from '@/components/music/TrackRow';
 import { ArtistCard } from '@/components/music/ArtistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -55,20 +55,29 @@ export default async function SearchPage({
   const results = query.q ? searchCatalog(db, viewer, query) : null;
 
   return (
-    <div>
-      <PageHeader title={t('search.title')} subtitle={t('search.hint')} />
-      <form method="get" action={`/${locale}/search`} className="mb-8 flex gap-2">
+    <div className="oddio-explore-page oddio-search-page">
+      <header className="oddio-explore-heading">
+        <div>
+          <p className="oddio-micro-label"><SearchIcon size={14} /> {locale === 'ar' ? 'دور على صوتك' : 'DISCOVER THE UNEXPECTED'}</p>
+          <h1>{t('search.title')}</h1>
+          <p>{t('search.hint')}</p>
+        </div>
+        <Link href={`/${locale}/soundspace`} className="oddio-explore-mood-link">
+          <Headphones size={16} />{locale === 'ar' ? 'استكشف حسب المود' : 'Find your mood'} <ArrowUpRight size={16} />
+        </Link>
+      </header>
+      <form method="get" action={`/${locale}/search`} className="oddio-search-form mb-8 flex gap-2">
         <input
           type="search"
           name="q"
           defaultValue={q}
           placeholder={t('search.placeholder')}
           aria-label={t('search.title')}
-          className="input h-12 flex-1 text-base"
+          className="input oddio-search-input h-12 flex-1 text-base"
         />
         <button
           type="submit"
-          className="h-12 rounded-lg bg-primary px-6 text-sm font-semibold text-[#211518] hover:bg-primary-strong"
+          className="oddio-search-submit h-12 rounded-lg bg-primary px-6 text-sm font-semibold text-[#211518] hover:bg-primary-strong"
         >
           {t('common.search')}
         </button>
@@ -93,7 +102,7 @@ export default async function SearchPage({
           {results.tracks.length > 0 ? (
             <section>
               <h2 className="mb-3 text-lg font-bold text-ink">{t('search.tracks')}</h2>
-              <div className="card divide-y divide-white/5 p-2">
+              <div className="oddio-explore-track-list divide-y divide-white/5 p-2">
                 {results.tracks.map((track, index) => (
                   <TrackRow
                     key={track.id}
@@ -118,7 +127,7 @@ export default async function SearchPage({
           {results.artists.length > 0 ? (
             <section>
               <h2 className="mb-3 text-lg font-bold text-ink">{t('search.artists')}</h2>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              <div className="oddio-search-artist-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                 {results.artists.map((artist) => (
                   <ArtistCard key={artist.id} artist={artist} locale={locale} />
                 ))}
