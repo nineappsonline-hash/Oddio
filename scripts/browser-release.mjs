@@ -99,7 +99,14 @@ try {
       if (viewport.width === 390) {
         await test(`${label} mobile drawer stays left and closes on Escape`, async () => {
           await page.goto(`${base}/${locale}`, { waitUntil: 'domcontentloaded' });
-          await page.locator('#oddio-mobile-menu-trigger').click();
+          const headerMenu = page.getByRole('button', {
+            name: locale === 'ar' ? 'افتح القائمة' : 'Open menu',
+          });
+          const menuLeft = await headerMenu.evaluate(
+            (element) => element.getBoundingClientRect().left,
+          );
+          assert.ok(menuLeft < 50, `mobile menu trigger should be left: ${menuLeft}px`);
+          await headerMenu.click();
           const dialog = page.getByRole('dialog', {
             name: locale === 'ar' ? 'القائمة' : 'Menu',
           });
