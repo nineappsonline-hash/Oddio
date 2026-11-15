@@ -1,4 +1,10 @@
-import { assertSameOrigin, jsonError, jsonOk, rateLimit, requireUser } from '@/lib/api-helpers';
+import {
+  assertSameOrigin,
+  jsonError,
+  jsonOk,
+  rateLimit,
+  requireUser,
+} from '@/lib/api-helpers';
 import { demoMode } from '@/lib/env';
 import { mutateDb } from '@/lib/data/db';
 import { serviceClient } from '@/lib/data/supabase-store';
@@ -21,7 +27,9 @@ export async function DELETE(request: Request) {
         const owned = new Set(
           db.playbackSessions.filter((s) => s.userId === user.id).map((s) => s.id),
         );
-        db.playbackEvents = db.playbackEvents.filter((event) => !owned.has(event.sessionId));
+        db.playbackEvents = db.playbackEvents.filter(
+          (event) => !owned.has(event.sessionId),
+        );
         db.playbackSessions = db.playbackSessions.filter((s) => !owned.has(s.id));
         db.history = db.history.filter((entry) => entry.userId !== user.id);
         return owned.size;

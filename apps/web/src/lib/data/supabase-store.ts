@@ -220,7 +220,9 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
     name: text(row.name),
     bio: text(row.bio),
     searchAliases: Array.isArray(row.search_aliases)
-      ? (row.search_aliases as unknown[]).filter((name): name is string => typeof name === 'string')
+      ? (row.search_aliases as unknown[]).filter(
+          (name): name is string => typeof name === 'string',
+        )
       : [],
     avatarUrl: text(row.avatar_key),
     coverUrl: text(row.cover_key),

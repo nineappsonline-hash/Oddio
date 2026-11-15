@@ -22,7 +22,10 @@ export function ArtistSearchAliases({
   const save = async () => {
     setBusy(true);
     setMessage('');
-    const aliases = value.split(/[,\n]+/).map((alias) => alias.trim()).filter(Boolean);
+    const aliases = value
+      .split(/[,\n]+/)
+      .map((alias) => alias.trim())
+      .filter(Boolean);
     try {
       await apiRequest(`/api/artists/${artistId}/aliases`, {
         method: 'PUT',
@@ -31,7 +34,11 @@ export function ArtistSearchAliases({
       setMessage(ar ? 'تم حفظ الأسماء البديلة' : 'Search aliases saved');
       router.refresh();
     } catch {
-      setMessage(ar ? 'تعذر الحفظ. راجع الأسماء وحاول مرة أخرى.' : 'Could not save aliases. Check the names and retry.');
+      setMessage(
+        ar
+          ? 'تعذر الحفظ. راجع الأسماء وحاول مرة أخرى.'
+          : 'Could not save aliases. Check the names and retry.',
+      );
     } finally {
       setBusy(false);
     }
@@ -55,11 +62,19 @@ export function ArtistSearchAliases({
         maxLength={750}
         className="input w-full"
       />
-      <button type="button" disabled={busy} onClick={() => void save()}
-        className="min-h-11 rounded-xl bg-primary px-5 text-sm font-bold text-white disabled:opacity-50">
-        {busy ? (ar ? 'جاري الحفظ…' : 'Saving…') : (ar ? 'حفظ الأسماء' : 'Save aliases')}
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => void save()}
+        className="min-h-11 rounded-xl bg-primary px-5 text-sm font-bold text-white disabled:opacity-50"
+      >
+        {busy ? (ar ? 'جاري الحفظ…' : 'Saving…') : ar ? 'حفظ الأسماء' : 'Save aliases'}
       </button>
-      {message ? <p role="status" className="text-sm text-muted">{message}</p> : null}
+      {message ? (
+        <p role="status" className="text-sm text-muted">
+          {message}
+        </p>
+      ) : null}
     </section>
   );
 }

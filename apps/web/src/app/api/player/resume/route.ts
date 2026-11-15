@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { assertSameOrigin, jsonError, jsonOk, parseBody, rateLimit, requireUser } from '@/lib/api-helpers';
+import {
+  assertSameOrigin,
+  jsonError,
+  jsonOk,
+  parseBody,
+  rateLimit,
+  requireUser,
+} from '@/lib/api-helpers';
 import { demoMode } from '@/lib/env';
 import { loadDbFromSupabase, serviceClient } from '@/lib/data/supabase-store';
 import { accessForTrack, enrichTrack } from '@/lib/data/queries';
@@ -46,7 +53,10 @@ export async function GET() {
         version: 1 as const,
         track,
         queue,
-        currentTime: Math.min(Number(data.current_time_seconds) || 0, track.durationMs / 1000),
+        currentTime: Math.min(
+          Number(data.current_time_seconds) || 0,
+          track.durationMs / 1000,
+        ),
         volume: Number(data.volume),
         muted: data.muted === true,
         repeat: data.repeat_mode,
@@ -76,18 +86,21 @@ export async function PUT(request: Request) {
     const queueTrackIds = [...new Set(input.queueTrackIds)]
       .filter((id) => id !== input.trackId && canAccess(id))
       .slice(0, 50);
-    const { error } = await serviceClient().from('player_resume_states').upsert({
-      user_id: user.id,
-      track_id: input.trackId,
-      queue_track_ids: queueTrackIds,
-      current_time_seconds: input.currentTime,
-      volume: input.volume,
-      muted: input.muted,
-      repeat_mode: input.repeat,
-      shuffle: input.shuffle,
-      autoplay: input.autoplay,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'user_id' });
+    const { error } = await serviceClient().from('player_resume_states').upsert(
+      {
+        user_id: user.id,
+        track_id: input.trackId,
+        queue_track_ids: queueTrackIds,
+        current_time_seconds: input.currentTime,
+        volume: input.volume,
+        muted: input.muted,
+        repeat_mode: input.repeat,
+        shuffle: input.shuffle,
+        autoplay: input.autoplay,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' },
+    );
     if (error) throw new Error(`Failed to save player resume state: ${error.message}`);
     return jsonOk({ saved: true });
   } catch (error) {

@@ -23,7 +23,11 @@ export function ClearListeningHistory({ locale }: { locale: 'ar' | 'en' }) {
       await apiRequest('/api/library/history', { method: 'DELETE' });
       router.refresh();
     } catch {
-      setError(isArabic ? 'تعذر مسح السجل. جرّب مرة أخرى.' : 'Could not erase history. Please try again.');
+      setError(
+        isArabic
+          ? 'تعذر مسح السجل. جرّب مرة أخرى.'
+          : 'Could not erase history. Please try again.',
+      );
     } finally {
       setBusy(false);
     }
@@ -37,9 +41,19 @@ export function ClearListeningHistory({ locale }: { locale: 'ar' | 'en' }) {
         disabled={busy}
         className="min-h-11 rounded-xl border border-red-400/40 px-4 text-xs font-semibold text-red-200 hover:bg-red-400/10 disabled:opacity-50"
       >
-        {busy ? (isArabic ? 'جاري المسح…' : 'Deleting…') : (isArabic ? 'مسح سجل الاستماع' : 'Delete listening history')}
+        {busy
+          ? isArabic
+            ? 'جاري المسح…'
+            : 'Deleting…'
+          : isArabic
+            ? 'مسح سجل الاستماع'
+            : 'Delete listening history'}
       </button>
-      {error ? <span role="alert" className="text-xs text-red-200">{error}</span> : null}
+      {error ? (
+        <span role="alert" className="text-xs text-red-200">
+          {error}
+        </span>
+      ) : null}
     </div>
   );
 }

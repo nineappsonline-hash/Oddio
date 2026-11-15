@@ -347,7 +347,10 @@ try {
             assert.equal(response.status(), 200);
           }
           await page.reload({ waitUntil: 'domcontentloaded' });
-          assert.equal(await page.getByRole('button', { name: 'Delete listening history' }).count(), 0);
+          assert.equal(
+            await page.getByRole('button', { name: 'Delete listening history' }).count(),
+            0,
+          );
         });
       }
 
@@ -356,14 +359,19 @@ try {
           await page.goto(`${base}/en`, { waitUntil: 'domcontentloaded' });
           await page.locator('.oddio-stage-play').click();
           await page.waitForFunction(() =>
-            Object.keys(window.localStorage).some((key) => key.startsWith('oddio-player-session-v1:')),
+            Object.keys(window.localStorage).some((key) =>
+              key.startsWith('oddio-player-session-v1:'),
+            ),
           );
           const before = await page.evaluate(() =>
             Object.entries(window.localStorage)
               .filter(([key]) => key.startsWith('oddio-player-session-v1:'))
               .map(([, value]) => JSON.parse(value)),
           );
-          assert.ok(before.some((saved) => saved.track?.id), 'signed-in state must use persistent localStorage');
+          assert.ok(
+            before.some((saved) => saved.track?.id),
+            'signed-in state must use persistent localStorage',
+          );
           await page.reload({ waitUntil: 'domcontentloaded' });
           const mini = page.getByRole('region', { name: /mini player/i });
           await mini.waitFor({ state: 'visible' });

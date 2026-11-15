@@ -50,7 +50,11 @@ export default async function EditArtistPage({
     <div>
       <PageHeader title={t('studio.editArtist')} subtitle={artist.name} />
       <ArtistProfileForm locale={locale} artist={artist} />
-      <ArtistSearchAliases artistId={artist.id} initial={artist.searchAliases ?? []} locale={locale} />
+      <ArtistSearchAliases
+        artistId={artist.id}
+        initial={artist.searchAliases ?? []}
+        locale={locale}
+      />
     </div>
   );
 }
