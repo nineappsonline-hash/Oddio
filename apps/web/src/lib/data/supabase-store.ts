@@ -300,11 +300,29 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
       },
       audioUrl: '',
       audio: playable,
+      // Keep pending artist-only classifier suggestions out of public APIs.
+      // Only descriptive, validated measurement fields enter the catalog.
       audioFeatures:
         row.audio_features &&
         typeof row.audio_features === 'object' &&
         !Array.isArray(row.audio_features)
-          ? (row.audio_features as Track['audioFeatures'])
+          ? {
+              schemaVersion: num((row.audio_features as Row).schemaVersion),
+              tempoBpm:
+                typeof (row.audio_features as Row).tempoBpm === 'number'
+                  ? num((row.audio_features as Row).tempoBpm)
+                  : null,
+              tempoConfidence: num((row.audio_features as Row).tempoConfidence),
+              rmsDbfs:
+                typeof (row.audio_features as Row).rmsDbfs === 'number'
+                  ? num((row.audio_features as Row).rmsDbfs)
+                  : null,
+              peakDbfs:
+                typeof (row.audio_features as Row).peakDbfs === 'number'
+                  ? num((row.audio_features as Row).peakDbfs)
+                  : null,
+              analyzedSeconds: num((row.audio_features as Row).analyzedSeconds),
+            }
           : null,
       qualityLabel: text(row.quality_label, 'standard'),
       qualifiedPlays: num(row.qualified_plays),
