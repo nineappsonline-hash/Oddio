@@ -183,6 +183,15 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] Prompt-driven playlist generation with a no-paid-API baseline.
 - [ ] Personalized home, Rising Artists, Spotlight and fair exposure controls.
 
+### Phase 5 first slice — zero-paid-API recommendations (development branch, 2026-11-15)
+
+- [x] Implemented deterministic recommendations in `apps/web/src/lib/data/recommendations.ts` using the currently accessible approved/listable, ready-to-play catalog. No external model, purchased API or schema migration is required.
+- [x] For authenticated listeners, only their own likes and qualified playback events (joined by their own playback sessions) influence Genre/Mood/artist affinity. Previously liked/listened tracks are excluded from recommendation candidates; artist diversification is applied where possible.
+- [x] Added an Arabic/English recommendations section to Discover for unfiltered browsing. New listeners see explicitly labeled general picks rather than fabricated personal preferences.
+- [x] Added Vitest source tests for cold start, signed-in relevance, cross-account event isolation and unready audio exclusion. Latest CI/build/browser acceptance is **pending**; code is not production deployed.
+- [ ] Measure relevance with opt-in feedback and ensure large-catalog performance; current in-memory catalog scan is an MVP, not a scalable ranking service.
+- [ ] Build Oddio Flow/radio continuation, negative genre preferences, Daily Mix and transparent explanation controls only after a passing preview and privacy review. Avoid personalized claims if no signed-in preference signal exists.
+
 ## Phase 6 — artist studio
 
 - [ ] Reliable multipart uploads with progress and resume; structured release wizard.
