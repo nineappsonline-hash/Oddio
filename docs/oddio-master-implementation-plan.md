@@ -50,6 +50,15 @@ Working branch: `feature/master-plan-phase-0-1`.
 - No verified restorable production backup/restore procedure is available through the current connector. **Do not deploy the new RPC-dependent code to production until a backup and staging release are verified.**
 - The current PR stays Draft, production remains unchanged.
 
+### Cloudflare R2 playback cost guard (2026-11-15)
+
+- Reviewed `apps/web/src/app/api/stream/[id]/route.ts`: authenticated/non-demo requests validate the playback token and track access, then return **307 redirect** to a signed Cloudflare R2 GET URL. **Vercel does not proxy the audio bytes** on this path. Local demo mode is the only path which serves audio bytes from the application filesystem.
+- Aligned signed R2 GET expiration (rendition and original-MP3 fallback) to **1800 seconds** to match the current 30-minute playback token, reducing mid-track seek/retry expiration failures. Signed links remain bearer URLs; reassess the TTL for private/unlisted content and implement refresh-on-failure for long sessions.
+- Added `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer` on the streaming redirect, and a static regression test under `apps/web/src/lib/storage/r2-stream-architecture.test.ts`.
+- **R2 outbound transfer to the internet is not itself billed**, but R2 operations/storage and any Cloudflare/Worker features beyond free allowances can cost money. R2 presigned URLs are issued for the S3 API endpoint and cannot be used on a custom domain directly.
+- [ ] Validate real streaming and HTTP byte ranges from the browser against a non-production R2 object, including Safari, long listening sessions and signed URL refresh.
+- [ ] Check the correct cache/edge-delivery architecture and bucket configuration using the user's Cloudflare account. No Cloudflare bucket settings or production audio files were changed in this branch.
+
 ### Rollout dependency: required SQL migration
 
 `apps/web/src/lib/data/atomic-social.ts` calls `oddio_toggle_track_like`, `oddio_toggle_artist_follow`, `oddio_toggle_playlist_follow`, `oddio_add_playlist_track`, and `oddio_remove_playlist_track`. All five must be installed before releasing these production routes. Preview remains isolated with `DEMO_MODE=true`. No live data was changed during branch development.
