@@ -23,28 +23,51 @@ test('private approved audio becomes a fingerprint, never a copied recording or 
     const manifestFile = path.join(directory, 'consented-manifest.json');
     const preparedFile = path.join(directory, 'features.json');
     writeFileSync(sourceFile, source);
-    execFileSync('ffmpeg', [
-      '-y', '-hide_banner', '-loglevel', 'error',
-      '-f', 's16le', '-ar', String(rate), '-ac', '1', '-i', sourceFile,
-      '-c:a', 'libmp3lame', '-b:a', '128k', audio,
-    ], { timeout: 30000 });
-    const manifest = [{
-      id: 'fixture-1',
-      artistId: 'fixture-artist',
-      filePath: audio,
-      consent: true,
-      artistReviewed: true,
-      rightsBasis: 'original_creator',
-      consentScope: 'local_audio_feature_training',
-      consentRef: 'synthetic-fixture-not-real-permission',
-      consentedAt: '2026-01-01T00:00:00.000Z',
-      genreSlug: 'ambient',
-      moodSlugs: ['calm'],
-    }];
+    execFileSync(
+      'ffmpeg',
+      [
+        '-y',
+        '-hide_banner',
+        '-loglevel',
+        'error',
+        '-f',
+        's16le',
+        '-ar',
+        String(rate),
+        '-ac',
+        '1',
+        '-i',
+        sourceFile,
+        '-c:a',
+        'libmp3lame',
+        '-b:a',
+        '128k',
+        audio,
+      ],
+      { timeout: 30000 },
+    );
+    const manifest = [
+      {
+        id: 'fixture-1',
+        artistId: 'fixture-artist',
+        filePath: audio,
+        consent: true,
+        artistReviewed: true,
+        rightsBasis: 'original_creator',
+        consentScope: 'local_audio_feature_training',
+        consentRef: 'synthetic-fixture-not-real-permission',
+        consentedAt: '2026-01-01T00:00:00.000Z',
+        genreSlug: 'ambient',
+        moodSlugs: ['calm'],
+      },
+    ];
     writeFileSync(manifestFile, JSON.stringify(manifest));
     const cli = path.resolve('scripts/prepare-music-dataset.mjs');
     const generated = spawnSync(process.execPath, [
-      cli, manifestFile, '--output', preparedFile,
+      cli,
+      manifestFile,
+      '--output',
+      preparedFile,
     ]);
     assert.equal(generated.status, 0, generated.stderr.toString());
     const output = readFileSync(preparedFile, 'utf8');
@@ -62,7 +85,10 @@ test('private approved audio becomes a fingerprint, never a copied recording or 
     writeFileSync(manifestFile, JSON.stringify(manifest));
     const refusedPath = path.join(directory, 'refused.json');
     const refused = spawnSync(process.execPath, [
-      cli, manifestFile, '--output', refusedPath,
+      cli,
+      manifestFile,
+      '--output',
+      refusedPath,
     ]);
     assert.notEqual(refused.status, 0);
     assert.equal(existsSync(refusedPath), false);
