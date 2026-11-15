@@ -51,6 +51,7 @@ test('private approved audio becomes a fingerprint, never a copied recording or 
         id: 'fixture-1',
         artistId: 'fixture-artist',
         filePath: audio,
+        privateCreatorNotes: 'never-copy-private-creator-notes',
         consent: true,
         artistReviewed: true,
         rightsBasis: 'original_creator',
@@ -77,6 +78,7 @@ test('private approved audio becomes a fingerprint, never a copied recording or 
     assert.ok(rows[0].fingerprint.shingles.length >= 8);
     assert.equal('filePath' in rows[0], false);
     assert.equal(output.includes(audio), false);
+    assert.equal(output.includes('never-copy-private-creator-notes'), false);
     assert.equal(output.includes('synthetic.pcm'), false);
 
     // Withdraw the synthetic fixture's permission and ensure no output file
