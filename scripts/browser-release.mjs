@@ -133,7 +133,7 @@ try {
           name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
         });
         await mini.waitFor({ state: 'visible' });
-        await mini.getByRole('button', { name: /expand|توسيع|تكبير|فتح/i }).first().click();
+        await mini.getByRole('button', { name: /expand|كبّر|توسيع|تكبير|فتح/i }).first().click();
         const dialog = page.getByRole('dialog', { name: /player|مشغل/i });
         await dialog.waitFor({ state: 'visible' });
         assert.equal(await page.evaluate(() => document.body.style.overflow), 'hidden');
