@@ -18,7 +18,7 @@ describe('Oddio bilingual search normalization', () => {
 
   it('supports multiword search regardless of word order', () => {
     expect(matchesMusicSearch('أغنية من القَلْب الجميل', searchWords('القلب اغنيه'))).toBe(
-      false,
+      true,
     );
     expect(matchesMusicSearch('أغنية من القَلْب الجميل', searchWords('القلب من'))).toBe(
       true,
