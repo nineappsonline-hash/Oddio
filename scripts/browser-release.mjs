@@ -118,7 +118,9 @@ try {
           await page.keyboard.press('Escape');
           await dialog.waitFor({ state: 'detached' });
           assert.equal(
-            await page.locator('#oddio-mobile-menu-trigger').getAttribute('aria-expanded'),
+            await page
+              .locator('#oddio-mobile-menu-trigger')
+              .getAttribute('aria-expanded'),
             'false',
           );
         });
@@ -133,7 +135,10 @@ try {
           name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
         });
         await mini.waitFor({ state: 'visible' });
-        await mini.getByRole('button', { name: /expand|كبّر|توسيع|تكبير|فتح/i }).first().click();
+        await mini
+          .getByRole('button', { name: /expand|كبّر|توسيع|تكبير|فتح/i })
+          .first()
+          .click();
         const dialog = page.getByRole('dialog', { name: /player|مشغل/i });
         await dialog.waitFor({ state: 'visible' });
         assert.equal(await page.evaluate(() => document.body.style.overflow), 'hidden');
@@ -155,7 +160,9 @@ try {
         assert.equal(await tabs.first().getAttribute('aria-selected'), 'true');
 
         if (viewport.width === 390) {
-          const lyricsButton = dialog.locator('button[aria-controls="oddio-mobile-lyrics"]');
+          const lyricsButton = dialog.locator(
+            'button[aria-controls="oddio-mobile-lyrics"]',
+          );
           await lyricsButton.click();
           assert.equal(await lyricsButton.getAttribute('aria-expanded'), 'true');
           await dialog.locator('#oddio-mobile-lyrics').waitFor({ state: 'visible' });
@@ -181,20 +188,29 @@ try {
         await dialog.waitFor({ state: 'detached' });
         assert.equal(await page.evaluate(() => document.body.style.overflow), '');
 
-        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+        await page.evaluate(() =>
+          window.scrollTo(0, document.documentElement.scrollHeight),
+        );
         const clearance = await page.evaluate(() => {
           const footerContent = document.querySelector('footer > div:last-child');
           const miniPlayer = document.querySelector('.oddio-player-bar[role="region"]');
           if (!footerContent || !miniPlayer) return null;
-          return miniPlayer.getBoundingClientRect().top -
-            footerContent.getBoundingClientRect().bottom;
+          return (
+            miniPlayer.getBoundingClientRect().top -
+            footerContent.getBoundingClientRect().bottom
+          );
         });
-        assert.ok(clearance !== null && clearance >= 0,
-          `footer overlaps the mini player: ${clearance}px`);
+        assert.ok(
+          clearance !== null && clearance >= 0,
+          `footer overlaps the mini player: ${clearance}px`,
+        );
         const documentOverflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         );
-        assert.ok(documentOverflow <= 2, `page horizontal overflow: ${documentOverflow}px`);
+        assert.ok(
+          documentOverflow <= 2,
+          `page horizontal overflow: ${documentOverflow}px`,
+        );
       });
 
       await test(`${label} discover and search without crashes`, async () => {
