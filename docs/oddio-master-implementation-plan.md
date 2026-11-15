@@ -318,6 +318,13 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] **Still outstanding:** audited real-time listening rooms with abuse/moderation controls, native Android/iOS wrapper proof-of-concept, rights-compliant offline listening, gapless/crossfade/normalization, creator stories and share cards. Do not label Phases 6–8 complete while these remain open.
 - [ ] Before future production deployment apply both new migrations in order after a real backup, deploy the updated worker alongside web, and confirm Cloudflare R2 CORS + existing egress-free playback architecture. No production web/worker deployment or production SQL changes in this batch.
 
+### Phase 8 slice 3 — installable web app UX (development only)
+
+- [x] Added bilingual `/[locale]/install` and sidebar navigation. Supported Android browsers get a native install prompt when they expose `beforeinstallprompt`; iOS users receive Safari Add to Home Screen guidance.
+- [x] Standalone PWA runs the same Next.js UI; app caching remains restricted to immutable static assets. No private music, playback tokens or personalized content is cached.
+- [ ] Mobile installability and push/media playback must be acceptance-tested on actual Android/iOS. PWA is **not** a Play Store/App Store native package and is **not** rights-compliant offline playback.
+- [ ] Android wrapper and iOS wrapper remain future builds (iOS compilation/signing requires access to macOS tooling).
+
 ## Continuous release gates (every phase)
 
 1. No direct production deploy from a work-in-progress branch.
