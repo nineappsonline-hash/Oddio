@@ -255,7 +255,7 @@ export function presignR2Delete(
     bucket === 'ai-music-originals'
       ? /^incoming\/[a-f0-9-]+\/[a-f0-9-]+$/.test(objectKey)
       : objectKey.startsWith(trackId + '/') &&
-        /^[a-zA-Z0-9/_-]+\\.[a-zA-Z0-9]+$/.test(objectKey) &&
+        /^[a-zA-Z0-9/_-]+\.[a-zA-Z0-9]+$/.test(objectKey) &&
         !objectKey.includes('..');
   if (!/^[a-f0-9-]{36}$/.test(trackId) || !valid)
     throw new AppError(
@@ -264,7 +264,7 @@ export function presignR2Delete(
       422,
     );
   const host = `${env.r2AccountId}.r2.cloudflarestorage.com`;
-  const timestamp = new Date().toISOString().replace(/[:-]|\\.\\d{3}/g, '');
+  const timestamp = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
   const shortDate = timestamp.slice(0, 8);
   const scope = `${shortDate}/auto/s3/aws4_request`;
   const path = `/${bucket}/${objectKey.split('/').map(encodeURIComponent).join('/')}`;
@@ -282,11 +282,11 @@ export function presignR2Delete(
     'DELETE',
     path,
     query,
-    `host:${host}\\n`,
+    `host:${host}\n`,
     'host',
     'UNSIGNED-PAYLOAD',
-  ].join('\\n');
-  const toSign = ['AWS4-HMAC-SHA256', timestamp, scope, sha256(canonical)].join('\\n');
+  ].join('\n');
+  const toSign = ['AWS4-HMAC-SHA256', timestamp, scope, sha256(canonical)].join('\n');
   const signingKey = hmac(
     hmac(hmac(hmac(`AWS4${env.r2SecretAccessKey}`, shortDate), 'auto'), 's3'),
     'aws4_request',
