@@ -13,7 +13,7 @@ import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { TrackCard } from '@/components/music/TrackCard';
-import { FlowButton } from '@/components/player/FlowButton';
+import { DiscoveryMixShelf } from '@/components/music/DiscoveryMixShelf';
 import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -56,7 +56,7 @@ export default async function DiscoverPage({
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const home = getHomeData(db, viewer);
   const flow = recommendTracks(db, viewer, 20);
-  const recommendations = { ...flow, tracks: flow.tracks.slice(0, 5) };
+  const recommendations = flow;
 
   const parsed = searchQuery.safeParse({
     q: first(sp.q) ?? '',
@@ -118,36 +118,15 @@ export default async function DiscoverPage({
           </Link>
         ))}
       </section>
-      {recommendations.tracks.length > 0 && !first(sp.q) && !first(sp.genre) && !first(sp.mood) && !first(sp.language) && !first(sp.country) && !first(sp.cursor) ? (
-        <section className="oddio-dashboard-section mb-8" aria-label={locale === 'ar' ? 'أغاني مقترحة' : 'Recommended music'}>
-          <div className="oddio-section-title-row">
-            <div>
-              <p className="oddio-micro-label">
-                {locale === 'ar' ? 'ODDIO PICKS' : 'ODDIO PICKS'}
-              </p>
-              <h2>
-                {recommendations.personalized
-                  ? locale === 'ar' ? 'مختارة على ذوقك' : 'Picked for your taste'
-                  : locale === 'ar' ? 'ابدأ من هنا' : 'Start listening here'}
-              </h2>
-              <p className="text-sm text-muted">
-                {recommendations.personalized
-                  ? locale === 'ar'
-                    ? 'اقتراحات حسب الأغاني اللي حبيتها وسمعتها، من غير مشاركة بياناتك.'
-                    : 'Based on your likes and completed listens, without sharing your data.'
-                  : locale === 'ar'
-                    ? 'اختيارات عامة لحد ما نعرف ذوقك من الأغاني اللي بتحبها.'
-                    : 'Popular picks until you build your listening taste.'}
-              </p>
-            </div>
-            <FlowButton tracks={flow.tracks} locale={locale} />
-          </div>
-          <div className="oddio-explore-results-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {recommendations.tracks.map((track) => (
-              <TrackCard key={track.id} track={track} queue={recommendations.tracks} />
-            ))}
-          </div>
-        </section>
+      {recommendations.tracks.length > 0 && !first(sp.q) && !first(sp.genre) &&
+      !first(sp.mood) && !first(sp.language) && !first(sp.country) &&
+      !first(sp.cursor) ? (
+        <DiscoveryMixShelf
+          tracks={recommendations.tracks}
+          personalized={recommendations.personalized}
+          locale={locale}
+          viewerId={viewer.userId}
+        />
       ) : null}
       <div className="oddio-explore-filter-label">
         <SlidersHorizontal size={16} />
