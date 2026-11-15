@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
+import { roomShouldSeek, roomSyncedPosition } from '@/lib/room-playback-sync';
 
 interface RoomView {
+  serverNow: string;
+  receivedAt: number;
   room: {
     id:string;title:string;hostId:string;version:number;trackId:string|null;
     playing:boolean;seconds:number;syncedAt:string;expiresAt:string;
@@ -37,7 +40,7 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
         const data=await apiRequest<RoomView>(
           `/api/rooms?roomId=${encodeURIComponent(roomId)}`,{cache:'no-store'});
         if(!active)return;
-        setSnapshot(data);setError('');
+        setSnapshot({...data,receivedAt:Date.now()});setError('');
       }catch(err){
         if(!active)return;
         setError(err instanceof Error?err.message:'Room unavailable');
@@ -55,18 +58,23 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
     try{
       await apiRequest('/api/rooms',{method:'POST',
         body:JSON.stringify({...payload,roomId})});
-    }catch(e){setError(e instanceof Error?e.message:'Room action failed');}
+      return true;
+    }catch(e){setError(e instanceof Error?e.message:'Room action failed');return false;}
     finally{setBusy(false);}
   }
   function sync(){
     if(!snapshot?.track || snapshot.me.host)return;
-    const target=snapshot.room.seconds+
-      (snapshot.room.playing?Math.max(0,(Date.now()-Date.parse(snapshot.room.syncedAt))/1000):0);
+    const target=roomSyncedPosition({
+      seconds:snapshot.room.seconds,playing:snapshot.room.playing,
+      syncedAt:snapshot.room.syncedAt,serverNow:snapshot.serverNow,
+      elapsedClientMs:Date.now()-snapshot.receivedAt,
+      durationSeconds:snapshot.track.durationMs/1000,
+    });
     const player=usePlayer.getState();
     if(player.track?.id!==snapshot.track.id){
       player.play(snapshot.track,[snapshot.track]);
       player.seek(target);
-    } else if(Math.abs(player.currentTime-target)>2.5) {
+    } else if(roomShouldSeek(player.currentTime,target)) {
       player.seek(target);
     }
     player.setPlaying(snapshot.room.playing);
@@ -78,8 +86,12 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
     lastSynced.current=signature;
     if(snapshot.track) {
       const current=usePlayer.getState();
-      const pos=snapshot.room.seconds+
-        (snapshot.room.playing?Math.max(0,(Date.now()-Date.parse(snapshot.room.syncedAt))/1000):0);
+      const pos=roomSyncedPosition({
+        seconds:snapshot.room.seconds,playing:snapshot.room.playing,
+        syncedAt:snapshot.room.syncedAt,serverNow:snapshot.serverNow,
+        elapsedClientMs:Date.now()-snapshot.receivedAt,
+        durationSeconds:snapshot.track.durationMs/1000,
+      });
       if(current.track?.id!==snapshot.track.id){
         current.play(snapshot.track,[snapshot.track]);
       }
@@ -130,7 +142,7 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
           className="min-h-11 rounded-xl border border-white/20 px-4 text-sm">
           {ar?'إيقاف مؤقت للجميع':'Pause for everyone'}
         </button>
-        <button type="button" disabled={busy} onClick={()=>void action({action:'close'}).then(()=>router.push(`/${locale}/rooms`))}
+        <button type="button" disabled={busy} onClick={()=>void action({action:'close'}).then(ok=>{if(ok)router.push(`/${locale}/rooms`);})}
           className="min-h-11 rounded-xl border border-rose-400/30 px-4 text-sm text-rose-300">
           {ar?'إغلاق الغرفة':'Close room'}
         </button>
@@ -140,6 +152,11 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
           {ar?'تابع تشغيل المضيف':'Follow host playback'}
         </button>
         <span className="text-xs text-muted">{following?(ar?'المزامنة شغالة':'Sync enabled'):(ar?'اضغط للانضمام للصوت':'Tap to start audio')}</span>
+        <button type="button" disabled={busy}
+          onClick={()=>void action({action:'leave'}).then(ok=>{if(ok)router.push(`/${locale}/rooms`);})}
+          className="min-h-11 rounded-xl border border-white/20 px-4 text-sm">
+          {ar?'مغادرة الغرفة':'Leave room'}
+        </button>
       </div>}
       <div className="rounded-xl bg-black/20 p-4">
         <p className="text-sm font-semibold">
@@ -176,7 +193,7 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
         </div>
         {!snapshot.me.muted?<form className="mt-4 flex flex-wrap gap-2" onSubmit={e=>{
           e.preventDefault();if(!message.trim())return;
-          void action({action:'message',body:message.trim()}).then(()=>setMessage(''));
+          void action({action:'message',body:message.trim()}).then(ok=>{if(ok)setMessage('');});
         }}>
           <label htmlFor="room-message" className="sr-only">{ar?'رسالتك':'Your message'}</label>
           <input id="room-message" className="input min-w-0 flex-1" required maxLength={300}
