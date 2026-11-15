@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
       blockedGenreIds,
       limit: 20,
     });
-    const eligible = listableTracks(db, viewer).filter((track) =>
-      track.access.allowed && track.audio?.processingStatus === 'ready',
+    const eligible = listableTracks(db, viewer).filter(
+      (track) => track.access.allowed && track.audio?.processingStatus === 'ready',
     );
     const quality = evaluateDiscoveryQuality(
       eligible,

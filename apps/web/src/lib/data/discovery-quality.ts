@@ -26,8 +26,12 @@ export function evaluateDiscoveryQuality(
   for (const track of selected) {
     artists.set(track.artistId, (artists.get(track.artistId) ?? 0) + 1);
     if (blockedTrackIds.has(track.id)) excludedTrackLeaks += 1;
-    if ((track.genreIds?.length ? track.genreIds : [track.genreId]).some((id) =>
-      blockedGenreIds.has(id))) excludedGenreLeaks += 1;
+    if (
+      (track.genreIds?.length ? track.genreIds : [track.genreId]).some((id) =>
+        blockedGenreIds.has(id),
+      )
+    )
+      excludedGenreLeaks += 1;
   }
   const eligibleArtists = new Set(available.map((track) => track.artistId));
   const uniqueArtists = artists.size;
@@ -35,10 +39,8 @@ export function evaluateDiscoveryQuality(
     candidateCount: available.length,
     shownCount: selected.length,
     uniqueArtists,
-    artistCoverage: eligibleArtists.size
-      ? uniqueArtists / eligibleArtists.size : 0,
-    topArtistShare: selected.length
-      ? Math.max(...artists.values()) / selected.length : 0,
+    artistCoverage: eligibleArtists.size ? uniqueArtists / eligibleArtists.size : 0,
+    topArtistShare: selected.length ? Math.max(...artists.values()) / selected.length : 0,
     excludedTrackLeaks,
     excludedGenreLeaks,
   };

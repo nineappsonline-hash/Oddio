@@ -429,10 +429,12 @@ try {
           const result = await write.json();
           assert.equal(result.data?.saved, false);
           await page.goto(`${base}/en/discover`, { waitUntil: 'domcontentloaded' });
-          await page.getByText('Hidden music is currently saved on this device.').waitFor({
-            state: 'visible',
-            timeout: 15_000,
-          });
+          await page
+            .getByText('Hidden music is currently saved on this device.')
+            .waitFor({
+              state: 'visible',
+              timeout: 15_000,
+            });
         });
       }
 

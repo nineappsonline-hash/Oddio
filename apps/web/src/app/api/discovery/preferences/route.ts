@@ -14,10 +14,12 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const uuid = z.string().uuid();
-const input = z.object({
-  trackIds: z.array(uuid).max(100),
-  genreIds: z.array(uuid).max(50),
-}).strict();
+const input = z
+  .object({
+    trackIds: z.array(uuid).max(100),
+    genreIds: z.array(uuid).max(50),
+  })
+  .strict();
 
 export async function GET() {
   try {

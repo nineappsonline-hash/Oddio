@@ -108,9 +108,15 @@ export function DiscoveryMixShelf({
       <p className="mb-3 text-xs text-muted" role="status">
         {viewerId
           ? cloudSynced
-            ? ar ? 'اختيارات الاستبعاد متزامنة على حسابك.' : 'Hidden music synced to your account.'
-            : ar ? 'الاستبعادات محفوظة على الجهاز ده حاليًا.' : 'Hidden music is currently saved on this device.'
-          : ar ? 'الاستبعادات المؤقتة محفوظة في التبويب ده.' : 'Guest exclusions are saved in this tab.'}
+            ? ar
+              ? 'اختيارات الاستبعاد متزامنة على حسابك.'
+              : 'Hidden music synced to your account.'
+            : ar
+              ? 'الاستبعادات محفوظة على الجهاز ده حاليًا.'
+              : 'Hidden music is currently saved on this device.'
+          : ar
+            ? 'الاستبعادات المؤقتة محفوظة في التبويب ده.'
+            : 'Guest exclusions are saved in this tab.'}
       </p>
       {cards.length ? (
         <div className="oddio-explore-results-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">

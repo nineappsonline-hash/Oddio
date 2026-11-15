@@ -56,14 +56,17 @@ type PreferenceResponse = {
  * honor the latest server state so explicit remote resets are respected.
  * A missing staging migration gracefully keeps the current local setting.
  */
-export async function hydrateDiscoveryExclusions(userId: string | null): Promise<boolean> {
+export async function hydrateDiscoveryExclusions(
+  userId: string | null,
+): Promise<boolean> {
   if (!userId || typeof window === 'undefined') return false;
   const previous = inflightHydration.get(userId);
   if (previous) return previous;
   const hydration = (async () => {
     try {
       const response = await fetch('/api/discovery/preferences', {
-        credentials: 'same-origin', cache: 'no-store',
+        credentials: 'same-origin',
+        cache: 'no-store',
       });
       if (!response.ok) return false;
       const payload = (await response.json()) as PreferenceResponse;
@@ -80,9 +83,11 @@ export async function hydrateDiscoveryExclusions(userId: string | null): Promise
             };
       saveDiscoveryExclusions(userId, merged);
       // Persist one-time legacy preferences before considering this client synced.
-      if (merged.trackIds.join(',') !== remote.trackIds.join(',') ||
-          merged.genreIds.join(',') !== remote.genreIds.join(',')) {
-        if (!await persistDiscoveryExclusions(userId, merged)) return false;
+      if (
+        merged.trackIds.join(',') !== remote.trackIds.join(',') ||
+        merged.genreIds.join(',') !== remote.genreIds.join(',')
+      ) {
+        if (!(await persistDiscoveryExclusions(userId, merged))) return false;
       }
       window.localStorage.setItem(key, '1');
       return true;
@@ -91,8 +96,11 @@ export async function hydrateDiscoveryExclusions(userId: string | null): Promise
     }
   })();
   inflightHydration.set(userId, hydration);
-  try { return await hydration; }
-  finally { inflightHydration.delete(userId); }
+  try {
+    return await hydration;
+  } finally {
+    inflightHydration.delete(userId);
+  }
 }
 
 /** Serializes writes from this tab; always sends the latest saved browser value. */
@@ -103,22 +111,26 @@ export function persistDiscoveryExclusions(
   if (!userId || typeof window === 'undefined') return Promise.resolve(false);
   saveDiscoveryExclusions(userId, exclusions);
   const previous = pendingSaves.get(userId) ?? Promise.resolve(false);
-  const write = previous.catch(() => false).then(async () => {
-    try {
-      const latest = readDiscoveryExclusions(userId);
-      const response = await fetch('/api/discovery/preferences', {
-        method: 'PUT',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(latest),
-      });
-      if (!response.ok) return false;
-      const payload = (await response.json()) as PreferenceResponse;
-      const saved = payload.data?.saved === true;
-      if (saved) window.localStorage.setItem(preferenceKey(userId) + ':synced', '1');
-      return saved;
-    } catch { return false; }
-  });
+  const write = previous
+    .catch(() => false)
+    .then(async () => {
+      try {
+        const latest = readDiscoveryExclusions(userId);
+        const response = await fetch('/api/discovery/preferences', {
+          method: 'PUT',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(latest),
+        });
+        if (!response.ok) return false;
+        const payload = (await response.json()) as PreferenceResponse;
+        const saved = payload.data?.saved === true;
+        if (saved) window.localStorage.setItem(preferenceKey(userId) + ':synced', '1');
+        return saved;
+      } catch {
+        return false;
+      }
+    });
   pendingSaves.set(userId, write);
   void write.finally(() => {
     if (pendingSaves.get(userId) === write) pendingSaves.delete(userId);
