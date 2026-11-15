@@ -1,6 +1,8 @@
 import { playlistInput } from '@ai-music/contracts';
 import { mutateRuntimeDb, readRuntimeDb } from '@/lib/data/runtime-store';
 import { createPlaylist } from '@/lib/data/mutations';
+import { demoMode } from '@/lib/env';
+import { createPlaylistDirect } from '@/lib/data/playlist-direct';
 import {
   assertSameOrigin,
   jsonError,
@@ -30,7 +32,9 @@ export async function POST(request: Request) {
     const user = await requireUser();
     rateLimit(`playlist:create:${user.id}`, 20, 60_000);
     const input = await parseBody(request, playlistInput);
-    const playlist = await mutateRuntimeDb((db) => createPlaylist(db, user, input));
+    const playlist = demoMode
+      ? await mutateRuntimeDb((db) => createPlaylist(db, user, input))
+      : await createPlaylistDirect(user, input);
     return jsonOk({ playlist });
   } catch (error) {
     return jsonError(error);
