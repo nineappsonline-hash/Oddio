@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 const actions = z.discriminatedUnion('action',[
   z.object({action:z.literal('invite'),playlistId:z.string().uuid()}),
-  z.object({action:z.literal('join'),code:z.string().regex(/^[a-f0-9]{64}$/)}),
+  z.object({action:z.literal('join'),playlistId:z.string().uuid(),code:z.string().regex(/^[a-f0-9]{64}$/)}),
   z.object({action:z.literal('remove'),playlistId:z.string().uuid(),userId:z.string().uuid()}),
   z.object({action:z.literal('revoke'),playlistId:z.string().uuid(),inviteId:z.string().uuid()}),
 ]);
@@ -99,7 +99,7 @@ export async function POST(request:Request){
     }
     const hash=crypto.createHash('sha256').update(body.code).digest('hex');
     const {data:playlistId,error}=await db.rpc('oddio_join_playlist_invite',{
-      p_user_id:user.id,p_code_hash:hash,
+      p_user_id:user.id,p_playlist_id:body.playlistId,p_code_hash:hash,
     });
     if(error){
       if(error.code==='P0002') throw Errors.notFound('Invite expired or invalid');
