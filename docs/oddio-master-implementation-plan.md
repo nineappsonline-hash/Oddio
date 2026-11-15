@@ -74,6 +74,23 @@ Working branch: `feature/master-plan-phase-0-1`.
 - [ ] Verify a real, continuously running media worker and R2 integration; the repo cannot demonstrate that the worker is deployed from CI alone.
 - [ ] Verify a full production backup/restore, staging auth/data workflow, real R2 CORS/range uploads, and the latest browser/format gates before merge or release.
 
+### Live read-only media inventory (2026-11-15)
+
+Read-only SQL against the connected Supabase production project reported
+**27 succeeded** `media.transcode` jobs and **5 dead** jobs. Four dead jobs
+have the generic message `Processing failed`; one reported an invalid MP3
+header. There are **32 ready audio assets** and **5 pending/processing/failed
+assets**; at the time of review there were **0 playback sessions and 0
+playback events**. These are snapshots, not proof of ongoing worker health.
+
+- [ ] Inspect those five jobs/objects with appropriate artist access and
+  production logs, validate actual file signatures, distinguish old fixture
+  failures from current worker failures and reconcile asset statuses.
+- [ ] Do not automatically replay dead jobs or delete original R2 objects.
+  Any requeue requires a reviewed cause and a verified backup.
+- [ ] Confirm the permanent media worker process is actually running and
+  publishing in production; successful historical jobs alone do not prove it.
+
 ## Phase 2 — layout and player
 
 - [ ] Validate Arabic RTL, English LTR, mobile no-horizontal-scroll, footer clearance and bottom navigation.
