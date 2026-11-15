@@ -13,6 +13,7 @@ import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { TrackCard } from '@/components/music/TrackCard';
+import { FlowButton } from '@/components/player/FlowButton';
 import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -54,7 +55,8 @@ export default async function DiscoverPage({
   const viewer = await getViewer();
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const home = getHomeData(db, viewer);
-  const recommendations = recommendTracks(db, viewer, 5);
+  const flow = recommendTracks(db, viewer, 20);
+  const recommendations = { ...flow, tracks: flow.tracks.slice(0, 5) };
 
   const parsed = searchQuery.safeParse({
     q: first(sp.q) ?? '',
@@ -138,6 +140,7 @@ export default async function DiscoverPage({
                     : 'Popular picks until you build your listening taste.'}
               </p>
             </div>
+            <FlowButton tracks={flow.tracks} locale={locale} />
           </div>
           <div className="oddio-explore-results-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {recommendations.tracks.map((track) => (
