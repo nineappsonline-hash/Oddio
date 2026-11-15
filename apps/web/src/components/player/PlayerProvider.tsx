@@ -321,7 +321,7 @@ export function PlayerProvider({
     streamRef.current = null;
     setStream(null);
 
-    const warmed = warmedRef.current?.trackId === trackId && playbackRequestId === 0
+    const warmed = warmedRef.current?.trackId === trackId
       ? warmedRef.current.result
       : null;
     if (warmed) {
@@ -382,8 +382,10 @@ export function PlayerProvider({
       void audio.play().catch(() => {
         usePlayer.getState().setPlaying(false);
       });
+      if(crossfadingRef.current)void standbyRef.current?.play().catch(()=>undefined);
     } else {
       audio.pause();
+      standbyRef.current?.pause();
     }
   }, [isPlaying, stream]);
 
@@ -407,6 +409,13 @@ export function PlayerProvider({
     audio.currentTime = Math.min(Math.max(seekRequest.seconds, 0), duration || 0);
     audibleRef.current.lastTime = audio.currentTime;
     usePlayer.getState().setCurrentTime(audio.currentTime);
+    // A deliberate seek invalidates a transition that was already underway.
+    if(crossfadingRef.current){
+      standbyRef.current?.pause();
+      crossfadingRef.current=false;
+      crossfadeTargetRef.current=null;
+      audio.volume=usePlayer.getState().muted?0:usePlayer.getState().volume;
+    }
   }, [seekRequest]);
 
   useEffect(() => {
