@@ -347,6 +347,16 @@ try {
         assert.equal(await filters.locator('select[name="sort"]').inputValue(), 'newest');
       });
 
+      await test(`${label} anonymous discovery preference sync is protected`, async () => {
+        const read = await page.request.get(`${base}/api/discovery/preferences`);
+        assert.equal(read.status(), 401);
+        const update = await page.request.put(`${base}/api/discovery/preferences`, {
+          data: { trackIds: [], genreIds: [] },
+          headers: { origin: base },
+        });
+        assert.equal(update.status(), 401);
+      });
+
       await test(`${label} anonymous library stays protected`, async () => {
         await page.goto(`${base}/${locale}/library`, { waitUntil: 'domcontentloaded' });
         await page.waitForURL(new RegExp(`/${locale}/login\\?next=`), {
