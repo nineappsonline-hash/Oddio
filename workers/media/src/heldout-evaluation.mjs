@@ -44,7 +44,8 @@ export function validateReviewedRows(rows) {
   return rows;
 }
 
-export function evaluateHeldoutModel(model, holdout) {
+export function evaluateHeldoutModel(model, holdout, predictReviewedTags) {
+  if (typeof predictReviewedTags !== 'function') throw new Error('Expected classifier predictor');
   validateReviewedRows(holdout);
   if (model?.schemaVersion !== 1 || !Array.isArray(model.examples)
     || !model.trainedFromArtistReviewed) throw new Error('Invalid trained model');
@@ -130,10 +131,3 @@ export function evaluateHeldoutModel(model, holdout) {
   };
 }
 
-// Imported lazily to avoid the circular dependency between the training and
-// deployment evaluation modules. Filled by the caller at validation time.
-let predictReviewedTags = () => null;
-export function useReviewedPredictor(predict) {
-  if (typeof predict !== 'function') throw new Error('Expected classifier prediction function');
-  predictReviewedTags = predict;
-}
