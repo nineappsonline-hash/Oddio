@@ -87,6 +87,9 @@ export default async function LibraryPage({
         <a href="#recent" className="chip">
           {t('library.history')}
         </a>
+        <Link href={`/${locale}/library/recap`} className="chip">
+          {locale === 'ar' ? 'ملخصي الشهري' : 'Monthly recap'}
+        </Link>
       </nav>
 
       <section id="liked" className="scroll-mt-24">
