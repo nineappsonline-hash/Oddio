@@ -40,7 +40,12 @@ values (
  '38000000-0000-4000-8000-000000000001',
  'Audio tag review', 'audio-tag-review',
  '18000000-0000-4000-8000-000000000001',
- '{"tagSuggestion":{"source":"artist-reviewed-local-model-v1","genreSlug":"phase4-suggested","moodSlugs":["phase4-calm"],"confidence":0.93}}'::jsonb
+ '{}'::jsonb
+);
+insert into public.audio_tag_suggestions(track_id,suggestion)
+values (
+ '58000000-0000-4000-8000-000000000001',
+ '{"source":"artist-reviewed-local-model-v1","genreSlug":"phase4-suggested","moodSlugs":["phase4-calm"],"confidence":0.93}'::jsonb
 );
 
 do $$
@@ -82,6 +87,12 @@ begin
       and t.audio_features -> 'artistApprovedTags' ->> 'genreSlug' = 'phase4-suggested'
   ) then
     raise exception 'Artist-approved genre update was not saved';
+  end if;
+  if exists (
+    select 1 from public.audio_tag_suggestions
+    where track_id = '58000000-0000-4000-8000-000000000001'
+  ) then
+    raise exception 'Accepted private suggestion should be consumed';
   end if;
   if not exists (
     select 1 from public.track_moods
