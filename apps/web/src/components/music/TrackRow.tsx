@@ -9,7 +9,8 @@ import { Artwork } from '@/components/ui/Artwork';
 import { LikeButton } from '@/components/community/LikeButton';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Equalizer } from '@/components/visuals/Equalizer';
-import { cn, formatDuration, formatNumber } from '@/lib/utils';
+import { TrackDuration } from '@/components/music/TrackDuration';
+import { cn, formatNumber } from '@/lib/utils';
 import type { Locale } from '@ai-music/contracts';
 
 export function TrackRow({
@@ -141,7 +142,7 @@ export function TrackRow({
           <ListPlus className="h-4 w-4" />
         </button>
         <span className="w-10 text-end text-xs tabular-nums text-muted">
-          {formatDuration(track.durationMs)}
+          <TrackDuration trackId={track.id} durationMs={track.durationMs} />
         </span>
       </div>
     </div>
