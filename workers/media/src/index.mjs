@@ -19,6 +19,8 @@
 import { execFile } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { Readable, Transform } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import fsp from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -45,6 +47,10 @@ const SUPABASE_URL = (
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const TARGET_BITRATE = Number(process.env.AUDIO_TARGET_BITRATE_KBPS || 320);
 const MAX_DURATION = Number(process.env.AUDIO_MAX_DURATION_SECONDS || 900);
+const MAX_AUDIO_BYTES = Math.min(
+  Math.max(1, Number(process.env.AUDIO_MAX_UPLOAD_BYTES || 100 * 1024 * 1024)),
+  100 * 1024 * 1024,
+);
 const MIN_BITRATE = Number(process.env.AUDIO_MIN_BITRATE_KBPS || 256);
 const BATCH = Number(process.env.MEDIA_WORKER_BATCH || 5);
 const EMAIL_API_URL = process.env.EMAIL_API_URL || 'https://api.resend.com/emails';
@@ -456,8 +462,28 @@ function r2SignedUrl(method, bucket, key) {
 }
 async function storageDownload(bucket, objectKey, target) {
   const response = await fetch(r2SignedUrl('GET', bucket, objectKey));
-  if (!response.ok) throw new Error(`R2 download failed: ${response.status}`);
-  await fsp.writeFile(target, Buffer.from(await response.arrayBuffer()));
+  if (!response.ok || !response.body) {
+    throw new Error(`R2 download failed: ${response.status}`);
+  }
+  const contentLength = Number(response.headers.get('content-length'));
+  if (contentLength > MAX_AUDIO_BYTES) {
+    await response.body.cancel();
+    throw new Error('Source audio exceeds the worker file size limit');
+  }
+  let writtenBytes = 0;
+  const sizeGuard = new Transform({
+    transform(chunk, _encoding, callback) {
+      writtenBytes += chunk.length;
+      if (writtenBytes > MAX_AUDIO_BYTES) {
+        callback(new Error('Source audio exceeds the worker file size limit'));
+      } else {
+        callback(null, chunk);
+      }
+    },
+  });
+  // Enforce a byte limit even when R2 does not return Content-Length.
+  // Stream directly to disk instead of allocating the whole original in RAM.
+  await pipeline(Readable.fromWeb(response.body), sizeGuard, fs.createWriteStream(target));
 }
 async function storageUpload(bucket, objectKey, filePath) {
   const response = await fetch(r2SignedUrl('PUT', bucket, objectKey), {
