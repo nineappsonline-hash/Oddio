@@ -11,6 +11,7 @@ type MultipartDraft = {
   filename: string;
   size: number;
   lastModified: number;
+  fingerprint: string | null;
   objectKey: string;
   uploadId: string;
   partSize: number;
@@ -28,7 +29,13 @@ type MultipartAction = {
   partNumber?: number;
 };
 
-function sessionFor(file: File): MultipartDraft | null {
+async function fingerprintFile(file: File): Promise<string | null> {
+  if (!globalThis.crypto?.subtle) return null;
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function sessionFor(file: File, fingerprint: string | null): MultipartDraft | null {
   try {
     const raw = window.localStorage.getItem(DRAFT_KEY);
     if (!raw) return null;
@@ -37,6 +44,7 @@ function sessionFor(file: File): MultipartDraft | null {
       value.filename !== file.name ||
       value.size !== file.size ||
       value.lastModified !== file.lastModified ||
+      !fingerprint || value.fingerprint !== fingerprint ||
       value.createdAt > Date.now() ||
       Date.now() - value.createdAt > MAX_SESSION_AGE_MS ||
       value.partSize !== 8 * 1024 * 1024 ||
@@ -90,7 +98,8 @@ export async function uploadAudioMultipart(
   file: File,
   options: MultipartProgress,
 ): Promise<{ objectKey: string }> {
-  let draft = sessionFor(file);
+  const fingerprint = await fingerprintFile(file);
+  let draft = sessionFor(file, fingerprint);
   if (!draft) {
     const started = await action<{
       objectKey: string;
@@ -107,6 +116,7 @@ export async function uploadAudioMultipart(
       filename: file.name,
       size: file.size,
       lastModified: file.lastModified,
+      fingerprint,
       createdAt: Date.now(),
       objectKey: started.objectKey,
       uploadId: started.uploadId,
