@@ -1,5 +1,5 @@
 import { getSessionUser } from '@/lib/auth/session';
-import { mutateDb } from '@/lib/data/db';
+import { mutateRuntimeDb } from '@/lib/data/runtime-store';
 import { toggleLike } from '@/lib/data/mutations';
 import {
   assertSameOrigin,
@@ -20,7 +20,7 @@ export async function POST(
     const user = await requireUser();
     rateLimit(`like:${user.id}`, 60, 60_000);
     const { id } = await context.params;
-    const liked = mutateDb((db) => toggleLike(db, user, id));
+    const liked = await mutateRuntimeDb((db) => toggleLike(db, user, id));
     return jsonOk({ liked });
   } catch (error) {
     return jsonError(error);
