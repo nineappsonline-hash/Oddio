@@ -45,14 +45,17 @@ export function annualListeningDNA(
     if (listen.genre?.id) {
       const genre = genreCounts.get(listen.genre.id);
       genreCounts.set(listen.genre.id, {
-        name: (locale === 'ar' ? listen.genre.labelAr : listen.genre.labelEn) || 'Unknown',
+        name:
+          (locale === 'ar' ? listen.genre.labelAr : listen.genre.labelEn) || 'Unknown',
         plays: (genre?.plays ?? 0) + 1,
       });
     }
   }
   const sorted = <T extends { plays: number }>(entries: Array<[string, T]>) =>
-    entries.sort(([aId, a], [bId, b]) => b.plays - a.plays || aId.localeCompare(bId))
-      .slice(0, 5).map(([id, value]) => ({ id, ...value }));
+    entries
+      .sort(([aId, a], [bId, b]) => b.plays - a.plays || aId.localeCompare(bId))
+      .slice(0, 5)
+      .map(([id, value]) => ({ id, ...value }));
   return {
     year,
     qualifiedListens,

@@ -484,7 +484,11 @@ async function storageDownload(bucket, objectKey, target) {
   });
   // Enforce a byte limit even when R2 does not return Content-Length.
   // Stream directly to disk instead of allocating the whole original in RAM.
-  await pipeline(Readable.fromWeb(response.body), sizeGuard, fs.createWriteStream(target));
+  await pipeline(
+    Readable.fromWeb(response.body),
+    sizeGuard,
+    fs.createWriteStream(target),
+  );
 }
 async function storageUpload(bucket, objectKey, filePath) {
   const response = await fetch(r2SignedUrl('PUT', bucket, objectKey), {

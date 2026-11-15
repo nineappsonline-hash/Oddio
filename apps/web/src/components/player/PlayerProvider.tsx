@@ -604,7 +604,9 @@ export function PlayerProvider({
       });
       mediaSession.setActionHandler('seekforward', (details) => {
         const state = usePlayer.getState();
-        state.seek(Math.min(state.duration, state.currentTime + (details.seekOffset ?? 10)));
+        state.seek(
+          Math.min(state.duration, state.currentTime + (details.seekOffset ?? 10)),
+        );
       });
     } catch {
       // Media Session is best-effort.
@@ -615,7 +617,9 @@ export function PlayerProvider({
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
     navigator.mediaSession.playbackState = !track
       ? 'none'
-      : isPlaying ? 'playing' : 'paused';
+      : isPlaying
+        ? 'playing'
+        : 'paused';
   }, [isPlaying, track]);
 
   useEffect(() => {

@@ -51,10 +51,11 @@ export async function addPlaylistTrackAtomic(
   const { error } = await serviceClient().rpc(
     collaborator ? 'oddio_collaborator_add_playlist_track' : 'oddio_add_playlist_track',
     {
-    p_user_id: actor.id,
-    p_playlist_id: playlistId,
-    p_track_id: trackId,
-  });
+      p_user_id: actor.id,
+      p_playlist_id: playlistId,
+      p_track_id: trackId,
+    },
+  );
   if (error) {
     if (error.code === 'P0002' || error.code === '23503') {
       throw Errors.notFound('Playlist or track not found');
@@ -76,12 +77,15 @@ export async function removePlaylistTrackAtomic(
     .maybeSingle();
   if (collabError) throw new Error(collabError.message);
   const { error } = await serviceClient().rpc(
-    collaborator ? 'oddio_collaborator_remove_playlist_track' : 'oddio_remove_playlist_track',
+    collaborator
+      ? 'oddio_collaborator_remove_playlist_track'
+      : 'oddio_remove_playlist_track',
     {
-    p_user_id: actor.id,
-    p_playlist_id: playlistId,
-    p_track_id: trackId,
-  });
+      p_user_id: actor.id,
+      p_playlist_id: playlistId,
+      p_track_id: trackId,
+    },
+  );
   if (error) {
     if (error.code === 'P0002') {
       throw Errors.notFound('Playlist not found');

@@ -91,7 +91,10 @@ export default async function StudioTracksPage({
           .from('track_review_appeals')
           .select('track_id,status,created_at')
           .eq('artist_user_id', user.id)
-          .in('track_id', data.tracks.map((track) => track.id))
+          .in(
+            'track_id',
+            data.tracks.map((track) => track.id),
+          )
           .order('created_at', { ascending: false })
       : { data: [] };
 
@@ -315,11 +318,14 @@ export default async function StudioTracksPage({
                   />
                 );
               })()}
-              {['rejected', 'changes_requested'].includes(track.reviewStatus) && !demoMode ? (
+              {['rejected', 'changes_requested'].includes(track.reviewStatus) &&
+              !demoMode ? (
                 <TrackReviewAppeal
                   trackId={track.id}
                   locale={locale}
-                  existingStatus={recentAppeals?.find((appeal) => appeal.track_id === track.id)?.status}
+                  existingStatus={
+                    recentAppeals?.find((appeal) => appeal.track_id === track.id)?.status
+                  }
                 />
               ) : null}
               <StudioTrackActions

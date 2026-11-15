@@ -29,7 +29,8 @@ self.addEventListener('fetch', (event) => {
     url.origin !== self.location.origin ||
     !url.pathname.startsWith('/_next/static/') ||
     request.headers.has('authorization')
-  ) return;
+  )
+    return;
   event.respondWith(
     (async () => {
       const cached = await caches.match(request, { cacheName: CACHE_NAME });

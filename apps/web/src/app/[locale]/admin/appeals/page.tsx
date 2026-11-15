@@ -9,7 +9,9 @@ import { ReviewAppealDecision } from '@/components/admin/ReviewAppealDecision';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: {
+export async function generateMetadata({
+  params,
+}: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
@@ -23,7 +25,9 @@ export async function generateMetadata({ params }: {
   });
 }
 
-export default async function AdminAppealsPage({ params }: {
+export default async function AdminAppealsPage({
+  params,
+}: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale: raw } = await params;
@@ -53,20 +57,33 @@ export default async function AdminAppealsPage({ params }: {
   return (
     <main className="space-y-6 pb-20">
       <header>
-        <p className="text-xs font-bold uppercase tracking-widest text-primary">ODDIO MODERATION</p>
-        <h1 className="mt-2 text-3xl font-bold">{ar ? 'اعتراضات الفنانين' : 'Artist review appeals'}</h1>
+        <p className="text-xs font-bold uppercase tracking-widest text-primary">
+          ODDIO MODERATION
+        </p>
+        <h1 className="mt-2 text-3xl font-bold">
+          {ar ? 'اعتراضات الفنانين' : 'Artist review appeals'}
+        </h1>
         <p className="mt-2 text-sm text-muted">
-          {ar ? 'اعتراضات قيد المراجعة مرتبة بالأقدم.' : 'Open artist appeals, oldest first.'}
+          {ar
+            ? 'اعتراضات قيد المراجعة مرتبة بالأقدم.'
+            : 'Open artist appeals, oldest first.'}
         </p>
       </header>
-      {(appeals ?? []).length ? (appeals ?? []).map((appeal) => (
-        <article key={appeal.id} className="rounded-2xl border border-white/10 bg-white/[.035] p-5">
-          <h2 className="font-bold">{names.get(appeal.track_id) ?? appeal.track_id}</h2>
-          <p className="mt-1 text-xs text-amber-200">{appeal.status} · {new Date(appeal.created_at).toLocaleDateString(locale)}</p>
-          <p className="mt-3 whitespace-pre-wrap text-sm">{appeal.reason}</p>
-          <ReviewAppealDecision id={appeal.id} locale={locale} />
-        </article>
-      )) : (
+      {(appeals ?? []).length ? (
+        (appeals ?? []).map((appeal) => (
+          <article
+            key={appeal.id}
+            className="rounded-2xl border border-white/10 bg-white/[.035] p-5"
+          >
+            <h2 className="font-bold">{names.get(appeal.track_id) ?? appeal.track_id}</h2>
+            <p className="mt-1 text-xs text-amber-200">
+              {appeal.status} · {new Date(appeal.created_at).toLocaleDateString(locale)}
+            </p>
+            <p className="mt-3 whitespace-pre-wrap text-sm">{appeal.reason}</p>
+            <ReviewAppealDecision id={appeal.id} locale={locale} />
+          </article>
+        ))
+      ) : (
         <div className="rounded-2xl border border-white/10 p-6 text-sm text-muted">
           {ar ? 'مفيش اعتراضات مفتوحة دلوقتي.' : 'No open appeals.'}
         </div>

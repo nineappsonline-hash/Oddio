@@ -28,9 +28,10 @@ export async function GET() {
     if (editableError) throw new Error(editableError.message);
     const editableIds = new Set((editable ?? []).map((item) => item.playlist_id));
     const playlists = db.playlists
-      .filter((playlist) =>
-        playlist.ownerId === user.id ||
-        (editableIds.has(playlist.id) && playlist.visibility === 'public'),
+      .filter(
+        (playlist) =>
+          playlist.ownerId === user.id ||
+          (editableIds.has(playlist.id) && playlist.visibility === 'public'),
       )
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return jsonOk({ playlists });

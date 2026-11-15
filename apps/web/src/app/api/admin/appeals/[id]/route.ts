@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import {
-  assertSameOrigin, jsonError, jsonOk, parseBody, rateLimit, requireRole,
+  assertSameOrigin,
+  jsonError,
+  jsonOk,
+  parseBody,
+  rateLimit,
+  requireRole,
 } from '@/lib/api-helpers';
 import { serviceClient } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
@@ -9,14 +14,19 @@ import { Errors } from '@/lib/errors';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const review = z.object({
-  status: z.enum(['under_review', 'upheld', 'overturned']),
-  response: z.string().trim().min(15).max(2000).optional(),
-}).refine((value) => value.status === 'under_review' || Boolean(value.response), {
-  message: 'A written decision is required for resolved appeals',
-});
+const review = z
+  .object({
+    status: z.enum(['under_review', 'upheld', 'overturned']),
+    response: z.string().trim().min(15).max(2000).optional(),
+  })
+  .refine((value) => value.status === 'under_review' || Boolean(value.response), {
+    message: 'A written decision is required for resolved appeals',
+  });
 
-export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
   try {
     assertSameOrigin(request);
     if (demoMode) throw Errors.invalid('Appeals are not enabled in demo mode');
@@ -34,15 +44,17 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       .maybeSingle();
     if (fetchError) throw new Error(fetchError.message);
     if (!open) throw Errors.conflict('Appeal is no longer open');
-    const fields = input.status === 'under_review'
-      ? { status: input.status }
-      : {
-          status: input.status,
-          response: input.response,
-          reviewed_by: staff.id,
-          reviewed_at: new Date().toISOString(),
-        };
-    const { data: updated, error } = await db.from('track_review_appeals')
+    const fields =
+      input.status === 'under_review'
+        ? { status: input.status }
+        : {
+            status: input.status,
+            response: input.response,
+            reviewed_by: staff.id,
+            reviewed_at: new Date().toISOString(),
+          };
+    const { data: updated, error } = await db
+      .from('track_review_appeals')
       .update(fields)
       .eq('id', id)
       .in('status', ['submitted', 'under_review'])

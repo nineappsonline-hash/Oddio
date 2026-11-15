@@ -149,8 +149,10 @@ export default async function AdminDashboard({
         </Link>
       </div>
 
-      <Link href={`/${locale}/admin/appeals`}
-        className="inline-flex min-h-11 items-center rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 text-sm font-bold text-rose-200">
+      <Link
+        href={`/${locale}/admin/appeals`}
+        className="inline-flex min-h-11 items-center rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 text-sm font-bold text-rose-200"
+      >
         {ar ? 'مراجعة اعتراضات الفنانين ←' : 'Review artist appeals →'}
       </Link>
 

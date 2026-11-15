@@ -30,16 +30,25 @@ export function ShareRecap({
         setMessage(ar ? 'اتنسخ الملخص.' : 'Recap copied to clipboard.');
       }
     } catch {
-      setMessage(ar ? 'المشاركة اتلغت أو مش متاحة.' : 'Sharing cancelled or unavailable.');
+      setMessage(
+        ar ? 'المشاركة اتلغت أو مش متاحة.' : 'Sharing cancelled or unavailable.',
+      );
     }
   }
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <button type="button" onClick={() => void share()}
-        className="min-h-11 rounded-full bg-primary px-5 text-sm font-bold text-white">
+      <button
+        type="button"
+        onClick={() => void share()}
+        className="min-h-11 rounded-full bg-primary px-5 text-sm font-bold text-white"
+      >
         {ar ? 'شارك ملخصك' : 'Share your recap'}
       </button>
-      {message ? <span role="status" className="text-xs text-muted">{message}</span> : null}
+      {message ? (
+        <span role="status" className="text-xs text-muted">
+          {message}
+        </span>
+      ) : null}
     </div>
   );
 }
