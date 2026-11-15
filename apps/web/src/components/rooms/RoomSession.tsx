@@ -59,6 +59,9 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
       }catch(err){
         if(!active)return;
         setError(err instanceof Error?err.message:'Room unavailable');
+        // A closed room or kicked member must not keep stale chat or play controls.
+        setSnapshot(null);
+        setFollowing(false);
       }finally{
         if(active)setBootstrapped(true);
       }
