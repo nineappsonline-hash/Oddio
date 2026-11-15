@@ -507,7 +507,7 @@ export function PlayerProvider({
               latest.isPlaying ||
               !latest.autoplay
             ) return;
-            if (tracks.length > 0) latest.startFlow(tracks, station);
+            if (tracks.length > 0) latest.continueStation(tracks);
           })
           .catch(() => undefined);
         return;
