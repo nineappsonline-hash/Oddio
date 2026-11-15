@@ -1,4 +1,4 @@
-name: Format Phase 8 audio transitions
+name: Format Phase 8 audio transitions - final handoff
 on:
   push:
     branches: [feature/master-plan-phase-0-1]
