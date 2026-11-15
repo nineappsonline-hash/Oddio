@@ -24,6 +24,7 @@ interface PlayerState {
   playbackRequestId: number;
   retryPlayback: () => void;
   play: (track: CatalogTrack, upcoming?: CatalogTrack[]) => void;
+  startFlow: (tracks: CatalogTrack[]) => void;
   toggle: () => void;
   setPlaying: (playing: boolean) => void;
   next: (automatic?: boolean) => boolean;
@@ -108,6 +109,31 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       currentTime: 0,
       duration: track.durationMs / 1000,
       error: null,
+    });
+  },
+  startFlow: (tracks) => {
+    // Flow is a deliberate ordered mix; don't inherit the user's old shuffle
+    // or repeat settings, and rebuild the queue even when its first track
+    // happens to be the currently selected song.
+    const unique = tracks.filter(
+      (item, index, all) => all.findIndex((other) => other.id === item.id) === index,
+    );
+    const [first, ...rest] = unique;
+    if (!first) return;
+    set({
+      track: first,
+      queue: rest,
+      history: [],
+      shuffle: false,
+      repeat: 'off',
+      autoplay: true,
+      isPlaying: true,
+      currentTime: 0,
+      duration: first.durationMs / 1000,
+      seekRequest: { seconds: 0, nonce: (get().seekRequest?.nonce ?? 0) + 1 },
+      playbackRequestId: get().playbackRequestId + 1,
+      error: null,
+      buffering: true,
     });
   },
   toggle: () => set((state) => ({ isPlaying: !state.isPlaying })),
