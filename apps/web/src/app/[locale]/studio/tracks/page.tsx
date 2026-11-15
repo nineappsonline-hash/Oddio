@@ -105,7 +105,10 @@ export default async function StudioTracksPage({
           .from('track_offline_permissions')
           .select('track_id,allowed')
           .eq('artist_user_id', user.id)
-          .in('track_id', data.tracks.map((track) => track.id))
+          .in(
+            'track_id',
+            data.tracks.map((track) => track.id),
+          )
       : { data: [] };
 
   const approvedCount = data.tracks.filter(
@@ -343,7 +346,8 @@ export default async function StudioTracksPage({
                   trackId={track.id}
                   locale={locale}
                   initiallyAllowed={Boolean(
-                    offlinePermissions?.find((entry) => entry.track_id === track.id)?.allowed,
+                    offlinePermissions?.find((entry) => entry.track_id === track.id)
+                      ?.allowed,
                   )}
                 />
               ) : null}
