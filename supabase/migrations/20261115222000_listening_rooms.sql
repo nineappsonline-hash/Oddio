@@ -17,6 +17,7 @@ create table if not exists public.listening_rooms (
 );
 create index if not exists listening_rooms_host_idx on public.listening_rooms(host_id, created_at desc);
 create index if not exists listening_rooms_expiry_idx on public.listening_rooms(expires_at);
+create unique index if not exists listening_rooms_one_open_per_host_idx on public.listening_rooms(host_id) where status='open';
 alter table public.listening_rooms enable row level security;
 revoke all on public.listening_rooms from public, anon, authenticated;
 grant select,insert,update on public.listening_rooms to service_role;
@@ -126,6 +127,20 @@ begin
       and m.banned=false and m.muted=false
       and r.status='open' and r.expires_at>now()
   ) then raise exception 'Message not permitted' using errcode='42501'; end if;
+  -- Transactional, per-user message quota cannot be bypassed by
+  -- distributing requests across multiple serverless API instances.
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended('oddio:room-chat:'||p_user_id::text,0)
+  );
+  if exists (
+    select 1 from public.listening_room_messages m
+    where m.user_id=p_user_id and m.created_at>now()-interval '2 seconds'
+  ) or (
+    select count(*) from public.listening_room_messages m
+    where m.user_id=p_user_id and m.created_at>now()-interval '1 minute'
+  ) >= 12 then
+    raise exception 'Message rate limit' using errcode='P0001';
+  end if;
   insert into public.listening_room_messages(room_id,user_id,body)
   values(p_room_id,p_user_id,btrim(p_body)) returning id into new_id;
   return new_id;
