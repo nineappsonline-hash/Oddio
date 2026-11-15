@@ -32,11 +32,12 @@ jobs:
             scripts/music-classifier.test.mjs \
             scripts/heldout-evaluation.test.mjs \
             scripts/model-release-cli.test.mjs
+            scripts/prepare-dataset-ffmpeg.test.mjs
       - name: Commit formatting only
         shell: bash
         run: |
           set -euo pipefail
-          git add -- workers/media/src/heldout-evaluation.mjs workers/media/src/music-classifier.mjs scripts/train-music-classifier.mjs scripts/prepare-music-dataset.mjs scripts/music-classifier.test.mjs scripts/heldout-evaluation.test.mjs scripts/model-release-cli.test.mjs
+          git add -- workers/media/src/heldout-evaluation.mjs workers/media/src/music-classifier.mjs scripts/train-music-classifier.mjs scripts/prepare-music-dataset.mjs scripts/music-classifier.test.mjs scripts/heldout-evaluation.test.mjs scripts/model-release-cli.test.mjs scripts/prepare-dataset-ffmpeg.test.mjs
           if git diff --cached --quiet; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
