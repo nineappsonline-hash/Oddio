@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { CatalogTrack } from '@/lib/data/queries';
-import { apiRequest } from '@/lib/client-api';
+import { ApiClientError, apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
 import { roomShouldSeek, roomSyncedPosition } from '@/lib/room-playback-sync';
 import { RoomTrackPicker } from '@/components/rooms/RoomTrackPicker';
@@ -85,9 +85,12 @@ export function RoomSession({ roomId, locale }: { roomId: string; locale: 'ar' |
       } catch (err) {
         if (!active) return;
         setError(err instanceof Error ? err.message : 'Room unavailable');
-        // A closed room or kicked member must not keep stale chat or play controls.
-        setSnapshot(null);
-        setFollowing(false);
+        // Preserve the last snapshot through transient network outages;
+        // erase it immediately if access has been revoked or room closed.
+        if (err instanceof ApiClientError && [403, 404].includes(err.status)) {
+          setSnapshot(null);
+          setFollowing(false);
+        }
       } finally {
         if (active) setBootstrapped(true);
       }
