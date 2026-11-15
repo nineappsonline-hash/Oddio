@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiRequest } from '@/lib/client-api';
 
@@ -14,6 +14,36 @@ export function PlaylistCollaboration({
   const [expiresAt, setExpiresAt] = useState('');
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState('');
+  const [members, setMembers] = useState<Array<{id:string;name:string}>>([]);
+  const [invites, setInvites] = useState<Array<{
+    id:string;expiresAt:string;uses:number;maxUses:number;revoked:boolean;
+  }>>([]);
+  async function refreshManagement() {
+    if (!isOwner) return;
+    try {
+      const data=await apiRequest<{members:typeof members;invites:typeof invites}>(
+        `/api/playlists/collaboration?playlistId=${encodeURIComponent(playlistId)}`);
+      setMembers(data.members);
+      setInvites(data.invites);
+    } catch { /* Management panel is optional when API is unavailable. */ }
+  }
+  useEffect(() => { void refreshManagement(); }, [isOwner,playlistId]);
+  async function manage(action:'remove'|'revoke',id:string){
+    setWorking(true);
+    setMessage('');
+    try{
+      await apiRequest('/api/playlists/collaboration',{
+        method:'POST',body:JSON.stringify({
+          action,playlistId,...(action==='remove'?{userId:id}:{inviteId:id}),
+        }),
+      });
+      await refreshManagement();
+      setMessage(ar?'تم تحديث الصلاحيات.':'Permissions updated.');
+    }catch(error){
+      setMessage(error instanceof Error?error.message:'Update failed');
+    }finally{setWorking(false);}
+  }
+
 
   async function run() {
     setWorking(true);
@@ -26,6 +56,7 @@ export function PlaylistCollaboration({
             body: JSON.stringify({ action: 'invite', playlistId }),
           });
         setInviteCode(data.code);
+        void refreshManagement();
         setExpiresAt(data.expiresAt);
         setMessage(ar ? 'انسخ رمز الدعوة وشاركه مع اللي تختاره.' : 'Copy this private invitation code to share with an editor.');
       } else {
@@ -64,6 +95,34 @@ export function PlaylistCollaboration({
             className="mt-3 min-h-10 rounded-xl bg-primary px-4 text-sm font-bold text-white">
             {ar ? 'إنشاء رمز دعوة' : 'Create invitation code'}
           </button>
+          {members.length ? (
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-bold">{ar?'المحررون':'Editors'} ({members.length}/10)</p>
+              {members.map((member) => (
+                <div key={member.id} className="flex items-center justify-between gap-2 rounded-lg border border-white/10 p-2 text-xs">
+                  <span className="truncate">{member.name}</span>
+                  <button type="button" disabled={working}
+                    onClick={() => void manage('remove',member.id)}
+                    className="shrink-0 text-rose-300">
+                    {ar?'إزالة':'Remove'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {invites.filter(i=>!i.revoked&&new Date(i.expiresAt).getTime()>Date.now()).length ? (
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-bold">{ar?'الدعوات النشطة':'Active invitations'}</p>
+              {invites.filter(i=>!i.revoked&&new Date(i.expiresAt).getTime()>Date.now()).map(i=>(
+                <div key={i.id} className="flex items-center justify-between gap-2 text-xs text-muted">
+                  <span>{i.uses}/{i.maxUses} · {new Date(i.expiresAt).toLocaleDateString(locale)}</span>
+                  <button type="button" disabled={working}
+                    onClick={() => void manage('revoke',i.id)}
+                    className="text-rose-300">{ar?'إلغاء الدعوة':'Revoke'}</button>
+                </div>
+              ))}
+            </div>
+          ) : null}
           {inviteCode ? (
             <div className="mt-3 space-y-2">
               <p className="break-all rounded-lg border border-white/10 p-3 font-mono text-xs">{inviteCode}</p>
