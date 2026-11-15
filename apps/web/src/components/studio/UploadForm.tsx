@@ -70,12 +70,19 @@ export function UploadForm({
     let active = true;
     void apiRequest<{ maxUploadBytes: number }>('/api/studio/uploads/policy')
       .then(({ maxUploadBytes: limit }) => {
-        if (active && Number.isSafeInteger(limit) && limit > 0 && limit <= 100 * 1024 * 1024) {
+        if (
+          active &&
+          Number.isSafeInteger(limit) &&
+          limit > 0 &&
+          limit <= 100 * 1024 * 1024
+        ) {
           setMaxUploadBytes(limit);
         }
       })
       .catch(() => undefined);
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [production]);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [artworkFile, setArtworkFile] = useState<File | null>(null);
