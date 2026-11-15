@@ -2336,3 +2336,30 @@ body {
     height: 62px !important;
   }
 }
+
+
+/* Song titles scroll only within their own grid column; duration stays fixed. */
+@keyframes oddio-track-title-marquee {
+  0%, 12%, 100% { transform: translateX(0); }
+  46%, 66% { transform: translateX(calc(-1 * var(--oddio-title-travel, 0px))); }
+}
+
+@keyframes oddio-track-title-marquee-rtl {
+  0%, 12%, 100% { transform: translateX(0); }
+  46%, 66% { transform: translateX(var(--oddio-title-travel, 0px)); }
+}
+
+.oddio-track-title-scroll,
+.oddio-track-title-scroll-rtl {
+  animation-duration: var(--oddio-title-duration, 12s);
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.oddio-track-title-scroll { animation-name: oddio-track-title-marquee; }
+.oddio-track-title-scroll-rtl { animation-name: oddio-track-title-marquee-rtl; }
+
+@media (prefers-reduced-motion: reduce) {
+  .oddio-track-title-scroll,
+  .oddio-track-title-scroll-rtl { animation: none; }
+}
