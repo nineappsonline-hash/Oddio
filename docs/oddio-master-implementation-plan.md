@@ -125,6 +125,9 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [x] Liked-song “Recently added” library order now uses each like's `createdAt` rather than unspecified database row order.
 - [x] Added isolated Vitest coverage for liked song ordering/private-track exclusion, genre-only search, paginated public tracks, and private-playlist search visibility; added a bilingual browser test for filter submissions.
 - [ ] Validate all current Phase 3 CI runs before merge. Existing Phase 2 and Phase 1 production release gates remain in effect.
+- [x] Added one-edit typo matching for normalized Arabic/English search words with 5+ characters; preserve exact matching for short terms and avoid paid AI APIs. Added regression tests for Arabic letter variants, English spelling mistakes and false matches.
+- [x] Supabase library listening history now derives from **qualified** playback events, excludes anonymous sessions and retains the latest qualified listen per user/track. Added isolated tests for ownership, short starts and deduplication; this does not change or erase the underlying events.
+- [ ] Provide a reviewed privacy control for deletion of source playback event data (not merely hiding the derived history), plus account-aware retention and storage policies. No production migration or event deletion has been performed.
 - [ ] Add listening-history privacy/deletion controls, persistent continue-listening and cross-device queue (requires careful database ownership, authorization and migration review).
 - [ ] Add consent-safe typo suggestions, artist-authorized transliteration aliases, and broader music-language support; the current normalizer intentionally does not invent artist name transliterations.
 
