@@ -137,6 +137,12 @@ try {
         const dialog = page.getByRole('dialog', { name: /player|مشغل/i });
         await dialog.waitFor({ state: 'visible' });
         assert.equal(await page.evaluate(() => document.body.style.overflow), 'hidden');
+        await page.keyboard.press('Tab');
+        assert.equal(
+          await dialog.evaluate((element) => element.contains(document.activeElement)),
+          true,
+          'keyboard focus must remain inside the full-player dialog',
+        );
         const overflow = await dialog.evaluate(
           (element) => element.scrollWidth - element.clientWidth,
         );
