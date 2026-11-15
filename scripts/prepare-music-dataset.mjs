@@ -71,8 +71,21 @@ try {
     const fingerprint = fingerprintPcm16(stdout, 11025);
     if (!fingerprint)
       throw new Error('Audio too short, silent or insufficiently distinctive');
-    const { filePath: _privatePath, ...meta } = row;
-    prepared.push({ ...meta, fingerprint });
+    // Whitelist output fields. Unknown manifest fields, private paths and
+    // arbitrary extra personal metadata must never be copied into features.
+    prepared.push({
+      id: row.id,
+      artistId: row.artistId,
+      genreSlug: row.genreSlug,
+      moodSlugs: row.moodSlugs,
+      consent: true,
+      artistReviewed: true,
+      rightsBasis: row.rightsBasis,
+      consentScope: row.consentScope,
+      consentRef: row.consentRef,
+      consentedAt: row.consentedAt,
+      fingerprint,
+    });
   }
   validateReviewedRows(prepared);
   await fs.writeFile(output, JSON.stringify(prepared, null, 2), {
