@@ -30,6 +30,7 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
   const [following,setFollowing]=useState(false);
   const [bootstrapped,setBootstrapped]=useState(false);
   const lastSynced=useRef<string>('');
+  const cachedTrack=useRef<CatalogTrack|null>(null);
   const roomCodeKey=`oddio-room-code:${roomId}`;
 
   useEffect(()=>{
@@ -37,10 +38,24 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
     let active=true;
     async function poll(){
       try{
-        const data=await apiRequest<RoomView>(
+        const data=await apiRequest<Omit<RoomView,'receivedAt'|'track'>>(
           `/api/rooms?roomId=${encodeURIComponent(roomId)}`,{cache:'no-store'});
         if(!active)return;
-        setSnapshot({...data,receivedAt:Date.now()});setError('');
+        let track:CatalogTrack|null=null;
+        if(data.room.trackId){
+          if(cachedTrack.current?.id===data.room.trackId) track=cachedTrack.current;
+          else {
+            // Resolve metadata only on track changes. The playback API will
+            // independently authorize each listener's R2 stream.
+            try{
+              track=await apiRequest<CatalogTrack>(
+                `/api/tracks/${encodeURIComponent(data.room.trackId)}`);
+              cachedTrack.current=track;
+            }catch{cachedTrack.current=null;}
+          }
+        }else cachedTrack.current=null;
+        if(!active)return;
+        setSnapshot({...data,track,receivedAt:Date.now()});setError('');
       }catch(err){
         if(!active)return;
         setError(err instanceof Error?err.message:'Room unavailable');
@@ -48,8 +63,14 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
         if(active)setBootstrapped(true);
       }
     }
-    void poll();
-    const id=window.setInterval(()=>void poll(),4000);
+    let polling=false;
+    async function safePoll(){
+      if(polling)return;
+      polling=true;
+      try{await poll();}finally{polling=false;}
+    }
+    void safePoll();
+    const id=window.setInterval(()=>void safePoll(),4000);
     return ()=>{active=false;window.clearInterval(id);};
   },[roomId]);
 
