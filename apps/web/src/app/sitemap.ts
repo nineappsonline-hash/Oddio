@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/install',
     '/soundspace',
     '/charts',
-    '/apply/artist',
+    '/for-artists',
     '/legal/terms',
     '/legal/privacy',
     '/legal/content-policy',
