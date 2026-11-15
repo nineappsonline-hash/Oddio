@@ -29,6 +29,8 @@ export function FlowButton({
     weekly: ar ? 'شغّل Discover Weekly' : 'Play Discover Weekly',
     song: ar ? 'راديو الأغنية' : 'Song Radio',
     artist: ar ? 'راديو الفنان' : 'Artist Radio',
+    genre: ar ? 'راديو النوع الموسيقي' : 'Genre Radio',
+    mood: ar ? 'راديو المود' : 'Mood Radio',
   } as const;
   async function start() {
     if (busy) return;
