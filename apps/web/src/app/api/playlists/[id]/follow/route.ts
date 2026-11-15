@@ -1,4 +1,6 @@
-import { mutateRuntimeDb } from '@/lib/data/runtime-store';
+import { mutateDb } from '@/lib/data/db';
+import { demoMode } from '@/lib/env';
+import { toggleSocialAtomic } from '@/lib/data/atomic-social';
 import { togglePlaylistFollow } from '@/lib/data/mutations';
 import {
   assertSameOrigin,
@@ -19,7 +21,9 @@ export async function POST(
     const user = await requireUser();
     rateLimit(`playlist:follow:${user.id}`, 60, 60_000);
     const { id } = await context.params;
-    const following = await mutateRuntimeDb((db) => togglePlaylistFollow(db, user, id));
+    const following = demoMode
+      ? mutateDb((db) => togglePlaylistFollow(db, user, id))
+      : await toggleSocialAtomic('playlist', user, id);
     return jsonOk({ following });
   } catch (error) {
     return jsonError(error);
