@@ -9,12 +9,21 @@ Working branch: `feature/master-plan-phase-0-1`.
 - [x] Work on a branch separate from `main`.
 - [x] Harden the production environment URL preflight, and add regression tests.
 - [x] Existing CI is present for type checking, unit tests, build, route/audio smoke tests, RLS checks and desktop/mobile browser tests.
-- [ ] Confirm the current Vercel deployment, attached domain and environment targeting.
+- [x] Confirm Vercel project `oddio` and that `oddio.online` is verified on that project; preview is isolated with `DEMO_MODE=true`. Production release health still needs investigation.
 - [ ] Inspect current Supabase tables, rows and auth configuration (read-only).
 - [ ] Record actual content counts and authoritative source of users, tracks, playlists, likes and follows.
 - [ ] Capture a restorable backup of production data and verify restore in a disposable environment.
-- [ ] Run CI on the pull request, inspect failures and review the deployment preview.
+- [ ] Run CI on the pull request, inspect failures and review the deployment preview. Initial Vercel build failed on a pre-existing strict TypeScript sidebar link error; fixed on this branch and pending recheck.
 - [ ] Establish baseline playback, search, sign-in, upload and mobile smoke checks against the preview.
+
+## Current findings (2026-11-15)
+
+- Vercel project `oddio` exists and `oddio.online` is verified.
+- Previous production deployments and the first development previews were blocked by a strict TypeScript error in `apps/web/src/components/layout/Sidebar.tsx` (optional `split('#')[0]`). A nonvisual fix has been committed to this branch.
+- The latest known READY production deployment predates the most recent `main` commits; do not assume `main` is live.
+- The connected Supabase account currently exposes two projects, named `Mansokar` and a generic inactive project; neither has been positively identified as Oddio. **Do not query, modify, or migrate either without confirmation of ownership and Vercel project linkage.**
+- Vercel environment variables were inspected without decryption; no sensitive values were read.
+- `NEXT_PUBLIC_SITE_URL` is configured as `https://oddio.vercel.app` for preview and production; assess canonical domain alignment with `oddio.online` once release health is restored.
 
 ## Phase 1 — persistent data and media
 
