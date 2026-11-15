@@ -1,4 +1,4 @@
-import { mutateDb } from '@/lib/data/db';
+import { mutateRuntimeDb } from '@/lib/data/runtime-store';
 import { toggleArtistFollow } from '@/lib/data/mutations';
 import {
   assertSameOrigin,
@@ -19,7 +19,7 @@ export async function POST(
     const user = await requireUser();
     rateLimit(`follow:${user.id}`, 60, 60_000);
     const { id } = await context.params;
-    const following = mutateDb((db) => toggleArtistFollow(db, user, id));
+    const following = await mutateRuntimeDb((db) => toggleArtistFollow(db, user, id));
     return jsonOk({ following });
   } catch (error) {
     return jsonError(error);
