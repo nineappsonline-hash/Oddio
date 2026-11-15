@@ -93,6 +93,7 @@ export function FullPlayer() {
   const rtl = useLocale() === 'ar';
   const expanded = usePlayer((state) => state.expanded);
   const track = usePlayer((state) => state.track);
+  const hasTrack = Boolean(track);
   const queue = usePlayer((state) => state.queue);
   const isPlaying = usePlayer((state) => state.isPlaying);
   const error = usePlayer((state) => state.error);
@@ -121,7 +122,7 @@ export function FullPlayer() {
   // The full player is a modal: lock background scrolling and keep keyboard
   // focus inside it, restoring the opener when the modal closes.
   useEffect(() => {
-    if (!expanded || !track) return;
+    if (!expanded || !hasTrack) return;
     const previousOverflow = document.body.style.overflow;
     const opener = document.activeElement;
     document.body.style.overflow = 'hidden';
@@ -130,10 +131,10 @@ export function FullPlayer() {
       document.body.style.overflow = previousOverflow;
       if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
     };
-  }, [expanded, track?.id]);
+  }, [expanded, hasTrack]);
 
   useEffect(() => {
-    if (!expanded || !track) return;
+    if (!expanded || !hasTrack) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -170,7 +171,7 @@ export function FullPlayer() {
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [expanded, track?.id, mobileLyricsOpen, setExpanded]);
+  }, [expanded, hasTrack, mobileLyricsOpen, setExpanded]);
 
   useEffect(() => {
     if (!track?.id) {
