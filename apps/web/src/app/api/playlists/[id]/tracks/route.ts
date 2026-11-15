@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { mutateRuntimeDb } from '@/lib/data/runtime-store';
+import { readRuntimeDb } from '@/lib/data/runtime-store';
+import { mutateDb } from '@/lib/data/db';
+import { demoMode } from '@/lib/env';
+import { addPlaylistTrackAtomic } from '@/lib/data/atomic-social';
 import { addTrackToPlaylist } from '@/lib/data/mutations';
 import {
   assertSameOrigin,
@@ -22,7 +25,13 @@ export async function POST(
     const user = await requireUser();
     const { id } = await context.params;
     const input = await parseBody(request, schema);
-    const playlist = await mutateRuntimeDb((db) => addTrackToPlaylist(db, user, id, input.trackId));
+    if (!demoMode) {
+      await addPlaylistTrackAtomic(user, id, input.trackId);
+    }
+    const playlist = demoMode
+      ? mutateDb((db) => addTrackToPlaylist(db, user, id, input.trackId))
+      : (await readRuntimeDb()).playlists.find((item) => item.id === id);
+    if (!playlist) throw new Error('Playlist missing after update');
     return jsonOk({ playlist });
   } catch (error) {
     return jsonError(error);
