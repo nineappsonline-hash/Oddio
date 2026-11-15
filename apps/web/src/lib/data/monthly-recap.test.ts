@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RecapListen } from './monthly-recap';
-import { monthlyListeningRecap } from './monthly-recap';
+import { monthlyListeningRecap, qualifiedRecapEvents } from './monthly-recap';
 
 const listen = (id: string, playedAt: string, artistId = 'one') => ({
   id,
@@ -27,6 +27,30 @@ describe('private monthly listening recap', () => {
     expect(result.topArtists[0]).toMatchObject({ id: 'one', plays: 2 });
     expect(JSON.stringify(result)).not.toContain('playedAt');
   });
+  it('counts repeated qualified events for this listener only, not other sessions', () => {
+    const allowed = [listen('a', '2026-11-15T22:00:00Z')];
+    const sessions = [
+      { id: 'mine', userId: 'me' },
+      { id: 'other', userId: 'another' },
+    ] as Parameters<typeof qualifiedRecapEvents>[1];
+    const event = (id: string, sessionId: string, trackId: string, qualified = true) => ({
+      id, sessionId, trackId, qualified, eventType: 'qualified',
+      occurredAt: '2026-11-15T22:00:00Z', requestId: id, audibleMs: 30000,
+    });
+    const events = [
+      event('1', 'mine', 'a'),
+      event('2', 'mine', 'a'),
+      event('3', 'other', 'a'),
+      event('4', 'mine', 'private-track'),
+      event('5', 'mine', 'a', false),
+    ];
+    const visits = qualifiedRecapEvents(allowed, sessions, events, 'me');
+    const summary = monthlyListeningRecap(visits, 2026, 11);
+    expect(summary.qualifiedListens).toBe(2);
+    expect(summary.topTracks[0]?.plays).toBe(2);
+    expect(JSON.stringify(summary)).not.toContain('sessionId');
+  });
+
   it('returns truthful empty results if there is no listening history', () => {
     const result = monthlyListeningRecap([], 2026, 11);
     expect(result.qualifiedListens).toBe(0);
