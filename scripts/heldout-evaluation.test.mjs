@@ -86,7 +86,7 @@ test('inadequate representation and poor predictions cannot pass deployment gate
   const model = trainReviewedClassifier(validateReviewedRows(training));
   assert.throws(
     () => evaluateHeldoutModel(model, holdout.slice(0, 3), predictReviewedTags),
-    /Held-out set needs/i,
+    /Held-out set needs|Held-out validation must cover/i,
   );
   const degraded = holdout.map((row) => ({
     ...row,
