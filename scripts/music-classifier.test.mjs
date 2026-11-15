@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   trainReviewedClassifier,
+  predictReviewedTags,
   suggestArtistTags,
 } from '../workers/media/src/music-classifier.mjs';
 
@@ -32,7 +33,8 @@ const good = [
 test('trained local examples can suggest genres and moods without any paid API', () => {
   const model = trainReviewedClassifier(good);
   assert.equal(model.metrics.macroRecall, 1);
-  const suggestion = suggestArtistTags(good[0].fingerprint, model);
+  const suggestion = predictReviewedTags(good[0].fingerprint, model);
+  assert.equal(suggestArtistTags(good[0].fingerprint, model), null, 'unvalidated model must not produce worker suggestions');
   assert.equal(suggestion?.genreSlug, 'ambient');
   assert.deepEqual(suggestion?.moodSlugs, ['calm']);
   assert.equal(suggestion?.source, 'artist-reviewed-local-model-v1');
