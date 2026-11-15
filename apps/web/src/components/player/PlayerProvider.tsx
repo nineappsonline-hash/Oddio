@@ -77,7 +77,31 @@ export function PlayerProvider({
   useEffect(() => {
     // Signed-in listeners retain their queue across browser restarts. Guests
     // retain the original per-tab behavior to avoid persistent shared data.
-    const storage = viewerId ? window.localStorage : window.sessionStorage;
+    // Some privacy modes throw even when accessing the Storage getter.
+    // Keep playback functional without persistence when storage is disabled.
+    const storage = {
+      getItem: (key: string) => {
+        try {
+          return (viewerId ? window.localStorage : window.sessionStorage).getItem(key);
+        } catch {
+          return null;
+        }
+      },
+      setItem: (key: string, value: string) => {
+        try {
+          (viewerId ? window.localStorage : window.sessionStorage).setItem(key, value);
+        } catch {
+          // In-memory playback keeps working.
+        }
+      },
+      removeItem: (key: string) => {
+        try {
+          (viewerId ? window.localStorage : window.sessionStorage).removeItem(key);
+        } catch {
+          // Storage may be disabled.
+        }
+      },
+    };
     let disposed = false;
     let localExists = false;
     try {
