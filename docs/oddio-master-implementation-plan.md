@@ -144,9 +144,10 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 
 ## Phase 4 — music intelligence
 
-- [ ] Consent/rights-aware music metadata and AI creation disclosures.
-- [ ] Background genre/mood/BPM/audio-feature extraction with artist corrections.
-- [ ] Duplicate detection, audio similarity and measurement of classification quality.
+- [ ] Consent/rights-aware music metadata and AI creation disclosures. The existing track contract already records AI production type, tool disclosures and credits; permissions for external analysis and third-party source data still need review.
+- [~] Background genre/mood/BPM/audio-feature extraction with artist corrections. **First slice implemented (development branch):** a zero-paid-API PCM16LE signal analyzer measures sample-based loudness (RMS/peak) and an approximate tempo with a confidence score; the demo Media Worker runs it after preparing audio, stores advisory `audioFeatures`, and never overrides artist-selected genre/mood. `node scripts/analyze-audio.mjs <owned-file.mp3>` gives a read-only offline audio preview through existing FFmpeg. A true audio-trained multi-genre/mood classifier is still pending evaluation and calibration; tempo alone is not a genre classifier. No production Worker deployment was performed.
+- [~] Duplicate detection, audio similarity and measurement of classification quality. The current upload pipeline already computes SHA-256 and prevents exact duplicate files in the demo mutation path. This phase's local CLI reports a content SHA-256 to support exact-match comparisons. Near-duplicate audio fingerprinting, cover/remix distinction, confidence calibration and human-reviewed benchmark datasets remain unimplemented.
+- [ ] CI/acceptance: the new `scripts/music-features.test.mjs` checks silence abstention, bad inputs and a synthesized periodic signal; GitHub Actions must pass on the latest commit before treating it as validated. Test real licensed genres against an opt-in, artist-reviewed dataset before any auto-tagging or editing of metadata.
 
 ## Phase 5 — personalized discovery
 
