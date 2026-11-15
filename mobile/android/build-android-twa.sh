@@ -1,17 +1,24 @@
 #!/usr/bin/env bash
-# Generate an Android Trusted Web Activity from the already deployed Oddio PWA.
-# No credentials are committed. Run on Ubuntu with Android SDK, JDK and Node.
+# Oddio Android TWA build entry point. Nothing signs or deploys automatically.
 set -euo pipefail
-: "${ODDIO_ANDROID_PACKAGE_ID:?Provide your owned unique Android package ID}"
-: "${ODDIO_ANDROID_KEYSTORE:?Provide path to a local signing keystore (never commit)}"
-if [[ ! -f "$ODDIO_ANDROID_KEYSTORE" ]]; then
-  echo "Signing keystore not found: $ODDIO_ANDROID_KEYSTORE" >&2
-  exit 1
-fi
-echo "Oddio Android package: $ODDIO_ANDROID_PACKAGE_ID"
-echo "Verify the deployed https://oddio.online/manifest.webmanifest and icons first."
-echo "Use Bubblewrap's interactive initialization to set the package ID and signing certificate."
-echo "Command: npx --yes @bubblewrap/cli init --manifest=https://oddio.online/manifest.webmanifest"
-echo "Then run: npx --yes @bubblewrap/cli build"
-echo "IMPORTANT: Digital Asset Links requires the actual signing certificate SHA256."
-echo "Do not publish until https://oddio.online/.well-known/assetlinks.json is verified."
+ACTION="${1:-help}"
+case "$ACTION" in
+  init)
+    echo "Initializing an Android Trusted Web Activity from the live Oddio PWA."
+    echo "Verify icon, package identifier and Android SDK configuration interactively."
+    exec npx --yes @bubblewrap/cli init --manifest=https://oddio.online/manifest.webmanifest
+    ;;
+  build)
+    if [[ ! -f twa-manifest.json ]]; then
+      echo "No Bubblewrap project: run '$0 init' in a fresh Android build directory first." >&2
+      exit 1
+    fi
+    echo "Building Android TWA with locally configured keystore (do not commit secrets)."
+    exec npx --yes @bubblewrap/cli build
+    ;;
+  *)
+    echo "Usage: $0 init|build"
+    echo "init — interactive creation from https://oddio.online/manifest.webmanifest"
+    echo "build — compile an initialized TWA project using the local signing setup"
+    ;;
+esac
