@@ -1,3 +1,4 @@
+import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Locale } from '@ai-music/contracts';
@@ -61,6 +62,11 @@ export default async function MoodPage({
 
   return (
     <div>
+      <SeoBreadcrumbs items={[
+        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+        { label: 'Soundspace', href: `/${locale}/soundspace` },
+        { label, href: `/${locale}/moods/${slug}` },
+      ]} />
       <PageHeader
         eyebrow={t('discover.mood')}
         title={label}
