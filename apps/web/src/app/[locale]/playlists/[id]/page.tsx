@@ -1,3 +1,4 @@
+import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
@@ -68,6 +69,11 @@ export default async function PlaylistPage({
 
   return (
     <div>
+      <SeoBreadcrumbs items={[
+        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+        { label: locale === 'ar' ? 'اكتشف الموسيقى' : 'Discover music', href: `/${locale}/discover` },
+        { label: playlist.title, href: `/${locale}/playlists/${playlist.id}` },
+      ]} />
       {playlist.visibility === 'public' ? (
         <JsonLd
           data={musicPlaylistJsonLd({
