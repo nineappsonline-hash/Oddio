@@ -50,6 +50,7 @@ export async function generateMetadata({
     title: { default: title, template: `%s · Oddio` },
     description,
     applicationName: 'Oddio',
+    manifest: '/manifest.webmanifest',
     icons: {
       icon: [
         { url: '/glossy-gradient-play-loop-logo.png', type: 'image/png', sizes: 'any' },
