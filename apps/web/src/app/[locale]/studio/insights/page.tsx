@@ -75,7 +75,7 @@ export default async function ArtistInsightsPage({ params }: {
         <div className="flex h-44 items-end gap-1" role="img"
           aria-label={ar ? 'رسم بياني يومي للاستماعات المؤهلة' : 'Daily qualified listening chart'}>
           {report.daily.map((item) => (
-            <div key={item.date} className="group flex min-w-0 flex-1 flex-col justify-end"
+            <div key={item.date} className="group flex h-full min-w-0 flex-1 flex-col justify-end"
               title={`${item.date}: ${number(item.qualifiedPlays)}`}>
               <div className="min-h-[2px] rounded-t bg-primary/75 transition-colors group-hover:bg-primary"
                 style={{ height: `${Math.max(2, (item.qualifiedPlays / max) * 100)}%` }} />
