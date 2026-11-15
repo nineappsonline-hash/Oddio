@@ -46,3 +46,39 @@ test('local or invalid canonical addresses block production release', () => {
   assert.equal(result.ready, false);
   assert.ok(result.blockers.some((message) => message.includes('Canonical')));
 });
+
+test('unsafe URL forms cannot pass the production preflight', () => {
+  const unsafeSiteUrls = [
+    'https://localhost:3000',
+    'https://app.local',
+    'https://user:password@oddio.online',
+    'https://oddio.online?debug=true',
+    'https://oddio.online#preview',
+  ];
+  for (const site of unsafeSiteUrls) {
+    const result = auditReleaseEnvironment({ ...valid, NEXT_PUBLIC_SITE_URL: site });
+    assert.equal(result.ready, false, `Unsafe canonical URL accepted: ${site}`);
+  }
+});
+
+test('Supabase URL cannot contain credentials, fragments or query parameters', () => {
+  for (const url of [
+    'https://user:secret@sample.supabase.co',
+    'https://sample.supabase.co?token=secret',
+    'https://sample.supabase.co#fragment',
+  ]) {
+    const result = auditReleaseEnvironment({
+      ...valid,
+      NEXT_PUBLIC_SUPABASE_URL: url,
+    });
+    assert.equal(result.ready, false, `Unsafe Supabase URL accepted: ${url}`);
+  }
+});
+
+test('a canonical HTTPS Oddio domain passes the preflight', () => {
+  const result = auditReleaseEnvironment({
+    ...valid,
+    NEXT_PUBLIC_SITE_URL: 'https://oddio.online',
+  });
+  assert.equal(result.ready, true);
+});
