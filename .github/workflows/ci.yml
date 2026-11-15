@@ -35,6 +35,8 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
       - name: Check fingerprint similarity after actual MP3 re-encoding
         run: node --test scripts/audio-fingerprint-ffmpeg.test.mjs
+      - name: Verify local consent-based audio dataset preparation
+        run: node --test scripts/prepare-dataset-ffmpeg.test.mjs
       - name: Generate a four-second synthesized MP3 for real Range checks
         run: |
           mkdir -p apps/web/.data/seed-audio
