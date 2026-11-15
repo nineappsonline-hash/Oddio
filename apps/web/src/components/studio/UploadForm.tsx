@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import type { Artist, Genre, Locale, Mood } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { uploadAudioWithProgress } from '@/lib/upload-audio-progress';
-import { MULTIPART_THRESHOLD, uploadAudioMultipart } from '@/lib/upload-audio-multipart';
+import { MULTIPART_THRESHOLD, clearCompletedMultipartDraft, uploadAudioMultipart } from '@/lib/upload-audio-multipart';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -313,6 +313,7 @@ export function UploadForm({
             '/api/studio/uploads/finalize',
             { method: 'POST', body: form },
           );
+          clearCompletedMultipartDraft(completed.objectKey);
           if (artworkFile) {
             const artworkForm = new FormData();
             artworkForm.set('artwork', artworkFile);
