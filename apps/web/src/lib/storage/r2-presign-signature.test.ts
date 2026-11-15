@@ -69,7 +69,8 @@ function validateSig(raw: string, method: string, contentType?: string): URL {
 }
 
 describe('Cloudflare R2 S3 signed request contracts', () => {
-  const objectKey = 'incoming/123e4567-e89b-12d3-a456-426614174000/123e4567-e89b-12d3-a456-426614174001';
+  const objectKey =
+    'incoming/123e4567-e89b-12d3-a456-426614174000/123e4567-e89b-12d3-a456-426614174001';
 
   it('signs browser direct MP3 upload with required Content-Type', () => {
     const grant = presignR2Put(objectKey, 'audio/mpeg');
