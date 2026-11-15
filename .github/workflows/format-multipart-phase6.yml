@@ -1,4 +1,4 @@
-name: Format multipart Phase 6 files
+name: Format multipart Phase 6 files - final signature
 on:
   push:
     branches:
@@ -22,6 +22,7 @@ jobs:
       - run: |
           npx prettier --write \
             apps/web/src/lib/storage/r2-multipart.ts \
+            apps/web/src/lib/storage/r2-multipart.test.ts \
             apps/web/src/lib/storage/multipart-parts.ts \
             apps/web/src/lib/storage/multipart-parts.test.ts \
             apps/web/src/app/api/studio/uploads/multipart/route.ts \
