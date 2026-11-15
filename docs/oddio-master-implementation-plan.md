@@ -34,10 +34,16 @@ Working branch: `feature/master-plan-phase-0-1`.
 - [ ] Map JSON IDs and relationships to the Supabase schema; establish an idempotent import with dry-run and reconciliation counts.
 - [ ] Preserve existing account ownership, review state, playlists, likes, follows, release schedules and qualified play counts.
 - [ ] Backfill existing content with a recovery plan; verify RLS in CI and staging.
-- [ ] Migrate each write route behind a controlled rollout and verify read-after-write behavior. Initial branch coverage: track like, artist follow, playlist list/create/update/delete, add track to playlist and playlist follow. **NOT production deployed**. Snapshot diff writes are not transactional or concurrency-safe: targeted atomic SQL/RPC operations and integration tests are required before broad rollout.
+- [ ] Migrate each write route behind a controlled rollout and verify read-after-write behavior. Initial branch coverage: track like, artist follow, playlist list/create/update/delete, add/remove tracks, and playlist follow. **NOT production deployed**. The latest branch replaces social toggles with server-only locked PostgreSQL RPCs, handles playlist additions/removals under a playlist row lock, and uses owner-scoped single-statement playlist CRUD. The migration must be applied in a verified staging/production rollout before production can call these RPCs. Other snapshot-diff endpoints may still be non-transactional.
 - [ ] Verify R2 master/rendition upload grants, worker processing, signed streaming, seeking and retry behavior.
+- [ ] Verify transactional social test suite (`supabase/tests/social_atomic.sql`) and browser CI; on staging, test concurrent likes and playlist additions with two sessions.
+- [ ] Before release: take tested backup, apply `20261115183000_atomic_social_interactions.sql`, confirm only service_role has EXECUTE, verify RPC read/write with test identities, then deploy matching web code. Never deploy new RPC-dependent code ahead of the database migration.
 - [ ] Enable production persistence only after matched reconciliation, tested backup/restore and successful staging acceptance.
 - [ ] Monitor database errors, upload failures and playback errors after rollout.
+
+### Rollout dependency: required SQL migration
+
+`apps/web/src/lib/data/atomic-social.ts` calls `oddio_toggle_track_like`, `oddio_toggle_artist_follow`, `oddio_toggle_playlist_follow`, `oddio_add_playlist_track`, and `oddio_remove_playlist_track`. All five must be installed before releasing these production routes. Preview remains isolated with `DEMO_MODE=true`. No live data was changed during branch development.
 
 ## Phase 2 — layout and player
 
