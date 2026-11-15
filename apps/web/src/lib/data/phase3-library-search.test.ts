@@ -34,6 +34,9 @@ describe('Oddio Phase 3 library/search regression', () => {
       track.genreIds?.includes(genreId ?? '') ?? track.genreId === genreId,
     )).toBe(true);
     expect(results.tracks.every((track) => track.access.listable)).toBe(true);
+    expect(results.artists).toHaveLength(0);
+    expect(results.albums).toHaveLength(0);
+    expect(results.playlists).toHaveLength(0);
   });
 
   it('preserves search pagination and excludes nonpublic tracks', () => {
@@ -53,7 +56,7 @@ describe('Oddio Phase 3 library/search regression', () => {
 
   it('never includes private playlists from another user in public search', () => {
     const db = createSeedDb();
-    const results = searchCatalog(db, viewer, { q: '', limit: 25, sort: 'relevant' });
+    const results = searchCatalog(db, viewer, { q: 'neon', limit: 25, sort: 'relevant' });
     expect(results.playlists.every((playlist) => playlist.visibility === 'public')).toBe(true);
     expect(results.playlists.find((playlist) => playlist.id === seedIds.playlists.privateMix)).toBeUndefined();
   });
