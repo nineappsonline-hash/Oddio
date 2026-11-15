@@ -325,7 +325,7 @@ export function searchCatalog(
   const nextCursor = offset + limit < tracks.length ? String(offset + limit) : null;
 
   const artists = db.artists
-    .filter((artist) => matches(`${artist.name} ${artist.bio}`))
+    .filter((artist) => tokens.length > 0 && matches(`${artist.name} ${artist.bio}`))
     .map((artist) => ({
       ...artist,
       trackCount: listable.filter((track) => track.artistId === artist.id).length,
@@ -334,7 +334,7 @@ export function searchCatalog(
     .slice(0, 8);
 
   const albums = db.albums
-    .filter((album) => album.status === 'published' && album.visibility === 'public')
+    .filter((album) => tokens.length > 0 && album.status === 'published' && album.visibility === 'public')
     .filter((album) => isReleased(album, now))
     .filter((album) =>
       matches(`${album.title} ${artistById.get(album.artistId)?.name ?? ''}`),
@@ -348,7 +348,7 @@ export function searchCatalog(
     .slice(0, 8);
 
   const playlists = db.playlists
-    .filter((playlist) => playlist.visibility === 'public')
+    .filter((playlist) => tokens.length > 0 && playlist.visibility === 'public')
     .filter((playlist) => matches(`${playlist.title} ${playlist.description}`))
     .slice(0, 8);
 
