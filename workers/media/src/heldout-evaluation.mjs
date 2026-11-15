@@ -19,6 +19,13 @@ export function validateReviewedRows(rows) {
   const ids = new Set();
   const fingerprints = new Set();
   for (const row of rows) {
+    if (row?.rightsBasis !== 'original_creator'
+      && row?.rightsBasis !== 'licensed_for_training') {
+      throw new Error('Audio training requires an explicitly documented rights basis');
+    }
+    if (row?.consentScope !== 'local_audio_feature_training') {
+      throw new Error('Consent scope must explicitly cover local music model training');
+    }
     if (row?.consent !== true || row.artistReviewed !== true
       || typeof row.consentRef !== 'string' || row.consentRef.trim().length < 8
       || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/.test(row.consentedAt ?? '')
