@@ -31,8 +31,13 @@ type MultipartAction = {
 
 async function fingerprintFile(file: File): Promise<string | null> {
   if (!globalThis.crypto?.subtle) return null;
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', await file.arrayBuffer());
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+  const digest = await globalThis.crypto.subtle.digest(
+    'SHA-256',
+    await file.arrayBuffer(),
+  );
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('');
 }
 
 function sessionFor(file: File, fingerprint: string | null): MultipartDraft | null {
@@ -44,7 +49,8 @@ function sessionFor(file: File, fingerprint: string | null): MultipartDraft | nu
       value.filename !== file.name ||
       value.size !== file.size ||
       value.lastModified !== file.lastModified ||
-      !fingerprint || value.fingerprint !== fingerprint ||
+      !fingerprint ||
+      value.fingerprint !== fingerprint ||
       value.createdAt > Date.now() ||
       Date.now() - value.createdAt > MAX_SESSION_AGE_MS ||
       value.partSize !== 8 * 1024 * 1024 ||
