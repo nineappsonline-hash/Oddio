@@ -15,11 +15,11 @@ begin
     or has_table_privilege('authenticated','public.playlist_collaboration_invites','SELECT')
     or has_table_privilege('anon','public.playlist_collaboration_invites','SELECT')
   then raise exception 'Browser clients must not read private collaboration data'; end if;
-  if has_function_privilege('authenticated','public.oddio_join_playlist_invite(uuid,text)','EXECUTE')
+  if has_function_privilege('authenticated','public.oddio_join_playlist_invite(uuid,uuid,text)','EXECUTE')
     or has_function_privilege('anon','public.oddio_collaborator_add_playlist_track(uuid,uuid,uuid)','EXECUTE')
     or has_function_privilege('authenticated','public.oddio_collaborator_remove_playlist_track(uuid,uuid,uuid)','EXECUTE')
   then raise exception 'Collaboration RPCs must not be callable directly by browser roles'; end if;
-  if not has_function_privilege('service_role','public.oddio_join_playlist_invite(uuid,text)','EXECUTE')
+  if not has_function_privilege('service_role','public.oddio_join_playlist_invite(uuid,uuid,text)','EXECUTE')
     or not has_function_privilege('service_role','public.oddio_collaborator_add_playlist_track(uuid,uuid,uuid)','EXECUTE')
   then raise exception 'Server-side collaboration RPC grant is missing'; end if;
 end $$;
