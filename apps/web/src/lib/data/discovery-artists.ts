@@ -39,12 +39,18 @@ export function getDiscoveryArtists(
   rotation.setUTCHours(0, 0, 0, 0);
   rotation.setUTCDate(rotation.getUTCDate() - ((rotation.getUTCDay() + 6) % 7));
   const key = rotation.toISOString().slice(0, 10);
-  // Smaller artists should not compete on absolute qualified plays with major releases.
-  const rising = [...available]
+  // Give low-exposure artists meaningful coverage; randomize ties via the
+  // week key instead of always putting the same artist first.
+  const leastExposed = [...available]
     .sort((a, b) =>
       (plays.get(a.id) ?? 0) / (counts.get(a.id) ?? 1) -
       (plays.get(b.id) ?? 0) / (counts.get(b.id) ?? 1) ||
-      stableHash(a.id + key) - stableHash(b.id + key) ||
+      a.id.localeCompare(b.id),
+    )
+    .slice(0, Math.max(4, Math.ceil(available.length * 0.6)));
+  const rising = leastExposed
+    .sort((a, b) =>
+      stableHash(a.id + ':' + key) - stableHash(b.id + ':' + key) ||
       a.id.localeCompare(b.id),
     )
     .slice(0, 4);
