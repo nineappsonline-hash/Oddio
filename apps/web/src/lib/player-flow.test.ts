@@ -40,7 +40,7 @@ describe('Oddio Flow queue', () => {
     const previousRequestId = usePlayer.getState().playbackRequestId;
     usePlayer.getState().startFlow([a, b]);
     const state = usePlayer.getState();
-    expect(state.queue.map((item) => item.id).toEqual(['b']);
+    expect(state.queue.map((item) => item.id)).toEqual(['b']);
     expect(state.repeat).toBe('off');
     expect(state.shuffle).toBe(false);
     expect(state.playbackRequestId).toBeGreaterThan(previousRequestId);
