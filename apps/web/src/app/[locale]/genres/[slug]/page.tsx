@@ -150,7 +150,14 @@ export default async function GenrePage({
           <div className="pt-3">
             <div className="flex flex-wrap items-center gap-2">
               <GenrePlayAllButton tracks={byPlays} ar={ar} />
-              {all.length > 0 ? <FlowButton kind="genre" seedId={page.genre.id} locale={locale} viewerId={viewer.userId} /> : null}
+              {all.length > 0 ? (
+                <FlowButton
+                  kind="genre"
+                  seedId={page.genre.id}
+                  locale={locale}
+                  viewerId={viewer.userId}
+                />
+              ) : null}
             </div>
           </div>
         </div>

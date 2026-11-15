@@ -57,8 +57,14 @@ function fixture(): DemoDb {
       ownerUserId: 'owner',
     })),
     albums: [],
-    genres: [{ id: 'pop', slug: 'pop', labelEn: 'Pop', labelAr: 'بوب', active: true }, { id: 'rock', slug: 'rock', labelEn: 'Rock', labelAr: 'روك', active: true }],
-    moods: [{ id: 'chill', slug: 'chill', labelEn: 'Chill', labelAr: 'هادي', active: true }, { id: 'happy', slug: 'happy', labelEn: 'Happy', labelAr: 'سعيد', active: true }],
+    genres: [
+      { id: 'pop', slug: 'pop', labelEn: 'Pop', labelAr: 'بوب', active: true },
+      { id: 'rock', slug: 'rock', labelEn: 'Rock', labelAr: 'روك', active: true },
+    ],
+    moods: [
+      { id: 'chill', slug: 'chill', labelEn: 'Chill', labelAr: 'هادي', active: true },
+      { id: 'happy', slug: 'happy', labelEn: 'Happy', labelAr: 'سعيد', active: true },
+    ],
     likes: [],
     comments: [],
     playbackSessions: [],
@@ -101,15 +107,21 @@ describe('Oddio discovery stations', () => {
 
   it('genre radio selects only tracks in the chosen active genre', () => {
     const result = buildDiscoveryMix(fixture(), guest, {
-      kind: 'genre', seedId: 'pop', now: date,
+      kind: 'genre',
+      seedId: 'pop',
+      now: date,
     });
     expect(result.tracks.length).toBeGreaterThan(0);
-    expect(result.tracks.every((track) => (track.genreIds ?? [track.genreId]).includes('pop'))).toBe(true);
+    expect(
+      result.tracks.every((track) => (track.genreIds ?? [track.genreId]).includes('pop')),
+    ).toBe(true);
   });
 
   it('mood radio selects only tracks with the chosen mood', () => {
     const result = buildDiscoveryMix(fixture(), guest, {
-      kind: 'mood', seedId: 'chill', now: date,
+      kind: 'mood',
+      seedId: 'chill',
+      now: date,
     });
     expect(result.tracks.length).toBeGreaterThan(0);
     expect(result.tracks.every((track) => track.moodIds.includes('chill'))).toBe(true);
@@ -117,14 +129,19 @@ describe('Oddio discovery stations', () => {
 
   it('does not fall back to unrelated songs for unknown radio categories', () => {
     const result = buildDiscoveryMix(fixture(), guest, {
-      kind: 'genre', seedId: 'missing', now: date,
+      kind: 'genre',
+      seedId: 'missing',
+      now: date,
     });
     expect(result.tracks).toHaveLength(0);
   });
 
   it('song radio continues after its seed has been heard without replaying it', () => {
     const result = buildDiscoveryMix(fixture(), guest, {
-      kind: 'song', seedId: 'a', excludeIds: ['a'], now: date,
+      kind: 'song',
+      seedId: 'a',
+      excludeIds: ['a'],
+      now: date,
     });
     expect(result.tracks.length).toBeGreaterThan(0);
     expect(result.tracks.some((track) => track.id === 'a')).toBe(false);

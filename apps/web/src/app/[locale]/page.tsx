@@ -266,13 +266,18 @@ export default async function HomePage({
       </div>
 
       {discoveryArtists.spotlight ? (
-        <section className="oddio-dashboard-section" aria-label={ar ? 'فنان تحت الضوء' : 'Artist spotlight'}>
+        <section
+          className="oddio-dashboard-section"
+          aria-label={ar ? 'فنان تحت الضوء' : 'Artist spotlight'}
+        >
           <div className="oddio-section-title-row">
             <div>
               <p className="oddio-micro-label">ODDIO SPOTLIGHT</p>
               <h2>{ar ? 'فنان تحت الضوء' : 'Artist Spotlight'}</h2>
               <p className="text-sm text-muted">
-                {ar ? 'اختيار تحريري أو فنان مستقل من تدوير أسبوعي.' : 'Editorial choice or a weekly rotating independent artist.'}
+                {ar
+                  ? 'اختيار تحريري أو فنان مستقل من تدوير أسبوعي.'
+                  : 'Editorial choice or a weekly rotating independent artist.'}
               </p>
             </div>
           </div>
@@ -283,13 +288,18 @@ export default async function HomePage({
       ) : null}
 
       {discoveryArtists.rising.length > 0 ? (
-        <section className="oddio-dashboard-section" aria-label={ar ? 'فنانين صاعدين' : 'Rising artists'}>
+        <section
+          className="oddio-dashboard-section"
+          aria-label={ar ? 'فنانين صاعدين' : 'Rising artists'}
+        >
           <div className="oddio-section-title-row">
             <div>
               <p className="oddio-micro-label">RISING ON ODDIO</p>
               <h2>{ar ? 'فنانين يستحقوا فرصة' : 'Rising Artists'}</h2>
               <p className="text-sm text-muted">
-                {ar ? 'فنانين متاحين للاستماع ومش بالضرورة الأكثر شهرة، بتدوير أسبوعي.' : 'Playable independent voices, not just the most-streamed artists; rotated weekly.'}
+                {ar
+                  ? 'فنانين متاحين للاستماع ومش بالضرورة الأكثر شهرة، بتدوير أسبوعي.'
+                  : 'Playable independent voices, not just the most-streamed artists; rotated weekly.'}
               </p>
             </div>
           </div>

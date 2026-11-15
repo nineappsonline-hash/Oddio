@@ -3,10 +3,15 @@ import type { DemoDb } from './types';
 import { listableTracks, type CatalogTrack } from './queries';
 
 function normalize(value: string): string {
-  return value.toLocaleLowerCase('en').normalize('NFKC')
-    .replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه')
+  return value
+    .toLocaleLowerCase('en')
+    .normalize('NFKC')
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
     .replace(/[\u064B-\u065F]/g, '')
-    .replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
 }
 const synonyms: Record<string, string[]> = {
   chill: ['chill', 'relax', 'calm', 'هادئ', 'هادي', 'استرخاء', 'رايق', 'رايقين'],
@@ -25,44 +30,58 @@ function containsTerm(text: string, term: string): boolean {
 }
 
 export function promptDiscoveryTracks(
-  db: DemoDb, viewer: Viewer, prompt: string, limit = 12,
+  db: DemoDb,
+  viewer: Viewer,
+  prompt: string,
+  limit = 12,
 ): { tracks: CatalogTrack[]; matched: boolean } {
   const text = normalize(prompt).slice(0, 240);
   if (text.length < 3) return { tracks: [], matched: false };
   const catalog = listableTracks(db, viewer).filter(
     (track) => track.access.allowed && track.audio?.processingStatus === 'ready',
   );
-  const tokens = text.split(' ').filter((part) => part.length > 2).slice(0, 24);
+  const tokens = text
+    .split(' ')
+    .filter((part) => part.length > 2)
+    .slice(0, 24);
   const intents = Object.entries(synonyms)
     .filter(([, terms]) => terms.some((term) => containsTerm(text, term)))
     .map(([name]) => name);
-  const ranked = catalog.map((track) => {
-    const genres = db.genres.filter((genre) =>
-      (track.genreIds?.length ? track.genreIds : [track.genreId]).includes(genre.id),
+  const ranked = catalog
+    .map((track) => {
+      const genres = db.genres.filter((genre) =>
+        (track.genreIds?.length ? track.genreIds : [track.genreId]).includes(genre.id),
+      );
+      const moods = db.moods.filter((mood) => track.moodIds.includes(mood.id));
+      const genreText = genres
+        .map((genre) => genre.labelEn + ' ' + genre.labelAr + ' ' + genre.slug)
+        .join(' ');
+      const moodText = moods
+        .map((mood) => mood.labelEn + ' ' + mood.labelAr + ' ' + mood.slug)
+        .join(' ');
+      const artistText = track.artist?.name ?? '';
+      let score = 0;
+      for (const word of tokens) {
+        if (containsTerm(genreText, word)) score += 6;
+        if (containsTerm(moodText, word)) score += 6;
+        if (containsTerm(artistText, word)) score += 4;
+        if (containsTerm(track.title, word)) score += 2;
+      }
+      for (const intent of intents) {
+        const terms = synonyms[intent] ?? [];
+        if (intent === 'arabic' && track.languageCode === 'ar') score += 6;
+        if (intent === 'english' && track.languageCode === 'en') score += 6;
+        if (terms.some((term) => containsTerm(genreText + ' ' + moodText, term)))
+          score += 5;
+      }
+      return { track, score };
+    })
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        b.track.qualifiedPlays - a.track.qualifiedPlays ||
+        a.track.id.localeCompare(b.track.id),
     );
-    const moods = db.moods.filter((mood) => track.moodIds.includes(mood.id));
-    const genreText = genres.map((genre) => genre.labelEn + ' ' + genre.labelAr + ' ' + genre.slug).join(' ');
-    const moodText = moods.map((mood) => mood.labelEn + ' ' + mood.labelAr + ' ' + mood.slug).join(' ');
-    const artistText = track.artist?.name ?? '';
-    let score = 0;
-    for (const word of tokens) {
-      if (containsTerm(genreText, word)) score += 6;
-      if (containsTerm(moodText, word)) score += 6;
-      if (containsTerm(artistText, word)) score += 4;
-      if (containsTerm(track.title, word)) score += 2;
-    }
-    for (const intent of intents) {
-      const terms = synonyms[intent] ?? [];
-      if (intent === 'arabic' && track.languageCode === 'ar') score += 6;
-      if (intent === 'english' && track.languageCode === 'en') score += 6;
-      if (terms.some((term) => containsTerm(genreText + ' ' + moodText, term))) score += 5;
-    }
-    return { track, score };
-  }).sort((a, b) =>
-    b.score - a.score ||
-    b.track.qualifiedPlays - a.track.qualifiedPlays ||
-    a.track.id.localeCompare(b.track.id),
-  );
   const matched = ranked.some((item) => item.score > 0);
   // Do not claim that a completely unrecognized prompt has been interpreted.
   if (!matched) return { tracks: [], matched: false };

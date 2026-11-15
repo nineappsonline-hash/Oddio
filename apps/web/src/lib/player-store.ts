@@ -4,7 +4,8 @@ import { create } from 'zustand';
 import type { CatalogTrack } from '@/lib/data/queries';
 
 export type RepeatMode = 'off' | 'one' | 'all';
-export type StationMode = 'flow' | 'daily' | 'weekly' | 'song' | 'artist' | 'genre' | 'mood';
+export type StationMode =
+  'flow' | 'daily' | 'weekly' | 'song' | 'artist' | 'genre' | 'mood';
 
 interface PlayerState {
   track: CatalogTrack | null;

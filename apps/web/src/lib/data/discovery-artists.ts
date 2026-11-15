@@ -33,7 +33,8 @@ export function getDiscoveryArtists(
     .map((artist) => ({
       ...artist,
       trackCount: counts.get(artist.id) ?? 0,
-      followerCount: db.artistFollows.filter((item) => item.artistId === artist.id).length,
+      followerCount: db.artistFollows.filter((item) => item.artistId === artist.id)
+        .length,
     }));
   const rotation = new Date(now);
   rotation.setUTCHours(0, 0, 0, 0);
@@ -42,29 +43,31 @@ export function getDiscoveryArtists(
   // Give low-exposure artists meaningful coverage; randomize ties via the
   // week key instead of always putting the same artist first.
   const leastExposed = [...available]
-    .sort((a, b) =>
-      (plays.get(a.id) ?? 0) / (counts.get(a.id) ?? 1) -
-      (plays.get(b.id) ?? 0) / (counts.get(b.id) ?? 1) ||
-      a.id.localeCompare(b.id),
+    .sort(
+      (a, b) =>
+        (plays.get(a.id) ?? 0) / (counts.get(a.id) ?? 1) -
+          (plays.get(b.id) ?? 0) / (counts.get(b.id) ?? 1) || a.id.localeCompare(b.id),
     )
     .slice(0, Math.max(4, Math.ceil(available.length * 0.6)));
   const rising = leastExposed
-    .sort((a, b) =>
-      stableHash(a.id + ':' + key) - stableHash(b.id + ':' + key) ||
-      a.id.localeCompare(b.id),
+    .sort(
+      (a, b) =>
+        stableHash(a.id + ':' + key) - stableHash(b.id + ':' + key) ||
+        a.id.localeCompare(b.id),
     )
     .slice(0, 4);
   const editorial = db.featuredSlots
     .filter((slot) => slot.entityType === 'artist' && slot.slot === 'spotlight')
-    .filter((slot) =>
-      (!slot.startAt || Date.parse(slot.startAt) <= now.getTime()) &&
-      (!slot.endAt || Date.parse(slot.endAt) > now.getTime()),
+    .filter(
+      (slot) =>
+        (!slot.startAt || Date.parse(slot.startAt) <= now.getTime()) &&
+        (!slot.endAt || Date.parse(slot.endAt) > now.getTime()),
     )
     .sort((a, b) => a.rank - b.rank)
     .find((slot) => available.some((artist) => artist.id === slot.entityId));
   const spotlight = editorial
-    ? available.find((artist) => artist.id === editorial.entityId) ?? null
-    : rising[0] ?? null;
+    ? (available.find((artist) => artist.id === editorial.entityId) ?? null)
+    : (rising[0] ?? null);
   // viewer is intentionally not used for artist eligibility: no private or owner-only data.
   void viewer;
   return { rising, spotlight };

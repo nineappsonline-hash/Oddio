@@ -9,7 +9,15 @@ import { jsonError, jsonOk } from '@/lib/api-helpers';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const allowedKinds: MixKind[] = ['flow', 'daily', 'weekly', 'song', 'artist', 'genre', 'mood'];
+const allowedKinds: MixKind[] = [
+  'flow',
+  'daily',
+  'weekly',
+  'song',
+  'artist',
+  'genre',
+  'mood',
+];
 function list(value: string | null, max: number): string[] {
   return (value ?? '')
     .split(',')

@@ -4,7 +4,14 @@ import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { promptDiscoveryTracks } from '@/lib/data/prompt-discovery';
-import { anonymousHash, assertSameOrigin, jsonError, jsonOk, parseBody, rateLimit } from '@/lib/api-helpers';
+import {
+  anonymousHash,
+  assertSameOrigin,
+  jsonError,
+  jsonOk,
+  parseBody,
+  rateLimit,
+} from '@/lib/api-helpers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,7 +24,11 @@ export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
     const viewer = await getViewer();
-    rateLimit('discovery:prompt:' + (viewer.userId ?? anonymousHash(request)), 15, 60_000);
+    rateLimit(
+      'discovery:prompt:' + (viewer.userId ?? anonymousHash(request)),
+      15,
+      60_000,
+    );
     const { prompt } = await parseBody(request, input);
     const db = demoMode ? readDb() : await loadDbFromSupabase();
     const result = promptDiscoveryTracks(db, viewer, prompt);

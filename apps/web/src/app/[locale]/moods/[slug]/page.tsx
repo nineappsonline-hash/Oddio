@@ -59,7 +59,14 @@ export default async function MoodPage({
         subtitle={t('discover.results', { count: String(page.tracks.length) })}
       />
       {page.tracks.length > 0 ? (
-        <div className="mb-5"><FlowButton kind="mood" seedId={page.mood.id} locale={locale} viewerId={viewer.userId} /></div>
+        <div className="mb-5">
+          <FlowButton
+            kind="mood"
+            seedId={page.mood.id}
+            locale={locale}
+            viewerId={viewer.userId}
+          />
+        </div>
       ) : null}
       {page.tracks.length === 0 ? (
         <EmptyState title={t('discover.empty')} />

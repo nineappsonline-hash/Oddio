@@ -46,7 +46,6 @@ export function buildDiscoveryMix(
   );
   const catalog = playable.filter(
     (track) =>
-
       !exclude.has(track.id) &&
       !(track.genreIds?.length ? track.genreIds : [track.genreId]).some((id) =>
         blockedGenres.has(id),
@@ -112,9 +111,13 @@ export function buildDiscoveryMix(
     });
   }
   // Keep song-radio's seed first; otherwise use the ranking's strongest track.
-  const first = options.kind === 'song' && seed && !exclude.has(seed.id) && candidates.some((item) => item.id === seed.id)
-    ? seed
-    : candidates[0];
+  const first =
+    options.kind === 'song' &&
+    seed &&
+    !exclude.has(seed.id) &&
+    candidates.some((item) => item.id === seed.id)
+      ? seed
+      : candidates[0];
   const selected: CatalogTrack[] = first ? [first] : [];
   const seenArtists = new Set(selected.map((track) => track.artistId));
   for (const track of candidates) {
