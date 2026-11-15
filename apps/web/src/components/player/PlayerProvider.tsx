@@ -501,7 +501,28 @@ export function PlayerProvider({
         if (exclusions.genreIds.length)
           params.set('blockedGenres', exclusions.genreIds.join(','));
         void apiRequest<{ tracks: CatalogTrack[] }>('/api/discovery/mix?' + params.toString())
-          .then(({ tracks }) => {
+          .then(async ({ tracks }) => {
+            if (tracks.length > 0) return { tracks, restart: false };
+            // The whole eligible catalog has been played. Start a fresh cycle,
+            // but never replay the just-finished track immediately.
+            const current = usePlayer.getState();
+            if (
+              current.track?.id !== currentId ||
+              current.station?.kind !== station.kind ||
+              current.station?.seedId !== station.seedId ||
+              current.isPlaying ||
+              !current.autoplay
+            ) return { tracks: [], restart: false };
+            const restarted = new URLSearchParams(params);
+            const avoid = [...exclusions.trackIds, ...(currentId ? [currentId] : [])];
+            if (avoid.length) restarted.set('exclude', [...new Set(avoid)].slice(-100).join(','));
+            else restarted.delete('exclude');
+            const next = await apiRequest<{ tracks: CatalogTrack[] }>(
+              '/api/discovery/mix?' + restarted.toString(),
+            );
+            return { tracks: next.tracks, restart: true };
+          })
+          .then(({ tracks, restart }) => {
             const latest = usePlayer.getState();
             if (
               latest.track?.id !== currentId ||
@@ -510,7 +531,10 @@ export function PlayerProvider({
               latest.isPlaying ||
               !latest.autoplay
             ) return;
-            if (tracks.length > 0) latest.continueStation(tracks);
+            if (tracks.length > 0) {
+              if (restart) latest.startFlow(tracks, station);
+              else latest.continueStation(tracks);
+            }
           })
           .catch(() => undefined);
         return;
