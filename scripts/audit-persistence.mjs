@@ -1,50 +1,78 @@
 #!/usr/bin/env node
 /**
- * Non-destructive Oddio persistence readiness check.
- * This is a source-code guard, not an online verification of database access.
+ * Static, non-destructive Oddio runtime persistence audit.
  *
- * Default mode always exits 0, emitting warnings in CI. Run with --strict as
- * a release gate once a persistent production repository adapter is installed.
+ * A demo JSON implementation may coexist with a production Supabase adapter.
+ * Flag API routes that appear to call the demo-only store without selecting
+ * a persistent production adapter. This does not replace integration tests.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-export function inspectPersistenceSource(source, { demoMode = 'false' } = {}) {
-  const usesDemoJson = /demo\.json/.test(source);
-  const usesFilesystemWrites = /fs\.writeFileSync\s*\(/.test(source);
-  const usesEphemeralVercelTemp =
-    /process\.env\.VERCEL[\s\S]{0,140}['"]\/tmp['"]/.test(source);
+export function inspectRoutePersistence(source) {
+  const usesDemoStore = /\b(?:mutateDb|readDb)\s*\(/.test(source);
+  const hasRuntimeSelection =
+    /\bdemoMode\b/.test(source) ||
+    /\b(?:mutateRuntimeDb|readRuntimeDb|loadDbFromSupabase|persistChanges)\b/.test(
+      source,
+    );
+  return usesDemoStore && !hasRuntimeSelection;
+}
+
+export function inspectPersistenceSource(_demoStore, options = {}) {
+  // Backward-compatible, conservative source audit: the mere presence of
+  // demo.json is not a production blocker if routes select the real adapter.
+  const adapter = options.adapterSource ?? '';
   const blockers = [];
-  if (demoMode === 'false' && usesDemoJson && usesFilesystemWrites) {
-    blockers.push(
-      'Production catalog repository still writes demo.json. Connect the web data layer to Supabase before claiming durable storage.',
-    );
+  if (!/export\s+async\s+function\s+loadDbFromSupabase\b/.test(adapter)) {
+    blockers.push('Missing Supabase snapshot loader implementation');
   }
-  if (demoMode === 'false' && usesEphemeralVercelTemp) {
-    blockers.push(
-      'Vercel runtime uses ephemeral /tmp storage. Data written there can vanish between serverless invocations.',
-    );
+  if (!/export\s+async\s+function\s+persistChanges\b/.test(adapter)) {
+    blockers.push('Missing Supabase snapshot persistence implementation');
+  }
+  for (const route of options.routes ?? []) {
+    if (inspectRoutePersistence(route.content)) {
+      blockers.push(`API route uses an unguarded demo store: ${route.path}`);
+    }
   }
   return { ready: blockers.length === 0, blockers };
 }
 
+function collectRoutes(dir, root) {
+  const files = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const filepath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...collectRoutes(filepath, root));
+    } else if (entry.name === 'route.ts' || entry.name === 'route.tsx') {
+      files.push({
+        path: path.relative(root, filepath),
+        content: readFileSync(filepath, 'utf8'),
+      });
+    }
+  }
+  return files;
+}
+
 function run() {
-  const file = path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    '../apps/web/src/lib/data/db.ts',
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const adapterSource = readFileSync(
+    path.join(root, 'apps/web/src/lib/data/supabase-store.ts'),
+    'utf8',
   );
-  const source = readFileSync(file, 'utf8');
-  const result = inspectPersistenceSource(source, { demoMode: 'false' });
+  const routes = collectRoutes(path.join(root, 'apps/web/src/app/api'), root);
+  const result = inspectPersistenceSource('', { adapterSource, routes });
+
   if (result.ready) {
     process.stdout.write(
-      'Persistence source audit: no known JSON filesystem blocker detected. Verify the actual adapter and database integration separately.\n',
+      'Persistence source audit: no unguarded demo API routes detected. Validate real Supabase operations separately.\n',
     );
   } else {
     for (const issue of result.blockers) {
       process.stderr.write(`PERSISTENCE BLOCKER: ${issue}\n`);
     }
-    process.stderr.write('Persistence source audit: production persistence NOT verified.\n');
+    process.stderr.write('Persistence audit: some API routes need review.\n');
   }
   if (process.argv.includes('--strict') && !result.ready) process.exitCode = 1;
 }
