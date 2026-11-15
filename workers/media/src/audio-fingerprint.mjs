@@ -51,9 +51,7 @@ export function fingerprintPcm16(buffer, sampleRate = 11025) {
       .slice(0, 2);
     const loud = energy > frameSize * 0.000005;
     patterns.push(
-      loud && total > 0 && best.length === 2
-        ? best[0].index.toString(16)
-        : '--',
+      loud && total > 0 && best.length === 2 ? best[0].index.toString(16) : '--',
     );
     lastEnergy = energy;
   }
@@ -101,8 +99,12 @@ export function compareFingerprints(a, b) {
   // complementary screening signal, allowing a short encoder delay.
   let alignedSimilarity = 0;
   let alignedComparisons = 0;
-  if (Array.isArray(a.frames) && Array.isArray(b.frames)
-    && a.frames.length >= 64 && b.frames.length >= 64) {
+  if (
+    Array.isArray(a.frames) &&
+    Array.isArray(b.frames) &&
+    a.frames.length >= 64 &&
+    b.frames.length >= 64
+  ) {
     for (let shift = -8; shift <= 8; shift++) {
       let compared = 0;
       let matched = 0;
