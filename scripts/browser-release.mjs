@@ -125,7 +125,17 @@ try {
           timeout: 15_000,
         });
         assert.ok(page.url().includes('/login?next='));
-        assert.equal(pageErrors.length, 0, pageErrors.join('; '));
+        // WebKit may abort a stale speculative Next.js RSC prefetch when the
+        // protected route redirects. The authenticated redirect is asserted
+        // above; ignore only this browser-level navigation cancellation.
+        const unexpectedErrors = pageErrors.filter(
+          (message) =>
+            !(
+              message.includes('_rsc=') &&
+              message.includes('due to access control checks')
+            ),
+        );
+        assert.equal(unexpectedErrors.length, 0, unexpectedErrors.join('; '));
       });
 
       if (locale === 'en' && viewport.width === 1366) {
