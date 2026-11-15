@@ -174,6 +174,21 @@ try {
         await page.keyboard.press('Escape');
         await dialog.waitFor({ state: 'detached' });
         assert.equal(await page.evaluate(() => document.body.style.overflow), '');
+
+        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+        const clearance = await page.evaluate(() => {
+          const footerContent = document.querySelector('footer > div:last-child');
+          const miniPlayer = document.querySelector('.oddio-player-bar[role="region"]');
+          if (!footerContent || !miniPlayer) return null;
+          return miniPlayer.getBoundingClientRect().top -
+            footerContent.getBoundingClientRect().bottom;
+        });
+        assert.ok(clearance !== null && clearance >= 0,
+          `footer overlaps the mini player: ${clearance}px`);
+        const documentOverflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        assert.ok(documentOverflow <= 2, `page horizontal overflow: ${documentOverflow}px`);
       });
 
       await test(`${label} discover and search without crashes`, async () => {
