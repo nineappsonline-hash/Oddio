@@ -103,6 +103,10 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [x] Fixed the mobile navigation drawer to appear at the physical **left** in both Arabic RTL and English LTR. Mobile header menu alignment likewise remains physically left. Added browser assertions for drawer coordinates and Escape dismissal.
 - [x] Full-screen music player now locks scrolling of the underlying page while expanded, restores original overflow when minimized and supports Escape to close (or dismiss the overlaid mobile lyrics first).
 - [x] Repeat controls in the full and mini players now report the active state with `aria-pressed`, in addition to the existing tooltips and mobile feedback.
+- [x] Added demo-browser interaction checks covering actual home-track playback, opening the fullscreen player, Lyrics/Queue tab selection, mobile lyric overlay, Shuffle/Repeat state, modal keyboard focus and footer clearance without horizontal scroll in both locales.
+- [x] Isolated the audio-playing page from unrelated search and authentication browser tests so WebKit navigation cancellations from outstanding playback requests do not pollute later route checks.
+- [x] Kept fullscreen focus trapping stable when the current track changes, rather than restoring focus on every next-track transition.
+- [ ] Validate that the expanded player works on actual Android/iOS devices, including the soft keyboard, small landscape viewport, live synchronized lyrics and genuine R2 streaming. CI demo-browser tests are not real-device acceptance.
 - [ ] Run latest Chromium/Firefox/WebKit mobile and desktop CI across Arabic and English. Browser tests use **demo audio** and do not prove real R2 playback.
 - [ ] Add full-player real-device coverage for mobile landscape, small screens, lyrics overlay, queue, seeking and keyboard focus trapping; review screen-reader labels and scrolling with iOS Safari.
 - [ ] Confirm nav/footer clearance visually on a real iPhone and Android device. The new browser test covers drawer alignment, not every viewport or overlay state.
