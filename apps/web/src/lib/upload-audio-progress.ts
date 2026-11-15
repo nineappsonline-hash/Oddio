@@ -3,7 +3,7 @@
  */
 export function uploadAudioWithProgress(
   url: string,
-  file: File,
+  file: Blob,
   headers: Record<string, string>,
   onProgress: (percent: number) => void,
   onRequest?: (request: XMLHttpRequest | null) => void,
