@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { Locale } from '@ai-music/contracts';
 import { absoluteUrl } from './utils';
+import { seoPage } from './seo-copy';
 
 export function buildMetadata({
   locale,
@@ -17,14 +18,19 @@ export function buildMetadata({
   noindex?: boolean;
   type?: 'website' | 'music.song' | 'music.album' | 'profile' | 'article';
 }): Metadata {
+  const copy = seoPage(locale, path);
+  const pageTitle = copy?.title ?? title;
+  const pageDescription = copy?.description ?? description;
+  const fullTitle = pageTitle.includes('Oddio') ? pageTitle : `${pageTitle} | Oddio`;
   const localizedPath = `/${locale}${path}`;
   const canonical = absoluteUrl(localizedPath);
   const ogImage = absoluteUrl(
-    `/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(description.slice(0, 120))}`,
+    `/api/og?title=${encodeURIComponent(pageTitle)}&subtitle=${encodeURIComponent(pageDescription.slice(0, 120))}`,
   );
   return {
-    title,
-    description,
+    title: { absolute: fullTitle },
+    description: pageDescription,
+    applicationName: 'Oddio',
     metadataBase: new URL(absoluteUrl('/')),
     alternates: {
       canonical,
@@ -38,18 +44,18 @@ export function buildMetadata({
       ? { index: false, follow: false, nocache: true }
       : { index: true, follow: true },
     openGraph: {
-      title,
-      description,
+      title: fullTitle,
+      description: pageDescription,
       url: canonical,
-      siteName: 'Project AI Music',
-      locale: locale === 'ar' ? 'ar_AR' : 'en_US',
+      siteName: 'Oddio',
+      locale: locale === 'ar' ? 'ar_EG' : 'en_US',
       type: type as 'website',
-      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: pageTitle }],
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
+      title: fullTitle,
+      description: pageDescription,
       images: [ogImage],
     },
   };
@@ -62,6 +68,7 @@ export function musicRecordingJsonLd(input: {
   durationMs: number;
   releaseAt: string;
   genre?: string;
+  languageCode?: string;
 }) {
   return {
     '@context': 'https://schema.org',
@@ -72,7 +79,7 @@ export function musicRecordingJsonLd(input: {
     duration: `PT${Math.round(input.durationMs / 1000)}S`,
     datePublished: input.releaseAt,
     genre: input.genre,
-    inLanguage: 'ar',
+    ...(input.languageCode ? { inLanguage: input.languageCode } : {}),
   };
 }
 
