@@ -3,7 +3,7 @@ import type { DemoDb } from './types';
 import { listableTracks, type CatalogTrack } from './queries';
 import { recommendTracks } from './recommendations';
 
-export type MixKind = 'flow' | 'daily' | 'weekly' | 'song' | 'artist';
+export type MixKind = 'flow' | 'daily' | 'weekly' | 'song' | 'artist' | 'genre' | 'mood';
 export interface MixOptions {
   kind: MixKind;
   seedId?: string;
@@ -54,6 +54,17 @@ export function buildDiscoveryMix(
   const base = recommendTracks(db, viewer, 20);
   const ranked = base.tracks.filter((track) => allowed.has(track.id));
   const seed = catalog.find((track) => track.id === options.seedId);
+  // Never convert an invalid/deleted radio target into an unrelated mix.
+  if ((options.kind === 'song' || options.kind === 'artist') && !seed)
+    return { tracks: [], personalized: false };
+  const category =
+    options.kind === 'genre'
+      ? db.genres.find((genre) => genre.id === options.seedId && genre.active)
+      : options.kind === 'mood'
+        ? db.moods.find((mood) => mood.id === options.seedId && mood.active)
+        : null;
+  if ((options.kind === 'genre' || options.kind === 'mood') && !category)
+    return { tracks: [], personalized: false };
   const affinity = (track: CatalogTrack) => {
     if (!seed) return 0;
     const genres = new Set(seed.genreIds?.length ? seed.genreIds : [seed.genreId]);
@@ -70,6 +81,13 @@ export function buildDiscoveryMix(
   const byId = new Map<string, CatalogTrack>();
   for (const track of [...ranked, ...catalog]) byId.set(track.id, track);
   let candidates = [...byId.values()];
+  if (options.kind === 'genre' && category) {
+    candidates = candidates.filter((track) =>
+      (track.genreIds?.length ? track.genreIds : [track.genreId]).includes(category.id),
+    );
+  } else if (options.kind === 'mood' && category) {
+    candidates = candidates.filter((track) => track.moodIds.includes(category.id));
+  }
   if ((options.kind === 'song' || options.kind === 'artist') && seed) {
     candidates = candidates.sort(
       (a, b) =>
