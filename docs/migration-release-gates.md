@@ -1,9 +1,9 @@
 # Oddio — production migration rollout gate (2026-11-15)
 
-**Status: BLOCKED — no production migrations applied.**
+**Status: ALL SEVEN MIGRATIONS APPLIED ON PRODUCTION (schema verified); staging/restore was deliberately bypassed by explicit owner instruction.**
 
 Project: `project-ai-music` / `weflfkftkdlrolctdmae`.
-The production migration registry currently ends at `20261114165142`.
+Before execution, the production migration registry ended at `20261114165142`.
 No Supabase development branches exist. An attempted staging branch creation was
 refused by the provider before creating resources because the API requires explicit
 cost confirmation. Never create a paid branch or apply SQL to production without
@@ -62,3 +62,11 @@ backup verification test: that action could affect the live database.
 
 Useful entry point:
 https://supabase.com/dashboard/project/weflfkftkdlrolctdmae/database/backups
+
+## Production execution update — 2026-11-15
+
+**All seven listed SQL migrations were applied to production** per the owner's explicit instruction to proceed without staging or a verified restore. The Supabase migration API returned success for each in the listed order; provider migration history registered their logical names under generated timestamps `20261115135846`, `20261115135848`, `20261115135850`, `20261115135854`, `20261115135856`, `20261115135858` and `20261115135900` respectively. These version numbers differ from the original filename prefixes because Supabase assigned versions during application.
+
+Read-only post-apply checks confirmed: 32 tracks, 4 profiles, 1 artist, 37 audio assets and 0 playlists (unchanged from preflight); four new tables with RLS enabled, two new metadata columns, and six new functions. Verified `anon` and `authenticated` cannot directly SELECT discovery preferences; `anon` cannot SELECT audio fingerprints or execute artist tag approval; `authenticated` cannot execute the track-like RPC; `service_role` retains intended access. Supabase security advisor reports expected informational policy-less RLS tables; do not grant public table policies by default.
+
+**Important:** This confirms schema application and basic data/security integrity, NOT a restorable database backup, real Cloudflare R2 streaming, cross-device session checks, or deployment of the feature branch to the production website. Those release checks remain outstanding. The pre-existing checklist above is retained as historical pre-rollout guidance, not a claim that SQL still needs applying.
