@@ -17,6 +17,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import { StudioTrackActions } from '@/components/studio/StudioTrackActions';
 import { ReviewMusicTags } from '@/components/studio/ReviewMusicTags';
 import { TrackReviewAppeal } from '@/components/studio/TrackReviewAppeal';
+import { OfflineRightsConsent } from '@/components/studio/OfflineRightsConsent';
 import { formatDate, formatNumber } from '@/lib/utils';
 
 export async function generateMetadata({
@@ -96,6 +97,15 @@ export default async function StudioTracksPage({
             data.tracks.map((track) => track.id),
           )
           .order('created_at', { ascending: false })
+      : { data: [] };
+
+  const { data: offlinePermissions } =
+    !demoMode && data.tracks.length
+      ? await serviceClient()
+          .from('track_offline_permissions')
+          .select('track_id,allowed')
+          .eq('artist_user_id', user.id)
+          .in('track_id', data.tracks.map((track) => track.id))
       : { data: [] };
 
   const approvedCount = data.tracks.filter(
@@ -326,6 +336,15 @@ export default async function StudioTracksPage({
                   existingStatus={
                     recentAppeals?.find((appeal) => appeal.track_id === track.id)?.status
                   }
+                />
+              ) : null}
+              {!demoMode ? (
+                <OfflineRightsConsent
+                  trackId={track.id}
+                  locale={locale}
+                  initiallyAllowed={Boolean(
+                    offlinePermissions?.find((entry) => entry.track_id === track.id)?.allowed,
+                  )}
                 />
               ) : null}
               <StudioTrackActions
