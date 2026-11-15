@@ -1,3 +1,4 @@
+import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
@@ -66,6 +67,11 @@ export default async function AlbumPage({
 
   return (
     <div>
+      <SeoBreadcrumbs items={[
+        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+        { label: artist.name, href: `/${locale}/artists/${artist.slug}` },
+        { label: album.title, href: `/${locale}/albums/${album.id}` },
+      ]} />
       <JsonLd
         data={musicAlbumJsonLd({
           title: album.title,
