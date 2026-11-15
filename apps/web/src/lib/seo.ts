@@ -115,3 +115,24 @@ export function artistJsonLd(input: { name: string; url: string; description: st
     ...(input.description ? { description: input.description } : {}),
   };
 }
+
+export function musicPlaylistJsonLd(input: {
+  name: string;
+  description?: string;
+  url: string;
+  tracks: Array<{ name: string; url: string }>;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'MusicPlaylist',
+    name: input.name,
+    url: new URL(input.url, absoluteUrl('/')).toString(),
+    ...(input.description ? { description: input.description } : {}),
+    numTracks: input.tracks.length,
+    track: input.tracks.map((track) => ({
+      '@type': 'MusicRecording',
+      name: track.name,
+      url: new URL(track.url, absoluteUrl('/')).toString(),
+    })),
+  };
+}
