@@ -15,6 +15,7 @@ type MultipartDraft = {
   uploadId: string;
   partSize: number;
   createdAt: number;
+  completed?: boolean;
 };
 
 type MultipartAction = {
@@ -49,6 +50,16 @@ function saveSession(draft: MultipartDraft | null) {
     // Browser storage is optional. The current upload will still work.
   }
 }
+/** Clear only after finalize persisted the new track in Supabase. */
+export function clearCompletedMultipartDraft(objectKey: string) {
+  try {
+    const raw = window.localStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    const value = JSON.parse(raw) as MultipartDraft;
+    if (value.objectKey === objectKey && value.completed) saveSession(null);
+  } catch { /* browser storage is optional */ }
+}
+
 async function action<T>(payload: MultipartAction): Promise<T> {
   return apiRequest<T>('/api/studio/uploads/multipart', {
     method: 'POST',
@@ -89,6 +100,10 @@ export async function uploadAudioMultipart(
     saveSession(draft);
   }
 
+  if (draft.completed) {
+    options.progress(100);
+    return { objectKey: draft.objectKey };
+  }
   const base = { objectKey: draft.objectKey, uploadId: draft.uploadId, bytes: file.size };
   const totalParts = Math.ceil(file.size / draft.partSize);
   const { parts } = await action<{ parts: Array<{ partNumber: number; size: number; etag: string }> }>({
@@ -117,7 +132,7 @@ export async function uploadAudioMultipart(
   }
   // R2 is authoritative for part ETAGs and byte lengths.
   await action({ action: 'complete', ...base });
-  saveSession(null);
+  saveSession({ ...draft, completed: true });
   options.progress(100);
   return { objectKey: draft.objectKey };
 }
