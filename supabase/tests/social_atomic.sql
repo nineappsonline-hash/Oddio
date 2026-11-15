@@ -62,6 +62,16 @@ begin
   perform public.oddio_add_playlist_track(owner_id,list_id,target_track_id);
   if (select count(*) from public.playlist_tracks pt where pt.playlist_id=list_id) <> 1 then
     raise exception 'Duplicate playlist track was inserted'; end if;
+  perform public.oddio_remove_playlist_track(owner_id,list_id,target_track_id);
+  if exists (select 1 from public.playlist_tracks pt
+             where pt.playlist_id=list_id and pt.track_id=target_track_id) then
+    raise exception 'Playlist track removal failed';
+  end if;
+  begin
+    perform public.oddio_remove_playlist_track(listener,list_id,private_track);
+    raise exception 'Non-owner removed track from playlist';
+  exception when sqlstate 'P0002' then null;
+  end;
   begin
     perform public.oddio_add_playlist_track(listener,list_id,target_track_id);
     raise exception 'Non-owner added to playlist';
