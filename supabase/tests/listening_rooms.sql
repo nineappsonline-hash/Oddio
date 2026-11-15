@@ -80,6 +80,10 @@ begin
   if not exists(select 1 from public.listening_room_messages where id=msg and user_id=guest)
   then raise exception 'Member message not recorded'; end if;
   begin
+    perform public.oddio_room_message(room,guest,'Too fast');
+    raise exception 'Fast repeated chat bypassed durable limiter';
+  exception when sqlstate 'P0001' then null; end;
+  begin
     perform public.oddio_room_message(room,outsider,'Intruding');
     raise exception 'Outsider posted message';
   exception when sqlstate '42501' then null; end;
