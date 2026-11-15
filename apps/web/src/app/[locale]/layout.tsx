@@ -42,11 +42,13 @@ export async function generateMetadata({
   const { locale } = await params;
   const safeLocale: Locale = isLocale(locale) ? locale : 'en';
   const title =
-    safeLocale === 'ar' ? 'Oddio — عالمك الموسيقي' : 'Oddio — Your music universe';
+    safeLocale === 'ar'
+      ? 'Oddio | اكتشف واسمع موسيقى بالذكاء الاصطناعي'
+      : 'Oddio — Discover & Listen to AI-Generated Music';
   const description =
     safeLocale === 'ar'
-      ? 'منصة عالمية لسماع ونشر الموسيقى المعمولة بالذكاء الاصطناعي، ببلاش ومن غير إعلانات وبيتراجع بشريًا قبل ما تنزل.'
-      : 'A global listening and publishing platform for AI-generated music. Free, ad-free and human-reviewed before release.';
+      ? 'اكتشف أغاني أصلية وموسيقى بالذكاء الاصطناعي على Oddio. اسمع إصدارات جديدة، وتعرّف على فنانين وموسيقى عربية وعالمية.'
+      : 'Discover original AI-generated songs, music artists and playlists on Oddio. Browse fresh releases, genres and mood-based music discovery.';
   return {
     metadataBase: new URL(SEO_CANONICAL_ORIGIN),
     title: { default: title, template: `%s · Oddio` },
