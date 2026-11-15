@@ -124,6 +124,58 @@ try {
         });
       }
 
+      await test(`${label} full player, lyrics, queue and controls`, async () => {
+        await page.goto(`${base}/${locale}`, { waitUntil: 'domcontentloaded' });
+        const play = page.locator('.oddio-stage-play');
+        await play.waitFor({ state: 'visible' });
+        await play.click();
+        const mini = page.getByRole('region', {
+          name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
+        });
+        await mini.waitFor({ state: 'visible' });
+        await mini.getByRole('button', { name: /expand|توسيع|تكبير|فتح/i }).first().click();
+        const dialog = page.getByRole('dialog', { name: /player|مشغل/i });
+        await dialog.waitFor({ state: 'visible' });
+        assert.equal(await page.evaluate(() => document.body.style.overflow), 'hidden');
+        const overflow = await dialog.evaluate(
+          (element) => element.scrollWidth - element.clientWidth,
+        );
+        assert.ok(overflow <= 2, `full-player horizontal overflow: ${overflow}px`);
+
+        const tabs = dialog.getByRole('tab');
+        await tabs.last().click();
+        assert.equal(await tabs.last().getAttribute('aria-selected'), 'true');
+        await tabs.first().click();
+        assert.equal(await tabs.first().getAttribute('aria-selected'), 'true');
+
+        if (viewport.width === 390) {
+          const lyricsButton = dialog.locator('button[aria-controls="oddio-mobile-lyrics"]');
+          await lyricsButton.click();
+          assert.equal(await lyricsButton.getAttribute('aria-expanded'), 'true');
+          await dialog.locator('#oddio-mobile-lyrics').waitFor({ state: 'visible' });
+          await page.keyboard.press('Escape');
+          assert.equal(await lyricsButton.getAttribute('aria-expanded'), 'false');
+          await dialog.waitFor({ state: 'visible' });
+        }
+
+        const shuffle = dialog.getByRole('button', {
+          name: locale === 'ar' ? /عشوائي/ : /shuffle/i,
+        });
+        const prior = await shuffle.getAttribute('aria-pressed');
+        await shuffle.click();
+        assert.notEqual(await shuffle.getAttribute('aria-pressed'), prior);
+        const repeat = dialog.getByRole('button', {
+          name: locale === 'ar' ? /تكرار/ : /repeat/i,
+        });
+        assert.equal(await repeat.getAttribute('aria-pressed'), 'false');
+        await repeat.click();
+        assert.equal(await repeat.getAttribute('aria-pressed'), 'true');
+
+        await page.keyboard.press('Escape');
+        await dialog.waitFor({ state: 'detached' });
+        assert.equal(await page.evaluate(() => document.body.style.overflow), '');
+      });
+
       await test(`${label} discover and search without crashes`, async () => {
         const discover = await page.goto(`${base}/${locale}/discover`, {
           waitUntil: 'domcontentloaded',
