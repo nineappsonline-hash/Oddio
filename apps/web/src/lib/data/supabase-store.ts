@@ -505,13 +505,27 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
   const sessionOwner = new Map(
     playbackSessions.map((session) => [session.id, session.userId]),
   );
-  const history = playbackEvents
-    .filter((event) => event.eventType === 'start' && sessionOwner.get(event.sessionId))
-    .map((event) => ({
-      userId: sessionOwner.get(event.sessionId) as string,
-      trackId: event.trackId,
-      playedAt: event.occurredAt,
-    }));
+  // Show only qualified listens (matching the demo library), not every
+  // initial playback attempt. Keep one most-recent history entry per track.
+  const history = Array.from(
+    new Map(
+      playbackEvents
+        .filter(
+          (event) =>
+            event.eventType === 'qualified' &&
+            event.qualified &&
+            sessionOwner.get(event.sessionId),
+        )
+        .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
+        .map((event) => ({
+          userId: sessionOwner.get(event.sessionId) as string,
+          trackId: event.trackId,
+          playedAt: event.occurredAt,
+        }))
+        .map((entry) => [`${entry.userId}:${entry.trackId}`, entry] as const)
+        .reverse(),
+    ).values(),
+  );
 
   return {
     version: 2,
