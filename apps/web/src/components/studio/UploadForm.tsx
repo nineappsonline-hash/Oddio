@@ -848,8 +848,8 @@ export function UploadForm({
       </fieldset>
       <p className="text-xs text-muted">
         {locale === 'ar'
-          ? 'يتم حفظ البيانات محليًا. ملفات الصوت والصور يجب اختيارها مجددًا عند الرجوع.'
-          : 'Details save on this device. Audio and artwork files must be selected again when returning.'}
+          ? 'التفاصيل بتتحفظ على الجهاز. لو رفع ملف MP3 من 8 إلى 25 ميجابايت اتقطع، اختار نفس الملف تاني عشان يكمل الأجزاء الناقصة. الغلاف لازم تختاره من جديد.'
+          : 'Details save on this device. For interrupted uploads of 8–25 MB, reselect the exact same MP3 to resume the remaining R2 parts. Artwork must be selected again.'}
       </p>
       <div className="sticky bottom-3 z-20 flex gap-3 rounded-2xl border border-violet-400/20 bg-[#191622]/95 p-3 shadow-xl backdrop-blur">
         {step > 1 && (
