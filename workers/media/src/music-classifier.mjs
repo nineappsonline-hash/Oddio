@@ -14,6 +14,7 @@ const MIN_MACRO_RECALL = 0.7;
 
 function legalExample(row) {
   return row && row.consent === true && row.artistReviewed === true
+    && typeof row.artistId === 'string' && row.artistId.length >= 3
     && typeof row.genreSlug === 'string' && /^[a-z0-9-]{2,64}$/.test(row.genreSlug)
     && Array.isArray(row.moodSlugs) && row.moodSlugs.length <= 5
     && row.moodSlugs.every((m) => typeof m === 'string' && /^[a-z0-9-]{2,64}$/.test(m))
@@ -22,9 +23,10 @@ function legalExample(row) {
     && row.fingerprint.shingles.length >= 8;
 }
 
-function candidates(target, examples, excludeId = null) {
+function candidates(target, examples, excludeArtistId = null) {
   const ranked = examples
-    .filter((item) => item.id !== excludeId)
+    // Leave-one-artist-out validation avoids same-artist recording leakage.
+    .filter((item) => item.artistId !== excludeArtistId)
     .map((item) => ({
       ...item,
       similarity: compareFingerprints(target, item.fingerprint).similarity,
@@ -33,8 +35,8 @@ function candidates(target, examples, excludeId = null) {
   return ranked;
 }
 
-function choose(target, examples, excludeId = null) {
-  const nearby = candidates(target, examples, excludeId);
+function choose(target, examples, excludeArtistId = null) {
+  const nearby = candidates(target, examples, excludeArtistId);
   if (nearby.length < 3) return null;
   // Need multiple distinct, sufficiently similar artist-approved examples,
   // not one repeated track or a generic beat.
@@ -75,6 +77,7 @@ export function trainReviewedClassifier(rows) {
   }
   const examples = rows.map((row, i) => ({
     id: String(row.id ?? i),
+    artistId: row.artistId,
     genreSlug: row.genreSlug,
     moodSlugs: [...new Set(row.moodSlugs)],
     fingerprint: row.fingerprint,
@@ -82,14 +85,26 @@ export function trainReviewedClassifier(rows) {
   if (new Set(examples.map((row) => row.id)).size !== examples.length) {
     throw new Error('Duplicate example ids not allowed');
   }
+  const fingerprintKeys = examples.map((item) =>
+    JSON.stringify([...new Set(item.fingerprint.shingles)].sort()));
+  if (new Set(fingerprintKeys).size !== fingerprintKeys.length) {
+    throw new Error('Duplicate audio fingerprints are not independent training examples');
+  }
   const counts = new Map();
   for (const row of examples) counts.set(row.genreSlug, (counts.get(row.genreSlug) ?? 0) + 1);
   if (counts.size < MIN_GENRES || [...counts.values()].some((count) => count < MIN_PER_GENRE)) {
     throw new Error('Needs at least two genres with four reviewed tracks in each');
   }
+  for (const genre of counts.keys()) {
+    const artists = new Set(examples.filter((row) => row.genreSlug === genre)
+      .map((row) => row.artistId));
+    if (artists.size < 4) {
+      throw new Error('Each genre needs at least four independent artists');
+    }
+  }
   const perClass = new Map([...counts.keys()].map((slug) => [slug, { correct: 0, total: 0, covered: 0 }]));
   for (const row of examples) {
-    const evaluation = choose(row.fingerprint, examples, row.id);
+    const evaluation = choose(row.fingerprint, examples, row.artistId);
     const stats = perClass.get(row.genreSlug);
     stats.total++;
     if (evaluation) stats.covered++;
