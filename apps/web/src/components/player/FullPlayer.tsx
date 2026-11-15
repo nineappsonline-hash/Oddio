@@ -117,6 +117,25 @@ export function FullPlayer() {
   const removeFromQueue = usePlayer((state) => state.removeFromQueue);
   const clearQueue = usePlayer((state) => state.clearQueue);
 
+  // Full-screen playback is a modal. Prevent touch and wheel scrolling behind
+  // it, and restore the page's original scroll behavior on close/unmount.
+  useEffect(() => {
+    if (!expanded || !track) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (mobileLyricsOpen) setMobileLyricsOpen(false);
+        else setExpanded(false);
+      }
+    };
+    document.addEventListener('keydown', onEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onEscape);
+    };
+  }, [expanded, track, mobileLyricsOpen, setExpanded]);
+
   useEffect(() => {
     if (!track?.id) {
       setSrt(null);
