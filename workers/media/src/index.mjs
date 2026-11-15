@@ -333,10 +333,10 @@ function r2SignedUrl(method, bucket, key) {
   }
   if (!['ai-music-originals', 'ai-music-streaming'].includes(bucket))
     throw new Error('Invalid R2 bucket');
-  if (!/^[a-zA-Z0-9/_-]+(?:\\.[a-zA-Z0-9]+)?$/.test(key) || key.includes('..'))
+  if (!/^[a-zA-Z0-9/_-]+(?:\.[a-zA-Z0-9]+)?$/.test(key) || key.includes('..'))
     throw new Error('Invalid R2 key');
   const host = `${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
-  const date = new Date().toISOString().replace(/[:-]|\\.\\d{3}/g, '');
+  const date = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
   const short = date.slice(0, 8);
   const scope = `${short}/auto/s3/aws4_request`;
   const path = `/${bucket}/${key.split('/').map(encodeURIComponent).join('/')}`;
