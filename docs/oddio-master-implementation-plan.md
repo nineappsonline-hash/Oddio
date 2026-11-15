@@ -200,6 +200,16 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] This is a **finite discovery mix**, not yet a dynamically refreshed infinite station. Existing player autoplay may transition to generic homepage tracks when the queue ends; a dedicated Flow continuation policy with explicit opt-out remains future work.
 - [ ] Test actual R2 playback, controls and resume on real Android/iOS browsers in staging. No production deployment or database migration was made for this slice.
 
+### Phase 5 third slice — Daily Mix, Discover Weekly, seeded radio and opt-out (development branch, 2026-11-15)
+
+- [x] Added `buildDiscoveryMix`, a deterministic, bounded no-paid-API mixer: Daily Mix rotates at UTC midnight, Discover Weekly at Monday 00:00 UTC, Song Radio starts from an accessible selected song and Artist Radio preferentially selects the source artist and compatible Genres/Moods.
+- [x] Added the server-authorized `GET /api/discovery/mix` endpoint with a private no-store response. It validates requested mode, limits exclusions and returns only listable, accessible, ready-to-play music. No database writes or external AI calls.
+- [x] Connected the station buttons on Discover and Song/Artist pages; the player can request the next batch when its station queue runs out, preserving up to 100 previously played tracks in the local station history. It does not silently fall back to unrelated generic homepage songs during a station.
+- [x] Added per-account local-browser `Not interested` (song and Genre exclusions) controls and a reset action. Hidden material is removed from the visible discovery shelf and active station queue. Guest exclusions last for the browser tab; signed-in exclusions are local to that user's browser/device. **These are not synced to Supabase or other devices.**
+- [x] Added mix-rotation, access, blocked-genre, seed and player-refill tests; fixed a Flow test syntax failure found in a Vercel preview build. Recheck the latest CI/Vercel status.
+- [ ] Continuous station playback still has finite-catalog limits: if every eligible song has been heard, the station stops rather than looping instantly. Add an artist-diverse rerotation after an explicit catalog-exhaustion policy decision.
+- [ ] Production rollout remains blocked on complete CI and browser tests, real Cloudflare R2 staging tests, safe Supabase migration rollout/backup and real-device acceptance. This batch has **not been merged or deployed to production**.
+
 ## Phase 6 — artist studio
 
 - [ ] Reliable multipart uploads with progress and resume; structured release wizard.
