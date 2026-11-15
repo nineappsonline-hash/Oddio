@@ -46,7 +46,7 @@ insert into public.playlist_collaboration_invites
 (playlist_id,creator_id,code_hash,expires_at)
 values ('62000000-0000-4000-8000-000000000001','72000000-0000-4000-8000-000000000001',repeat('a',64),now()+interval '1 day');
 
-do $
+do $$
 declare
   editor uuid := '72000000-0000-4000-8000-000000000002';
   outsider uuid := '72000000-0000-4000-8000-000000000003';
@@ -86,6 +86,6 @@ begin
   if exists (select 1 from public.playlist_tracks where playlist_id=public_list) then
     raise exception 'Editor failed to remove playlist track';
   end if;
-end $;
+end $$;
 
 rollback;
