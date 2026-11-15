@@ -12,6 +12,7 @@ import type {
   Track,
 } from '@ai-music/contracts';
 import { env } from '@/lib/env';
+import { buildQualifiedListeningHistory } from './listening-history';
 import type {
   DemoDb,
   DemoUser,
@@ -502,30 +503,7 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
     requestId: text(row.request_id),
   }));
 
-  const sessionOwner = new Map(
-    playbackSessions.map((session) => [session.id, session.userId]),
-  );
-  // Show only qualified listens (matching the demo library), not every
-  // initial playback attempt. Keep the latest listen for each user/track.
-  const historyByTrack = new Map<
-    string,
-    { userId: string; trackId: string; playedAt: string }
-  >();
-  for (const event of playbackEvents) {
-    if (event.eventType !== 'qualified' || !event.qualified) continue;
-    const userId = sessionOwner.get(event.sessionId);
-    if (!userId) continue;
-    const key = `${userId}:${event.trackId}`;
-    const previous = historyByTrack.get(key);
-    if (!previous || event.occurredAt > previous.playedAt) {
-      historyByTrack.set(key, {
-        userId,
-        trackId: event.trackId,
-        playedAt: event.occurredAt,
-      });
-    }
-  }
-  const history = Array.from(historyByTrack.values());
+  const history = buildQualifiedListeningHistory(playbackSessions, playbackEvents);
 
   return {
     version: 2,
