@@ -146,7 +146,7 @@ export function trainReviewedClassifier(rows) {
   };
 }
 
-export function suggestArtistTags(fingerprint, model) {
+export function predictReviewedTags(fingerprint, model) {
   if (
     !fingerprint ||
     model?.schemaVersion !== 1 ||
@@ -160,4 +160,17 @@ export function suggestArtistTags(fingerprint, model) {
   }
   const match = choose(fingerprint, model.examples);
   return match ? { ...match, source: 'artist-reviewed-local-model-v1' } : null;
+}
+
+/**
+ * The production worker MUST NOT emit suggestions until independently
+ * evaluated, artist-disjoint heldout data has passed all release gates.
+ * Internal prediction is exposed above only for offline evaluation.
+ */
+export function suggestArtistTags(fingerprint, model) {
+  if (model?.heldoutValidation?.passed !== true
+    || model.heldoutValidation.metrics?.macroRecall < 0.7
+    || model.heldoutValidation.metrics?.coverage < 0.65
+    || model.heldoutValidation.metrics?.precision < 0.8) return null;
+  return predictReviewedTags(fingerprint, model);
 }
