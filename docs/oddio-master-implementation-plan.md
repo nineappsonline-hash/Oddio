@@ -325,6 +325,17 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] Mobile installability and push/media playback must be acceptance-tested on actual Android/iOS. PWA is **not** a Play Store/App Store native package and is **not** rights-compliant offline playback.
 - [ ] Android wrapper and iOS wrapper remain future builds (iOS compilation/signing requires access to macOS tooling).
 
+### Phase 7 slice 3 — invite-only moderated Listening Rooms (development only)
+
+- [x] Implemented private RLS-protected room, membership and chat tables in `supabase/migrations/20261115222000_listening_rooms.sql`. The migration is **NOT applied to production**.
+- [x] Room creation, secret invitation token, atomic join (25-member cap), six-hour expiry, owner-only transport state and member-only chat. Server-side service-role RPCs are inaccessible to browser database roles; private code hashes are never returned from room-read responses.
+- [x] Host moderation includes message hiding, mute/unmute, banning/removing members and closing rooms. Participants may leave voluntarily. Muted/banned users cannot submit new chat messages; SQL-backed per-user chat throttling works across serverless instances.
+- [x] Added bilingual `/[locale]/rooms` and `/[locale]/rooms/[id]` routes, web player integration and a light four-second polling synchronization loop. State uses the server clock to minimize device time drift; track metadata is fetched only when songs change. Every listener requests a **separate authorized stream** through the existing Cloudflare R2 player; no stream keys are shared in rooms.
+- [x] Added database integration tests for private grants, wrong-room codes, unauthorized transport, private tracks, mute/ban and spam; plus client sync unit tests. Hooked SQL tests into disposable DB CI.
+- [ ] This is **near-real-time polling**, not millisecond-synchronized audio or a full WebSocket/Supabase Realtime product. Real-device auto-play policies, sync drift, network failure, room closure and moderator load still need acceptance tests; speaking/voice calls are not implemented.
+- [ ] The room feature requires its new migration, older staged migrations and paired worker/web deployment. Do not enable room routes on production until the release gate and database backup are validated.
+- [ ] Future iteration: durable room-level audit records, moderation appeals/reporting of chat abuse, periodic cleanup of expired rooms and a cross-device load test under the maximum membership cap.
+
 ## Continuous release gates (every phase)
 
 1. No direct production deploy from a work-in-progress branch.
