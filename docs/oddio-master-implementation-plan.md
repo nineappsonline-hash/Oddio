@@ -10,7 +10,7 @@ Working branch: `feature/master-plan-phase-0-1`.
 - [x] Harden the production environment URL preflight, and add regression tests.
 - [x] Existing CI is present for type checking, unit tests, build, route/audio smoke tests, RLS checks and desktop/mobile browser tests.
 - [x] Confirm Vercel project `oddio` and that `oddio.online` is verified on that project; preview is isolated with `DEMO_MODE=true`. Production release health still needs investigation.
-- [ ] Inspect current Supabase tables, rows and auth configuration (read-only).
+- [x] Inspect connected Supabase `project-ai-music` table inventory, migration history and security advisor (read-only); auth configuration beyond advisor not yet audited.
 - [ ] Record actual content counts and authoritative source of users, tracks, playlists, likes and follows.
 - [ ] Capture a restorable backup of production data and verify restore in a disposable environment.
 - [ ] Run CI on the pull request, inspect failures and review the deployment preview. Initial Vercel build failed on a pre-existing strict TypeScript sidebar link error; fixed on this branch and pending recheck.
@@ -21,7 +21,9 @@ Working branch: `feature/master-plan-phase-0-1`.
 - Vercel project `oddio` exists and `oddio.online` is verified.
 - Previous production deployments and the first development previews were blocked by a strict TypeScript error in `apps/web/src/components/layout/Sidebar.tsx` (optional `split('#')[0]`). A nonvisual fix has been committed to this branch.
 - The latest known READY production deployment predates the most recent `main` commits; do not assume `main` is live.
-- The connected Supabase account currently exposes two projects, named `Mansokar` and a generic inactive project; neither has been positively identified as Oddio. **Do not query, modify, or migrate either without confirmation of ownership and Vercel project linkage.**
+- The correct connected Supabase project is `project-ai-music` (`weflfkftkdlrolctdmae`, eu-central-1), confirmed by the project owner. It is active and contains 32 tracks, 1 artist, 4 profiles, 59 genres, 24 moods and 37 audio asset rows (snapshot from 2026-11-15). The database is not empty: **never import seed/demo user data over it**. All 36 observed public tables have RLS enabled.
+- Security advisor flags 7 policy-less RLS tables at informational severity (possibly intentional deny-all), and leaked-password protection disabled. Audit who should access these tables before considering grants; never blindly create permissive policies.
+- Confirm Vercel production Supabase project reference matches this project before any write. The project name alone does not verify runtime wiring.
 - Vercel environment variables were inspected without decryption; no sensitive values were read.
 - `NEXT_PUBLIC_SITE_URL` is configured as `https://oddio.vercel.app` for preview and production; assess canonical domain alignment with `oddio.online` once release health is restored.
 
