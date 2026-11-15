@@ -377,12 +377,13 @@ async function runDemoOnce() {
 
 const AUTH = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` };
 
-async function rest(method, route, body) {
+async function rest(method, route, body, extraHeaders = {}) {
   const response = await fetch(`${SUPABASE_URL}${route}`, {
     method,
     headers: {
       ...AUTH,
       'Content-Type': 'application/json',
+      ...extraHeaders,
       ...(method === 'POST' || method === 'PATCH'
         ? { Prefer: 'return=representation' }
         : {}),
@@ -561,10 +562,12 @@ async function handleTranscode(job) {
             });
           }
         }
-        await rest('POST', '/rest/v1/audio_fingerprints?on_conflict=track_id', {
-          track_id: trackId,
-          signature: measured.fingerprint,
-        });
+        await rest(
+          'POST',
+          '/rest/v1/audio_fingerprints?on_conflict=track_id',
+          { track_id: trackId, signature: measured.fingerprint },
+          { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        );
       } catch (error) {
         log('warn', 'optional audio fingerprint comparison unavailable', {
           trackId, reason: error instanceof Error ? error.name : 'fingerprint_error',
