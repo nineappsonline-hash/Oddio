@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlaybackEventInput } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
+import { canPrepareNextTrack, crossfadeGains } from '@/lib/audio-transitions';
 import { readDiscoveryExclusions } from '@/lib/discovery-preferences';
 import {
   recoverablePlaybackPosition,
@@ -33,6 +34,13 @@ export function PlayerProvider({
 }) {
   const storageKey = `${PLAYER_SESSION_KEY}:${viewerId ?? 'guest'}`;
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const standbyRef = useRef<HTMLAudioElement | null>(null);
+  const warmedRef = useRef<{trackId:string; result:PlaybackAuthorization} | null>(null);
+  const warmingRef = useRef<string | null>(null);
+  const crossfadingRef = useRef(false);
+  const crossfadeTargetRef = useRef<string | null>(null);
+  const incomingTimeRef = useRef(0);
+
   const sessionRef = useRef<string | null>(null);
   const audibleRef = useRef({
     accumulated: 0,
@@ -55,9 +63,25 @@ export function PlayerProvider({
   const pendingRestoreTrackId = useRef<string | null>(null);
   const startSentRef = useRef(false);
   const isPlaying = usePlayer((state) => state.isPlaying);
+  const crossfadeSeconds = usePlayer((state) => state.crossfadeSeconds);
   const volume = usePlayer((state) => state.volume);
   const muted = usePlayer((state) => state.muted);
   const seekRequest = usePlayer((state) => state.seekRequest);
+
+  // Transition preferences are local to the listener, never synced to a room
+  // or included in signed playback URLs.
+  useEffect(() => {
+    try {
+      const stored = Number(window.localStorage.getItem('oddio-crossfade-seconds'));
+      usePlayer.getState().setCrossfadeSeconds(stored);
+    } catch { /* Private browser mode continues with crossfade disabled. */ }
+    const unsubscribe = usePlayer.subscribe((state, prior) => {
+      if (state.crossfadeSeconds === prior.crossfadeSeconds) return;
+      try { window.localStorage.setItem('oddio-crossfade-seconds', String(state.crossfadeSeconds)); }
+      catch { /* Optional preference persistence. */ }
+    });
+    return unsubscribe;
+  }, []);
 
   // A track change invalidates all in-flight stream refresh attempts.
   useEffect(() => {
@@ -297,7 +321,22 @@ export function PlayerProvider({
     streamRef.current = null;
     setStream(null);
 
-    apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
+    const warmed = warmedRef.current?.trackId === trackId && playbackRequestId === 0
+      ? warmedRef.current.result
+      : null;
+    if (warmed) {
+      warmedRef.current = null;
+      sessionRef.current = warmed.sessionId;
+      streamRef.current = warmed.streamUrl;
+      setStream(warmed.streamUrl);
+      usePlayer.getState().setDuration(warmed.durationMs / 1000);
+      // The secondary element may already be playing the new track. Keep it
+      // audible until the primary element has started the authorized source.
+      if (crossfadingRef.current && crossfadeTargetRef.current === trackId) {
+        pendingRestoreTrackId.current = trackId;
+        pendingRestoreTime.current = incomingTimeRef.current;
+      }
+    } else apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
       method: 'POST',
     })
       .then((result) => {
@@ -351,7 +390,12 @@ export function PlayerProvider({
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.volume = muted ? 0 : volume;
+    const state = usePlayer.getState();
+    const gains = crossfadingRef.current
+      ? crossfadeGains(Math.max(0, audio.duration - audio.currentTime), state.crossfadeSeconds)
+      : { outgoing: 1, incoming: 0 };
+    audio.volume = (muted ? 0 : volume) * gains.outgoing;
+    if (standbyRef.current) standbyRef.current.volume = (muted ? 0 : volume) * gains.incoming;
   }, [volume, muted]);
 
   useEffect(() => {
@@ -372,6 +416,48 @@ export function PlayerProvider({
     const onTimeUpdate = () => {
       const state = usePlayer.getState();
       const time = audio.currentTime;
+      const standby = standbyRef.current;
+      const remaining = audio.duration - time;
+      const queued = state.queue[0];
+      if (standby && canPrepareNextTrack({
+        remainingSeconds:remaining, playing:state.isPlaying,
+        repeatOne:state.repeat==='one', queued:Boolean(queued),
+      }) && queued) {
+        const warmId = queued.id;
+        if(warmedRef.current?.trackId!==warmId && warmingRef.current!==warmId){
+          warmingRef.current=warmId;
+          void apiRequest<PlaybackAuthorization>(`/api/tracks/${warmId}/playback`,{
+            method:'POST',
+          }).then(result=>{
+            if(warmingRef.current!==warmId || usePlayer.getState().queue[0]?.id!==warmId)return;
+            warmedRef.current={trackId:warmId,result};
+            standby.src=result.streamUrl;
+            standby.preload='auto';
+            standby.load();
+          }).catch(()=>undefined).finally(()=>{
+            if(warmingRef.current===warmId)warmingRef.current=null;
+          });
+        }
+      }
+      if (standby && state.crossfadeSeconds>0 && queued &&
+        warmedRef.current?.trackId===queued.id &&
+        Number.isFinite(remaining) && remaining<=state.crossfadeSeconds &&
+        remaining>0 && state.isPlaying && state.repeat!=='one') {
+        if (!crossfadingRef.current && standby.readyState>=HTMLMediaElement.HAVE_CURRENT_DATA) {
+          standby.currentTime=0;
+          standby.volume=0;
+          void standby.play().then(()=>{
+            crossfadingRef.current=true;
+            crossfadeTargetRef.current=queued.id;
+          }).catch(()=>undefined);
+        }
+        if (crossfadingRef.current && crossfadeTargetRef.current===queued.id) {
+          incomingTimeRef.current=standby.currentTime;
+          const gains=crossfadeGains(remaining,state.crossfadeSeconds);
+          audio.volume=(state.muted?0:state.volume)*gains.outgoing;
+          standby.volume=(state.muted?0:state.volume)*gains.incoming;
+        }
+      }
       const audible = audibleRef.current;
       const delta = time - audible.lastTime;
       if (!audio.paused && delta > 0 && delta < 1.5) {
@@ -414,6 +500,19 @@ export function PlayerProvider({
     };
     const onWaiting = () => usePlayer.getState().setBuffering(true);
     const onPlaying = () => {
+      if(crossfadingRef.current &&
+         crossfadeTargetRef.current===usePlayer.getState().track?.id){
+        const standby=standbyRef.current;
+        if(standby){
+          standby.pause();
+          standby.removeAttribute('src');
+          standby.load();
+        }
+        crossfadingRef.current=false;
+        crossfadeTargetRef.current=null;
+        incomingTimeRef.current=0;
+        audio.volume=usePlayer.getState().muted?0:usePlayer.getState().volume;
+      }
       usePlayer.getState().setBuffering(false);
       if (!startSentRef.current && sessionRef.current) {
         startSentRef.current = true;
@@ -478,6 +577,10 @@ export function PlayerProvider({
     };
     const onEnded = () => {
       const state = usePlayer.getState();
+      // Standby handoff is complete only after the next primary stream starts.
+      // If the preauthorized stream expired, normal per-track playback recovery
+      // still runs and the secondary source is discarded.
+
       sendEvent('complete', audibleRef.current.accumulated);
       if (state.repeat === 'one') {
         audio.currentTime = 0;
@@ -671,6 +774,7 @@ export function PlayerProvider({
     <>
       {children}
       <audio ref={audioRef} preload="none" aria-hidden="true" />
+      <audio ref={standbyRef} preload="none" aria-hidden="true" />
     </>
   );
 }
