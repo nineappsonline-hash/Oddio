@@ -78,7 +78,7 @@ export function presignR2Get(objectKey: string) {
     'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
     'X-Amz-Credential': `${env.r2AccessKeyId}/${scope}`,
     'X-Amz-Date': timestamp,
-    'X-Amz-Expires': '120',
+    'X-Amz-Expires': '1800',
     'X-Amz-SignedHeaders': 'host',
   };
   const query = Object.entries(queryParams)
@@ -106,7 +106,7 @@ export function presignR2Get(objectKey: string) {
   return `https://${host}${path}?${query}&X-Amz-Signature=${hmac(signingKey, stringToSign).toString('hex')}`;
 }
 
-/** Short-lived private rendition URL; never expose storage credentials. */
+/** GET URL for a playback session. 30m avoids late seek/range retries failing. */
 export function presignR2Head(objectKey: string) {
   if (!env.r2AccountId || !env.r2AccessKeyId || !env.r2SecretAccessKey) {
     throw new AppError('storage_not_configured', 'R2 credentials are missing.', 503);
