@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getPlaylistPage } from '@/lib/data/queries';
-import { readDb } from '@/lib/data/db';
+import { readRuntimeDb } from '@/lib/data/runtime-store';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -24,7 +24,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, id } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = readDb();
+  const db = await readRuntimeDb();
   const page = getPlaylistPage(db, { userId: null, roles: [] }, idFromSegment(id));
   if (!page)
     return buildMetadata({
