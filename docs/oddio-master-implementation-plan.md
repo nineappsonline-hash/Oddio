@@ -307,6 +307,17 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [x] Browser Media Session now exposes best-effort play/pause state, reported duration/position and 10-second forward/backward headset/lock-screen seek actions, in addition to prior next/previous and direct seeking.
 - [ ] Real Android and iOS device verification is still needed. Mobile OS background policies differ and this does **not** constitute a native wrapper, offline listening, crossfade, gapless playback or unrestricted background playback support.
 
+### Current unfinished Phase 6–8 implementation batch (2026-11-15; development only)
+
+- [x] **Phase 6: 100 MiB bounded MP3 upload** — raised the application and finalize maximum from 25 MiB to 100 MiB, retaining runtime `AUDIO_MAX_UPLOAD_BYTES` as an upper-bound override. Extended the existing authenticated R2 multipart upload to work with larger files, while the media worker now streams original downloads to temporary disk through a hard byte-counting guard (instead of buffering the entire source in RAM). This requires deploying the matching worker and web versions together; the production worker and R2 path have not been tested with a real 100 MiB MP3.
+- [x] **Phase 6: human appeal review** — owner-only submissions on rejected/changes-requested tracks, service-only `track_review_appeals` persistence, staff-only written dispositions. An overturned appeal does not automatically change track visibility, review approval or publish state. Pending migration `20261115220000_track_review_appeals.sql`, NOT applied to production.
+- [x] **Phase 7: annual Rewind & Music DNA** — personal private statistics based on session-owned qualified playback events and currently accessible tracks; truthful UTC year boundaries and catalog primary genre summaries. No paid model/AI guessing.
+- [x] **Phase 7: collaborative PUBLIC playlists, first functional slice** — expiring, hashed owner-issued invite codes, max 10 editors, owner removal/revocation, service-only join and serialized add/remove RPC operations. Editors cannot delete playlists or change owner settings; they may add only released, public tracks. Invitation redemption is bound to the exact playlist. Pending migration `20261115221000_playlist_collaboration.sql`, NOT applied to production. Editor list/revoke and membership are service-role API only.
+- [x] **Phase 8: lock screen/headset** — best-effort Media Session playback status, position and +/-10s seeking in browsers that support these features.
+- [ ] Run latest CI end-to-end, reconcile all new SQL/RLS tests, lint/typecheck/format/build and browser flows. Validate real R2 multipart, large-file FFmpeg processing and cross-device collaborative editing before release.
+- [ ] **Still outstanding:** audited real-time listening rooms with abuse/moderation controls, native Android/iOS wrapper proof-of-concept, rights-compliant offline listening, gapless/crossfade/normalization, creator stories and share cards. Do not label Phases 6–8 complete while these remain open.
+- [ ] Before future production deployment apply both new migrations in order after a real backup, deploy the updated worker alongside web, and confirm Cloudflare R2 CORS + existing egress-free playback architecture. No production web/worker deployment or production SQL changes in this batch.
+
 ## Continuous release gates (every phase)
 
 1. No direct production deploy from a work-in-progress branch.
