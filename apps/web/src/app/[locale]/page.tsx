@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { ArrowRight, ArrowUpRight, Disc3 } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
 import { getHomeData } from '@/lib/data/queries';
+import { recommendTracks } from '@/lib/data/recommendations';
+import { getDiscoveryArtists } from '@/lib/data/discovery-artists';
+import { DiscoveryMixShelf } from '@/components/music/DiscoveryMixShelf';
 import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
@@ -50,6 +53,8 @@ export default async function HomePage({
   const viewer = await getViewer();
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const data = getHomeData(db, viewer);
+  const recommended = recommendTracks(db, viewer, 20);
+  const discoveryArtists = getDiscoveryArtists(db, viewer);
   const hero = data.hero;
   const heroQueue = hero
     ? [
@@ -168,6 +173,15 @@ export default async function HomePage({
         </Link>
       </div>
 
+      {recommended.tracks.length > 0 ? (
+        <DiscoveryMixShelf
+          tracks={recommended.tracks}
+          personalized={recommended.personalized}
+          locale={locale}
+          viewerId={viewer.userId}
+        />
+      ) : null}
+
       <section className="oddio-dashboard-section oddio-genres-section">
         <div className="oddio-section-title-row">
           <div>
@@ -250,6 +264,42 @@ export default async function HomePage({
           )}
         </section>
       </div>
+
+      {discoveryArtists.spotlight ? (
+        <section className="oddio-dashboard-section" aria-label={ar ? 'فنان تحت الضوء' : 'Artist spotlight'}>
+          <div className="oddio-section-title-row">
+            <div>
+              <p className="oddio-micro-label">ODDIO SPOTLIGHT</p>
+              <h2>{ar ? 'فنان تحت الضوء' : 'Artist Spotlight'}</h2>
+              <p className="text-sm text-muted">
+                {ar ? 'اختيار تحريري أو فنان مستقل من تدوير أسبوعي.' : 'Editorial choice or a weekly rotating independent artist.'}
+              </p>
+            </div>
+          </div>
+          <div className="max-w-64">
+            <ArtistCard artist={discoveryArtists.spotlight} locale={locale} />
+          </div>
+        </section>
+      ) : null}
+
+      {discoveryArtists.rising.length > 0 ? (
+        <section className="oddio-dashboard-section" aria-label={ar ? 'فنانين صاعدين' : 'Rising artists'}>
+          <div className="oddio-section-title-row">
+            <div>
+              <p className="oddio-micro-label">RISING ON ODDIO</p>
+              <h2>{ar ? 'فنانين يستحقوا فرصة' : 'Rising Artists'}</h2>
+              <p className="text-sm text-muted">
+                {ar ? 'فنانين متاحين للاستماع ومش بالضرورة الأكثر شهرة، بتدوير أسبوعي.' : 'Playable independent voices, not just the most-streamed artists; rotated weekly.'}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {discoveryArtists.rising.map((artist) => (
+              <ArtistCard key={artist.id} artist={artist} locale={locale} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="oddio-dashboard-section">
         <div className="oddio-section-title-row">
