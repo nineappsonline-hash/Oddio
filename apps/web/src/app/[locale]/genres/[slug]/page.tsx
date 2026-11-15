@@ -9,6 +9,7 @@ import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { getViewer } from '@/lib/auth/session';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
+import { categoryEditorial } from '@/lib/seo/category-editorial';
 import { TrackCard } from '@/components/music/TrackCard';
 import { ArtistCard } from '@/components/music/ArtistCard';
 import { GenrePlayAllButton } from '@/components/music/GenrePlayAllButton';
@@ -37,7 +38,7 @@ export async function generateMetadata({
       safeLocale === 'ar'
         ? `استكشف أغاني ${label} على Oddio. اسمع أحدث الموسيقى المصنوعة بالذكاء الاصطناعي في النوع ده، وتعرّف على الفنانين والإصدارات.`
         : `Explore ${label} AI-generated music on Oddio. Listen to new songs, discover artists and browse tracks in this genre.`,
-    noindex: !page,
+    noindex: !page || page.tracks.length === 0,
     path: `/genres/${slug}`,
   });
 }
@@ -59,6 +60,7 @@ export default async function GenrePage({
   if (!page) notFound();
 
   const label = ar ? page.genre.labelAr : page.genre.labelEn;
+  const editorial = categoryEditorial('genre', slug, locale);
   const all = page.tracks;
   const byPlays = [...all].sort((a, b) => b.qualifiedPlays - a.qualifiedPlays);
   const newest = [...all].sort(
@@ -166,6 +168,28 @@ export default async function GenrePage({
           </div>
         </div>
       </header>
+
+      {editorial ? (
+        <section aria-labelledby="about-genre" className="max-w-4xl space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <h2 id="about-genre" className="text-lg font-bold text-ink sm:text-xl">
+            {ar ? `تعرف على موسيقى ${label}` : `About ${label} music`}
+          </h2>
+          <p className="text-sm leading-8 text-muted">{editorial}</p>
+          {featuredArtists.length > 0 ? (
+            <p className="text-sm leading-7 text-muted">
+              {ar ? 'فنانين في القسم: ' : 'Explore artists in this category: '}
+              {featuredArtists.slice(0, 3).map((artist, index) => (
+                <span key={artist.id}>
+                  {index > 0 ? ' · ' : ''}
+                  <Link href={`/${locale}/artists/${artist.slug}`} className="font-semibold text-primary hover:underline">
+                    {artist.name}
+                  </Link>
+                </span>
+              ))}
+            </p>
+          ) : null}
+        </section>
+      ) : null}
 
       <nav
         aria-label={ar ? 'أقسام النوع الموسيقي' : 'Genre sections'}
