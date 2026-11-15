@@ -222,9 +222,13 @@ export function PlayerProvider({
     const unsubscribe = usePlayer.subscribe(() => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(save, 400);
-      if (viewerId) {
-        if (cloudTimer) clearTimeout(cloudTimer);
-        cloudTimer = setTimeout(saveCloud, 12_000);
+      if (viewerId && !cloudTimer) {
+        // Time updates fire continuously during playback. Throttle rather
+        // than debounce, or a song that keeps playing would never sync.
+        cloudTimer = setTimeout(() => {
+          cloudTimer = null;
+          saveCloud();
+        }, 10_000);
       }
     });
     window.addEventListener('pagehide', save);
