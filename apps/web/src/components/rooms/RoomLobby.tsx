@@ -31,7 +31,7 @@ export function RoomLobby({ locale }: { locale: 'ar' | 'en' }) {
                 code: code.trim().toLowerCase(),
               }),
             });
-      if ('code' in result) {
+      if ('code' in result && typeof result.code === 'string') {
         // Display invitation separately, not as a query-string token.
         sessionStorage.setItem(`oddio-room-code:${result.roomId}`, result.code);
       }
