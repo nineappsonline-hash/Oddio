@@ -53,3 +53,21 @@ export async function addPlaylistTrackAtomic(
     throw new Error(`Failed to add track to playlist: ${error.message}`);
   }
 }
+
+export async function removePlaylistTrackAtomic(
+  actor: SessionUser,
+  playlistId: string,
+  trackId: string,
+): Promise<void> {
+  const { error } = await serviceClient().rpc('oddio_remove_playlist_track', {
+    p_user_id: actor.id,
+    p_playlist_id: playlistId,
+    p_track_id: trackId,
+  });
+  if (error) {
+    if (error.code === 'P0002') {
+      throw Errors.notFound('Playlist not found');
+    }
+    throw new Error(`Failed to remove track from playlist: ${error.message}`);
+  }
+}
