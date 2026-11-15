@@ -1,5 +1,6 @@
 import SwiftUI
 import WebKit
+import UIKit
 
 /// A minimal iOS web shell preserving Oddio's real online design and account.
 /// This is NOT a background-audio, offline or App Store approved implementation.
