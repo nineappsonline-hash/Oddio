@@ -248,7 +248,7 @@ async function processDemoTrack(track, dir) {
     track.audio.bytes = info.size;
     track.audio.sha256 = await sha256File(source);
     try {
-      const { fingerprint: _fingerprint, ...features } = await extractMusicFeatures(source);
+      const { fingerprint: _fingerprint, tagSuggestion: _tagSuggestion, ...features } = await extractMusicFeatures(source);
       track.audioFeatures = features;
     } catch (error) {
       // Analysis is advisory: never block a valid artist release.
@@ -281,7 +281,7 @@ async function processDemoTrack(track, dir) {
   };
   track.durationMs = Math.round(rendered.durationSec * 1000);
   try {
-    const { fingerprint: _fingerprint, ...features } = await extractMusicFeatures(output);
+    const { fingerprint: _fingerprint, tagSuggestion: _tagSuggestion, ...features } = await extractMusicFeatures(output);
     track.audioFeatures = features;
   } catch (error) {
     log('warn', 'demo audio feature preview unavailable', {
@@ -540,7 +540,6 @@ async function handleTranscode(job) {
               rmsDbfs: measured.rmsDbfs,
               peakDbfs: measured.peakDbfs,
               analyzedSeconds: measured.analyzedSeconds,
-              tagSuggestion: measured.tagSuggestion,
             } }
           : {}),
       });
@@ -571,6 +570,20 @@ async function handleTranscode(job) {
       } catch (error) {
         log('warn', 'optional audio fingerprint comparison unavailable', {
           trackId, reason: error instanceof Error ? error.name : 'fingerprint_error',
+        });
+      }
+    }
+    if (trackId && measured?.tagSuggestion) {
+      try {
+        await rest(
+          'POST',
+          '/rest/v1/audio_tag_suggestions?on_conflict=track_id',
+          { track_id: trackId, suggestion: measured.tagSuggestion },
+          { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        );
+      } catch (error) {
+        log('warn', 'private tag suggestion could not be saved', {
+          trackId, reason: error instanceof Error ? error.name : 'suggestion_error',
         });
       }
     }
