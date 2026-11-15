@@ -230,7 +230,7 @@ try {
           waitUntil: 'domcontentloaded',
         });
         assert.equal(search?.status(), 200);
-        const input = page.locator('main input[name="q"]');
+        const input = page.locator('main input[type="search"][name="q"]');
         await input.fill('zzzzunlikelyreleasequery123');
         await input.press('Enter');
         await page.waitForURL(new RegExp(`/\\${locale}/search\\?q=`), {
