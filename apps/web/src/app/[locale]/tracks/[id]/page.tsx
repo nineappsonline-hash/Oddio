@@ -1,3 +1,4 @@
+import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
@@ -99,6 +100,11 @@ export default async function TrackPage({
 
   return (
     <div>
+      <SeoBreadcrumbs items={[
+        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+        ...(track.genre ? [{ label: genreLabel, href: `/${locale}/genres/${track.genre.slug}` }] : [{ label: locale === 'ar' ? 'اكتشف' : 'Discover', href: `/${locale}/discover` }]),
+        { label: track.title, href: `/${locale}/tracks/${track.id}-${track.slug}` },
+      ]} />
       <JsonLd
         data={musicRecordingJsonLd({
           title: track.title,
