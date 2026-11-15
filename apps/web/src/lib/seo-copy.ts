@@ -109,6 +109,30 @@ export const SEO_PAGES: Record<string, SeoCopies> = {
     en: { title: 'Private Listening Rooms', description: 'Listen together in invite-only Oddio rooms with synchronized music playback and a shared listening experience.' },
     ar: { title: 'غرف استماع موسيقية خاصة', description: 'اسمعوا الأغاني مع بعض في غرف Oddio الخاصة بالدعوات مع تشغيل موسيقي متزامن.' },
   },
+  '/settings': {
+    en: { title: 'Account Settings', description: 'Update your Oddio account settings, profile details and music listening preferences.' },
+    ar: { title: 'إعدادات الحساب', description: 'عدّل إعدادات حسابك على Oddio وبيانات ملفك الشخصي وتفضيلات الاستماع.' },
+  },
+  '/notifications': {
+    en: { title: 'Your Notifications', description: 'See account notifications, artist updates and important activity related to your Oddio account.' },
+    ar: { title: 'إشعاراتك', description: 'تابع إشعارات الحساب وتحديثات الفنانين والأنشطة المرتبطة بحسابك على Oddio.' },
+  },
+  '/legal/terms': {
+    en: { title: 'Terms of Service', description: 'Read the terms governing the use of Oddio, including accounts, listening and artist publishing responsibilities.' },
+    ar: { title: 'شروط الاستخدام', description: 'اقرأ شروط استخدام Oddio المتعلقة بالحسابات والاستماع إلى الموسيقى ومسؤوليات نشر المحتوى.' },
+  },
+  '/legal/privacy': {
+    en: { title: 'Privacy Policy', description: 'Learn how Oddio describes personal data, account privacy and privacy choices in its published Privacy Policy.' },
+    ar: { title: 'سياسة الخصوصية', description: 'اقرأ سياسة خصوصية Oddio لمعرفة المعلومات المتعلقة ببيانات الحساب وخيارات الخصوصية.' },
+  },
+  '/legal/content-policy': {
+    en: { title: 'Music Content Policy', description: 'Review Oddio rules for AI music submissions, artist responsibilities and music content moderation.' },
+    ar: { title: 'سياسة المحتوى', description: 'تعرّف على قواعد Oddio لنشر الموسيقى بالذكاء الاصطناعي ومسؤوليات الفنانين ومراجعة المحتوى.' },
+  },
+  '/legal/copyright': {
+    en: { title: 'Copyright & Rights', description: 'Learn about copyright concerns, content ownership and reporting intellectual property issues on Oddio.' },
+    ar: { title: 'حقوق النشر والملكية', description: 'اقرأ معلومات حقوق النشر وملكية المحتوى والإبلاغ عن مشكلات الملكية الفكرية على Oddio.' },
+  },
   '/login': {
     en: { title: 'Log In to Oddio', description: 'Sign in to Oddio to access your saved songs, playlists and personalized music listening experience.' },
     ar: { title: 'سجّل دخولك إلى Oddio', description: 'سجّل دخولك إلى Oddio للوصول لأغانيك المحفوظة وقوائم التشغيل وتجربة الموسيقى الشخصية.' },
