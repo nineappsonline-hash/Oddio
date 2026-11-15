@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import type { Locale } from '@ai-music/contracts';
 import { getMoodPage } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
@@ -9,6 +10,7 @@ import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
+import { categoryEditorial } from '@/lib/seo/category-editorial';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { TrackCard } from '@/components/music/TrackCard';
 import { TrackRow } from '@/components/music/TrackRow';
@@ -35,7 +37,7 @@ export async function generateMetadata({
       safeLocale === 'ar'
         ? `اسمع أغاني تناسب مود ${label} على Oddio، واكتشف موسيقى بالذكاء الاصطناعي وترشيحات تناسب إحساسك.`
         : `Listen to ${label} mood music on Oddio. Discover AI-generated songs and explore tracks that fit how you feel.`,
-    noindex: !page,
+    noindex: !page || page.tracks.length === 0,
     path: `/moods/${slug}`,
   });
 }
@@ -54,6 +56,8 @@ export default async function MoodPage({
   const page = getMoodPage(db, viewer, slug);
   if (!page) notFound();
   const label = locale === 'ar' ? page.mood.labelAr : page.mood.labelEn;
+  const editorial = categoryEditorial('mood', slug, locale);
+  const artists = Array.from(new Map(page.tracks.flatMap((track) => track.artist ? [[track.artist.id, track.artist] as const] : [])).values()).slice(0, 4);
 
   return (
     <div>
@@ -62,6 +66,27 @@ export default async function MoodPage({
         title={label}
         subtitle={t('discover.results', { count: String(page.tracks.length) })}
       />
+      {editorial ? (
+        <section aria-label={locale === 'ar' ? 'عن المود الموسيقي' : 'About this listening mood'} className="mb-6 max-w-4xl space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+          <p className="text-sm leading-8 text-muted">{editorial}</p>
+          {artists.length > 0 ? (
+            <p className="text-sm leading-7 text-muted">
+              {locale === 'ar' ? 'اكتشف فنانين: ' : 'Discover artists: '}
+              {artists.map((artist, index) => (
+                <span key={artist.id}>
+                  {index > 0 ? ' · ' : ''}
+                  <Link href={`/${locale}/artists/${artist.slug}`} className="font-semibold text-primary hover:underline">
+                    {artist.name}
+                  </Link>
+                </span>
+              ))}
+            </p>
+          ) : null}
+          <Link href={`/${locale}/soundspace`} className="inline-block text-sm font-semibold text-primary hover:underline">
+            {locale === 'ar' ? 'جرّب اكتشاف موسيقى بمودك في Soundspace ←' : 'Explore more mood-based mixes in Soundspace →'}
+          </Link>
+        </section>
+      ) : null}
       {page.tracks.length > 0 ? (
         <div className="mb-5">
           <FlowButton
