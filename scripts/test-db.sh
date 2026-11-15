@@ -23,4 +23,7 @@ echo "==> supabase/seed.sql"
 echo "==> supabase/tests/rls.sql"
 "${PSQL[@]}" -f supabase/tests/rls.sql
 
+echo "==> supabase/tests/social_atomic.sql"
+"${PSQL[@]}" -f supabase/tests/social_atomic.sql
+
 echo "Database tests passed."
