@@ -255,12 +255,24 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] Real-time listening rooms with moderation and ownership rules.
 - [ ] Music DNA, monthly recaps, annual Rewind and optional social discovery.
 
+### Phase 7 slice 1 — private monthly listening recap (feature branch)
+
+- [x] Added `/[locale]/library/recap` for authenticated listeners with UTC-month qualified history totals, distinct artists/tracks and top five songs/artists.
+- [x] History is filtered to the account and accessible tracks before aggregation; empty listening history is explicitly shown, not fabricated. Added month-boundary and privacy unit tests.
+- [x] Added **opt-in** native share/copy of three aggregate recap numbers, not track-by-track history. Linked from Library. No automatic public posting.
+- [ ] Community playlists, creator stories, collaborative editing and moderated listening rooms remain pending; do not call Phase 7 complete.
+
 ## Phase 8 — mobile and advanced playback
 
 - [ ] PWA eligibility and cross-device account sync.
 - [ ] Android/iOS wrapper or native-shell proof of concept with background playback.
 - [ ] Offline rights-compliant listening, push, lock screen and headset controls.
 - [ ] Gapless, crossfade, normalization and optional EQ; evaluate car integrations later.
+
+### Phase 8 slice 1 — installability groundwork (feature branch)
+
+- [x] Added a dark, standalone Oddio Web App Manifest at `/manifest.webmanifest`, using the existing glossy gradient play logo and both language layouts' manifest metadata.
+- [ ] Confirm installability icon dimensions on real devices and add a suitable service worker limited to safe static assets; do NOT cache private, signed, or personalized audio URLs. Background playback, Android/iOS packaging, lock-screen controls, offline permissions, gapless and crossfade are not yet delivered.
 
 ## Continuous release gates (every phase)
 
