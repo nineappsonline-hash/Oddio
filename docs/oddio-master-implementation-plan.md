@@ -11,14 +11,14 @@ Working branch: `feature/master-plan-phase-0-1`.
 - [x] Existing CI is present for type checking, unit tests, build, route/audio smoke tests, RLS checks and desktop/mobile browser tests.
 - [x] Confirm Vercel project `oddio` and that `oddio.online` is verified on that project; preview is isolated with `DEMO_MODE=true`. Production release health still needs investigation.
 - [x] Inspect connected Supabase `project-ai-music` table inventory, migration history and security advisor (read-only); auth configuration beyond advisor not yet audited.
-- [ ] Record actual content counts and authoritative source of users, tracks, playlists, likes and follows.
+- [x] Record existing Supabase content counts (32 tracks, 4 profiles, 1 artist, zero playlists at 2026-11-15); which HTTP endpoints use this storage still requires verification.
 - [ ] Capture a restorable backup of production data and verify restore in a disposable environment.
 - [ ] Run CI on the pull request, inspect failures and review the deployment preview. Initial Vercel build failed on a pre-existing strict TypeScript sidebar link error; fixed on this branch and pending recheck.
 - [ ] Establish baseline playback, search, sign-in, upload and mobile smoke checks against the preview.
 
 ## Current findings (2026-11-15)
 
-- Vercel project `oddio` exists and `oddio.online` is verified.
+- Vercel project `oddio` exists and `oddio.online` is verified. The configured NEXT_PUBLIC_SUPABASE_URL host matches the owner-confirmed `project-ai-music` ref; this does NOT prove each API route reads from the database.
 - Previous production deployments and the first development previews were blocked by a strict TypeScript error in `apps/web/src/components/layout/Sidebar.tsx` (optional `split('#')[0]`). A nonvisual fix has been committed to this branch.
 - The latest known READY production deployment predates the most recent `main` commits; do not assume `main` is live.
 - The correct connected Supabase project is `project-ai-music` (`weflfkftkdlrolctdmae`, eu-central-1), confirmed by the project owner. It is active and contains 32 tracks, 1 artist, 4 profiles, 59 genres, 24 moods and 37 audio asset rows (snapshot from 2026-11-15). The database is not empty: **never import seed/demo user data over it**. All 36 observed public tables have RLS enabled.
@@ -29,7 +29,7 @@ Working branch: `feature/master-plan-phase-0-1`.
 
 ## Phase 1 — persistent data and media
 
-- [ ] Inventory readers/writers using `apps/web/src/lib/data/queries.ts`, `mutations.ts` and the demo repository.
+- [ ] Inventory readers/writers using `apps/web/src/lib/data/queries.ts`, `mutations.ts` and the demo repository. Confirmed `data/db.ts` reads/writes `demo.json` under Vercel `/tmp`.
 - [ ] Define an explicit repository interface and Supabase-backed adapter without changing public API contracts.
 - [ ] Map JSON IDs and relationships to the Supabase schema; establish an idempotent import with dry-run and reconciliation counts.
 - [ ] Preserve existing account ownership, review state, playlists, likes, follows, release schedules and qualified play counts.
@@ -98,6 +98,6 @@ Working branch: `feature/master-plan-phase-0-1`.
 ## Known facts and outstanding verification
 
 - The repository documentation currently describes the runtime data store as demo JSON despite Supabase schema artifacts being present. **This is a source-code/documentation finding, not a live production audit.**
-- Existing CI already includes PostgreSQL RLS and browser coverage; do not duplicate it.
+- Existing CI already includes PostgreSQL RLS and browser coverage; do not duplicate it. Added `scripts/audit-persistence.mjs` and focused tests to warn about non-durable production file-backed storage. Use `node scripts/audit-persistence.mjs --strict` as a release gate only after the adapter has been completed.
 - Production backend, live domain routing, backups and storage credentials have **not** been verified by this change.
 - Do not run destructive database migrations or import demo content into production without an inventory and recovery plan.
