@@ -1,4 +1,4 @@
-name: Format Listening Rooms development
+name: Format Listening Rooms development - host picker
 on:
   push:
     branches: [feature/master-plan-phase-0-1]
@@ -25,6 +25,7 @@ jobs:
             apps/web/src/app/'[locale]'/rooms/'[id]'/page.tsx \
             apps/web/src/components/rooms/RoomLobby.tsx \
             apps/web/src/components/rooms/RoomSession.tsx \
+            apps/web/src/components/rooms/RoomTrackPicker.tsx \
             apps/web/src/lib/room-playback-sync.ts \
             apps/web/src/lib/room-playback-sync.test.ts \
             apps/web/src/components/layout/MobileNav.tsx \
