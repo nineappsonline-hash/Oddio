@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import type { Locale } from '@ai-music/contracts';
 import { AppShell } from '@/components/layout/AppShell';
+import { StaticServiceWorker } from '@/components/providers/StaticServiceWorker';
 import { dirFor, isLocale, locales } from '@/i18n/config';
 import { getSessionUser } from '@/lib/auth/session';
 import { env } from '@/lib/env';
@@ -85,6 +86,7 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <body className="bg-background text-ink">
+        <StaticServiceWorker />
         <AppShell locale={locale} user={user}>
           {children}
         </AppShell>
