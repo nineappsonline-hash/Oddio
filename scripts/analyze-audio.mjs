@@ -16,7 +16,9 @@ import { analyzePcm16 } from '../workers/media/src/music-features.mjs';
 const exec = promisify(execFile);
 const filename = process.argv[2];
 if (!filename || filename.startsWith('--')) {
-  process.stderr.write('Usage: node scripts/analyze-audio.mjs <locally-owned-audio-file>\n');
+  process.stderr.write(
+    'Usage: node scripts/analyze-audio.mjs <locally-owned-audio-file>\n',
+  );
   process.exit(2);
 }
 
@@ -33,28 +35,47 @@ try {
     stream.on('end', resolve);
   });
   const sampleRate = 11025;
-  const { stdout } = await exec('ffmpeg', [
-    '-hide_banner', '-loglevel', 'error',
-    '-i', filename,
-    '-map', '0:a:0',
-    '-t', '90',
-    '-ac', '1',
-    '-ar', String(sampleRate),
-    '-f', 's16le',
-    'pipe:1',
-  ], {
-    encoding: 'buffer',
-    timeout: 45_000,
-    maxBuffer: 3 * 1024 * 1024,
-  });
+  const { stdout } = await exec(
+    'ffmpeg',
+    [
+      '-hide_banner',
+      '-loglevel',
+      'error',
+      '-i',
+      filename,
+      '-map',
+      '0:a:0',
+      '-t',
+      '90',
+      '-ac',
+      '1',
+      '-ar',
+      String(sampleRate),
+      '-f',
+      's16le',
+      'pipe:1',
+    ],
+    {
+      encoding: 'buffer',
+      timeout: 45_000,
+      maxBuffer: 3 * 1024 * 1024,
+    },
+  );
   const analysis = analyzePcm16(stdout, sampleRate);
-  process.stdout.write(JSON.stringify({
-    schemaVersion: 1,
-    fileSha256: hash.digest('hex'),
-    ...analysis,
-    measurement: 'first 90 seconds at most, mono PCM',
-    bpmDisclaimer: 'Approximate: half/double-tempo ambiguity, no genre/mood inference',
-  }, null, 2) + '\n');
+  process.stdout.write(
+    JSON.stringify(
+      {
+        schemaVersion: 1,
+        fileSha256: hash.digest('hex'),
+        ...analysis,
+        measurement: 'first 90 seconds at most, mono PCM',
+        bpmDisclaimer:
+          'Approximate: half/double-tempo ambiguity, no genre/mood inference',
+      },
+      null,
+      2,
+    ) + '\n',
+  );
 } catch (error) {
   // Local paths / credentials are not printed in failures.
   process.stderr.write(

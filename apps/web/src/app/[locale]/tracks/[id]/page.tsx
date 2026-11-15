@@ -80,10 +80,12 @@ export default async function TrackPage({
     { label: t('track.duration'), value: formatDuration(track.durationMs) },
     { label: t('track.quality'), value: track.qualityLabel },
     ...(track.audioFeatures?.tempoBpm && track.audioFeatures.tempoConfidence >= 0.5
-      ? [{
-          label: locale === 'ar' ? 'الإيقاع التقريبي' : 'Estimated tempo',
-          value: `${track.audioFeatures.tempoBpm} BPM`,
-        }]
+      ? [
+          {
+            label: locale === 'ar' ? 'الإيقاع التقريبي' : 'Estimated tempo',
+            value: `${track.audioFeatures.tempoBpm} BPM`,
+          },
+        ]
       : []),
   ].filter((item) => item.value);
 

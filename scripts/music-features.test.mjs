@@ -30,8 +30,10 @@ test('reports RMS, peak and bounded confidence on a rhythmic 120 BPM signal', ()
   assert.ok(result.peakDbfs <= 0);
   assert.ok(result.tempoConfidence >= 0 && result.tempoConfidence <= 1);
   assert.ok(result.tempoBpm !== null, 'expected a strong periodic tempo signal');
-  assert.ok(Math.abs(result.tempoBpm - 120) <= 3,
-    `expected roughly 120 BPM, got ${result.tempoBpm}`);
+  assert.ok(
+    Math.abs(result.tempoBpm - 120) <= 3,
+    `expected roughly 120 BPM, got ${result.tempoBpm}`,
+  );
 });
 
 test('rejects malformed PCM and invalid sampling configuration', () => {

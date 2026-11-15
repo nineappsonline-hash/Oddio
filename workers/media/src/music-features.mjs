@@ -10,10 +10,15 @@ export function analyzePcm16(buffer, sampleRate = 11025) {
   if (buffer.length % 2 !== 0) throw new Error('Invalid PCM frame alignment');
   const hop = Math.max(1, Math.round(sampleRate * 0.01));
   const frameCount = Math.floor(buffer.length / 2);
-  if (frameCount === 0) return {
-    durationSeconds: 0, rmsDbfs: null, peakDbfs: null, tempoBpm: null,
-    tempoConfidence: 0, onsetStrength: 0,
-  };
+  if (frameCount === 0)
+    return {
+      durationSeconds: 0,
+      rmsDbfs: null,
+      peakDbfs: null,
+      tempoBpm: null,
+      tempoConfidence: 0,
+      onsetStrength: 0,
+    };
   let peak = 0;
   let energy = 0;
   const envelopes = [];
@@ -47,8 +52,14 @@ export function analyzePcm16(buffer, sampleRate = 11025) {
   const strength = cleaned.reduce((a, b) => a + b, 0);
   const durationSeconds = frameCount / sampleRate;
   if (durationSeconds < 8 || strength < 0.015) {
-    return { durationSeconds, rmsDbfs, peakDbfs, tempoBpm: null, tempoConfidence: 0,
-      onsetStrength: Math.round(strength * 1000) / 1000 };
+    return {
+      durationSeconds,
+      rmsDbfs,
+      peakDbfs,
+      tempoBpm: null,
+      tempoConfidence: 0,
+      onsetStrength: Math.round(strength * 1000) / 1000,
+    };
   }
   const frameRate = sampleRate / hop;
   const minLag = Math.ceil((60 * frameRate) / 180);
@@ -75,8 +86,8 @@ export function analyzePcm16(buffer, sampleRate = 11025) {
     durationSeconds: Math.round(durationSeconds * 100) / 100,
     rmsDbfs,
     peakDbfs,
-    tempoBpm: best.lag && confidence >= 0.24
-      ? Math.round((60 * frameRate) / best.lag) : null,
+    tempoBpm:
+      best.lag && confidence >= 0.24 ? Math.round((60 * frameRate) / best.lag) : null,
     tempoConfidence: Math.round(confidence * 100) / 100,
     onsetStrength: Math.round(strength * 1000) / 1000,
   };

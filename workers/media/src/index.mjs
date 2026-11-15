@@ -147,12 +147,28 @@ async function extractMusicFeatures(inputPath) {
   // Decode only a bounded 90-second preview; no model downloads/API costs.
   // BPM is an uncertain rhythmic estimate, never a genre/mood label.
   const sampleRate = 11025;
-  const { stdout } = await execFileAsync('ffmpeg', [
-    '-hide_banner', '-loglevel', 'error',
-    '-i', inputPath, '-map', '0:a:0', '-t', '90',
-    '-ac', '1', '-ar', String(sampleRate),
-    '-f', 's16le', 'pipe:1',
-  ], { timeout: 45_000, encoding: 'buffer', maxBuffer: 3 * 1024 * 1024 });
+  const { stdout } = await execFileAsync(
+    'ffmpeg',
+    [
+      '-hide_banner',
+      '-loglevel',
+      'error',
+      '-i',
+      inputPath,
+      '-map',
+      '0:a:0',
+      '-t',
+      '90',
+      '-ac',
+      '1',
+      '-ar',
+      String(sampleRate),
+      '-f',
+      's16le',
+      'pipe:1',
+    ],
+    { timeout: 45_000, encoding: 'buffer', maxBuffer: 3 * 1024 * 1024 },
+  );
   const analysis = analyzePcm16(stdout, sampleRate);
   return {
     schemaVersion: 1,
