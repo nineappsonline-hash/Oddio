@@ -249,6 +249,18 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [x] Added a direct-to-R2 XHR transport that reports byte-level browser upload progress (showing 100% only after 2xx acknowledgement), plus a cancel button in the existing three-step release wizard. This avoids proxying audio via Vercel; it is **single-PUT only** and does not resume interrupted transfers.
 - [ ] Continue Phase 6 with reliable R2 multipart upload/resume, artist release workflow, rights review/appeals and enhanced insights.
 
+### Phase 6 slice 2 — authenticated resumable R2 multipart upload (development only)
+
+- [x] Implemented a separate, owner-checked `POST /api/studio/uploads/multipart` API: approved artists can initiate, list, sign individual PUT parts, complete, or abort a Cloudflare R2 multipart upload. Server handles SigV4 initialization/completion; browser sends audio **directly to R2** and receives a short-lived URL only for the requested numbered part. No R2 secret is exposed to browsers and Vercel never proxies the audio body.
+- [x] New uploader switches from single PUT to **8 MiB sequential multipart parts** for MP3 files 8–25 MiB. Progress reports combined bytes; unfinished upload ID and the original file signature remain locally for up to six days. If the same local file is selected again, the API checks **R2 ListParts** before skipping any completed parts; it never trusts local saved progress alone.
+- [x] Completed multipart objects are retained as resumable client drafts until Supabase track finalization succeeds. A failed metadata finalization can retry **without** uploading the file a second time. Cancelling an in-progress browser request keeps the incomplete upload eligible for later resume, while R2's default lifecycle cleans abandoned multipart sessions.
+- [x] Added shared chunk-boundary and duplicate-part validation with unit tests, and non-disclosing error messages. The server validates object-key ownership and full part size before completing.
+- [ ] **Important compatibility gate:** Existing finalize route and app settings cap original uploads at 25 MiB; larger files are **not yet supported**. Raising this cap requires a matching worker memory/streaming policy and resource limits; do not silently accept larger files.
+- [ ] Cloudflare bucket **CORS** must permit same-origin browser PUT to the R2 S3 endpoint; check the response, preflight and Content-Type behavior in a real browser on staging/test objects. Exposing `ETag` is optional for this implementation because the server re-reads R2 ListParts. R2 itself requires identical non-final part sizes of at least 5 MiB. See https://developers.cloudflare.com/r2/objects/upload-objects/ .
+- [ ] Verify full multipart happy path, network interruption/reselect, expiration (R2 defaults to abort at seven days), duplicate audio rejection, and matching media transcode with real test MP3s before enabling on production.
+- [ ] Add a server-side durable upload ledger and rate limits backed by Redis/Postgres to prevent uploads being reissued endlessly across Vercel instances. The current server rate limit is in-memory; it is not a distributed quota.
+- [ ] Other Phase 6 tasks: workflow for copyright appeals, more release-group UX, and per-audience analytics. Do not mark the phase production-complete.
+
 ## Phase 7 — community and growth
 
 - [ ] Collaborative playlists, sharing cards, reactions and creator stories.
