@@ -54,7 +54,7 @@ export default async function StudioTracksPage({
     !demoMode && data.tracks.length
       ? await serviceClient()
           .from('tracks')
-          .select('id,synced_lyrics_srt,audio_features')
+          .select('id,synced_lyrics_srt')
           .in(
             'id',
             data.tracks.map((track) => track.id),
@@ -71,6 +71,14 @@ export default async function StudioTracksPage({
             data.tracks.map((track) => track.id),
           )
           .order('created_at', { ascending: false })
+      : { data: [] };
+
+  const { data: privateMusicTags } =
+    !demoMode && data.tracks.length
+      ? await serviceClient()
+          .from('audio_tag_suggestions')
+          .select('track_id,suggestion')
+          .in('track_id', data.tracks.map((track) => track.id))
       : { data: [] };
 
   const approvedCount = data.tracks.filter(
@@ -254,19 +262,16 @@ export default async function StudioTracksPage({
                 </details>
               ) : null}
               {(() => {
-                const details = approvedLyrics?.find((item) => item.id === track.id)
-                  ?.audio_features as {
-                    tagSuggestion?: {
-                      source?: string;
-                      genreSlug?: string;
-                      moodSlugs?: string[];
-                      confidence?: number;
-                      evidenceCount?: number;
-                    };
-                    artistApprovedTags?: unknown;
-                  } | null | undefined;
-                const suggestion = details?.tagSuggestion;
-                if (demoMode || details?.artistApprovedTags
+                const suggestion = privateMusicTags?.find(
+                  (item) => item.track_id === track.id,
+                )?.suggestion as {
+                  source?: string;
+                  genreSlug?: string;
+                  moodSlugs?: string[];
+                  confidence?: number;
+                  evidenceCount?: number;
+                } | null | undefined;
+                if (demoMode
                   || track.publishStatus !== 'unpublished'
                   || !['draft', 'ready_for_review', 'changes_requested'].includes(track.reviewStatus)
                   || suggestion?.source !== 'artist-reviewed-local-model-v1'
