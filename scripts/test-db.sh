@@ -23,4 +23,40 @@ echo "==> supabase/seed.sql"
 echo "==> supabase/tests/rls.sql"
 "${PSQL[@]}" -f supabase/tests/rls.sql
 
+echo "==> supabase/tests/social_atomic.sql"
+"${PSQL[@]}" -f supabase/tests/social_atomic.sql
+
+echo "==> supabase/tests/playback_qualified.sql"
+"${PSQL[@]}" -f supabase/tests/playback_qualified.sql
+
+echo "==> supabase/tests/history_erasure.sql"
+"${PSQL[@]}" -f supabase/tests/history_erasure.sql
+
+echo "==> supabase/tests/player_resume.sql"
+"${PSQL[@]}" -f supabase/tests/player_resume.sql
+
+echo "==> supabase/tests/discovery_preferences.sql"
+"${PSQL[@]}" -f supabase/tests/discovery_preferences.sql
+
+echo "==> supabase/tests/audio_features.sql"
+"${PSQL[@]}" -f supabase/tests/audio_features.sql
+
+echo "==> supabase/tests/music_intelligence.sql"
+"${PSQL[@]}" -f supabase/tests/music_intelligence.sql
+
+echo "==> supabase/tests/track_review_appeals.sql"
+"${PSQL[@]}" -f supabase/tests/track_review_appeals.sql
+
+echo "==> supabase/tests/playlist_collaboration.sql"
+"${PSQL[@]}" -f supabase/tests/playlist_collaboration.sql
+
+echo "==> supabase/tests/listening_rooms.sql"
+"${PSQL[@]}" -f supabase/tests/listening_rooms.sql
+
+echo "==> supabase/tests/offline_rights.sql"
+"${PSQL[@]}" -f supabase/tests/offline_rights.sql
+
+echo "==> scripts/test-social-concurrency.sh"
+bash scripts/test-social-concurrency.sh
+
 echo "Database tests passed."

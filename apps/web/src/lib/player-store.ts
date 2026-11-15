@@ -4,6 +4,8 @@ import { create } from 'zustand';
 import type { CatalogTrack } from '@/lib/data/queries';
 
 export type RepeatMode = 'off' | 'one' | 'all';
+export type StationMode =
+  'flow' | 'daily' | 'weekly' | 'song' | 'artist' | 'genre' | 'mood';
 
 interface PlayerState {
   track: CatalogTrack | null;
@@ -17,6 +19,9 @@ interface PlayerState {
   repeat: RepeatMode;
   shuffle: boolean;
   autoplay: boolean;
+  crossfadeSeconds: number;
+  setCrossfadeSeconds: (seconds: number) => void;
+  station: { kind: StationMode; seedId?: string } | null;
   expanded: boolean;
   error: string | null;
   buffering: boolean;
@@ -24,6 +29,11 @@ interface PlayerState {
   playbackRequestId: number;
   retryPlayback: () => void;
   play: (track: CatalogTrack, upcoming?: CatalogTrack[]) => void;
+  startFlow: (
+    tracks: CatalogTrack[],
+    station?: { kind: StationMode; seedId?: string },
+  ) => void;
+  continueStation: (tracks: CatalogTrack[]) => void;
   toggle: () => void;
   setPlaying: (playing: boolean) => void;
   next: (automatic?: boolean) => boolean;
@@ -70,6 +80,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   repeat: 'off',
   shuffle: false,
   autoplay: true,
+  crossfadeSeconds: 0,
+  setCrossfadeSeconds: (seconds) =>
+    set({ crossfadeSeconds: [0, 3, 5, 8].includes(seconds) ? seconds : 0 }),
+  station: null,
   expanded: false,
   error: null,
   buffering: false,
@@ -102,12 +116,65 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const list = state.shuffle ? shuffleArray(upcoming) : upcoming;
     set({
       track,
+      station: null,
       queue: list.filter((item) => item.id !== track.id),
       history: [],
       isPlaying: true,
       currentTime: 0,
       duration: track.durationMs / 1000,
       error: null,
+    });
+  },
+  startFlow: (tracks, station = { kind: 'flow' }) => {
+    // Flow is a deliberate ordered mix; don't inherit the user's old shuffle
+    // or repeat settings, and rebuild the queue even when its first track
+    // happens to be the currently selected song.
+    const unique = tracks.filter(
+      (item, index, all) => all.findIndex((other) => other.id === item.id) === index,
+    );
+    const [first, ...rest] = unique;
+    if (!first) return;
+    set({
+      track: first,
+      station,
+      queue: rest,
+      history: [],
+      shuffle: false,
+      repeat: 'off',
+      autoplay: true,
+      isPlaying: true,
+      currentTime: 0,
+      duration: first.durationMs / 1000,
+      seekRequest: { seconds: 0, nonce: (get().seekRequest?.nonce ?? 0) + 1 },
+      playbackRequestId: get().playbackRequestId + 1,
+      error: null,
+      buffering: true,
+    });
+  },
+  continueStation: (tracks) => {
+    const state = get();
+    if (!state.station || state.isPlaying || state.queue.length > 0) return;
+    const previous = new Set([
+      ...(state.track ? [state.track.id] : []),
+      ...state.history.map((item) => item.id),
+    ]);
+    const fresh = tracks.filter(
+      (item, index, all) =>
+        !previous.has(item.id) &&
+        all.findIndex((other) => other.id === item.id) === index,
+    );
+    const [first, ...rest] = fresh;
+    if (!first) return;
+    set({
+      track: first,
+      queue: rest,
+      history: state.track ? [...state.history, state.track].slice(-100) : state.history,
+      isPlaying: true,
+      currentTime: 0,
+      duration: first.durationMs / 1000,
+      playbackRequestId: state.playbackRequestId + 1,
+      error: null,
+      buffering: true,
     });
   },
   toggle: () => set((state) => ({ isPlaying: !state.isPlaying })),

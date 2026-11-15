@@ -49,7 +49,9 @@ export async function POST(
     const input = await parseBody(request, commentInput);
     let comment;
     if (demoMode) {
-      comment = mutateDb((db) => createComment(db, user, id, input.body, input.timestampSeconds));
+      comment = mutateDb((db) =>
+        createComment(db, user, id, input.body, input.timestampSeconds),
+      );
     } else {
       const db = await loadDbFromSupabase();
       const before = structuredClone(db);

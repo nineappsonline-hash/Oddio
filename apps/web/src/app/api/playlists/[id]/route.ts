@@ -1,6 +1,8 @@
 import { z } from 'zod';
-import { mutateDb } from '@/lib/data/db';
+import { mutateRuntimeDb } from '@/lib/data/runtime-store';
 import { deletePlaylist, updatePlaylist } from '@/lib/data/mutations';
+import { demoMode } from '@/lib/env';
+import { updatePlaylistDirect, deletePlaylistDirect } from '@/lib/data/playlist-direct';
 import {
   assertSameOrigin,
   jsonError,
@@ -26,7 +28,9 @@ export async function PATCH(
     const user = await requireUser();
     const { id } = await context.params;
     const input = await parseBody(request, patchSchema);
-    const playlist = mutateDb((db) => updatePlaylist(db, user, id, input));
+    const playlist = demoMode
+      ? await mutateRuntimeDb((db) => updatePlaylist(db, user, id, input))
+      : await updatePlaylistDirect(user, id, input);
     return jsonOk({ playlist });
   } catch (error) {
     return jsonError(error);
@@ -41,7 +45,11 @@ export async function DELETE(
     assertSameOrigin(request);
     const user = await requireUser();
     const { id } = await context.params;
-    mutateDb((db) => deletePlaylist(db, user, id));
+    if (demoMode) {
+      await mutateRuntimeDb((db) => deletePlaylist(db, user, id));
+    } else {
+      await deletePlaylistDirect(user, id);
+    }
     return jsonOk({ deleted: true });
   } catch (error) {
     return jsonError(error);

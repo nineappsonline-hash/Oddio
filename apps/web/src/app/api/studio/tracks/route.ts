@@ -88,7 +88,9 @@ export async function POST(request: Request) {
       albumId: field(form, 'albumId') || undefined,
       title: field(form, 'title'),
       genreId: field(form, 'genreId'),
-      genreIds: field(form, 'genres').split(',').filter(Boolean).length ? field(form, 'genres').split(',').filter(Boolean) : [field(form, 'genreId')],
+      genreIds: field(form, 'genres').split(',').filter(Boolean).length
+        ? field(form, 'genres').split(',').filter(Boolean)
+        : [field(form, 'genreId')],
       moodIds: moods,
       languageCode: field(form, 'languageCode') || 'en',
       countryCode: field(form, 'countryCode'),

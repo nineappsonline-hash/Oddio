@@ -58,10 +58,28 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
       label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace',
       icon: 'soundspace',
     },
+    {
+      href: `/${locale}/rooms`,
+      label: locale === 'ar' ? 'غرف الاستماع' : 'Listening rooms',
+      icon: 'soundspace',
+    },
     { href: `/${locale}/charts`, label: t('nav.charts'), icon: 'charts' },
     { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
-    { href: `/${locale}/genres`, label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres', icon: 'discover' },
-    { href: `/${locale}/discover#artists`, label: locale === 'ar' ? 'الفنانون' : 'Artists', icon: 'studio' },
+    {
+      href: `/${locale}/install`,
+      label: locale === 'ar' ? 'ثبّت Oddio' : 'Install Oddio',
+      icon: 'soundspace',
+    },
+    {
+      href: `/${locale}/genres`,
+      label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres',
+      icon: 'discover',
+    },
+    {
+      href: `/${locale}/discover#artists`,
+      label: locale === 'ar' ? 'الفنانون' : 'Artists',
+      icon: 'studio',
+    },
   ];
 
   if (currentUser) {
@@ -102,7 +120,8 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         {items.map((item) => {
           const active = item.exact
             ? pathname === item.href
-            : pathname.startsWith(item.href.split('#')[0]) && !item.href.includes('#');
+            : !item.href.includes('#') &&
+              pathname.startsWith(item.href.split('#')[0] ?? item.href);
           const glyph = item.icon as OddioGlyphName;
           return (
             <Link

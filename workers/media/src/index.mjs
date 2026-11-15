@@ -19,11 +19,16 @@
 import { execFile } from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { Readable, Transform } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import fsp from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { analyzePcm16 } from './music-features.mjs';
+import { fingerprintPcm16, compareFingerprints } from './audio-fingerprint.mjs';
+import { suggestArtistTags } from './music-classifier.mjs';
 
 const execFileAsync = promisify(execFile);
 
@@ -42,6 +47,11 @@ const SUPABASE_URL = (
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const TARGET_BITRATE = Number(process.env.AUDIO_TARGET_BITRATE_KBPS || 320);
 const MAX_DURATION = Number(process.env.AUDIO_MAX_DURATION_SECONDS || 900);
+const configuredAudioBytes = Number(process.env.AUDIO_MAX_UPLOAD_BYTES);
+const MAX_AUDIO_BYTES =
+  Number.isSafeInteger(configuredAudioBytes) && configuredAudioBytes > 0
+    ? Math.min(configuredAudioBytes, 100 * 1024 * 1024)
+    : 100 * 1024 * 1024;
 const MIN_BITRATE = Number(process.env.AUDIO_MIN_BITRATE_KBPS || 256);
 const BATCH = Number(process.env.MEDIA_WORKER_BATCH || 5);
 const EMAIL_API_URL = process.env.EMAIL_API_URL || 'https://api.resend.com/emails';
@@ -63,8 +73,20 @@ const INTERVAL = Math.max(
   ),
 );
 
+// Never silently switch to demo processing when production configuration is
+// incomplete. That would make queued media jobs appear to succeed locally.
+if ((SUPABASE_URL && !SERVICE_KEY) || (!SUPABASE_URL && SERVICE_KEY)) {
+  process.stderr.write(
+    'Media worker requires both SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.\\n',
+  );
+  process.exit(1);
+}
+if (process.env.DEMO_MODE === 'false' && (!SUPABASE_URL || !SERVICE_KEY)) {
+  process.stderr.write('Production media worker refuses demo fallback.\\n');
+  process.exit(1);
+}
 const workerId = crypto.randomUUID().slice(0, 8);
-const demoMode = !SUPABASE_URL || !SERVICE_KEY;
+const demoMode = !SUPABASE_URL && !SERVICE_KEY;
 
 function log(level, message, extra = {}) {
   const line = {
@@ -130,6 +152,59 @@ async function transcode(inputPath, outputPath) {
   );
 }
 
+async function extractMusicFeatures(inputPath) {
+  // Decode only a bounded 90-second preview; no model downloads/API costs.
+  // BPM is an uncertain rhythmic estimate, never a genre/mood label.
+  const sampleRate = 11025;
+  const { stdout } = await execFileAsync(
+    'ffmpeg',
+    [
+      '-hide_banner',
+      '-loglevel',
+      'error',
+      '-i',
+      inputPath,
+      '-map',
+      '0:a:0',
+      '-t',
+      '90',
+      '-ac',
+      '1',
+      '-ar',
+      String(sampleRate),
+      '-f',
+      's16le',
+      'pipe:1',
+    ],
+    { timeout: 45_000, encoding: 'buffer', maxBuffer: 3 * 1024 * 1024 },
+  );
+  const analysis = analyzePcm16(stdout, sampleRate);
+  const fingerprint = fingerprintPcm16(stdout, sampleRate);
+  let tagSuggestion = null;
+  if (process.env.ODDIO_CLASSIFIER_MODEL_PATH && fingerprint) {
+    try {
+      const model = JSON.parse(
+        await fsp.readFile(process.env.ODDIO_CLASSIFIER_MODEL_PATH, 'utf8'),
+      );
+      tagSuggestion = suggestArtistTags(fingerprint, model);
+    } catch (error) {
+      log('warn', 'optional reviewed classifier unavailable', {
+        reason: error instanceof Error ? error.name : 'invalid_model',
+      });
+    }
+  }
+  return {
+    fingerprint,
+    tagSuggestion,
+    schemaVersion: 1,
+    tempoBpm: analysis.tempoBpm,
+    tempoConfidence: analysis.tempoConfidence,
+    rmsDbfs: analysis.rmsDbfs,
+    peakDbfs: analysis.peakDbfs,
+    analyzedSeconds: analysis.durationSeconds,
+  };
+}
+
 async function sha256File(filePath) {
   const hash = crypto.createHash('sha256');
   await new Promise((resolve, reject) => {
@@ -181,6 +256,20 @@ async function processDemoTrack(track, dir) {
     track.audio.channels = info.channels;
     track.audio.bytes = info.size;
     track.audio.sha256 = await sha256File(source);
+    try {
+      const {
+        fingerprint: _fingerprint,
+        tagSuggestion: _tagSuggestion,
+        ...features
+      } = await extractMusicFeatures(source);
+      track.audioFeatures = features;
+    } catch (error) {
+      // Analysis is advisory: never block a valid artist release.
+      log('warn', 'demo audio feature preview unavailable', {
+        trackId: track.id,
+        reason: error instanceof Error ? error.name : 'analysis_error',
+      });
+    }
     track.qualityLabel = 'high';
     track.updatedAt = new Date().toISOString();
     return true;
@@ -204,6 +293,19 @@ async function processDemoTrack(track, dir) {
     processingStatus: 'ready',
   };
   track.durationMs = Math.round(rendered.durationSec * 1000);
+  try {
+    const {
+      fingerprint: _fingerprint,
+      tagSuggestion: _tagSuggestion,
+      ...features
+    } = await extractMusicFeatures(output);
+    track.audioFeatures = features;
+  } catch (error) {
+    log('warn', 'demo audio feature preview unavailable', {
+      trackId: track.id,
+      reason: error instanceof Error ? error.name : 'analysis_error',
+    });
+  }
   track.qualityLabel = 'high';
   track.updatedAt = new Date().toISOString();
   log('info', 'demo track transcoded', { trackId: track.id, output: outputName });
@@ -292,12 +394,13 @@ async function runDemoOnce() {
 
 const AUTH = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` };
 
-async function rest(method, route, body) {
+async function rest(method, route, body, extraHeaders = {}) {
   const response = await fetch(`${SUPABASE_URL}${route}`, {
     method,
     headers: {
       ...AUTH,
       'Content-Type': 'application/json',
+      ...extraHeaders,
       ...(method === 'POST' || method === 'PATCH'
         ? { Prefer: 'return=representation' }
         : {}),
@@ -360,8 +463,32 @@ function r2SignedUrl(method, bucket, key) {
 }
 async function storageDownload(bucket, objectKey, target) {
   const response = await fetch(r2SignedUrl('GET', bucket, objectKey));
-  if (!response.ok) throw new Error(`R2 download failed: ${response.status}`);
-  await fsp.writeFile(target, Buffer.from(await response.arrayBuffer()));
+  if (!response.ok || !response.body) {
+    throw new Error(`R2 download failed: ${response.status}`);
+  }
+  const contentLength = Number(response.headers.get('content-length'));
+  if (contentLength > MAX_AUDIO_BYTES) {
+    await response.body.cancel();
+    throw new Error('Source audio exceeds the worker file size limit');
+  }
+  let writtenBytes = 0;
+  const sizeGuard = new Transform({
+    transform(chunk, _encoding, callback) {
+      writtenBytes += chunk.length;
+      if (writtenBytes > MAX_AUDIO_BYTES) {
+        callback(new Error('Source audio exceeds the worker file size limit'));
+      } else {
+        callback(null, chunk);
+      }
+    },
+  });
+  // Enforce a byte limit even when R2 does not return Content-Length.
+  // Stream directly to disk instead of allocating the whole original in RAM.
+  await pipeline(
+    Readable.fromWeb(response.body),
+    sizeGuard,
+    fs.createWriteStream(target),
+  );
 }
 async function storageUpload(bucket, objectKey, filePath) {
   const response = await fetch(r2SignedUrl('PUT', bucket, objectKey), {
@@ -394,6 +521,17 @@ async function handleTranscode(job) {
     }
 
     await transcode(input, output);
+    let measured = null;
+    try {
+      measured = await extractMusicFeatures(output);
+    } catch (error) {
+      // Audio feature estimation must never turn a valid upload into a failed
+      // transcode. This analysis is advisory, not editorial metadata.
+      log('warn', 'audio feature analysis unavailable', {
+        trackId,
+        reason: error instanceof Error ? error.name : 'analysis_error',
+      });
+    }
     const hash = await sha256File(output);
     const objectKey = `${trackId}/${hash}-${TARGET_BITRATE}.mp3`;
     const bitrate = TARGET_BITRATE;
@@ -435,7 +573,66 @@ async function handleTranscode(job) {
       await rest('PATCH', `/rest/v1/tracks?id=eq.${encodeURIComponent(trackId)}`, {
         duration_ms: Math.round((rendered.durationSec || info.durationSec) * 1000),
         quality_label: bitrate >= 320 ? 'high' : 'standard',
+        ...(measured
+          ? {
+              audio_features: {
+                schemaVersion: measured.schemaVersion,
+                tempoBpm: measured.tempoBpm,
+                tempoConfidence: measured.tempoConfidence,
+                rmsDbfs: measured.rmsDbfs,
+                peakDbfs: measured.peakDbfs,
+                analyzedSeconds: measured.analyzedSeconds,
+              },
+            }
+          : {}),
       });
+    }
+    // Store fingerprints in service-only table; never expose raw spectral
+    // signatures via public tracks or use a match as copyright evidence.
+    if (trackId && measured?.fingerprint) {
+      try {
+        const existing = await rest(
+          'GET',
+          '/rest/v1/audio_fingerprints?select=track_id,signature&limit=500',
+        );
+        for (const row of existing ?? []) {
+          if (row.track_id === trackId) continue;
+          const similarity = compareFingerprints(measured.fingerprint, row.signature);
+          if (similarity.candidate) {
+            log('warn', 'human review suggested for possible audio similarity', {
+              trackId,
+              otherTrackId: row.track_id,
+              similarity: similarity.similarity,
+            });
+          }
+        }
+        await rest(
+          'POST',
+          '/rest/v1/audio_fingerprints?on_conflict=track_id',
+          { track_id: trackId, signature: measured.fingerprint },
+          { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        );
+      } catch (error) {
+        log('warn', 'optional audio fingerprint comparison unavailable', {
+          trackId,
+          reason: error instanceof Error ? error.name : 'fingerprint_error',
+        });
+      }
+    }
+    if (trackId && measured?.tagSuggestion) {
+      try {
+        await rest(
+          'POST',
+          '/rest/v1/audio_tag_suggestions?on_conflict=track_id',
+          { track_id: trackId, suggestion: measured.tagSuggestion },
+          { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        );
+      } catch (error) {
+        log('warn', 'private tag suggestion could not be saved', {
+          trackId,
+          reason: error instanceof Error ? error.name : 'suggestion_error',
+        });
+      }
     }
     log('info', 'transcode complete', { jobId: job.id, trackId, objectKey, bitrate });
   } finally {

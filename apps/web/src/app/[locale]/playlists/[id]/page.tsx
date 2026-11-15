@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getPlaylistPage } from '@/lib/data/queries';
-import { readDb } from '@/lib/data/db';
+import { readRuntimeDb } from '@/lib/data/runtime-store';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -14,6 +14,7 @@ import { PlayButton } from '@/components/player/PlayButton';
 import { TrackRow } from '@/components/music/TrackRow';
 import { PlaylistFollowButton } from '@/components/playlists/PlaylistFollowButton';
 import { ShareButton } from '@/components/community/ShareButton';
+import { PlaylistCollaboration } from '@/components/playlists/PlaylistCollaboration';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { formatNumber } from '@/lib/utils';
 
@@ -24,7 +25,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, id } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = readDb();
+  const db = await readRuntimeDb();
   const page = getPlaylistPage(db, { userId: null, roles: [] }, idFromSegment(id));
   if (!page)
     return buildMetadata({
@@ -51,7 +52,7 @@ export default async function PlaylistPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = readDb();
+  const db = await readRuntimeDb();
   const page = getPlaylistPage(db, viewer, idFromSegment(id));
   if (!page) notFound();
   const { playlist, tracks, isFollowing, canEdit } = page;
@@ -109,6 +110,13 @@ export default async function PlaylistPage({
               </Link>
             ) : null}
           </div>
+          {viewer.userId && playlist.visibility === 'public' ? (
+            <PlaylistCollaboration
+              playlistId={playlist.id}
+              locale={locale}
+              isOwner={canEdit}
+            />
+          ) : null}
         </div>
       </section>
 

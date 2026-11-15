@@ -1,0 +1,365 @@
+# Oddio master plan — implementation tracker
+
+Status: **Phase 0 in progress**, Phase 1 blocked on verified production data inventory.  
+Working branch: `feature/master-plan-phase-0-1`.  
+**Do not switch the production data layer or delete the JSON store without an approved, tested migration and rollback.**
+
+## Phase 0 — release safety and baseline
+
+- [x] Work on a branch separate from `main`.
+- [x] Harden the production environment URL preflight, and add regression tests.
+- [x] Existing CI is present for type checking, unit tests, build, route/audio smoke tests, RLS checks and desktop/mobile browser tests.
+- [x] Confirm Vercel project `oddio` and that `oddio.online` is verified on that project; preview is isolated with `DEMO_MODE=true`. Production release health still needs investigation.
+- [x] Inspect connected Supabase `project-ai-music` table inventory, migration history and security advisor (read-only); auth configuration beyond advisor not yet audited.
+- [x] Record existing Supabase content counts (32 tracks, 4 profiles, 1 artist, zero playlists at 2026-11-15); which HTTP endpoints use this storage still requires verification.
+- [ ] Capture a restorable backup of production data and verify restore in a disposable environment.
+- [ ] Run CI on the pull request, inspect failures and review the deployment preview. Initial Vercel build failed on a pre-existing strict TypeScript sidebar link error; fixed on this branch and pending recheck.
+- [ ] Establish baseline playback, search, sign-in, upload and mobile smoke checks against the preview.
+
+## Current findings (2026-11-15)
+
+- Vercel project `oddio` exists and `oddio.online` is verified. The configured NEXT_PUBLIC_SUPABASE_URL host matches the owner-confirmed `project-ai-music` ref; this does NOT prove each API route reads from the database.
+- Previous production deployments and the first development previews were blocked by a strict TypeScript error in `apps/web/src/components/layout/Sidebar.tsx` (optional `split('#')[0]`). A nonvisual fix has been committed to this branch.
+- The latest known READY production deployment predates the most recent `main` commits; do not assume `main` is live.
+- The correct connected Supabase project is `project-ai-music` (`weflfkftkdlrolctdmae`, eu-central-1), confirmed by the project owner. It is active and contains 32 tracks, 1 artist, 4 profiles, 59 genres, 24 moods and 37 audio asset rows (snapshot from 2026-11-15). The database is not empty: **never import seed/demo user data over it**. All 36 observed public tables have RLS enabled.
+- Security advisor flags 7 policy-less RLS tables at informational severity (possibly intentional deny-all), and leaked-password protection disabled. Audit who should access these tables before considering grants; never blindly create permissive policies.
+- Confirm Vercel production Supabase project reference matches this project before any write. The project name alone does not verify runtime wiring.
+- Vercel environment variables were inspected without decryption; no sensitive values were read.
+- `NEXT_PUBLIC_SITE_URL` is configured as `https://oddio.vercel.app` for preview and production; assess canonical domain alignment with `oddio.online` once release health is restored.
+
+## Phase 1 — persistent data and media
+
+- [ ] Complete route-by-route inventory. Confirmed the application already has a full Supabase snapshot adapter (`supabase-store.ts`); Home and Discover read from it in production. Some API routes were still calling `mutateDb` or `readDb` directly, which is ephemeral on Vercel. This branch migrated likes, artist follows, and playlist CRUD to a runtime selector.
+- [x] Existing Supabase snapshot adapter identified; added `runtime-store.ts` selecting the configured DB and preserving public API shapes. This is a bridge, not a final transactionally safe design.
+- [ ] Map JSON IDs and relationships to the Supabase schema; establish an idempotent import with dry-run and reconciliation counts.
+- [ ] Preserve existing account ownership, review state, playlists, likes, follows, release schedules and qualified play counts.
+- [ ] Backfill existing content with a recovery plan; verify RLS in CI and staging.
+- [ ] Migrate each write route behind a controlled rollout and verify read-after-write behavior. Initial branch coverage: track like, artist follow, playlist list/create/update/delete, add/remove tracks, and playlist follow. **NOT production deployed**. The latest branch replaces social toggles with server-only locked PostgreSQL RPCs, handles playlist additions/removals under a playlist row lock, and uses owner-scoped single-statement playlist CRUD. The migration must be applied in a verified staging/production rollout before production can call these RPCs. Other snapshot-diff endpoints may still be non-transactional.
+- [ ] Verify R2 master/rendition upload grants, worker processing, signed streaming, seeking and retry behavior.
+- [ ] Verify transactional social test suite (`supabase/tests/social_atomic.sql`) and browser CI; on staging, test concurrent likes and playlist additions with two sessions.
+- [ ] Before release: take tested backup, apply `20261115183000_atomic_social_interactions.sql`, confirm only service_role has EXECUTE, verify RPC read/write with test identities, then deploy matching web code. Never deploy new RPC-dependent code ahead of the database migration.
+- [ ] Enable production persistence only after matched reconciliation, tested backup/restore and successful staging acceptance.
+- [ ] Monitor database errors, upload failures and playback errors after rollout.
+
+### Verification snapshot (2026-11-15)
+
+- GitHub Actions database job **passed** on commit `7dcf5f95a38c7605b518736d65da289a723577e7` (run 43708717643). The job runs the full schema on a disposable PostgreSQL instance, RLS checks, atomic social SQL checks, and a parallel concurrency exercise (8 toggles for each social edge and 8 concurrent adds). No production rows were used.
+- A Vercel Preview of commit `f795b43623a401e5afc7603788944a498598611f` was **READY**. The newest Preview still requires status confirmation.
+- `project-ai-music` has no Supabase development branches. We avoided creating one because it may incur hourly charges; the CI disposable database is NOT a full staging project.
+- Whole-repository formatting currently fails on legacy files (31 were reported by the CI run checked). Do not claim all quality gates passed until this is resolved.
+- No verified restorable production backup/restore procedure is available through the current connector. **Do not deploy the new RPC-dependent code to production until a backup and staging release are verified.**
+- The current PR stays Draft, production remains unchanged.
+
+### Cloudflare R2 playback cost guard (2026-11-15)
+
+- Reviewed `apps/web/src/app/api/stream/[id]/route.ts`: authenticated/non-demo requests validate the playback token and track access, then return **307 redirect** to a signed Cloudflare R2 GET URL. **Vercel does not proxy the audio bytes** on this path. Local demo mode is the only path which serves audio bytes from the application filesystem.
+- Aligned signed R2 GET expiration (rendition and original-MP3 fallback) to **1800 seconds** to match the current 30-minute playback token, reducing mid-track seek/retry expiration failures. Signed links remain bearer URLs; reassess the TTL for private/unlisted content and implement refresh-on-failure for long sessions.
+- Added `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer` on the streaming redirect, and a static regression test under `apps/web/src/lib/storage/r2-stream-architecture.test.ts`.
+- **R2 outbound transfer to the internet is not itself billed**, but R2 operations/storage and any Cloudflare/Worker features beyond free allowances can cost money. R2 presigned URLs are issued for the S3 API endpoint and cannot be used on a custom domain directly.
+- [ ] Validate real streaming and HTTP byte ranges from the browser against a non-production R2 object, including Safari, long listening sessions and signed URL refresh. PlayerProvider retries failed media loading with a fresh authorization (maximum two times per track, 1.5s/3s backoff), restoring the previous position on loadedmetadata; `recoverablePlaybackPosition` now handles browsers that reset the failed audio element time to zero. Manual Retry on the same track also preserves the saved time and audible-progress state. Vitest checks policy/position, not real R2 behavior. A manual R2 S3 GET smoke check is available via `ODDIO_R2_TEST_URL=<temporary signed URL> node scripts/smoke-r2-range.mjs`. It verifies two 206 byte-range responses without logging the signed URL; use only a non-production audio test object. Real browser/CORS, offline and expiry behavior are still unverified.
+- [ ] Check the correct cache/edge-delivery architecture and bucket configuration using the user's Cloudflare account. No Cloudflare bucket settings or production audio files were changed in this branch.
+
+### Rollout dependency: required SQL migration
+
+`apps/web/src/lib/data/atomic-social.ts` calls `oddio_toggle_track_like`, `oddio_toggle_artist_follow`, `oddio_toggle_playlist_follow`, `oddio_add_playlist_track`, and `oddio_remove_playlist_track`. All five must be installed before releasing these production routes. Preview remains isolated with `DEMO_MODE=true`. No live data was changed during branch development.
+
+### Phase 1 follow-up — playback telemetry and worker hardening (2026-11-15)
+
+- [x] Production playback authorization sessions now use `mutateRuntimeDb`, rather than modifying an unpersisted Supabase snapshot.
+- [x] Playback event API no longer writes to ephemeral JSON in production. It persists event rows through the Supabase snapshot bridge and avoids incrementing the production qualified-play counter twice: the database trigger owns it. Added an isolated SQL check to `supabase/tests/playback_qualified.sql`.
+- [x] Reject playback events for another signed-in user's session even if the requester is anonymous.
+- [x] Corrected R2 object-key and AWS date regex escaping in `workers/media/src/index.mjs`. Added CI checks that fail if production worker config is incomplete; no demo fallback when `DEMO_MODE=false`.
+- [x] Updated `README.md` and `docs/production.md` to describe actual Supabase/R2 architecture and current 25 MiB single-PUT limit, instead of old demo-only assumptions.
+- [ ] Replace snapshot-diff session/event persistence with transactional, idempotent targeted SQL writes before significant scale; simultaneous qualified events and counters remain a potential source of races.
+- [ ] Verify a real, continuously running media worker and R2 integration; the repo cannot demonstrate that the worker is deployed from CI alone.
+- [ ] Verify a full production backup/restore, staging auth/data workflow, real R2 CORS/range uploads, and the latest browser/format gates before merge or release.
+
+### Live read-only media inventory (2026-11-15)
+
+Read-only SQL against the connected Supabase production project reported
+**27 succeeded** `media.transcode` jobs and **5 dead** jobs. Four dead jobs
+have the generic message `Processing failed`; one reported an invalid MP3
+header. There are **32 ready audio assets** and **5 pending/processing/failed
+assets**; at the time of review there were **0 playback sessions and 0
+playback events**. These are snapshots, not proof of ongoing worker health.
+
+- [ ] Inspect those five jobs/objects with appropriate artist access and
+      production logs, validate actual file signatures, distinguish old fixture
+      failures from current worker failures and reconcile asset statuses.
+- [ ] Do not automatically replay dead jobs or delete original R2 objects.
+      Any requeue requires a reviewed cause and a verified backup.
+- [ ] Confirm the permanent media worker process is actually running and
+      publishing in production; successful historical jobs alone do not prove it.
+
+## Phase 2 — layout and player
+
+- [ ] Validate Arabic RTL, English LTR, mobile no-horizontal-scroll, footer clearance and bottom navigation.
+- [ ] Test mini-player and full player across viewport sizes; preserve the gradient play icon without an opaque backdrop.
+- [ ] Fix/verify tooltips, accessible control labels, shuffle/repeat feedback, queue and lyrics auto-scroll.
+- [ ] Verify range seeking, reconnection and playback survival across routes.
+
+### Phase 2 implementation update (2026-11-15)
+
+- [x] Fixed the mobile navigation drawer to appear at the physical **left** in both Arabic RTL and English LTR. Mobile header menu alignment likewise remains physically left. Added browser assertions for drawer coordinates and Escape dismissal.
+- [x] Full-screen music player now locks scrolling of the underlying page while expanded, restores original overflow when minimized and supports Escape to close (or dismiss the overlaid mobile lyrics first).
+- [x] Repeat controls in the full and mini players now report the active state with `aria-pressed`, in addition to the existing tooltips and mobile feedback.
+- [x] Added demo-browser interaction checks covering actual home-track playback, opening the fullscreen player, Lyrics/Queue tab selection, mobile lyric overlay, Shuffle/Repeat state, modal keyboard focus and footer clearance without horizontal scroll in both locales.
+- [x] Isolated the audio-playing page from unrelated search and authentication browser tests so WebKit navigation cancellations from outstanding playback requests do not pollute later route checks.
+- [x] Kept fullscreen focus trapping stable when the current track changes, rather than restoring focus on every next-track transition.
+- [ ] Validate that the expanded player works on actual Android/iOS devices, including the soft keyboard, small landscape viewport, live synchronized lyrics and genuine R2 streaming. CI demo-browser tests are not real-device acceptance.
+- [ ] Run latest Chromium/Firefox/WebKit mobile and desktop CI across Arabic and English. Browser tests use **demo audio** and do not prove real R2 playback.
+- [ ] Add full-player real-device coverage for mobile landscape, small screens, lyrics overlay, queue, seeking and keyboard focus trapping; review screen-reader labels and scrolling with iOS Safari.
+- [ ] Confirm nav/footer clearance visually on a real iPhone and Android device. The new browser test covers drawer alignment, not every viewport or overlay state.
+
+## Phase 3 — library and search
+
+- [ ] Saved tracks/albums, follows, playlist editing and sorting.
+- [ ] Listening history with privacy and deletion controls.
+- [ ] Continue listening and queue persistence.
+- [ ] Bilingual typo-tolerant search, artist transliteration, filters, genre families and moods.
+
+### Phase 3 delivery slice (2026-11-15)
+
+- [x] Added bilingual search filters to the web page: active Genre, Mood, Arabic/English language, relevance/newest/popular sorting. Filters also work without a text query, and cursor-based “More tracks” retains the applied choices.
+- [x] Fixed empty-search-state detection to include matching public playlists, and prevented genre-only queries from returning unrelated artists/albums/playlists.
+- [x] Liked-song “Recently added” library order now uses each like's `createdAt` rather than unspecified database row order.
+- [x] Added isolated Vitest coverage for liked song ordering/private-track exclusion, genre-only search, paginated public tracks, and private-playlist search visibility; added a bilingual browser test for filter submissions.
+- [ ] Validate all current Phase 3 CI runs before merge. Existing Phase 2 and Phase 1 production release gates remain in effect.
+- [x] Added one-edit typo matching for normalized Arabic/English search words with 5+ characters; preserve exact matching for short terms and avoid paid AI APIs. Added regression tests for Arabic letter variants, English spelling mistakes and false matches.
+- [x] Supabase library listening history now derives from **qualified** playback events, excludes anonymous sessions and retains the latest qualified listen per user/track. Added isolated tests for ownership, short starts and deduplication; this does not change or erase the underlying events.
+- [ ] Provide a reviewed privacy control for deletion of source playback event data (not merely hiding the derived history), plus account-aware retention and storage policies. No production migration or event deletion has been performed.
+- [ ] Add listening-history privacy/deletion controls, persistent continue-listening and cross-device queue (requires careful database ownership, authorization and migration review).
+- [ ] Add consent-safe typo suggestions, artist-authorized transliteration aliases, and broader music-language support; the current normalizer intentionally does not invent artist name transliterations.
+
+### Phase 3 account privacy, cross-device resume and aliases (development branch)
+
+- [x] Added an authenticated, CSRF-protected DELETE `/api/library/history` endpoint and bilingual confirmation button. In demo it removes owned sessions/events/history; in production it deletes **only the authenticated user's playback_sessions**, with `ON DELETE CASCADE` removing raw playback events. It does **not** rewind anonymous listens, other users' data or already-aggregated chart statistics.
+- [x] Changed signed-in browser session persistence from tab-lifetime `sessionStorage` to user-namespaced `localStorage`; guests keep per-tab storage. Added a paused-state reload browser test.
+- [x] Added an account-owned `player_resume_states` migration, service-only RLS privileges and GET/PUT `/api/player/resume`. It stores track/queue IDs, position and playback preferences (no signed audio URLs or autoplay on restore). Restored tracks are rechecked for viewer access. A disposable PostgreSQL permission test is in the DB CI.
+- [x] Added `searchAliases` for artist-confirmed spellings and a studio editor backed by an owner-only API. Both artist and track search consider aliases but do not invent transliterations.
+- [ ] **Do not merge or deploy until the two new migrations** `20261115190000_player_resume_states.sql` and `20261115191000_artist_search_aliases.sql` **are tested and applied in a safe database rollout before the dependent web routes.** The older atomic social RPC migration is also still awaiting a staged release.
+- [ ] Verify production authenticated server routes and multi-device refresh against a **non-production Supabase project** with both migrations installed. Demo tests cannot prove cross-device Supabase behavior.
+- [ ] Define an explicit retention policy for aggregate chart counters and derived anonymized analytics. History deletion removes raw owned playback events but does not modify previously accumulated nonpersonal counters.
+- [ ] Test real mobile navigation and audio seek after cross-device restoration with a real R2 object.
+
+## Phase 4 — music intelligence
+
+- [ ] Consent/rights-aware music metadata and AI creation disclosures. The existing track contract already records AI production type, tool disclosures and credits; permissions for external analysis and third-party source data still need review.
+- [~] Background genre/mood/BPM/audio-feature extraction with artist corrections. **First slice implemented (development branch):** a zero-paid-API PCM16LE signal analyzer measures sample-based loudness (RMS/peak) and an approximate tempo with a confidence score; the demo Media Worker runs it after preparing audio, stores advisory `audioFeatures`, and never overrides artist-selected genre/mood. `node scripts/analyze-audio.mjs <owned-file.mp3>` gives a read-only offline audio preview through existing FFmpeg. A true audio-trained multi-genre/mood classifier is still pending evaluation and calibration; tempo alone is not a genre classifier. No production Worker deployment was performed.
+- [~] Duplicate detection, audio similarity and measurement of classification quality. The current upload pipeline already computes SHA-256 and prevents exact duplicate files in the demo mutation path. This phase's local CLI reports a content SHA-256 to support exact-match comparisons. Near-duplicate audio fingerprinting, cover/remix distinction, confidence calibration and human-reviewed benchmark datasets remain unimplemented.
+- [ ] CI/acceptance: the new `scripts/music-features.test.mjs` checks silence abstention, bad inputs and a synthesized periodic signal; GitHub Actions must pass on the latest commit before treating it as validated. Test real licensed genres against an opt-in, artist-reviewed dataset before any auto-tagging or editing of metadata.
+
+### Phase 4 second slice: offline similarity + opt-in reviewed classifier (development)
+
+- [x] Implemented **private spectral fingerprints** alongside SHA-256. `workers/media/src/audio-fingerprint.mjs` uses bounded PCM frequency sequences and temporal alignment to flag possible re-encodes, volume changes or a brief leading offset; unrelated melodies should not trigger. Screening matches are **review cues only**, never automatic removal, infringement evidence or proof of authorship. Production matching currently scans at most 500 recent signatures; this is not comprehensive catalog-wide deduplication.
+- [x] Added a local **trainable nearest-neighbor prototype** (`music-classifier.mjs`) for Genre and Mood; unlike a paid pretrained model, it needs **opt-in, artist-reviewed, independently recorded examples**. It rejects duplicate audio fingerprints, requires at least two genres and four independent artists per genre, uses leave-one-artist-out macro recall/coverage thresholds, and abstains on weak matches. Validation against a representative, separately held-out real-audio dataset remains incomplete, so there is **no deployed classifier** and no evidence of genre/mood accuracy on real Oddio songs.
+- [x] Added offline model-training CLI `node scripts/train-music-classifier.mjs reviewed-examples.json --output /private/model.json`. Input rows need `id`, `artistId`, `consent:true`, `artistReviewed:true`, `genreSlug`, `moodSlugs` and a private `fingerprint`; no sound files or labels leave the computer. Only enable a locally validated model using `ODDIO_CLASSIFIER_MODEL_PATH` on the worker, after explicit approval and staging testing.
+- [x] Added `audio_fingerprints` and `audio_tag_suggestions` **service-role-only** staging tables. Worker can store bounded screening signatures and artist-only proposals, while the **public** `tracks.audio_features` contains descriptive BPM/loudness only. Explicit artist approval via Studio and atomic service-role-only RPC `oddio_accept_music_tags` updates Genre + Mood together **only on editable unpublished tracks**; never auto-applies metadata.
+- [x] Added Node synthetic-audio tests for gain-shift, offset and unrelated melodies, offline model test for abstention/independent examples, and disposable PostgreSQL tests for owner approval and private roles; latest CI required before merging.
+- [ ] Gather lawful/consented representative real-audio training + held-out evaluation by Genre (including Arabic genres) and Mood, plus calibration/precision reporting. Until that dataset is available, Studio displays no classifier proposal.
+- [ ] Test genuine FFmpeg MP3 re-encodes and real R2 worker staging, along with large-catalog scalable candidate matching, false positive reviews, creator appeals and data retention. **All migrations must be rolled out to safe staging before any production worker/web deployment.**
+
+### Phase 4 third slice: consented audio preparation + independent model evaluation (development)
+
+- [x] Added `scripts/prepare-music-dataset.mjs` to decode **only local, permitted audio** using FFmpeg and write private bounded spectral features, not audio bytes or source paths. Every example must have artist-reviewed labels, a rights basis, specific local-training consent scope, a consent record reference and timestamp.
+- [x] Added `workers/media/src/heldout-evaluation.mjs` to reject train/test leakage by artist, recording ID or fingerprint and require the blind holdout to represent **every trained Genre** with at least four new artists per genre. Report coverage, per-genre recall/precision, aggregate precision, Mood precision/recall and abstentions.
+- [x] Training CLI now requires `--holdout`; it **does not write a model** if the independent evaluation fails. Worker-side `suggestArtistTags` refuses to emit proposed tags unless the model carries a passing heldout release report.
+- [x] New independent evaluation and CLI permission tests, including local FFmpeg dataset-preparation smoke with _synthetic fixtures_; these demonstrate safeguards, not real-world Genre accuracy.
+- [x] Added `docs/music-intelligence-dataset.md` with a consent/reference manifest template, local commands, music rights handling, artist-disjoint review and non-production release gates.
+- [ ] **No real, rights-authorized Oddio music dataset is provided or imported.** A real consent/withdrawal process and training + holdout recordings, including Arabic genres and moods, are required before fitting/approving a model. No permission can be inferred solely from music being available to stream.
+- [ ] Supabase migrations, actual R2 transcoding/worker integration, and real Android/iPhone acceptance must be tested in isolated staging with restorable backups before any live rollout. No staging or production migration was executed as part of this work.
+
+### Cloudflare R2 signed DELETE hardening (development branch, 2026-11-15)
+
+- [x] Corrected the R2 rendition-object regex, AWS timestamp normalization and SigV4 canonical newline escaping in `presignR2Delete`. Previously these had double-escaped literals which could reject valid .mp3 rendition keys and produce invalid deletion signatures.
+- [x] Added a source-level regression guard to `r2-stream-architecture.test.ts` for the corrected signer. **Not yet verified against the Cloudflare API**; no files were deleted.
+- [ ] Confirm the new Vitest/format/CI gates on the development branch and stage a test-object upload/delete using a non-production R2 bucket before treating the behavior as accepted. Production media objects must not be deleted for testing.
+- [ ] Inspect the five dead transcoding jobs using worker logs and actual object evidence, never blind-requeue or purge. Release blockers (backup/restore, staging database migrations, R2 browser acceptance and worker deployment) remain open.
+
+## Phase 5 — personalized discovery
+
+- [x] Personal recommendations, Oddio Flow and local-browser control over unwanted genres (server-side preference sync remains pending).
+- [x] Song/artist/genre/mood radio, Daily Mix and Discover Weekly (development implementation; real-device acceptance outstanding).
+- [x] Prompt-driven playlist generation with a no-paid-API baseline and private playlist save (staging test required for atomic playlist RPCs).
+- [x] Personalized home, Rising Artists, Spotlight and weekly fair-exposure rotation (pending production evaluation and tuning).
+
+### Phase 5 first slice — zero-paid-API recommendations (development branch, 2026-11-15)
+
+- [x] Implemented deterministic recommendations in `apps/web/src/lib/data/recommendations.ts` using the currently accessible approved/listable, ready-to-play catalog. No external model, purchased API or schema migration is required.
+- [x] For authenticated listeners, only their own likes and qualified playback events (joined by their own playback sessions) influence Genre/Mood/artist affinity. Previously liked/listened tracks are excluded from recommendation candidates; artist diversification is applied where possible.
+- [x] Added an Arabic/English recommendations section to Discover for unfiltered browsing. New listeners see explicitly labeled general picks rather than fabricated personal preferences.
+- [x] Added Vitest source tests for cold start, signed-in relevance, cross-account event isolation and unready audio exclusion. Latest CI/build/browser acceptance is **pending**; code is not production deployed.
+- [ ] Measure relevance with opt-in feedback and ensure large-catalog performance; current in-memory catalog scan is an MVP, not a scalable ranking service.
+- [ ] Build Oddio Flow/radio continuation, negative genre preferences, Daily Mix and transparent explanation controls only after a passing preview and privacy review. Avoid personalized claims if no signed-in preference signal exists.
+
+### Phase 5 second slice — Oddio Flow mix playback (development branch, 2026-11-15)
+
+- [x] Added a bilingual `Start Oddio Flow` button on Discover. It starts a 20-track maximum, ready-to-play discovery mix from the existing no-paid-API recommendation engine (personalized when opted-in account signals exist; otherwise a general popular mix).
+- [x] `startFlow` builds a deduplicated queue atomically, resets existing shuffle/repeat to preserve mix ordering, and triggers a new playback request even if the opening track matches the currently selected track. Existing audio `ended` handling advances through the queue.
+- [x] Added targeted player-store tests for advancement, rebuilding a current-track queue and empty mixes. Latest Vitest/format/build/browser CI results must be checked before claiming acceptance.
+- [ ] This is a **finite discovery mix**, not yet a dynamically refreshed infinite station. Existing player autoplay may transition to generic homepage tracks when the queue ends; a dedicated Flow continuation policy with explicit opt-out remains future work.
+- [ ] Test actual R2 playback, controls and resume on real Android/iOS browsers in staging. No production deployment or database migration was made for this slice.
+
+### Phase 5 third slice — Daily Mix, Discover Weekly, seeded radio and opt-out (development branch, 2026-11-15)
+
+- [x] Added `buildDiscoveryMix`, a deterministic, bounded no-paid-API mixer: Daily Mix rotates at UTC midnight, Discover Weekly at Monday 00:00 UTC, Song Radio starts from an accessible selected song and Artist Radio preferentially selects the source artist and compatible Genres/Moods.
+- [x] Added the server-authorized `GET /api/discovery/mix` endpoint with a private no-store response. It validates requested mode, limits exclusions and returns only listable, accessible, ready-to-play music. No database writes or external AI calls.
+- [x] Connected the station buttons on Discover and Song/Artist pages; the player can request the next batch when its station queue runs out, preserving up to 100 previously played tracks in the local station history. It does not silently fall back to unrelated generic homepage songs during a station.
+- [x] Added per-account local-browser `Not interested` (song and Genre exclusions) controls and a reset action. Hidden material is removed from the visible discovery shelf and active station queue. Guest exclusions last for the browser tab; signed-in exclusions are local to that user's browser/device. **These are not synced to Supabase or other devices.**
+- [x] Added mix-rotation, access, blocked-genre, seed and player-refill tests; fixed a Flow test syntax failure found in a Vercel preview build. Recheck the latest CI/Vercel status.
+- [x] When the full eligible catalog has been heard, the station requests a new rotation excluding the last finished track and all user-blocked music. It stops if there are genuinely no other playable choices; this is deterministic catalog cycling, not an unlimited supply of new content. Real-browser behavior still needs staging acceptance.
+- [ ] Production rollout remains blocked on complete CI and browser tests, real Cloudflare R2 staging tests, safe Supabase migration rollout/backup and real-device acceptance. This batch has **not been merged or deployed to production**.
+
+### Phase 5 fourth slice — implementation complete on feature branch, not production accepted
+
+- [x] **Genre Radio and Mood Radio**: backend `buildDiscoveryMix` accepts validated active Genre/Mood IDs, restricts tracks to the category, enforces ready public/listable audio and respects hidden genres. Bilingual one-tap station buttons are visible on Genre/Mood pages. Mood pages now load from the production Supabase snapshot instead of using a demo JSON store.
+- [x] **Seeded radio continuation**: song and artist radio keep the original playable seed as an affinity reference even after it enters the played-history exclusion list, preventing silent fallback to unrelated songs.
+- [x] **Prompt to Playlist**: bounded bilingual keyword/synonym and catalog metadata matching through a rate-limited same-origin endpoint; no external AI calls. Reject unrecognized prompts rather than claiming a semantic match. User can play results immediately or save an authenticated **private** playlist using the existing playlist APIs. Partial saves are reported and the private list remains recoverable.
+- [x] **Personalized home**: reuse the likes/qualified-play recommendation shelf and existing `Not Interested` controls from Discover. Anonymous sessions get transparently labeled general choices.
+- [x] **Rising Artists and Spotlight**: use only publicly released, ready-audio artists. Spotlight honors time-bounded editorial artist pins when present; otherwise it picks from weekly rotating underexposed artists. The rising list selects from lower plays-per-track artists, preventing a raw popularity takeover. Artist eligibility never uses private owner-only content.
+- [x] Added unit tests for category radio, invalid seeds, completed song radio, prompt matching/abstention, fair artist exposure and editorial publishing windows.
+- [ ] **Phase 5 production acceptance gates**: code CI is green as of commit `d6f02756`; actual Supabase/R2 staging audio, account sync, and device checks must still pass before production. No migrations have been executed for this feature slice, and it remains on the feature branch.
+- [ ] **Cross-device Not Interested sync**: browser storage remains device-local. Requires privacy-reviewed account-owned Supabase storage and secure API/migration rollout; defer to the Phase 3 cross-device persistence release. Do not claim device synchronization today.
+- [ ] Measure opt-in relevance, skip/save rate, cold-start fairness and catalog-scale query performance against real traffic; current algorithm is deterministic MVP, not a trained semantic model.
+
+### Phase 5 fifth slice — quality gates and cross-device exclusions (development only)
+
+- [x] **Phase 5 final feature-code CI passed** on commit `d6f02756`, GitHub Actions run `43720991955`: verify (typecheck, unit tests, build, lint and formatting), disposable PostgreSQL including the new preference permission/bounds checks, and Chromium/Firefox/WebKit automated browser smoke in Arabic/English on desktop/mobile. Vercel Preview for this commit reached **READY**. This verifies the feature branch in demo/CI, not the real R2 or production Supabase environment.
+- [x] Added `public.discovery_preferences` as a new **staging-first** account-owned table, with FK cascade, bounded UUID lists, RLS and service-role-only access; anonymous/authenticated Data API roles have no direct table privileges. This migration has NOT been applied to the live Supabase project.
+- [x] Added authenticated, origin-checked and rate-limited GET/PUT `/api/discovery/preferences` with server-side account ownership; demo API explicitly reports unavailable instead of claiming cloud sync. Added a disposable PostgreSQL RLS/limits test, and a browser check rejecting anonymous preference reads/writes.
+- [x] Local browser preferences are maintained as a safe fallback when Staging/Supabase is unavailable. On first successful cloud sync, legacy local exclusions are merged with cloud values and sent back; on later visits, the server is authoritative. Writes from the same browser tab are serialized. The UI explains whether preferences are account-synced or only on the device. Station launch reconciles preferences before requesting a mix.
+- [x] Added no-PII `evaluateDiscoveryQuality`: artist coverage, top-artist share, recommendation size, and hidden track/genre leakage counts. Unit tests cover exposure and privacy. Discovery mix API provides these **aggregated** diagnostics for internal/staging QA with no event tracking or personal identifiers.
+- [ ] **Mandatory release blocker**: prepare and verify a restorable Supabase backup, isolate a Staging environment, apply the new preference migration plus earlier Phase 1/3/4 migrations, test multi-device concurrent edits, real playback/R2 audio and mobile Safari/Android. Do not merge the schema-dependent API to production before database rollout.
+- [ ] The initial preference sync is a last-write-wins MVP with serialized writes per tab. Future concurrent updates from separate devices require an explicit conflict/merge policy and ETag/row version; do not claim conflict-free synchronization.
+- [ ] Evaluate real recommendation engagement (save/skip/qualified listens) only with reviewed user-consent, anonymous aggregate reporting, and privacy retention boundaries. Current metrics are offline batch diagnostics, not measured production conversion.
+- [ ] Security, latency, diversity and relevance need large-catalog and real-browser staging acceptance before the phase can be marked **production completed**.
+
+## Phase 6 — artist studio
+
+- [ ] Reliable multipart uploads with progress and resume; structured release wizard.
+- [ ] Creator credits, rights disclosures, editorial review and appeals.
+- [ ] Aggregated artist analytics, audience insights, scheduled releases and profiles.
+
+### Phase 6 slice 1 — private artist analytics (feature branch; no production deploy)
+
+- [x] Built bilingual `/[locale]/studio/insights` for signed-in artist managers, including 7/30-day qualified listening totals, a 30-day UTC chart, per-track recent/lifetime qualified plays, likes, follower count, release and review state.
+- [x] Calculations filter tracks to the current owner, count only qualified playback events, exclude future events, and return aggregates without listener IDs or session IDs.
+- [x] Added owner-isolation and aggregation unit tests; linked Insights from Artist Studio home.
+- [ ] Validate typecheck, formatting, CI, and real catalog semantics; historical per-track counters are a separate lifetime measure from recent recorded playback events. No invented historical trends.
+- [x] Added a direct-to-R2 XHR transport that reports byte-level browser upload progress (showing 100% only after 2xx acknowledgement), plus a cancel button in the existing three-step release wizard. This avoids proxying audio via Vercel; it is **single-PUT only** and does not resume interrupted transfers.
+- [ ] Continue Phase 6 with reliable R2 multipart upload/resume, artist release workflow, rights review/appeals and enhanced insights.
+
+### Phase 6 slice 2 — authenticated resumable R2 multipart upload (development only)
+
+- [x] Implemented a separate, owner-checked `POST /api/studio/uploads/multipart` API: approved artists can initiate, list, sign individual PUT parts, complete, or abort a Cloudflare R2 multipart upload. Server handles SigV4 initialization/completion; browser sends audio **directly to R2** and receives a short-lived URL only for the requested numbered part. No R2 secret is exposed to browsers and Vercel never proxies the audio body.
+- [x] New uploader switches from single PUT to **8 MiB sequential multipart parts** for MP3 files 8–25 MiB. Progress reports combined bytes; unfinished upload ID and the original file signature remain locally for up to six days. If the same local file is selected again, the client checks a **local full-file SHA-256 fingerprint** and the API checks **R2 ListParts** before skipping completed parts; it never trusts local filenames or saved progress alone. Without secure-browser Web Crypto, automatic session reuse is disabled rather than guessing file identity.
+- [x] Completed multipart objects are retained as resumable client drafts until Supabase track finalization succeeds. A failed metadata finalization can retry **without** uploading the file a second time. Cancelling an in-progress browser request keeps the incomplete upload eligible for later resume, while R2's default lifecycle cleans abandoned multipart sessions.
+- [x] Added shared chunk-boundary and duplicate-part validation with unit tests, and non-disclosing error messages. The server validates object-key ownership and full part size before completing.
+- [ ] **Important compatibility gate:** Existing finalize route and app settings cap original uploads at 25 MiB; larger files are **not yet supported**. Raising this cap requires a matching worker memory/streaming policy and resource limits; do not silently accept larger files.
+- [ ] Cloudflare bucket **CORS** must permit same-origin browser PUT to the R2 S3 endpoint; check the response, preflight and Content-Type behavior in a real browser on staging/test objects. Exposing `ETag` is optional for this implementation because the server re-reads R2 ListParts. R2 itself requires identical non-final part sizes of at least 5 MiB. See https://developers.cloudflare.com/r2/objects/upload-objects/ .
+- [ ] Verify full multipart happy path, network interruption/reselect, expiration (R2 defaults to abort at seven days), duplicate audio rejection, and matching media transcode with real test MP3s before enabling on production.
+- [ ] Add a server-side durable upload ledger and rate limits backed by Redis/Postgres to prevent uploads being reissued endlessly across Vercel instances. The current server rate limit is in-memory; it is not a distributed quota.
+- [ ] Other Phase 6 tasks: workflow for copyright appeals, more release-group UX, and per-audience analytics. Do not mark the phase production-complete.
+
+### Phase 6 slice 3 — creator review appeals (development only)
+
+- [x] Added service-only `track_review_appeals` table with RLS and one-open-appeal-per-track constraint in `supabase/migrations/20261115220000_track_review_appeals.sql` — **NOT applied to production**.
+- [x] Added artist-owned appeal API and bilingual form for rejected/changes-requested tracks. Only the existing owner can appeal and submissions require a substantive written explanation.
+- [x] Added staff-only review API and private moderation queue; a reviewer can uphold or overturn an appeal with a written explanation. **Overturning an appeal never automatically publishes or approves a track.**
+- [x] Added RLS/grant SQL checks to the disposable DB test suite.
+- [ ] Apply this migration only in the coordinated future release; test concurrent moderator decisions, abuse rate limits and notifications. Production schema currently lacks the appeal table.
+
+## Phase 7 — community and growth
+
+- [ ] Collaborative playlists, sharing cards, reactions and creator stories.
+- [ ] Real-time listening rooms with moderation and ownership rules.
+- [ ] Music DNA, monthly recaps, annual Rewind and optional social discovery.
+
+### Phase 7 slice 1 — private monthly listening recap (feature branch)
+
+- [x] Added `/[locale]/library/recap` for authenticated listeners with UTC-month qualified history totals, distinct artists/tracks and top five songs/artists.
+- [x] History is filtered to the account and accessible tracks before aggregation; empty listening history is explicitly shown, not fabricated. Added month-boundary and privacy unit tests.
+- [x] Added **opt-in** native share/copy of three aggregate recap numbers, not track-by-track history. Linked from Library. No automatic public posting.
+- [ ] Community playlists, creator stories, collaborative editing and moderated listening rooms remain pending; do not call Phase 7 complete.
+
+### Phase 7 slice 2 — Music DNA and annual Rewind (development only)
+
+- [x] Added bilingual, private `/[locale]/library/rewind` with annual qualified listening metrics, top tracks, artists, catalog-labeled primary genres and active months, including current/previous-year selection.
+- [x] Reused authenticated session ownership and accessible-track filtering from monthly recap. No exposed listener IDs, no inferred listening minutes, no fictional AI genre tags, no automatic sharing.
+- [x] Added UTC year-boundary, repeat-play and empty-data unit tests.
+- [ ] True collaboratively editable playlists, moderated real-time listening rooms, creator stories and interactive sharing cards remain open.
+
+## Phase 8 — mobile and advanced playback
+
+- [ ] PWA eligibility and cross-device account sync.
+- [ ] Android/iOS wrapper or native-shell proof of concept with background playback.
+- [ ] Offline rights-compliant listening, push, lock screen and headset controls.
+- [ ] Gapless, crossfade, normalization and optional EQ; evaluate car integrations later.
+
+### Phase 8 slice 1 — installability groundwork (feature branch)
+
+- [x] Added a dark, standalone Oddio Web App Manifest at `/manifest.webmanifest`, using the existing glossy gradient play logo and both language layouts' manifest metadata.
+- [x] Added a production-only service worker with a strict cache allowlist of same-origin immutable `/_next/static/` GET assets. It deliberately never intercepts playback, Cloudflare signed URLs, user pages, account content, or API calls; safe browsing works without worker registration.
+- [ ] Confirm installability icon dimensions and service worker behavior on real Android/iOS devices. This is **not** offline music support. Background playback, Android/iOS packaging, lock-screen controls, offline rights, gapless and crossfade are not yet delivered.
+
+### Phase 8 slice 2 — mobile lock-screen transport (development only)
+
+- [x] Browser Media Session now exposes best-effort play/pause state, reported duration/position and 10-second forward/backward headset/lock-screen seek actions, in addition to prior next/previous and direct seeking.
+- [ ] Real Android and iOS device verification is still needed. Mobile OS background policies differ and this does **not** constitute a native wrapper, offline listening, crossfade, gapless playback or unrestricted background playback support.
+
+### Current unfinished Phase 6–8 implementation batch (2026-11-15; development only)
+
+- [x] **Phase 6: 100 MiB bounded MP3 upload** — raised the application and finalize maximum from 25 MiB to 100 MiB, retaining runtime `AUDIO_MAX_UPLOAD_BYTES` as an upper-bound override. Extended the existing authenticated R2 multipart upload to work with larger files, while the media worker now streams original downloads to temporary disk through a hard byte-counting guard (instead of buffering the entire source in RAM). This requires deploying the matching worker and web versions together; the production worker and R2 path have not been tested with a real 100 MiB MP3.
+- [x] **Phase 6: human appeal review** — owner-only submissions on rejected/changes-requested tracks, service-only `track_review_appeals` persistence, staff-only written dispositions. An overturned appeal does not automatically change track visibility, review approval or publish state. Pending migration `20261115220000_track_review_appeals.sql`, NOT applied to production.
+- [x] **Phase 7: annual Rewind & Music DNA** — personal private statistics based on session-owned qualified playback events and currently accessible tracks; truthful UTC year boundaries and catalog primary genre summaries. No paid model/AI guessing.
+- [x] **Phase 7: collaborative PUBLIC playlists, first functional slice** — expiring, hashed owner-issued invite codes, max 10 editors, owner removal/revocation, service-only join and serialized add/remove RPC operations. Editors cannot delete playlists or change owner settings; they may add only released, public tracks. Invitation redemption is bound to the exact playlist. Pending migration `20261115221000_playlist_collaboration.sql`, NOT applied to production. Editor list/revoke and membership are service-role API only.
+- [x] **Phase 8: lock screen/headset** — best-effort Media Session playback status, position and +/-10s seeking in browsers that support these features.
+- [ ] Run latest CI end-to-end, reconcile all new SQL/RLS tests, lint/typecheck/format/build and browser flows. Validate real R2 multipart, large-file FFmpeg processing and cross-device collaborative editing before release.
+- [ ] **Still outstanding:** audited real-time listening rooms with abuse/moderation controls, native Android/iOS wrapper proof-of-concept, rights-compliant offline listening, gapless/crossfade/normalization, creator stories and share cards. Do not label Phases 6–8 complete while these remain open.
+- [ ] Before future production deployment apply both new migrations in order after a real backup, deploy the updated worker alongside web, and confirm Cloudflare R2 CORS + existing egress-free playback architecture. No production web/worker deployment or production SQL changes in this batch.
+
+### Phase 8 slice 3 — installable web app UX (development only)
+
+- [x] Added bilingual `/[locale]/install` and sidebar navigation. Supported Android browsers get a native install prompt when they expose `beforeinstallprompt`; iOS users receive Safari Add to Home Screen guidance.
+- [x] Standalone PWA runs the same Next.js UI; app caching remains restricted to immutable static assets. No private music, playback tokens or personalized content is cached.
+- [ ] Mobile installability and push/media playback must be acceptance-tested on actual Android/iOS. PWA is **not** a Play Store/App Store native package and is **not** rights-compliant offline playback.
+- [ ] Android wrapper and iOS wrapper remain future builds (iOS compilation/signing requires access to macOS tooling).
+
+### Phase 7 slice 3 — invite-only moderated Listening Rooms (development only)
+
+- [x] Implemented private RLS-protected room, membership and chat tables in `supabase/migrations/20261115222000_listening_rooms.sql`. The migration is **NOT applied to production**.
+- [x] Room creation, secret invitation token, atomic join (25-member cap), six-hour expiry, owner-only transport state and member-only chat. Server-side service-role RPCs are inaccessible to browser database roles; private code hashes are never returned from room-read responses.
+- [x] Host moderation includes message hiding, mute/unmute, banning/removing members and closing rooms. Participants may leave voluntarily. Muted/banned users cannot submit new chat messages; SQL-backed per-user chat throttling works across serverless instances.
+- [x] Added bilingual `/[locale]/rooms` and `/[locale]/rooms/[id]` routes, web player integration and a light four-second polling synchronization loop. State uses the server clock to minimize device time drift; track metadata is fetched only when songs change, and a host can choose approved public music from an in-room lightweight discovery picker. Every listener requests a **separate authorized stream** through the existing Cloudflare R2 player; no stream keys are shared in rooms.
+- [x] Added database integration tests for private grants, wrong-room codes, unauthorized transport, private tracks, mute/ban and spam; plus client sync unit tests. Hooked SQL tests into disposable DB CI.
+- [ ] This is **near-real-time polling**, not millisecond-synchronized audio or a full WebSocket/Supabase Realtime product. Real-device auto-play policies, sync drift, network failure, room closure and moderator load still need acceptance tests; speaking/voice calls are not implemented.
+- [ ] The room feature requires its new migration, older staged migrations and paired worker/web deployment. Do not enable room routes on production until the release gate and database backup are validated.
+- [ ] Future iteration: durable room-level audit records, moderation appeals/reporting of chat abuse, periodic cleanup of expired rooms and a cross-device load test under the maximum membership cap.
+
+### Phase 8 slice 4 — audio transitions and mobile build scaffolds (development only)
+
+- [x] Added a crossfade duration selector (Off, 3s, 5s, 8s), saved locally per browser. Implemented a second, independently authorized HTMLAudioElement which prebuffers the next queued track shortly before the end, plays an **equal-power overlap** when enabled, and hands off to the ordinary playback pipeline when the first track finishes. Pausing and deliberate seeking cancel/pause transitions; autoplay restrictions and playback authorization errors fall back to normal playback.
+- [x] When Crossfade is Off, the same speculative authorization/prebuffer shortens the next-song gap, **but this is best-effort gap reduction, not a verified sample-accurate gapless decoder**. Each queued track is still authorized through `/api/tracks/[id]/playback`, never by copying someone else's Cloudflare R2 URL. No server-side audio proxy or unlicensed caching was introduced.
+- [x] Added equal-power gain/transition eligibility unit tests and formatted web-player setting controls.
+- [x] Added `mobile/android/` Bubblewrap Trusted Web Activity build entry point and signing/assetlinks guidance for Ubuntu; added `mobile/ios/` SwiftUI/WKWebView source scaffolds and real-device/test-signing instructions for Xcode/macOS. Source files are **not** compiled APK, AAB, Xcode project, or signed IPA.
+- [ ] Critical: run real browser audio overlap, fallback, qualified-play accounting, stream token expiry, repeat/shuffle/auto-play and Bluetooth/media-session tests. Check signed URLs are neither persisted nor cached. **Do not claim gapless/crossfade production-ready on CI alone.**
+- [ ] Before packaging: publish an actually valid square PWA icon set and verify the manifest path exists on the live site; complete Android Digital Asset Links with the real package signing fingerprint. iOS requires an actual Xcode project, proper native features and App Store review readiness, not just an embedded WebView.
+- [x] Added the first offline-rights **permission-only** slice: service-role-only `track_offline_permissions` table, artist owner API and bilingual Studio opt-in/revoke UI with explicit declaration of rights. Migration `20261115223000_track_offline_permissions.sql` is staged on GitHub **not applied to production**; it grants NO offline access to listeners and does NOT cache audio.
+- [ ] To actually implement offline playback: enforce per-listener entitlement and artist consent at license issuance, encrypted on-device media, short expiry and revocation/erase policy with real device tests. **No track download is enabled**, and the static-only PWA worker must never cache signed Cloudflare R2 streams indiscriminately.
+
+## Continuous release gates (every phase)
+
+1. No direct production deploy from a work-in-progress branch.
+2. Typecheck, lint, formatting, unit tests, RLS tests, build and browser smoke checks pass.
+3. Arabic + English, desktop + mobile, auth, playback and content permissions are rechecked.
+4. Schema/data changes require rollback, reconciliation and verified backups.
+5. Never expose secrets in source control, logs or public build variables.
+6. Measure playback success, initial audio latency, D7 retention, discovery saves and upload approval turnaround.
+7. Feature-complete means tested in staging, not merely present in code.
+
+## Known facts and outstanding verification
+
+- The repository documentation currently describes the runtime data store as demo JSON despite Supabase schema artifacts being present. **This is a source-code/documentation finding, not a live production audit.**
+- Existing CI already includes PostgreSQL RLS and browser coverage; do not duplicate it. Updated `scripts/audit-persistence.mjs` to detect API routes with unguarded demo-only access rather than treating the coexistence of demo JSON and Supabase adapter as a blocker. CI runs it advisory-only; full production readiness still requires runtime tests and route audit.
+- Production backend, live domain routing, backups and storage credentials have **not** been verified by this change.
+- Do not run destructive database migrations or import demo content into production without an inventory and recovery plan.

@@ -104,7 +104,10 @@ export default async function AdminCommentsPage({
                 {comment.body}
               </p>
               <p className="mt-1 text-[11px] text-muted">
-                {comment.timestampSeconds != null ? `${Math.floor(comment.timestampSeconds / 60)}:${String(comment.timestampSeconds % 60).padStart(2, '0')} · ` : ''}{trackTitle.get(comment.trackId) ?? comment.trackId}
+                {comment.timestampSeconds != null
+                  ? `${Math.floor(comment.timestampSeconds / 60)}:${String(comment.timestampSeconds % 60).padStart(2, '0')} · `
+                  : ''}
+                {trackTitle.get(comment.trackId) ?? comment.trackId}
               </p>
             </div>
             <AdminCommentToggle commentId={comment.id} status={comment.status} />

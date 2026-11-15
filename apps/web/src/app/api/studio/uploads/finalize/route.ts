@@ -53,7 +53,9 @@ export async function POST(request: Request) {
       title: field(form, 'title'),
       description: field(form, 'description'),
       genreId: field(form, 'genreId'),
-      genreIds: field(form, 'genres').split(',').filter(Boolean).length ? field(form, 'genres').split(',').filter(Boolean) : [field(form, 'genreId')],
+      genreIds: field(form, 'genres').split(',').filter(Boolean).length
+        ? field(form, 'genres').split(',').filter(Boolean)
+        : [field(form, 'genreId')],
       moodIds: field(form, 'moods').split(',').filter(Boolean),
       languageCode: field(form, 'languageCode') || 'en',
       countryCode: field(form, 'countryCode'),
@@ -71,7 +73,7 @@ export async function POST(request: Request) {
     if (!new RegExp(`^incoming/${user.id}/[a-f0-9-]{36}$`).test(input.objectKey)) {
       throw Errors.forbidden();
     }
-    if (input.bytes > Math.min(env.audioMaxUploadBytes, 25 * 1024 * 1024))
+    if (input.bytes > Math.min(env.audioMaxUploadBytes, 100 * 1024 * 1024))
       throw Errors.invalid('Audio exceeds upload limit');
     if (!['audio/mpeg', 'audio/mp3'].includes(input.contentType)) {
       throw Errors.invalid('Unsupported audio format');

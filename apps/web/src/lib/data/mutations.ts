@@ -520,7 +520,12 @@ export function createTrackFromUpload(
 ): Track {
   const artist = ownedArtist(db, actor, input.artistId);
   const genreIds = input.genreIds?.length ? input.genreIds : [input.genreId];
-  if (new Set(genreIds).size !== genreIds.length || !genreIds.includes(input.genreId) || genreIds.length > 5 || genreIds.some((id) => !db.genres.some((genre) => genre.id === id && genre.active))) {
+  if (
+    new Set(genreIds).size !== genreIds.length ||
+    !genreIds.includes(input.genreId) ||
+    genreIds.length > 5 ||
+    genreIds.some((id) => !db.genres.some((genre) => genre.id === id && genre.active))
+  ) {
     throw Errors.invalid('Select 1 to 5 valid genres, including the primary genre.');
   }
   if (!userIsArtistManager(db, actor.id)) {
@@ -975,7 +980,7 @@ export function recordPlaybackEvent(
     throw new AppError('playback_denied', 'Playback is not authorized.', 403);
   const session = db.playbackSessions.find((item) => item.id === input.sessionId);
   if (!session) throw Errors.notFound('Playback session not found');
-  if (session.userId && actor && session.userId !== actor.id) throw Errors.forbidden();
+  if (session.userId && session.userId !== actor?.id) throw Errors.forbidden();
   const previous = db.playbackEvents.filter(
     (event) => event.sessionId === input.sessionId && event.trackId === input.trackId,
   );

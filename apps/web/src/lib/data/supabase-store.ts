@@ -12,6 +12,7 @@ import type {
   Track,
 } from '@ai-music/contracts';
 import { env } from '@/lib/env';
+import { buildQualifiedListeningHistory } from './listening-history';
 import type {
   DemoDb,
   DemoUser,
@@ -218,6 +219,11 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
     slug: text(row.slug),
     name: text(row.name),
     bio: text(row.bio),
+    searchAliases: Array.isArray(row.search_aliases)
+      ? (row.search_aliases as unknown[]).filter(
+          (name): name is string => typeof name === 'string',
+        )
+      : [],
     avatarUrl: text(row.avatar_key),
     coverUrl: text(row.cover_key),
     accent: text(row.accent, '#9D5CFF'),
@@ -271,7 +277,10 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
       slug: text(row.slug),
       description: text(row.description),
       genreId: text(row.genre_id),
-      genreIds: Array.isArray(row.genre_ids) && row.genre_ids.length ? row.genre_ids as string[] : [text(row.genre_id)],
+      genreIds:
+        Array.isArray(row.genre_ids) && row.genre_ids.length
+          ? (row.genre_ids as string[])
+          : [text(row.genre_id)],
       moodIds: (moodsByTrack.get(id) ?? []).map((mood) => text(mood.mood_id)),
       languageCode: text(row.language_code, 'en'),
       countryCode: text(row.country_code),
@@ -291,6 +300,30 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
       },
       audioUrl: '',
       audio: playable,
+      // Keep pending artist-only classifier suggestions out of public APIs.
+      // Only descriptive, validated measurement fields enter the catalog.
+      audioFeatures:
+        row.audio_features &&
+        typeof row.audio_features === 'object' &&
+        !Array.isArray(row.audio_features)
+          ? {
+              schemaVersion: num((row.audio_features as Row).schemaVersion),
+              tempoBpm:
+                typeof (row.audio_features as Row).tempoBpm === 'number'
+                  ? num((row.audio_features as Row).tempoBpm)
+                  : null,
+              tempoConfidence: num((row.audio_features as Row).tempoConfidence),
+              rmsDbfs:
+                typeof (row.audio_features as Row).rmsDbfs === 'number'
+                  ? num((row.audio_features as Row).rmsDbfs)
+                  : null,
+              peakDbfs:
+                typeof (row.audio_features as Row).peakDbfs === 'number'
+                  ? num((row.audio_features as Row).peakDbfs)
+                  : null,
+              analyzedSeconds: num((row.audio_features as Row).analyzedSeconds),
+            }
+          : null,
       qualityLabel: text(row.quality_label, 'standard'),
       qualifiedPlays: num(row.qualified_plays),
       likeCount: num(row.like_count),
@@ -499,16 +532,7 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
     requestId: text(row.request_id),
   }));
 
-  const sessionOwner = new Map(
-    playbackSessions.map((session) => [session.id, session.userId]),
-  );
-  const history = playbackEvents
-    .filter((event) => event.eventType === 'start' && sessionOwner.get(event.sessionId))
-    .map((event) => ({
-      userId: sessionOwner.get(event.sessionId) as string,
-      trackId: event.trackId,
-      playedAt: event.occurredAt,
-    }));
+  const history = buildQualifiedListeningHistory(playbackSessions, playbackEvents);
 
   return {
     version: 2,
@@ -621,9 +645,9 @@ export async function persistChanges(before: DemoDb, after: DemoDb): Promise<voi
     if (spec.after && touched.length > 0) {
       // Hooks need the domain entities (audio, moods, social links), not flattened SQL rows.
       const touchedKeys = new Set(touched.map((row) => rowKey(row, spec.pk)));
-      const entities = spec.rows(after).filter((entity) =>
-        touchedKeys.has(rowKey(spec.toRow(entity as Row), spec.pk)),
-      );
+      const entities = spec
+        .rows(after)
+        .filter((entity) => touchedKeys.has(rowKey(spec.toRow(entity as Row), spec.pk)));
       await spec.after(client, entities);
     }
   }
@@ -729,7 +753,10 @@ const SPECS: CollectionSpec[] = [
       slug: track.slug,
       description: track.description,
       genre_id: track.genreId,
-      genre_ids: Array.isArray(track.genreIds) && track.genreIds.length > 0 ? track.genreIds : [track.genreId],
+      genre_ids:
+        Array.isArray(track.genreIds) && track.genreIds.length > 0
+          ? track.genreIds
+          : [track.genreId],
       language_code: track.languageCode,
       country_code: track.countryCode,
       production_type: track.productionType,

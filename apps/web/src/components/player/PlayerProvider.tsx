@@ -4,6 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlaybackEventInput } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
+import { canPrepareNextTrack, crossfadeGains } from '@/lib/audio-transitions';
+import { readDiscoveryExclusions } from '@/lib/discovery-preferences';
+import {
+  recoverablePlaybackPosition,
+  streamRecoveryDelayMs,
+} from '@/lib/player-stream-recovery';
 import {
   PLAYER_SESSION_KEY,
   buildPlayerSession,
@@ -28,6 +34,16 @@ export function PlayerProvider({
 }) {
   const storageKey = `${PLAYER_SESSION_KEY}:${viewerId ?? 'guest'}`;
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const standbyRef = useRef<HTMLAudioElement | null>(null);
+  const warmedRef = useRef<{ trackId: string; result: PlaybackAuthorization } | null>(
+    null,
+  );
+  const warmingRef = useRef<string | null>(null);
+  const crossfadingRef = useRef(false);
+  const crossfadeTargetRef = useRef<string | null>(null);
+  const incomingTimeRef = useRef(0);
+  const handoffTargetRef = useRef<string | null>(null);
+
   const sessionRef = useRef<string | null>(null);
   const audibleRef = useRef({
     accumulated: 0,
@@ -36,6 +52,12 @@ export function PlayerProvider({
     lastSent: 0,
   });
   const [stream, setStream] = useState<string | null>(null);
+  const streamRef = useRef<string | null>(null);
+  const recoveryAttemptsRef = useRef(0);
+  const previousAuthorizedTrackRef = useRef<string | null>(null);
+  const recoveryPendingRef = useRef(false);
+  const recoveryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recoveryGenerationRef = useRef(0);
   const { toast } = useToast();
   const track = usePlayer((state) => state.track);
   const trackId = track?.id;
@@ -44,20 +66,89 @@ export function PlayerProvider({
   const pendingRestoreTrackId = useRef<string | null>(null);
   const startSentRef = useRef(false);
   const isPlaying = usePlayer((state) => state.isPlaying);
+  const crossfadeSeconds = usePlayer((state) => state.crossfadeSeconds);
   const volume = usePlayer((state) => state.volume);
   const muted = usePlayer((state) => state.muted);
   const seekRequest = usePlayer((state) => state.seekRequest);
 
+  // Transition preferences are local to the listener, never synced to a room
+  // or included in signed playback URLs.
+  useEffect(() => {
+    try {
+      const stored = Number(window.localStorage.getItem('oddio-crossfade-seconds'));
+      usePlayer.getState().setCrossfadeSeconds(stored);
+    } catch {
+      /* Private browser mode continues with crossfade disabled. */
+    }
+    const unsubscribe = usePlayer.subscribe((state, prior) => {
+      if (state.crossfadeSeconds === prior.crossfadeSeconds) return;
+      try {
+        window.localStorage.setItem(
+          'oddio-crossfade-seconds',
+          String(state.crossfadeSeconds),
+        );
+      } catch {
+        /* Optional preference persistence. */
+      }
+    });
+    return unsubscribe;
+  }, []);
+
+  // A track change invalidates all in-flight stream refresh attempts.
+  useEffect(() => {
+    recoveryGenerationRef.current += 1;
+    recoveryAttemptsRef.current = 0;
+    recoveryPendingRef.current = false;
+    if (recoveryTimerRef.current) clearTimeout(recoveryTimerRef.current);
+    recoveryTimerRef.current = null;
+    streamRef.current = null;
+    return () => {
+      recoveryGenerationRef.current += 1;
+      if (recoveryTimerRef.current) clearTimeout(recoveryTimerRef.current);
+    };
+  }, [trackId]);
+
   // Keep the current queue and preferences in this tab. Restoring never
   // automatically starts audio: playback always needs a user gesture.
   useEffect(() => {
+    // Signed-in listeners retain their queue across browser restarts. Guests
+    // retain the original per-tab behavior to avoid persistent shared data.
+    // Some privacy modes throw even when accessing the Storage getter.
+    // Keep playback functional without persistence when storage is disabled.
+    const storage = {
+      getItem: (key: string) => {
+        try {
+          return (viewerId ? window.localStorage : window.sessionStorage).getItem(key);
+        } catch {
+          return null;
+        }
+      },
+      setItem: (key: string, value: string) => {
+        try {
+          (viewerId ? window.localStorage : window.sessionStorage).setItem(key, value);
+        } catch {
+          // In-memory playback keeps working.
+        }
+      },
+      removeItem: (key: string) => {
+        try {
+          (viewerId ? window.localStorage : window.sessionStorage).removeItem(key);
+        } catch {
+          // Storage may be disabled.
+        }
+      },
+    };
+    let disposed = false;
+    let localExists = false;
     try {
-      const session = parsePlayerSession(window.sessionStorage.getItem(storageKey));
+      const session = parsePlayerSession(storage.getItem(storageKey));
+      localExists = Boolean(session);
       if (session) {
         pendingRestoreTime.current = session.currentTime;
         pendingRestoreTrackId.current = session.track?.id ?? null;
         usePlayer.setState({
           track: session.track,
+          station: null,
           queue: session.queue,
           history: [],
           currentTime: session.currentTime,
@@ -76,6 +167,7 @@ export function PlayerProvider({
       } else {
         usePlayer.setState({
           track: null,
+          station: null,
           queue: [],
           history: [],
           isPlaying: false,
@@ -90,14 +182,43 @@ export function PlayerProvider({
       // Browser storage might be disabled; the player works without it.
     }
 
+    // Only fetch cloud state for a blank local session. Do not replace a
+    // track manually selected while the request was in flight. Never autoplay.
+    if (viewerId && !localExists) {
+      void apiRequest<{ session: unknown }>('/api/player/resume')
+        .then(({ session }) => {
+          if (disposed || usePlayer.getState().track) return;
+          const restored = parsePlayerSession(JSON.stringify(session));
+          if (!restored) return;
+          pendingRestoreTime.current = restored.currentTime;
+          pendingRestoreTrackId.current = restored.track?.id ?? null;
+          usePlayer.setState({
+            track: restored.track,
+            station: null,
+            queue: restored.queue,
+            currentTime: restored.currentTime,
+            duration: (restored.track?.durationMs ?? 0) / 1000,
+            volume: restored.volume,
+            muted: restored.muted,
+            repeat: restored.repeat,
+            shuffle: restored.shuffle,
+            autoplay: restored.autoplay,
+            isPlaying: false,
+            expanded: false,
+            seekRequest: null,
+          });
+        })
+        .catch(() => undefined);
+    }
+
     const save = () => {
       const state = usePlayer.getState();
       try {
         if (!state.track) {
-          window.sessionStorage.removeItem(storageKey);
+          storage.removeItem(storageKey);
           return;
         }
-        window.sessionStorage.setItem(
+        storage.setItem(
           storageKey,
           JSON.stringify(
             buildPlayerSession({
@@ -118,18 +239,47 @@ export function PlayerProvider({
       }
     };
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let cloudTimer: ReturnType<typeof setTimeout> | null = null;
+    const saveCloud = () => {
+      if (!viewerId) return;
+      const state = usePlayer.getState();
+      if (!state.track) return;
+      void apiRequest('/api/player/resume', {
+        method: 'PUT',
+        body: JSON.stringify({
+          trackId: state.track.id,
+          queueTrackIds: state.queue.map((item) => item.id).slice(0, 50),
+          currentTime: Math.max(0, Math.min(state.currentTime, 14400)),
+          volume: state.volume,
+          muted: state.muted,
+          repeat: state.repeat,
+          shuffle: state.shuffle,
+          autoplay: state.autoplay,
+        }),
+      }).catch(() => undefined);
+    };
     const unsubscribe = usePlayer.subscribe(() => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(save, 400);
+      if (viewerId && !cloudTimer) {
+        // Time updates fire continuously during playback. Throttle rather
+        // than debounce, or a song that keeps playing would never sync.
+        cloudTimer = setTimeout(() => {
+          cloudTimer = null;
+          saveCloud();
+        }, 10_000);
+      }
     });
     window.addEventListener('pagehide', save);
     return () => {
+      disposed = true;
       if (timer) clearTimeout(timer);
+      if (cloudTimer) clearTimeout(cloudTimer);
       save();
       unsubscribe();
       window.removeEventListener('pagehide', save);
     };
-  }, [storageKey]);
+  }, [storageKey, viewerId]);
 
   const sendEvent = useCallback(
     (eventType: PlaybackEventInput['eventType'], audibleMs: number) => {
@@ -152,31 +302,82 @@ export function PlayerProvider({
 
   useEffect(() => {
     if (!trackId) return;
+    if (crossfadingRef.current && crossfadeTargetRef.current !== trackId) {
+      standbyRef.current?.pause();
+      crossfadingRef.current = false;
+      crossfadeTargetRef.current = null;
+      incomingTimeRef.current = 0;
+    }
     let cancelled = false;
     const state = usePlayer.getState();
+    // Manual Retry is for the same track: retain the listening position and
+    // accumulated progress rather than replaying from the beginning.
+    const retryingSameTrack = previousAuthorizedTrackRef.current === trackId;
+    if (retryingSameTrack) {
+      pendingRestoreTime.current = recoverablePlaybackPosition(
+        audioRef.current?.currentTime ?? Number.NaN,
+        state.currentTime,
+        state.duration,
+      );
+      pendingRestoreTrackId.current = trackId;
+    } else {
+      // A newly restored session already has its playback position staged.
+      // Keep it until loadedmetadata seeks the media element; clear it only
+      // for an unrelated user-selected track.
+      if (pendingRestoreTrackId.current !== trackId) {
+        pendingRestoreTime.current = null;
+        pendingRestoreTrackId.current = null;
+      }
+      audibleRef.current = { accumulated: 0, lastTime: 0, qualified: false, lastSent: 0 };
+      startSentRef.current = false;
+    }
+    previousAuthorizedTrackRef.current = trackId;
     state.setError(null);
     state.setBuffering(true);
     sessionRef.current = null;
-    startSentRef.current = false;
+    streamRef.current = null;
     setStream(null);
-    audibleRef.current = { accumulated: 0, lastTime: 0, qualified: false, lastSent: 0 };
 
-    apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
-      method: 'POST',
-    })
-      .then((result) => {
-        if (cancelled) return;
-        sessionRef.current = result.sessionId;
-        setStream(result.streamUrl);
-        usePlayer.getState().setDuration(result.durationMs / 1000);
+    const warmed =
+      warmedRef.current?.trackId === trackId ? warmedRef.current.result : null;
+    if (warmed) {
+      warmedRef.current = null;
+      handoffTargetRef.current = trackId;
+      sessionRef.current = warmed.sessionId;
+      streamRef.current = warmed.streamUrl;
+      setStream(warmed.streamUrl);
+      usePlayer.getState().setDuration(warmed.durationMs / 1000);
+      // The secondary element may already be playing the new track. Keep it
+      // audible until the primary element has started the authorized source.
+      if (crossfadingRef.current && crossfadeTargetRef.current === trackId) {
+        const overlapSeconds = Math.max(0, incomingTimeRef.current);
+        pendingRestoreTrackId.current = trackId;
+        pendingRestoreTime.current = overlapSeconds;
+        // Preserve actual audible overlap for qualified play counting.
+        // No duplicate events are submitted for an inaudible prefetched song.
+        audibleRef.current.accumulated = overlapSeconds * 1000;
+        audibleRef.current.lastTime = overlapSeconds;
+        audibleRef.current.lastSent = 0;
+        audibleRef.current.qualified = false;
+      }
+    } else
+      apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
+        method: 'POST',
       })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        const message =
-          error instanceof Error ? error.message : 'Playback is not available.';
-        usePlayer.getState().setError(message);
-        usePlayer.getState().setBuffering(false);
-      });
+        .then((result) => {
+          if (cancelled) return;
+          sessionRef.current = result.sessionId;
+          streamRef.current = result.streamUrl;
+          setStream(result.streamUrl);
+          usePlayer.getState().setDuration(result.durationMs / 1000);
+        })
+        .catch((error: unknown) => {
+          if (cancelled) return;
+          const message =
+            error instanceof Error ? error.message : 'Playback is not available.';
+          usePlayer.getState().setError(message);
+          usePlayer.getState().setBuffering(false);
+        });
 
     return () => {
       cancelled = true;
@@ -206,15 +407,26 @@ export function PlayerProvider({
       void audio.play().catch(() => {
         usePlayer.getState().setPlaying(false);
       });
+      if (crossfadingRef.current) void standbyRef.current?.play().catch(() => undefined);
     } else {
       audio.pause();
+      standbyRef.current?.pause();
     }
   }, [isPlaying, stream]);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.volume = muted ? 0 : volume;
+    const state = usePlayer.getState();
+    const gains = crossfadingRef.current
+      ? crossfadeGains(
+          Math.max(0, audio.duration - audio.currentTime),
+          state.crossfadeSeconds,
+        )
+      : { outgoing: 1, incoming: 0 };
+    audio.volume = (muted ? 0 : volume) * gains.outgoing;
+    if (standbyRef.current)
+      standbyRef.current.volume = (muted ? 0 : volume) * gains.incoming;
   }, [volume, muted]);
 
   useEffect(() => {
@@ -226,6 +438,13 @@ export function PlayerProvider({
     audio.currentTime = Math.min(Math.max(seekRequest.seconds, 0), duration || 0);
     audibleRef.current.lastTime = audio.currentTime;
     usePlayer.getState().setCurrentTime(audio.currentTime);
+    // A deliberate seek invalidates a transition that was already underway.
+    if (crossfadingRef.current) {
+      standbyRef.current?.pause();
+      crossfadingRef.current = false;
+      crossfadeTargetRef.current = null;
+      audio.volume = usePlayer.getState().muted ? 0 : usePlayer.getState().volume;
+    }
   }, [seekRequest]);
 
   useEffect(() => {
@@ -235,6 +454,74 @@ export function PlayerProvider({
     const onTimeUpdate = () => {
       const state = usePlayer.getState();
       const time = audio.currentTime;
+      const standby = standbyRef.current;
+      const remaining = audio.duration - time;
+      const queued = state.queue[0];
+      if (
+        standby &&
+        canPrepareNextTrack({
+          remainingSeconds: remaining,
+          playing: state.isPlaying,
+          repeatOne: state.repeat === 'one',
+          queued: Boolean(queued),
+        }) &&
+        queued
+      ) {
+        const warmId = queued.id;
+        if (warmedRef.current?.trackId !== warmId && warmingRef.current !== warmId) {
+          warmingRef.current = warmId;
+          void apiRequest<PlaybackAuthorization>(`/api/tracks/${warmId}/playback`, {
+            method: 'POST',
+          })
+            .then((result) => {
+              if (
+                warmingRef.current !== warmId ||
+                usePlayer.getState().queue[0]?.id !== warmId
+              )
+                return;
+              warmedRef.current = { trackId: warmId, result };
+              standby.src = result.streamUrl;
+              standby.preload = 'auto';
+              standby.load();
+            })
+            .catch(() => undefined)
+            .finally(() => {
+              if (warmingRef.current === warmId) warmingRef.current = null;
+            });
+        }
+      }
+      if (
+        standby &&
+        state.crossfadeSeconds > 0 &&
+        queued &&
+        warmedRef.current?.trackId === queued.id &&
+        Number.isFinite(remaining) &&
+        remaining <= state.crossfadeSeconds &&
+        remaining > 0 &&
+        state.isPlaying &&
+        state.repeat !== 'one'
+      ) {
+        if (
+          !crossfadingRef.current &&
+          standby.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+        ) {
+          standby.currentTime = 0;
+          standby.volume = 0;
+          void standby
+            .play()
+            .then(() => {
+              crossfadingRef.current = true;
+              crossfadeTargetRef.current = queued.id;
+            })
+            .catch(() => undefined);
+        }
+        if (crossfadingRef.current && crossfadeTargetRef.current === queued.id) {
+          incomingTimeRef.current = standby.currentTime;
+          const gains = crossfadeGains(remaining, state.crossfadeSeconds);
+          audio.volume = (state.muted ? 0 : state.volume) * gains.outgoing;
+          standby.volume = (state.muted ? 0 : state.volume) * gains.incoming;
+        }
+      }
       const audible = audibleRef.current;
       const delta = time - audible.lastTime;
       if (!audio.paused && delta > 0 && delta < 1.5) {
@@ -277,6 +564,34 @@ export function PlayerProvider({
     };
     const onWaiting = () => usePlayer.getState().setBuffering(true);
     const onPlaying = () => {
+      if (handoffTargetRef.current === usePlayer.getState().track?.id) {
+        handoffTargetRef.current = null;
+        const standby = standbyRef.current;
+        if (standby) {
+          standby.pause();
+          standby.removeAttribute('src');
+          standby.load();
+        }
+        crossfadingRef.current = false;
+        crossfadeTargetRef.current = null;
+        incomingTimeRef.current = 0;
+        audio.volume = usePlayer.getState().muted ? 0 : usePlayer.getState().volume;
+      }
+      if (
+        crossfadingRef.current &&
+        crossfadeTargetRef.current === usePlayer.getState().track?.id
+      ) {
+        const standby = standbyRef.current;
+        if (standby) {
+          standby.pause();
+          standby.removeAttribute('src');
+          standby.load();
+        }
+        crossfadingRef.current = false;
+        crossfadeTargetRef.current = null;
+        incomingTimeRef.current = 0;
+        audio.volume = usePlayer.getState().muted ? 0 : usePlayer.getState().volume;
+      }
       usePlayer.getState().setBuffering(false);
       if (!startSentRef.current && sessionRef.current) {
         startSentRef.current = true;
@@ -284,11 +599,67 @@ export function PlayerProvider({
       }
     };
     const onError = () => {
-      usePlayer.getState().setBuffering(false);
-      usePlayer.getState().setError('Playback failed. Try again.');
+      const state = usePlayer.getState();
+      const currentTrackId = state.track?.id;
+      // Ignore errors caused by clearing the old source during a track change.
+      if (!currentTrackId || !streamRef.current || recoveryPendingRef.current) return;
+      const attempt = ++recoveryAttemptsRef.current;
+      const delay = streamRecoveryDelayMs(attempt);
+      if (delay === null) {
+        state.setBuffering(false);
+        state.setError('Playback failed. Try again.');
+        return;
+      }
+
+      const resumeAt = recoverablePlaybackPosition(
+        audio.currentTime,
+        state.currentTime,
+        state.duration,
+      );
+      pendingRestoreTime.current = resumeAt;
+      pendingRestoreTrackId.current = currentTrackId;
+      recoveryPendingRef.current = true;
+      state.setBuffering(true);
+      const generation = recoveryGenerationRef.current;
+      recoveryTimerRef.current = setTimeout(() => {
+        recoveryTimerRef.current = null;
+        if (
+          recoveryGenerationRef.current !== generation ||
+          usePlayer.getState().track?.id !== currentTrackId
+        )
+          return;
+        void apiRequest<PlaybackAuthorization>(`/api/tracks/${currentTrackId}/playback`, {
+          method: 'POST',
+        })
+          .then((result) => {
+            if (
+              recoveryGenerationRef.current !== generation ||
+              usePlayer.getState().track?.id !== currentTrackId
+            )
+              return;
+            sessionRef.current = result.sessionId;
+            streamRef.current = result.streamUrl;
+            recoveryPendingRef.current = false;
+            setStream(result.streamUrl);
+          })
+          .catch(() => {
+            if (
+              recoveryGenerationRef.current !== generation ||
+              usePlayer.getState().track?.id !== currentTrackId
+            )
+              return;
+            recoveryPendingRef.current = false;
+            usePlayer.getState().setBuffering(false);
+            usePlayer.getState().setError('Playback failed. Try again.');
+          });
+      }, delay);
     };
     const onEnded = () => {
       const state = usePlayer.getState();
+      // Standby handoff is complete only after the next primary stream starts.
+      // If the preauthorized stream expired, normal per-track playback recovery
+      // still runs and the secondary source is discarded.
+
       sendEvent('complete', audibleRef.current.accumulated);
       if (state.repeat === 'one') {
         audio.currentTime = 0;
@@ -297,6 +668,64 @@ export function PlayerProvider({
         return;
       }
       const advanced = state.advance();
+      if (!advanced && state.station && state.autoplay) {
+        const currentId = state.track?.id;
+        const station = state.station;
+        const exclusions = readDiscoveryExclusions(viewerId);
+        const alreadyPlayed = [
+          ...state.history.map((item) => item.id),
+          ...(currentId ? [currentId] : []),
+          ...exclusions.trackIds,
+        ].slice(-100);
+        const params = new URLSearchParams({ kind: station.kind });
+        if (station.seedId) params.set('seed', station.seedId);
+        if (alreadyPlayed.length) params.set('exclude', alreadyPlayed.join(','));
+        if (exclusions.genreIds.length)
+          params.set('blockedGenres', exclusions.genreIds.join(','));
+        void apiRequest<{ tracks: CatalogTrack[] }>(
+          '/api/discovery/mix?' + params.toString(),
+        )
+          .then(async ({ tracks }) => {
+            if (tracks.length > 0) return { tracks, restart: false };
+            // The whole eligible catalog has been played. Start a fresh cycle,
+            // but never replay the just-finished track immediately.
+            const current = usePlayer.getState();
+            if (
+              current.track?.id !== currentId ||
+              current.station?.kind !== station.kind ||
+              current.station?.seedId !== station.seedId ||
+              current.isPlaying ||
+              !current.autoplay
+            )
+              return { tracks: [], restart: false };
+            const restarted = new URLSearchParams(params);
+            const avoid = [...exclusions.trackIds, ...(currentId ? [currentId] : [])];
+            if (avoid.length)
+              restarted.set('exclude', [...new Set(avoid)].slice(-100).join(','));
+            else restarted.delete('exclude');
+            const next = await apiRequest<{ tracks: CatalogTrack[] }>(
+              '/api/discovery/mix?' + restarted.toString(),
+            );
+            return { tracks: next.tracks, restart: true };
+          })
+          .then(({ tracks, restart }) => {
+            const latest = usePlayer.getState();
+            if (
+              latest.track?.id !== currentId ||
+              latest.station?.kind !== station.kind ||
+              latest.station?.seedId !== station.seedId ||
+              latest.isPlaying ||
+              !latest.autoplay
+            )
+              return;
+            if (tracks.length > 0) {
+              if (restart) latest.startFlow(tracks, station);
+              else latest.continueStation(tracks);
+            }
+          })
+          .catch(() => undefined);
+        return;
+      }
       if (!advanced && state.autoplay) {
         void apiRequest<HomeData>('/api/home')
           .then((home) => {
@@ -327,7 +756,7 @@ export function PlayerProvider({
       audio.removeEventListener('error', onError);
       audio.removeEventListener('ended', onEnded);
     };
-  }, [sendEvent, toast]);
+  }, [sendEvent, toast, viewerId]);
 
   useEffect(() => {
     if (!track || typeof navigator === 'undefined' || !('mediaSession' in navigator))
@@ -351,9 +780,50 @@ export function PlayerProvider({
         if (typeof details.seekTime === 'number')
           usePlayer.getState().seek(details.seekTime);
       });
+      mediaSession.setActionHandler('seekbackward', (details) => {
+        const state = usePlayer.getState();
+        state.seek(Math.max(0, state.currentTime - (details.seekOffset ?? 10)));
+      });
+      mediaSession.setActionHandler('seekforward', (details) => {
+        const state = usePlayer.getState();
+        state.seek(
+          Math.min(state.duration, state.currentTime + (details.seekOffset ?? 10)),
+        );
+      });
     } catch {
       // Media Session is best-effort.
     }
+  }, [track]);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    navigator.mediaSession.playbackState = !track
+      ? 'none'
+      : isPlaying
+        ? 'playing'
+        : 'paused';
+  }, [isPlaying, track]);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    const mediaSession = navigator.mediaSession;
+    if (!('setPositionState' in mediaSession)) return;
+    const updatePosition = () => {
+      const state = usePlayer.getState();
+      if (!state.track || !Number.isFinite(state.duration) || state.duration <= 0) return;
+      try {
+        mediaSession.setPositionState({
+          duration: state.duration,
+          playbackRate: 1,
+          position: Math.max(0, Math.min(state.currentTime, state.duration)),
+        });
+      } catch {
+        // Lock-screen controls are optional browser capabilities.
+      }
+    };
+    updatePosition();
+    const interval = window.setInterval(updatePosition, 1000);
+    return () => window.clearInterval(interval);
   }, [track]);
 
   useEffect(() => {
@@ -383,6 +853,7 @@ export function PlayerProvider({
     <>
       {children}
       <audio ref={audioRef} preload="none" aria-hidden="true" />
+      <audio ref={standbyRef} preload="none" aria-hidden="true" />
     </>
   );
 }

@@ -48,11 +48,29 @@ export default async function SearchPage({
   const q = typeof sp.q === 'string' ? sp.q : '';
   const cursor =
     typeof sp.cursor === 'string' && /^\d+$/.test(sp.cursor) ? sp.cursor : undefined;
-  const parsed = searchQuery.safeParse({ q, limit: 25, cursor });
+  const value = (key: string) => (typeof sp[key] === 'string' ? sp[key] : undefined);
+  const parsed = searchQuery.safeParse({
+    q,
+    genre: value('genre') || undefined,
+    mood: value('mood') || undefined,
+    language: value('language') || undefined,
+    sort: value('sort') || undefined,
+    limit: 25,
+    cursor,
+  });
   const query = parsed.success ? parsed.data : searchQuery.parse({});
   const viewer = await getViewer();
   const db = demoMode ? readDb() : await loadDbFromSupabase();
-  const results = query.q ? searchCatalog(db, viewer, query) : null;
+  const genres = db.genres.filter((genre) => genre.active);
+  const moods = db.moods.filter((mood) => mood.active);
+  const hasSearch = Boolean(query.q || query.genre || query.mood || query.language);
+  const results = hasSearch ? searchCatalog(db, viewer, query) : null;
+  const nextPageParams = new URLSearchParams();
+  for (const key of ['q', 'genre', 'mood', 'language', 'sort'] as const) {
+    const selected = query[key];
+    if (selected) nextPageParams.set(key, selected);
+  }
+  if (results?.nextCursor) nextPageParams.set('cursor', results.nextCursor);
 
   return (
     <div className="oddio-explore-page oddio-search-page">
@@ -92,11 +110,76 @@ export default async function SearchPage({
         </button>
       </form>
 
+      <form
+        method="get"
+        action={`/${locale}/search`}
+        className="mb-8 flex flex-wrap items-end gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+      >
+        <input type="hidden" name="q" value={q} />
+        <label className="flex min-w-[140px] flex-1 flex-col gap-1.5 text-xs font-semibold text-muted">
+          {locale === 'ar' ? 'النوع الموسيقي' : 'Genre'}
+          <select
+            name="genre"
+            defaultValue={query.genre ?? ''}
+            className="input min-h-11"
+          >
+            <option value="">{locale === 'ar' ? 'كل الأنواع' : 'All genres'}</option>
+            {genres.map((genre) => (
+              <option key={genre.id} value={genre.slug}>
+                {locale === 'ar' ? genre.labelAr : genre.labelEn}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex min-w-[140px] flex-1 flex-col gap-1.5 text-xs font-semibold text-muted">
+          {locale === 'ar' ? 'المزاج' : 'Mood'}
+          <select name="mood" defaultValue={query.mood ?? ''} className="input min-h-11">
+            <option value="">{locale === 'ar' ? 'كل الحالات' : 'All moods'}</option>
+            {moods.map((mood) => (
+              <option key={mood.id} value={mood.slug}>
+                {locale === 'ar' ? mood.labelAr : mood.labelEn}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex min-w-[120px] flex-1 flex-col gap-1.5 text-xs font-semibold text-muted">
+          {locale === 'ar' ? 'اللغة' : 'Language'}
+          <select
+            name="language"
+            defaultValue={query.language ?? ''}
+            className="input min-h-11"
+          >
+            <option value="">{locale === 'ar' ? 'كل اللغات' : 'All languages'}</option>
+            <option value="ar">{locale === 'ar' ? 'العربية' : 'Arabic'}</option>
+            <option value="en">{locale === 'ar' ? 'الإنجليزية' : 'English'}</option>
+          </select>
+        </label>
+        <label className="flex min-w-[120px] flex-1 flex-col gap-1.5 text-xs font-semibold text-muted">
+          {locale === 'ar' ? 'الترتيب' : 'Sort by'}
+          <select name="sort" defaultValue={query.sort} className="input min-h-11">
+            <option value="relevant">
+              {locale === 'ar' ? 'الأكثر صلة' : 'Relevance'}
+            </option>
+            <option value="newest">{locale === 'ar' ? 'الأحدث' : 'Newest'}</option>
+            <option value="popular">
+              {locale === 'ar' ? 'الأكثر استماعًا' : 'Most played'}
+            </option>
+          </select>
+        </label>
+        <button
+          type="submit"
+          className="min-h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-[#211518]"
+        >
+          {locale === 'ar' ? 'تطبيق الفلاتر' : 'Apply filters'}
+        </button>
+      </form>
+
       {!results ? (
         <EmptyState title={t('search.hint')} />
       ) : results.total === 0 &&
         results.artists.length === 0 &&
-        results.albums.length === 0 ? (
+        results.albums.length === 0 &&
+        results.playlists.length === 0 ? (
         <div className="space-y-3">
           <EmptyState title={t('common.noResults')} body={q} />
           <Link
@@ -124,7 +207,7 @@ export default async function SearchPage({
               </div>
               {results.nextCursor ? (
                 <Link
-                  href={`/${locale}/search?q=${encodeURIComponent(query.q)}&cursor=${results.nextCursor}`}
+                  href={`/${locale}/search?${nextPageParams.toString()}`}
                   className="mt-4 inline-flex min-h-11 items-center rounded-full border border-primary/40 px-5 text-sm font-semibold text-primary hover:bg-primary/10"
                 >
                   {locale === 'ar' ? 'عرض المزيد من الأغاني' : 'More tracks'}

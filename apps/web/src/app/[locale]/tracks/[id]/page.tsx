@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getTrackPage } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -13,6 +15,7 @@ import { Artwork } from '@/components/ui/Artwork';
 import { Badge } from '@/components/ui/Badge';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { PlayButton } from '@/components/player/PlayButton';
+import { FlowButton } from '@/components/player/FlowButton';
 import { LikeButton } from '@/components/community/LikeButton';
 import { ShareButton } from '@/components/community/ShareButton';
 import { ReportButton } from '@/components/community/ReportButton';
@@ -28,7 +31,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, id } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getTrackPage(db, { userId: null, roles: [] }, idFromSegment(id));
   if (!page)
     return buildMetadata({
@@ -57,7 +60,7 @@ export default async function TrackPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getTrackPage(db, viewer, idFromSegment(id));
   if (!page) notFound();
   const { track, comments, related } = page;
@@ -77,6 +80,14 @@ export default async function TrackPage({
     { label: t('track.released'), value: formatDate(track.releaseAt, locale) },
     { label: t('track.duration'), value: formatDuration(track.durationMs) },
     { label: t('track.quality'), value: track.qualityLabel },
+    ...(track.audioFeatures?.tempoBpm && track.audioFeatures.tempoConfidence >= 0.5
+      ? [
+          {
+            label: locale === 'ar' ? 'الإيقاع التقريبي' : 'Estimated tempo',
+            value: `${track.audioFeatures.tempoBpm} BPM`,
+          },
+        ]
+      : []),
   ].filter((item) => item.value);
 
   return (
@@ -138,6 +149,12 @@ export default async function TrackPage({
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <PlayButton track={track} queue={[track, ...related]} size="lg" />
+            <FlowButton
+              kind="song"
+              seedId={track.id}
+              locale={locale}
+              viewerId={viewer.userId}
+            />
             <LikeButton
               trackId={track.id}
               initialLiked={track.isLiked}

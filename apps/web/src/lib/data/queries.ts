@@ -191,7 +191,9 @@ export function getHomeData(db: DemoDb, viewer: Viewer, now = new Date()): HomeD
     .filter((genre) => genre.active)
     .map((genre) => ({
       ...genre,
-      count: listable.filter((track) => (track.genreIds?.includes(genre.id) ?? track.genreId === genre.id)).length,
+      count: listable.filter(
+        (track) => track.genreIds?.includes(genre.id) ?? track.genreId === genre.id,
+      ).length,
     }));
 
   const moods = db.moods
@@ -266,6 +268,7 @@ export function searchCatalog(
       track.title,
       track.description,
       track.artist?.name ?? '',
+      ...(track.artist?.searchAliases ?? []),
       album?.title ?? '',
       genre?.labelEn ?? '',
       genre?.labelAr ?? '',
@@ -274,7 +277,11 @@ export function searchCatalog(
     if (!matches(haystack)) return false;
     if (query.genre) {
       const genreRecord = db.genres.find((item) => item.slug === query.genre);
-      if (!genreRecord || !(track.genreIds?.includes(genreRecord.id) ?? track.genreId === genreRecord.id)) return false;
+      if (
+        !genreRecord ||
+        !(track.genreIds?.includes(genreRecord.id) ?? track.genreId === genreRecord.id)
+      )
+        return false;
     }
     if (query.mood) {
       const moodRecord = db.moods.find((item) => item.slug === query.mood);
@@ -319,7 +326,11 @@ export function searchCatalog(
   const nextCursor = offset + limit < tracks.length ? String(offset + limit) : null;
 
   const artists = db.artists
-    .filter((artist) => matches(`${artist.name} ${artist.bio}`))
+    .filter(
+      (artist) =>
+        tokens.length > 0 &&
+        matches([artist.name, artist.bio, ...(artist.searchAliases ?? [])].join(' ')),
+    )
     .map((artist) => ({
       ...artist,
       trackCount: listable.filter((track) => track.artistId === artist.id).length,
@@ -328,7 +339,12 @@ export function searchCatalog(
     .slice(0, 8);
 
   const albums = db.albums
-    .filter((album) => album.status === 'published' && album.visibility === 'public')
+    .filter(
+      (album) =>
+        tokens.length > 0 &&
+        album.status === 'published' &&
+        album.visibility === 'public',
+    )
     .filter((album) => isReleased(album, now))
     .filter((album) =>
       matches(`${album.title} ${artistById.get(album.artistId)?.name ?? ''}`),
@@ -342,7 +358,7 @@ export function searchCatalog(
     .slice(0, 8);
 
   const playlists = db.playlists
-    .filter((playlist) => playlist.visibility === 'public')
+    .filter((playlist) => tokens.length > 0 && playlist.visibility === 'public')
     .filter((playlist) => matches(`${playlist.title} ${playlist.description}`))
     .slice(0, 8);
 
@@ -374,7 +390,15 @@ export function getCharts(db: DemoDb, viewer: Viewer, query: ChartQuery): ChartP
     : null;
   const filtered = listable.filter((track) => {
     if (query.country && track.countryCode !== query.country) return false;
-    if (genreId && !(track.genreIds?.includes(genreId) ?? (track.genreIds?.includes(genreId) ?? track.genreId === genreId))) return false;
+    if (
+      genreId &&
+      !(
+        track.genreIds?.includes(genreId) ??
+        track.genreIds?.includes(genreId) ??
+        track.genreId === genreId
+      )
+    )
+      return false;
     return true;
   });
   const periodFactor =
@@ -543,7 +567,9 @@ export function getPlaylistPage(
 export function getGenrePage(db: DemoDb, viewer: Viewer, slug: string) {
   const genre = db.genres.find((item) => item.slug === slug && item.active);
   if (!genre) return null;
-  const tracks = listableTracks(db, viewer).filter((track) => (track.genreIds?.includes(genre.id) ?? track.genreId === genre.id));
+  const tracks = listableTracks(db, viewer).filter(
+    (track) => track.genreIds?.includes(genre.id) ?? track.genreId === genre.id,
+  );
   return { genre, tracks };
 }
 
@@ -560,6 +586,7 @@ export function getLibraryData(db: DemoDb, viewer: Viewer) {
   const now = new Date();
   const likedTracks = db.likes
     .filter((like) => like.userId === viewer.userId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .flatMap((like) => {
       const track = db.tracks.find((item) => item.id === like.trackId);
       if (!track) return [];
@@ -712,7 +739,9 @@ export function getAdminData(db: DemoDb, role: StaffRole) {
   const genreCounts = db.genres
     .map((genre) => ({
       label: genre.labelEn,
-      count: publishedTracks.filter((track) => (track.genreIds?.includes(genre.id) ?? track.genreId === genre.id)).length,
+      count: publishedTracks.filter(
+        (track) => track.genreIds?.includes(genre.id) ?? track.genreId === genre.id,
+      ).length,
     }))
     .filter((entry) => entry.count > 0)
     .sort((a, b) => b.count - a.count);

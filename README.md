@@ -130,14 +130,30 @@ scripts/setup-demo.mjs   demo audio generator
 
 ## Production notes
 
-The application currently runs its **data layer against the local JSON store**
-in all modes. `supabase/` contains the complete target schema, triggers, RLS
-policies, storage buckets, transactional job/email outboxes, and an executable
-RLS test suite; `workers/media` operates against that schema — but wiring the web
-repositories (`apps/web/src/lib/data`) to Supabase/PostgREST is the remaining
-step before a multi-instance production deployment. See
-[`docs/production.md`](docs/production.md) for the migration checklist and
-[`docs/security.md`](docs/security.md) for the threat model.
+**Oddio has distinct demo and production data paths.** With `DEMO_MODE=true`,
+the Next.js app uses a local JSON database and local generated audio files.
+With `DEMO_MODE=false`, catalog pages use the existing Supabase adapter.
+Production social and playlist routes are being migrated to durable Supabase
+operations; playback sessions and events are now routed through the production
+adapter on the development branch. The remaining API routes still require
+a complete audit for ephemeral or nontransactional snapshot writes.
+
+**Cloudflare R2 is the audio store, not Supabase Storage or Vercel.**
+The production stream endpoint validates access and issues an HTTP 307 redirect
+to a signed R2 GET URL. It does not proxy the audio file through Vercel.
+The direct-upload authorization/finalize flow uses the `ai-music-originals`
+bucket; the media worker writes renditions to `ai-music-streaming`. Audio R2
+objects have not yet passed an authenticated browser end-to-end staging test.
+
+**Do not merge the development branch to production yet.**
+`supabase/migrations/20261115183000_atomic_social_interactions.sql` is
+required by production social endpoints on that branch. A verified backup,
+database staging acceptance, a working persistent media worker, real R2
+upload/Range tests and the full CI release gates are required before rollout.
+No existing production data should be overwritten by demo seed files.
+
+See [the implementation tracker](docs/oddio-master-implementation-plan.md),
+[production guide](docs/production.md) and [security notes](docs/security.md).
 
 ## License
 

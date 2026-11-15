@@ -18,7 +18,7 @@ describe('Oddio bilingual search normalization', () => {
 
   it('supports multiword search regardless of word order', () => {
     expect(matchesMusicSearch('أغنية من القَلْب الجميل', searchWords('القلب اغنيه'))).toBe(
-      false,
+      true,
     );
     expect(matchesMusicSearch('أغنية من القَلْب الجميل', searchWords('القلب من'))).toBe(
       true,
@@ -32,6 +32,20 @@ describe('Oddio bilingual search normalization', () => {
     expect(searchRelevanceScore('Dream', 'Dreaming', 'Other')).toBeGreaterThan(
       searchRelevanceScore('Dream', 'New', 'Other', 'Dreamy atmosphere'),
     );
+  });
+
+  it('tolerates one missing or incorrect letter in longer Arabic and English words', () => {
+    expect(matchesMusicSearch('المدينة الجميلة', searchWords('المدينه الجميلا'))).toBe(
+      true,
+    );
+    expect(matchesMusicSearch('Midnight Souk', searchWords('Midnigt'))).toBe(true);
+    expect(matchesMusicSearch('Ambient', searchWords('Ambiant'))).toBe(true);
+  });
+
+  it('does not match unrelated short words or two-character typos', () => {
+    expect(matchesMusicSearch('Pop', searchWords('Poo'))).toBe(false);
+    expect(matchesMusicSearch('Midnight Souk', searchWords('Midxxght'))).toBe(false);
+    expect(matchesMusicSearch('أحمد', searchWords('أخمد'))).toBe(false);
   });
 
   it('does not claim arbitrary English phonetics map to Arabic names', () => {

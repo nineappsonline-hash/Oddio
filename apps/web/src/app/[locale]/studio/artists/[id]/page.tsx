@@ -2,6 +2,9 @@ import { notFound, redirect } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
+import { ArtistSearchAliases } from '@/components/studio/ArtistSearchAliases';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
@@ -37,7 +40,7 @@ export default async function EditArtistPage({
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
   if (!user.isArtistManager) redirect(`/${locale}/apply/artist`);
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const artist = db.artists.find(
     (item) => item.id === id && item.ownerUserId === user.id,
   );
@@ -47,6 +50,11 @@ export default async function EditArtistPage({
     <div>
       <PageHeader title={t('studio.editArtist')} subtitle={artist.name} />
       <ArtistProfileForm locale={locale} artist={artist} />
+      <ArtistSearchAliases
+        artistId={artist.id}
+        initial={artist.searchAliases ?? []}
+        locale={locale}
+      />
     </div>
   );
 }

@@ -2,11 +2,13 @@
 
 ## 1. Read this first
 
-The web runtime is demo-first: `apps/web/src/lib/data` reads and writes
-`apps/web/.data/demo.json`. Supabase auth can be enabled, but catalog reads will
-still use the JSON file until the repository adapter is implemented. Do **not**
-run multiple web instances against the JSON store; it is not a production
-database.
+The web runtime supports both `DEMO_MODE=true` (local JSON) and
+`DEMO_MODE=false` (Supabase-backed catalog and progressively migrated APIs).
+Production use still requires a complete route audit; snapshot-diff writes are
+not safe for all concurrent scenarios. Playback sessions/events and the main
+library operations have been moved to the production adapter on the development
+branch, but that branch is **not approved for release**. Never run multiple web
+instances against the demo JSON store.
 
 The Supabase artifacts in this repository are complete and intentionally mirror
 the TypeScript access rules:
@@ -57,23 +59,26 @@ on conflict do nothing;
 Never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser. It belongs only in the
 web server and worker environments.
 
-## 3. Storage
+## 3. Audio storage — Cloudflare R2
 
-Migrations create four buckets:
+Oddio streams from Cloudflare R2 to avoid forwarding audio bytes through Vercel.
+The current production direct-upload flow uses two private R2 buckets:
+`ai-music-originals` for the uploaded source and `ai-music-streaming`
+for worker-produced renditions. The browser receives a short-lived signed
+PUT URL, uploads to R2 directly, then calls the finalize API.
+The signed stream endpoint returns a 307 redirect to a signed R2 GET URL.
 
-| Bucket             | Visibility | Contents                                                |
-| ------------------ | ---------- | ------------------------------------------------------- |
-| `audio-masters`    | private    | original WAV/FLAC/MP3/AIFF masters                      |
-| `audio-renditions` | private    | 320 kbps MP3 playable renditions                        |
-| `artwork`          | public     | cover art (uploaded under `<user-id>/...`)              |
-| `avatars`          | public     | profile/artist avatars (uploaded under `<user-id>/...`) |
+The database stores track metadata and audio object keys (not the audio bytes).
+The finalize route currently allows MP3 files up to **25 MiB** — not the
+older guide's 100 MB target and not yet multipart/resumable. The server
+verifies uploaded bytes during finalize and queues the transcode job.
+This end-to-end path still needs staging acceptance with a real R2 object.
 
-Audio is never publicly readable. The playback endpoint authorizes a request,
-then resolves a signed URL or a streamed response. Artwork writes are restricted
-by storage RLS to the caller's own folder.
-
-The worker requires permission to read `audio-masters` and write
-`audio-renditions`; the service role has this access.
+**Operational prerequisite:** run the media worker as a separate persistent
+process with ffmpeg/ffprobe and matching Supabase plus R2 credentials.
+The application deployment alone does not run the worker. Review Cloudflare
+R2 CORS for direct PUT uploads and validate real GET Range (206) support.
+Never log signed R2 URLs, copy service-role keys to clients or seed production.
 
 ## 4. Environment
 
@@ -185,6 +190,17 @@ scheduler, or the worker loop itself) so scheduled releases go live on time.
    100 MB, or move uploads to direct-to-R2 signed PUTs.
 5. Set timeouts so long uploads and transcodes are not cut off.
 6. Keep `workers/media` on a separate process/container from web requests.
+
+### Deployment gate for development branch
+
+Before deploying the latest web branch: verify a restorable production
+database backup and test restore in an isolated database, verify live R2
+upload/transcode/streaming on non-production objects, and apply
+`20261115183000_atomic_social_interactions.sql` to a tested staging database.
+Only then apply the migration to production **before** deploying the matching
+web routes. Confirm the five RPCs are executable by the server service-role
+and not by anon/authenticated. Use the rollback/incident procedure if checks
+fail. Do not run `supabase db reset` on production.
 
 ## 7. Release checklist
 

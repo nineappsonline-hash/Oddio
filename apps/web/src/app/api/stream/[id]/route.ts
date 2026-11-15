@@ -73,12 +73,16 @@ export async function GET(
       );
     }
     try {
-      return NextResponse.redirect(
+      const response = NextResponse.redirect(
         ready
           ? presignR2Get(track.audio.objectKey)
           : presignR2OriginalGet(track.audio.objectKey),
         307,
       );
+      // Never cache a response carrying a private, bearer-style R2 link.
+      response.headers.set('Cache-Control', 'private, no-store');
+      response.headers.set('Referrer-Policy', 'no-referrer');
+      return response;
     } catch {
       return NextResponse.json(
         {

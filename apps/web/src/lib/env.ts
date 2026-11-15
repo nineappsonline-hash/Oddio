@@ -78,8 +78,8 @@ export const env: ServerEnv = {
   audioMinBitrateKbps: num(process.env.AUDIO_MIN_BITRATE_KBPS, 256),
   audioMaxDurationSeconds: num(process.env.AUDIO_MAX_DURATION_SECONDS, 900),
   audioMaxUploadBytes: Math.min(
-    num(process.env.AUDIO_MAX_UPLOAD_BYTES, 25 * 1024 * 1024),
-    25 * 1024 * 1024,
+    num(process.env.AUDIO_MAX_UPLOAD_BYTES, 100 * 1024 * 1024),
+    100 * 1024 * 1024,
   ),
   audioTargetBitrateKbps: num(process.env.AUDIO_TARGET_BITRATE_KBPS, 320),
   uploadDailyLimit: 1_000_000_000, // Temporary: daily track upload quota disabled.

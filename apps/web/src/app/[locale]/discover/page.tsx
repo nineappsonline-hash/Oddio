@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { searchQuery } from '@ai-music/contracts';
 import { getHomeData, searchCatalog } from '@/lib/data/queries';
+import { recommendTracks } from '@/lib/data/recommendations';
 import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
@@ -12,6 +13,8 @@ import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { TrackCard } from '@/components/music/TrackCard';
+import { DiscoveryMixShelf } from '@/components/music/DiscoveryMixShelf';
+import { PromptPlaylist } from '@/components/music/PromptPlaylist';
 import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -53,6 +56,8 @@ export default async function DiscoverPage({
   const viewer = await getViewer();
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const home = getHomeData(db, viewer);
+  const flow = recommendTracks(db, viewer, 20);
+  const recommendations = flow;
 
   const parsed = searchQuery.safeParse({
     q: first(sp.q) ?? '',
@@ -103,11 +108,32 @@ export default async function DiscoverPage({
             className={`oddio-explore-shortcut oddio-explore-shortcut-${index % 6}`}
           >
             <GenreArtwork slug={genre.slug} index={index} />
-            <span className="relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{genreLabel(genre)}</span>
-            <ArrowUpRight className="relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" size={17} aria-hidden="true" />
+            <span className="relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              {genreLabel(genre)}
+            </span>
+            <ArrowUpRight
+              className="relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+              size={17}
+              aria-hidden="true"
+            />
           </Link>
         ))}
       </section>
+      {recommendations.tracks.length > 0 &&
+      !first(sp.q) &&
+      !first(sp.genre) &&
+      !first(sp.mood) &&
+      !first(sp.language) &&
+      !first(sp.country) &&
+      !first(sp.cursor) ? (
+        <DiscoveryMixShelf
+          tracks={recommendations.tracks}
+          personalized={recommendations.personalized}
+          locale={locale}
+          viewerId={viewer.userId}
+        />
+      ) : null}
+      <PromptPlaylist locale={locale} viewerId={viewer.userId} />
       <div className="oddio-explore-filter-label">
         <SlidersHorizontal size={16} />
         <span>

@@ -16,6 +16,7 @@ import { PlaylistCard } from '@/components/music/PlaylistCard';
 import { ArtistListRow } from '@/components/music/ArtistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ButtonLink } from '@/components/ui/Button';
+import { ClearListeningHistory } from '@/components/library/ClearListeningHistory';
 
 export async function generateMetadata({
   params,
@@ -86,6 +87,12 @@ export default async function LibraryPage({
         <a href="#recent" className="chip">
           {t('library.history')}
         </a>
+        <Link href={`/${locale}/library/recap`} className="chip">
+          {locale === 'ar' ? 'ملخصي الشهري' : 'Monthly recap'}
+        </Link>
+        <Link href={`/${locale}/library/rewind`} className="chip">
+          {locale === 'ar' ? 'حصاد السنة · Music DNA' : 'Rewind · Music DNA'}
+        </Link>
       </nav>
 
       <section id="liked" className="scroll-mt-24">
@@ -174,6 +181,11 @@ export default async function LibraryPage({
 
       <section id="recent" className="scroll-mt-24">
         <SectionHeader title={t('library.history')} />
+        {history.length > 0 ? (
+          <div className="mb-4">
+            <ClearListeningHistory locale={locale} />
+          </div>
+        ) : null}
         {history.length === 0 ? (
           <EmptyState title={t('library.emptyHistory')} />
         ) : (

@@ -16,8 +16,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - name: Verify media worker credentials and Cloudflare signing safety
+        run: node --test scripts/media-worker-safety.test.mjs
       - run: npm test
+      - name: Verify free audio feature extraction and tempo abstention
+        run: node --test scripts/music-features.test.mjs scripts/audio-fingerprint.test.mjs scripts/music-classifier.test.mjs scripts/heldout-evaluation.test.mjs scripts/model-release-cli.test.mjs
       - run: npm run test:release-env
+      - name: Detect unresolved production persistence risks (advisory)
+        run: |
+          node --test scripts/audit-persistence.test.mjs
+          node scripts/audit-persistence.mjs
       - run: npm run build
         env:
           DEMO_MODE: 'true'
@@ -25,10 +33,27 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://example.com
       - name: Install FFmpeg for audio integration checks
         run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Check fingerprint similarity after actual MP3 re-encoding
+        run: node --test scripts/audio-fingerprint-ffmpeg.test.mjs
+      - name: Verify local consent-based audio dataset preparation
+        run: node --test scripts/prepare-dataset-ffmpeg.test.mjs
       - name: Generate a four-second synthesized MP3 for real Range checks
         run: |
           mkdir -p apps/web/.data/seed-audio
           ffmpeg -y -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=4' -c:a libmp3lame -b:a 320k -ar 44100 apps/web/.data/seed-audio/track-1.mp3
+      - name: Smoke-test free audio analyzer on synthetic MP3
+        run: |
+          node scripts/analyze-audio.mjs apps/web/.data/seed-audio/track-1.mp3 > /tmp/oddio-analysis.json
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const result = JSON.parse(fs.readFileSync("/tmp/oddio-analysis.json", "utf8"));
+            if (result.schemaVersion !== 1 || !/^[a-f0-9]{64}$/.test(result.fileSha256))
+              throw new Error("Analyzer did not report valid SHA-256");
+            if (!(result.durationSeconds >= 3 && result.durationSeconds <= 5))
+              throw new Error("Unexpected decoded signal duration");
+            if (result.tempoBpm !== null)
+              throw new Error("Very short audio must not invent a BPM");
+          '
       - name: HTTP smoke test — bilingual routes, SEO and audio bytes
         env:
           DEMO_MODE: 'true'

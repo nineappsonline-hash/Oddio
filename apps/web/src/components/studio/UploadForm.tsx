@@ -2,10 +2,16 @@
 
 import { useT } from '@/i18n/use-translator';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Artist, Genre, Locale, Mood } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
+import { uploadAudioWithProgress } from '@/lib/upload-audio-progress';
+import {
+  MULTIPART_THRESHOLD,
+  clearCompletedMultipartDraft,
+  uploadAudioMultipart,
+} from '@/lib/upload-audio-multipart';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -58,6 +64,8 @@ export function UploadForm({
   const [artworkFile, setArtworkFile] = useState<File | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [pending, setPending] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState<number | null>(null);
+  const uploadRequest = useRef<XMLHttpRequest | null>(null);
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [voiceConfirmed, setVoiceConfirmed] = useState(false);
 
@@ -107,13 +115,22 @@ export function UploadForm({
         )
           setGenreId(draft.genreId);
         if (Array.isArray(draft.selectedGenres)) {
-          const restored = draft.selectedGenres.filter((id): id is string => typeof id === 'string' && genres.some((genre) => genre.id === id)).slice(0, 5);
+          const restored = draft.selectedGenres
+            .filter(
+              (id): id is string =>
+                typeof id === 'string' && genres.some((genre) => genre.id === id),
+            )
+            .slice(0, 5);
           const primary = restored[0];
           if (primary) {
             setSelectedGenres(restored);
             setGenreId(primary);
           }
-        } else if (typeof draft.genreId === 'string' && genres.some((genre) => genre.id === draft.genreId)) setSelectedGenres([draft.genreId]);
+        } else if (
+          typeof draft.genreId === 'string' &&
+          genres.some((genre) => genre.id === draft.genreId)
+        )
+          setSelectedGenres([draft.genreId]);
         if (Array.isArray(draft.selectedMoods))
           setSelectedMoods(
             draft.selectedMoods
@@ -195,7 +212,9 @@ export function UploadForm({
 
   function toggleGenre(id: string) {
     setSelectedGenres((current) => {
-      const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id].slice(0, 5);
+      const next = current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id].slice(0, 5);
       setGenreId(next[0] ?? '');
       return next;
     });
@@ -243,12 +262,17 @@ export function UploadForm({
       toast('Only MP3 audio files are allowed.', 'error');
       return;
     }
-    if (audioFile.size > 25 * 1024 * 1024) {
-      toast('MP3 file must be 25 MB or smaller.', 'error');
+    if (audioFile.size > 100 * 1024 * 1024) {
+      toast('MP3 file must be 100 MiB or smaller.', 'error');
       return;
     }
     if (!selectedGenres.length) {
-      toast(locale === 'ar' ? 'اختار نوع موسيقي واحد على الأقل.' : 'Select at least one genre.', 'error');
+      toast(
+        locale === 'ar'
+          ? 'اختار نوع موسيقي واحد على الأقل.'
+          : 'Select at least one genre.',
+        'error',
+      );
       setStep(2);
       return;
     }
@@ -274,52 +298,84 @@ export function UploadForm({
     form.set('audio', audioFile);
     if (artworkFile) form.set('artwork', artworkFile);
     setPending(true);
+    setUploadPercent(null);
     try {
       let artworkFailed = false;
       if (production) {
-        const grant = await apiRequest<{
-          uploadUrl: string;
-          objectKey: string;
-          headers: Record<string, string>;
-        }>('/api/studio/uploads/authorize', {
-          method: 'POST',
-          body: JSON.stringify({
-            filename: audioFile.name,
-            contentType: audioFile.type || 'audio/mpeg',
-            bytes: audioFile.size,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-        });
-        let uploaded: Response;
-        try {
-          uploaded = await fetch(grant.uploadUrl, {
-            method: 'PUT',
-            headers: grant.headers,
-            body: audioFile,
+        if (audioFile.size >= MULTIPART_THRESHOLD) {
+          setUploadPercent(0);
+          const completed = await uploadAudioMultipart(audioFile, {
+            progress: setUploadPercent,
+            onRequest: (request) => {
+              uploadRequest.current = request;
+            },
           });
-        } catch {
-          throw new Error(locale === 'ar' ? 'تعذّر الاتصال بمخزن الملفات. تأكد من إعدادات CORS في Cloudflare R2 للسماح لموقع oddio.online برفع الملفات، ثم حاول مرة أخرى.' : 'Could not reach audio storage. Check Cloudflare R2 CORS settings to allow uploads from oddio.online, then try again.');
-        }
-        if (!uploaded.ok) throw new Error(locale === 'ar' ? `فشل رفع الصوت إلى التخزين (HTTP ${uploaded.status}). حاول مرة أخرى.` : `Audio storage rejected the upload (HTTP ${uploaded.status}). Please try again.`);
-        form.delete('audio');
-        form.delete('artwork');
-        form.set('objectKey', grant.objectKey);
-        form.set('bytes', String(audioFile.size));
-        form.set('contentType', audioFile.type || 'audio/mpeg');
-        const finalized = await apiRequest<{ id: string }>(
-          '/api/studio/uploads/finalize',
-          { method: 'POST', body: form },
-        );
-        if (artworkFile) {
-          const artworkForm = new FormData();
-          artworkForm.set('artwork', artworkFile);
-          try {
-            await apiRequest(`/api/studio/tracks/${finalized.id}/artwork`, {
-              method: 'POST',
-              body: artworkForm,
-            });
-          } catch {
-            artworkFailed = true;
+          form.delete('audio');
+          form.delete('artwork');
+          form.set('objectKey', completed.objectKey);
+          form.set('bytes', String(audioFile.size));
+          form.set('contentType', 'audio/mpeg');
+          const finalized = await apiRequest<{ id: string }>(
+            '/api/studio/uploads/finalize',
+            { method: 'POST', body: form },
+          );
+          clearCompletedMultipartDraft(completed.objectKey);
+          if (artworkFile) {
+            const artworkForm = new FormData();
+            artworkForm.set('artwork', artworkFile);
+            try {
+              await apiRequest(`/api/studio/tracks/${finalized.id}/artwork`, {
+                method: 'POST',
+                body: artworkForm,
+              });
+            } catch {
+              artworkFailed = true;
+            }
+          }
+        } else {
+          const grant = await apiRequest<{
+            uploadUrl: string;
+            objectKey: string;
+            headers: Record<string, string>;
+          }>('/api/studio/uploads/authorize', {
+            method: 'POST',
+            body: JSON.stringify({
+              filename: audioFile.name,
+              contentType: audioFile.type || 'audio/mpeg',
+              bytes: audioFile.size,
+            }),
+            headers: { 'Content-Type': 'application/json' },
+          });
+          setUploadPercent(0);
+          await uploadAudioWithProgress(
+            grant.uploadUrl,
+            audioFile,
+            grant.headers,
+            setUploadPercent,
+            (request) => {
+              uploadRequest.current = request;
+            },
+          );
+          form.delete('audio');
+          form.delete('artwork');
+          form.set('objectKey', grant.objectKey);
+          form.set('bytes', String(audioFile.size));
+          form.set('contentType', audioFile.type || 'audio/mpeg');
+          const finalized = await apiRequest<{ id: string }>(
+            '/api/studio/uploads/finalize',
+            { method: 'POST', body: form },
+          );
+          if (artworkFile) {
+            const artworkForm = new FormData();
+            artworkForm.set('artwork', artworkFile);
+            try {
+              await apiRequest(`/api/studio/tracks/${finalized.id}/artwork`, {
+                method: 'POST',
+                body: artworkForm,
+              });
+            } catch {
+              artworkFailed = true;
+            }
           }
         }
       } else {
@@ -344,6 +400,8 @@ export function UploadForm({
       const message = caught instanceof Error ? caught.message : t('studio.uploadFailed');
       toast(message, 'error');
     } finally {
+      uploadRequest.current = null;
+      setUploadPercent(null);
       setPending(false);
     }
   }
@@ -443,15 +501,53 @@ export function UploadForm({
             />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t('studio.genre')} hint={locale === 'ar' ? 'اختار لحد 5 أنواع موسيقية' : 'Select up to 5 genres'}>
-              <input type="search" value={genreSearch} onChange={(event) => setGenreSearch(event.target.value)} className="input mb-2 w-full" placeholder={locale === 'ar' ? 'ابحث عن نوع موسيقي…' : 'Search genres…'} aria-label={locale === 'ar' ? 'بحث في الأنواع الموسيقية' : 'Search genres'} />
+            <Field
+              label={t('studio.genre')}
+              hint={
+                locale === 'ar' ? 'اختار لحد 5 أنواع موسيقية' : 'Select up to 5 genres'
+              }
+            >
+              <input
+                type="search"
+                value={genreSearch}
+                onChange={(event) => setGenreSearch(event.target.value)}
+                className="input mb-2 w-full"
+                placeholder={locale === 'ar' ? 'ابحث عن نوع موسيقي…' : 'Search genres…'}
+                aria-label={
+                  locale === 'ar' ? 'بحث في الأنواع الموسيقية' : 'Search genres'
+                }
+              />
               <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                {genres.filter((genre) => genre.active && `${genre.labelAr} ${genre.labelEn}`.toLocaleLowerCase().includes(genreSearch.trim().toLocaleLowerCase())).map((genre) => {
-                  const active = selectedGenres.includes(genre.id);
-                  return <button key={genre.id} type="button" aria-pressed={active} onClick={() => toggleGenre(genre.id)} className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${active ? 'border-violet-400 bg-violet-500/25 text-white' : 'border-white/15 bg-white/5 text-muted hover:border-violet-400/50'}`}>{active ? '✓ ' : '+ '}{locale === 'ar' ? genre.labelAr : genre.labelEn}</button>;
-                })}
+                {genres
+                  .filter(
+                    (genre) =>
+                      genre.active &&
+                      `${genre.labelAr} ${genre.labelEn}`
+                        .toLocaleLowerCase()
+                        .includes(genreSearch.trim().toLocaleLowerCase()),
+                  )
+                  .map((genre) => {
+                    const active = selectedGenres.includes(genre.id);
+                    return (
+                      <button
+                        key={genre.id}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => toggleGenre(genre.id)}
+                        className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${active ? 'border-violet-400 bg-violet-500/25 text-white' : 'border-white/15 bg-white/5 text-muted hover:border-violet-400/50'}`}
+                      >
+                        {active ? '✓ ' : '+ '}
+                        {locale === 'ar' ? genre.labelAr : genre.labelEn}
+                      </button>
+                    );
+                  })}
               </div>
-              <p className="mt-2 text-xs text-violet-300">{selectedGenres.length}/5 {locale === 'ar' ? 'أنواع مختارة · أول نوع هو الأساسي' : 'selected · first is primary'}</p>
+              <p className="mt-2 text-xs text-violet-300">
+                {selectedGenres.length}/5{' '}
+                {locale === 'ar'
+                  ? 'أنواع مختارة · أول نوع هو الأساسي'
+                  : 'selected · first is primary'}
+              </p>
             </Field>
             <Field label={t('studio.language')} htmlFor="upload-language">
               <SearchableSelect
@@ -468,29 +564,48 @@ export function UploadForm({
               />
             </Field>
           </div>
-          <Field label={t('studio.moods')} hint={locale === 'ar' ? 'اختار لحد 5 حالات مزاجية' : 'Select up to 5 moods'}>
-            <input type="search" value={moodSearch} onChange={(event) => setMoodSearch(event.target.value)} className="input mb-2 w-full" placeholder={locale === 'ar' ? 'ابحث عن حالة مزاجية…' : 'Search moods…'} aria-label={locale === 'ar' ? 'بحث في الحالات المزاجية' : 'Search moods'} />
+          <Field
+            label={t('studio.moods')}
+            hint={locale === 'ar' ? 'اختار لحد 5 حالات مزاجية' : 'Select up to 5 moods'}
+          >
+            <input
+              type="search"
+              value={moodSearch}
+              onChange={(event) => setMoodSearch(event.target.value)}
+              className="input mb-2 w-full"
+              placeholder={locale === 'ar' ? 'ابحث عن حالة مزاجية…' : 'Search moods…'}
+              aria-label={locale === 'ar' ? 'بحث في الحالات المزاجية' : 'Search moods'}
+            />
             <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto">
-              {moods.filter((mood) => `${mood.labelAr} ${mood.labelEn}`.toLocaleLowerCase().includes(moodSearch.trim().toLocaleLowerCase())).map((mood) => {
-                const active = selectedMoods.includes(mood.id);
-                return (
-                  <button
-                    key={mood.id}
-                    type="button"
-                    onClick={() => toggleMood(mood.id)}
-                    aria-pressed={active}
-                    className={`rounded-pill border px-3 py-1.5 text-xs transition ${
-                      active
-                        ? 'border-primary bg-primary/20 text-ink'
-                        : 'border-white/10 bg-white/5 text-muted hover:text-ink'
-                    }`}
-                  >
-                    {locale === 'ar' ? mood.labelAr : mood.labelEn}
-                  </button>
-                );
-              })}
+              {moods
+                .filter((mood) =>
+                  `${mood.labelAr} ${mood.labelEn}`
+                    .toLocaleLowerCase()
+                    .includes(moodSearch.trim().toLocaleLowerCase()),
+                )
+                .map((mood) => {
+                  const active = selectedMoods.includes(mood.id);
+                  return (
+                    <button
+                      key={mood.id}
+                      type="button"
+                      onClick={() => toggleMood(mood.id)}
+                      aria-pressed={active}
+                      className={`rounded-pill border px-3 py-1.5 text-xs transition ${
+                        active
+                          ? 'border-primary bg-primary/20 text-ink'
+                          : 'border-white/10 bg-white/5 text-muted hover:text-ink'
+                      }`}
+                    >
+                      {locale === 'ar' ? mood.labelAr : mood.labelEn}
+                    </button>
+                  );
+                })}
             </div>
-            <p className="mt-2 text-xs text-violet-300">{selectedMoods.length}/5 {locale === 'ar' ? 'حالات مختارة' : 'moods selected'}</p>
+            <p className="mt-2 text-xs text-violet-300">
+              {selectedMoods.length}/5{' '}
+              {locale === 'ar' ? 'حالات مختارة' : 'moods selected'}
+            </p>
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('studio.productionType')} htmlFor="upload-production">
@@ -696,6 +811,36 @@ export function UploadForm({
                 : 'This declaration is recorded for audit; it does not prove licensing. Every submission remains subject to moderation.'}
             </p>
           </fieldset>
+          {uploadPercent !== null ? (
+            <div
+              className="space-y-2 rounded-xl border border-primary/25 bg-primary/5 p-3"
+              role="status"
+              aria-live="polite"
+            >
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span>
+                  {locale === 'ar'
+                    ? 'رفع الصوت إلى Cloudflare R2'
+                    : 'Uploading audio to Cloudflare R2'}
+                </span>
+                <span className="tabular-nums">{uploadPercent}%</span>
+              </div>
+              <progress
+                className="h-2 w-full accent-primary"
+                max={100}
+                value={uploadPercent}
+              />
+              {uploadRequest.current && uploadPercent < 100 ? (
+                <button
+                  type="button"
+                  onClick={() => uploadRequest.current?.abort()}
+                  className="min-h-10 rounded-lg border border-rose-400/40 px-3 text-xs text-rose-200"
+                >
+                  {locale === 'ar' ? 'إلغاء الرفع' : 'Cancel upload'}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
           <Button
             type="submit"
             disabled={!rightsConfirmed || !voiceConfirmed}
@@ -709,8 +854,8 @@ export function UploadForm({
       </fieldset>
       <p className="text-xs text-muted">
         {locale === 'ar'
-          ? 'يتم حفظ البيانات محليًا. ملفات الصوت والصور يجب اختيارها مجددًا عند الرجوع.'
-          : 'Details save on this device. Audio and artwork files must be selected again when returning.'}
+          ? 'التفاصيل بتتحفظ على الجهاز. لو رفع ملف MP3 من 8 إلى 100 ميجابايت اتقطع، اختار نفس الملف تاني عشان يكمل الأجزاء الناقصة. الغلاف لازم تختاره من جديد.'
+          : 'Details save on this device. For interrupted uploads of 8–25 MB, reselect the exact same MP3 to resume the remaining R2 parts. Artwork must be selected again.'}
       </p>
       <div className="sticky bottom-3 z-20 flex gap-3 rounded-2xl border border-violet-400/20 bg-[#191622]/95 p-3 shadow-xl backdrop-blur">
         {step > 1 && (

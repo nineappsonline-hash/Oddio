@@ -35,7 +35,10 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
   const currentUser = session.user ?? user;
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-background/70 px-4 py-3 backdrop-blur-2xl lg:hidden">
+    <header
+      dir="ltr"
+      className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-background/70 px-4 py-3 backdrop-blur-2xl lg:hidden"
+    >
       <div className="flex min-w-0 items-center gap-2.5">
         <button
           type="button"
@@ -191,7 +194,7 @@ export function MobileNav() {
             role="dialog"
             aria-modal="true"
             aria-label={locale === 'ar' ? 'القائمة' : 'Menu'}
-            className="absolute inset-y-0 start-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-e border-[#604b83]/50 bg-[#101015] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
+            className="absolute inset-y-0 left-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-r border-[#604b83]/50 bg-[#101015] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
           >
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -253,8 +256,27 @@ export function MobileNav() {
                   label: t('nav.search'),
                   icon: 'search',
                 },
-                { href: `/${locale}/genres`, label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres', icon: 'discover' },
-                { href: `/${locale}/discover#artists`, label: locale === 'ar' ? 'الفنانون' : 'Artists', icon: Mic2 },
+                {
+                  href: `/${locale}/genres`,
+                  label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres',
+                  icon: 'discover',
+                },
+                {
+                  href: `/${locale}/install`,
+                  label: locale === 'ar' ? 'ثبّت Oddio' : 'Install Oddio',
+                  icon: 'soundspace',
+                },
+                {
+                  href: `/${locale}/rooms`,
+                  label: locale === 'ar' ? 'غرف الاستماع' : 'Listening rooms',
+                  icon: 'soundspace',
+                },
+
+                {
+                  href: `/${locale}/discover#artists`,
+                  label: locale === 'ar' ? 'الفنانون' : 'Artists',
+                  icon: Mic2,
+                },
                 ...(user
                   ? [
                       {
