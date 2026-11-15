@@ -158,6 +158,15 @@ export interface Track {
   artwork: Artwork;
   audioUrl: string;
   audio: AudioAsset | null;
+  /** Advisory worker measurement; artist genre and mood remain authoritative. */
+  audioFeatures?: {
+    schemaVersion: number;
+    tempoBpm: number | null;
+    tempoConfidence: number;
+    rmsDbfs: number | null;
+    peakDbfs: number | null;
+    analyzedSeconds: number;
+  } | null;
   qualityLabel: string;
   qualifiedPlays: number;
   likeCount: number;
