@@ -14,6 +14,7 @@ import { PlayButton } from '@/components/player/PlayButton';
 import { TrackRow } from '@/components/music/TrackRow';
 import { PlaylistFollowButton } from '@/components/playlists/PlaylistFollowButton';
 import { ShareButton } from '@/components/community/ShareButton';
+import { PlaylistCollaboration } from '@/components/playlists/PlaylistCollaboration';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { formatNumber } from '@/lib/utils';
 
@@ -109,6 +110,13 @@ export default async function PlaylistPage({
               </Link>
             ) : null}
           </div>
+          {viewer.userId && playlist.visibility === 'public' ? (
+            <PlaylistCollaboration
+              playlistId={playlist.id}
+              locale={locale}
+              isOwner={canEdit}
+            />
+          ) : null}
         </div>
       </section>
 
