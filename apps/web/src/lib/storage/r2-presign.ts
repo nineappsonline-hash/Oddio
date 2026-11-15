@@ -214,7 +214,7 @@ export function presignR2OriginalGet(objectKey: string) {
     'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
     'X-Amz-Credential': `${env.r2AccessKeyId}/${scope}`,
     'X-Amz-Date': timestamp,
-    'X-Amz-Expires': '120',
+    'X-Amz-Expires': '1800',
     'X-Amz-SignedHeaders': 'host',
   };
   const query = Object.entries(queryParams)
