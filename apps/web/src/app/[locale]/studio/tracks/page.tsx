@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ButtonLink } from '@/components/ui/Button';
 import { StudioTrackActions } from '@/components/studio/StudioTrackActions';
+import { ReviewMusicTags } from '@/components/studio/ReviewMusicTags';
 import { formatDate, formatNumber } from '@/lib/utils';
 
 export async function generateMetadata({
@@ -53,7 +54,7 @@ export default async function StudioTracksPage({
     !demoMode && data.tracks.length
       ? await serviceClient()
           .from('tracks')
-          .select('id,synced_lyrics_srt')
+          .select('id,synced_lyrics_srt,audio_features')
           .in(
             'id',
             data.tracks.map((track) => track.id),
@@ -252,6 +253,39 @@ export default async function StudioTracksPage({
                   </div>
                 </details>
               ) : null}
+              {(() => {
+                const details = approvedLyrics?.find((item) => item.id === track.id)
+                  ?.audio_features as {
+                    tagSuggestion?: {
+                      source?: string;
+                      genreSlug?: string;
+                      moodSlugs?: string[];
+                      confidence?: number;
+                      evidenceCount?: number;
+                    };
+                    artistApprovedTags?: unknown;
+                  } | null | undefined;
+                const suggestion = details?.tagSuggestion;
+                if (demoMode || details?.artistApprovedTags
+                  || track.publishStatus !== 'unpublished'
+                  || !['draft', 'ready_for_review', 'changes_requested'].includes(track.reviewStatus)
+                  || suggestion?.source !== 'artist-reviewed-local-model-v1'
+                  || typeof suggestion.genreSlug !== 'string'
+                  || !Array.isArray(suggestion.moodSlugs)
+                  || typeof suggestion.confidence !== 'number'
+                  || typeof suggestion.evidenceCount !== 'number') return null;
+                return <ReviewMusicTags
+                  trackId={track.id}
+                  locale={locale}
+                  proposal={{
+                    source: suggestion.source,
+                    genreSlug: suggestion.genreSlug,
+                    moodSlugs: suggestion.moodSlugs,
+                    confidence: suggestion.confidence,
+                    evidenceCount: suggestion.evidenceCount,
+                  }}
+                />;
+              })()}
               <StudioTrackActions
                 trackId={track.id}
                 canSubmit={['draft', 'changes_requested', 'ready_for_review'].includes(
