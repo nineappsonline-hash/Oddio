@@ -49,8 +49,9 @@ describe('Cloudflare R2 streaming architecture guard', () => {
     expect(body).toContain(String.raw`replace(/[:-]|\.\d{3}/g, '')`);
     expect(body).toContain("host',");
     expect(body).toContain(String.raw`'UNSIGNED-PAYLOAD'`);
-    expect(body).toContain("].join('\\n')");
-    expect(body).not.toContain(String.raw`].join('\\n')`);
+    const slash = String.fromCharCode(92);
+    expect(body).toContain("].join('" + slash + "n')");
+    expect(body).not.toContain("].join('" + slash + slash + "n')");
     expect(body).not.toContain(String.raw`replace(/[:-]|\\.\\d{3}/g, '')`);
     expect(body).not.toContain(String.raw`/^[a-zA-Z0-9/_-]+\\.[a-zA-Z0-9]+$/`);
   });
