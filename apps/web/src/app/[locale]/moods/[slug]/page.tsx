@@ -2,6 +2,9 @@ import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getMoodPage } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
+import { FlowButton } from '@/components/player/FlowButton';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -18,7 +21,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, slug } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getMoodPage(db, { userId: null, roles: [] }, slug);
   const label = page
     ? safeLocale === 'ar'
@@ -43,7 +46,7 @@ export default async function MoodPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getMoodPage(db, viewer, slug);
   if (!page) notFound();
   const label = locale === 'ar' ? page.mood.labelAr : page.mood.labelEn;
@@ -55,6 +58,9 @@ export default async function MoodPage({
         title={label}
         subtitle={t('discover.results', { count: String(page.tracks.length) })}
       />
+      {page.tracks.length > 0 ? (
+        <div className="mb-5"><FlowButton kind="mood" seedId={page.mood.id} locale={locale} viewerId={viewer.userId} /></div>
+      ) : null}
       {page.tracks.length === 0 ? (
         <EmptyState title={t('discover.empty')} />
       ) : (
