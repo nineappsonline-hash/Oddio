@@ -42,6 +42,7 @@ export function PlayerProvider({
   const crossfadingRef = useRef(false);
   const crossfadeTargetRef = useRef<string | null>(null);
   const incomingTimeRef = useRef(0);
+  const handoffTargetRef = useRef<string | null>(null);
 
   const sessionRef = useRef<string | null>(null);
   const audibleRef = useRef({
@@ -341,6 +342,7 @@ export function PlayerProvider({
       warmedRef.current?.trackId === trackId ? warmedRef.current.result : null;
     if (warmed) {
       warmedRef.current = null;
+      handoffTargetRef.current = trackId;
       sessionRef.current = warmed.sessionId;
       streamRef.current = warmed.streamUrl;
       setStream(warmed.streamUrl);
@@ -555,6 +557,19 @@ export function PlayerProvider({
     };
     const onWaiting = () => usePlayer.getState().setBuffering(true);
     const onPlaying = () => {
+      if (handoffTargetRef.current === usePlayer.getState().track?.id) {
+        handoffTargetRef.current = null;
+        const standby = standbyRef.current;
+        if (standby) {
+          standby.pause();
+          standby.removeAttribute('src');
+          standby.load();
+        }
+        crossfadingRef.current = false;
+        crossfadeTargetRef.current = null;
+        incomingTimeRef.current = 0;
+        audio.volume = usePlayer.getState().muted ? 0 : usePlayer.getState().volume;
+      }
       if (
         crossfadingRef.current &&
         crossfadeTargetRef.current === usePlayer.getState().track?.id
