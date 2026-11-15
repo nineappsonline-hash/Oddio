@@ -52,7 +52,7 @@ export function fingerprintPcm16(buffer, sampleRate = 11025) {
     const loud = energy > frameSize * 0.000005;
     patterns.push(
       loud && total > 0 && best.length === 2
-        ? `${best[0].index.toString(16)}${best[1].index.toString(16)}`
+        ? best[0].index.toString(16)
         : '--',
     );
     lastEnergy = energy;
@@ -72,6 +72,7 @@ export function fingerprintPcm16(buffer, sampleRate = 11025) {
     version: 1,
     windowSeconds: HOP_SECONDS,
     shingles: Array.from(shingles).sort().slice(0, 2000),
+    frames: patterns.slice(0, 360),
     analyzedSeconds: Math.round(sampleCount / sampleRate),
   };
 }
@@ -94,10 +95,36 @@ export function compareFingerprints(a, b) {
   let common = 0;
   for (const token of first) if (second.has(token)) common++;
   const denominator = first.size + second.size - common;
-  const similarity = denominator ? common / denominator : 0;
+  const shingleSimilarity = denominator ? common / denominator : 0;
+  // Shingles are sensitive to isolated quantization changes after a gain or
+  // codec conversion. Compare individual dominant-frequency frames as a
+  // complementary screening signal, allowing a short encoder delay.
+  let alignedSimilarity = 0;
+  let alignedComparisons = 0;
+  if (Array.isArray(a.frames) && Array.isArray(b.frames)
+    && a.frames.length >= 64 && b.frames.length >= 64) {
+    for (let shift = -8; shift <= 8; shift++) {
+      let compared = 0;
+      let matched = 0;
+      for (let i = 0; i < a.frames.length; i++) {
+        const x = a.frames[i];
+        const y = b.frames[i + shift];
+        if (!x || !y || x === '--' || y === '--') continue;
+        compared++;
+        if (x === y) matched++;
+      }
+      if (compared >= 60 && matched / compared > alignedSimilarity) {
+        alignedSimilarity = matched / compared;
+        alignedComparisons = compared;
+      }
+    }
+  }
+  const similarity = Math.max(shingleSimilarity, alignedSimilarity);
   return {
     similarity: Math.round(similarity * 1000) / 1000,
-    // Screening only. A person must review all possible overlaps.
-    candidate: common >= 8 && similarity >= 0.8,
+    // Screening only. Never a moderation verdict or automatic takedown.
+    candidate:
+      (common >= 8 && shingleSimilarity >= 0.8) ||
+      (alignedComparisons >= 60 && alignedSimilarity >= 0.82),
   };
 }
