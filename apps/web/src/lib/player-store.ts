@@ -81,7 +81,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   shuffle: false,
   autoplay: true,
   crossfadeSeconds: 0,
-  setCrossfadeSeconds: (seconds) => set({ crossfadeSeconds: [0, 3, 5, 8].includes(seconds) ? seconds : 0 }),
+  setCrossfadeSeconds: (seconds) =>
+    set({ crossfadeSeconds: [0, 3, 5, 8].includes(seconds) ? seconds : 0 }),
   station: null,
   expanded: false,
   error: null,

@@ -35,7 +35,9 @@ export function PlayerProvider({
   const storageKey = `${PLAYER_SESSION_KEY}:${viewerId ?? 'guest'}`;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const standbyRef = useRef<HTMLAudioElement | null>(null);
-  const warmedRef = useRef<{trackId:string; result:PlaybackAuthorization} | null>(null);
+  const warmedRef = useRef<{ trackId: string; result: PlaybackAuthorization } | null>(
+    null,
+  );
   const warmingRef = useRef<string | null>(null);
   const crossfadingRef = useRef(false);
   const crossfadeTargetRef = useRef<string | null>(null);
@@ -74,11 +76,19 @@ export function PlayerProvider({
     try {
       const stored = Number(window.localStorage.getItem('oddio-crossfade-seconds'));
       usePlayer.getState().setCrossfadeSeconds(stored);
-    } catch { /* Private browser mode continues with crossfade disabled. */ }
+    } catch {
+      /* Private browser mode continues with crossfade disabled. */
+    }
     const unsubscribe = usePlayer.subscribe((state, prior) => {
       if (state.crossfadeSeconds === prior.crossfadeSeconds) return;
-      try { window.localStorage.setItem('oddio-crossfade-seconds', String(state.crossfadeSeconds)); }
-      catch { /* Optional preference persistence. */ }
+      try {
+        window.localStorage.setItem(
+          'oddio-crossfade-seconds',
+          String(state.crossfadeSeconds),
+        );
+      } catch {
+        /* Optional preference persistence. */
+      }
     });
     return unsubscribe;
   }, []);
@@ -291,11 +301,11 @@ export function PlayerProvider({
 
   useEffect(() => {
     if (!trackId) return;
-    if(crossfadingRef.current && crossfadeTargetRef.current!==trackId){
+    if (crossfadingRef.current && crossfadeTargetRef.current !== trackId) {
       standbyRef.current?.pause();
-      crossfadingRef.current=false;
-      crossfadeTargetRef.current=null;
-      incomingTimeRef.current=0;
+      crossfadingRef.current = false;
+      crossfadeTargetRef.current = null;
+      incomingTimeRef.current = 0;
     }
     let cancelled = false;
     const state = usePlayer.getState();
@@ -327,9 +337,8 @@ export function PlayerProvider({
     streamRef.current = null;
     setStream(null);
 
-    const warmed = warmedRef.current?.trackId === trackId
-      ? warmedRef.current.result
-      : null;
+    const warmed =
+      warmedRef.current?.trackId === trackId ? warmedRef.current.result : null;
     if (warmed) {
       warmedRef.current = null;
       sessionRef.current = warmed.sessionId;
@@ -342,23 +351,24 @@ export function PlayerProvider({
         pendingRestoreTrackId.current = trackId;
         pendingRestoreTime.current = incomingTimeRef.current;
       }
-    } else apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
-      method: 'POST',
-    })
-      .then((result) => {
-        if (cancelled) return;
-        sessionRef.current = result.sessionId;
-        streamRef.current = result.streamUrl;
-        setStream(result.streamUrl);
-        usePlayer.getState().setDuration(result.durationMs / 1000);
+    } else
+      apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
+        method: 'POST',
       })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        const message =
-          error instanceof Error ? error.message : 'Playback is not available.';
-        usePlayer.getState().setError(message);
-        usePlayer.getState().setBuffering(false);
-      });
+        .then((result) => {
+          if (cancelled) return;
+          sessionRef.current = result.sessionId;
+          streamRef.current = result.streamUrl;
+          setStream(result.streamUrl);
+          usePlayer.getState().setDuration(result.durationMs / 1000);
+        })
+        .catch((error: unknown) => {
+          if (cancelled) return;
+          const message =
+            error instanceof Error ? error.message : 'Playback is not available.';
+          usePlayer.getState().setError(message);
+          usePlayer.getState().setBuffering(false);
+        });
 
     return () => {
       cancelled = true;
@@ -388,7 +398,7 @@ export function PlayerProvider({
       void audio.play().catch(() => {
         usePlayer.getState().setPlaying(false);
       });
-      if(crossfadingRef.current)void standbyRef.current?.play().catch(()=>undefined);
+      if (crossfadingRef.current) void standbyRef.current?.play().catch(() => undefined);
     } else {
       audio.pause();
       standbyRef.current?.pause();
@@ -400,10 +410,14 @@ export function PlayerProvider({
     if (!audio) return;
     const state = usePlayer.getState();
     const gains = crossfadingRef.current
-      ? crossfadeGains(Math.max(0, audio.duration - audio.currentTime), state.crossfadeSeconds)
+      ? crossfadeGains(
+          Math.max(0, audio.duration - audio.currentTime),
+          state.crossfadeSeconds,
+        )
       : { outgoing: 1, incoming: 0 };
     audio.volume = (muted ? 0 : volume) * gains.outgoing;
-    if (standbyRef.current) standbyRef.current.volume = (muted ? 0 : volume) * gains.incoming;
+    if (standbyRef.current)
+      standbyRef.current.volume = (muted ? 0 : volume) * gains.incoming;
   }, [volume, muted]);
 
   useEffect(() => {
@@ -416,11 +430,11 @@ export function PlayerProvider({
     audibleRef.current.lastTime = audio.currentTime;
     usePlayer.getState().setCurrentTime(audio.currentTime);
     // A deliberate seek invalidates a transition that was already underway.
-    if(crossfadingRef.current){
+    if (crossfadingRef.current) {
       standbyRef.current?.pause();
-      crossfadingRef.current=false;
-      crossfadeTargetRef.current=null;
-      audio.volume=usePlayer.getState().muted?0:usePlayer.getState().volume;
+      crossfadingRef.current = false;
+      crossfadeTargetRef.current = null;
+      audio.volume = usePlayer.getState().muted ? 0 : usePlayer.getState().volume;
     }
   }, [seekRequest]);
 
@@ -434,43 +448,69 @@ export function PlayerProvider({
       const standby = standbyRef.current;
       const remaining = audio.duration - time;
       const queued = state.queue[0];
-      if (standby && canPrepareNextTrack({
-        remainingSeconds:remaining, playing:state.isPlaying,
-        repeatOne:state.repeat==='one', queued:Boolean(queued),
-      }) && queued) {
+      if (
+        standby &&
+        canPrepareNextTrack({
+          remainingSeconds: remaining,
+          playing: state.isPlaying,
+          repeatOne: state.repeat === 'one',
+          queued: Boolean(queued),
+        }) &&
+        queued
+      ) {
         const warmId = queued.id;
-        if(warmedRef.current?.trackId!==warmId && warmingRef.current!==warmId){
-          warmingRef.current=warmId;
-          void apiRequest<PlaybackAuthorization>(`/api/tracks/${warmId}/playback`,{
-            method:'POST',
-          }).then(result=>{
-            if(warmingRef.current!==warmId || usePlayer.getState().queue[0]?.id!==warmId)return;
-            warmedRef.current={trackId:warmId,result};
-            standby.src=result.streamUrl;
-            standby.preload='auto';
-            standby.load();
-          }).catch(()=>undefined).finally(()=>{
-            if(warmingRef.current===warmId)warmingRef.current=null;
-          });
+        if (warmedRef.current?.trackId !== warmId && warmingRef.current !== warmId) {
+          warmingRef.current = warmId;
+          void apiRequest<PlaybackAuthorization>(`/api/tracks/${warmId}/playback`, {
+            method: 'POST',
+          })
+            .then((result) => {
+              if (
+                warmingRef.current !== warmId ||
+                usePlayer.getState().queue[0]?.id !== warmId
+              )
+                return;
+              warmedRef.current = { trackId: warmId, result };
+              standby.src = result.streamUrl;
+              standby.preload = 'auto';
+              standby.load();
+            })
+            .catch(() => undefined)
+            .finally(() => {
+              if (warmingRef.current === warmId) warmingRef.current = null;
+            });
         }
       }
-      if (standby && state.crossfadeSeconds>0 && queued &&
-        warmedRef.current?.trackId===queued.id &&
-        Number.isFinite(remaining) && remaining<=state.crossfadeSeconds &&
-        remaining>0 && state.isPlaying && state.repeat!=='one') {
-        if (!crossfadingRef.current && standby.readyState>=HTMLMediaElement.HAVE_CURRENT_DATA) {
-          standby.currentTime=0;
-          standby.volume=0;
-          void standby.play().then(()=>{
-            crossfadingRef.current=true;
-            crossfadeTargetRef.current=queued.id;
-          }).catch(()=>undefined);
+      if (
+        standby &&
+        state.crossfadeSeconds > 0 &&
+        queued &&
+        warmedRef.current?.trackId === queued.id &&
+        Number.isFinite(remaining) &&
+        remaining <= state.crossfadeSeconds &&
+        remaining > 0 &&
+        state.isPlaying &&
+        state.repeat !== 'one'
+      ) {
+        if (
+          !crossfadingRef.current &&
+          standby.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+        ) {
+          standby.currentTime = 0;
+          standby.volume = 0;
+          void standby
+            .play()
+            .then(() => {
+              crossfadingRef.current = true;
+              crossfadeTargetRef.current = queued.id;
+            })
+            .catch(() => undefined);
         }
-        if (crossfadingRef.current && crossfadeTargetRef.current===queued.id) {
-          incomingTimeRef.current=standby.currentTime;
-          const gains=crossfadeGains(remaining,state.crossfadeSeconds);
-          audio.volume=(state.muted?0:state.volume)*gains.outgoing;
-          standby.volume=(state.muted?0:state.volume)*gains.incoming;
+        if (crossfadingRef.current && crossfadeTargetRef.current === queued.id) {
+          incomingTimeRef.current = standby.currentTime;
+          const gains = crossfadeGains(remaining, state.crossfadeSeconds);
+          audio.volume = (state.muted ? 0 : state.volume) * gains.outgoing;
+          standby.volume = (state.muted ? 0 : state.volume) * gains.incoming;
         }
       }
       const audible = audibleRef.current;
@@ -515,18 +555,20 @@ export function PlayerProvider({
     };
     const onWaiting = () => usePlayer.getState().setBuffering(true);
     const onPlaying = () => {
-      if(crossfadingRef.current &&
-         crossfadeTargetRef.current===usePlayer.getState().track?.id){
-        const standby=standbyRef.current;
-        if(standby){
+      if (
+        crossfadingRef.current &&
+        crossfadeTargetRef.current === usePlayer.getState().track?.id
+      ) {
+        const standby = standbyRef.current;
+        if (standby) {
           standby.pause();
           standby.removeAttribute('src');
           standby.load();
         }
-        crossfadingRef.current=false;
-        crossfadeTargetRef.current=null;
-        incomingTimeRef.current=0;
-        audio.volume=usePlayer.getState().muted?0:usePlayer.getState().volume;
+        crossfadingRef.current = false;
+        crossfadeTargetRef.current = null;
+        incomingTimeRef.current = 0;
+        audio.volume = usePlayer.getState().muted ? 0 : usePlayer.getState().volume;
       }
       usePlayer.getState().setBuffering(false);
       if (!startSentRef.current && sessionRef.current) {

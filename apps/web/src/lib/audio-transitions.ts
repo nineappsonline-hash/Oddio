@@ -3,7 +3,10 @@ export function crossfadeGains(remainingSeconds: number, durationSeconds: number
   if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
     return { outgoing: 1, incoming: 0 };
   }
-  const fraction = Math.max(0, Math.min(1, 1 - Math.max(0, remainingSeconds) / durationSeconds));
+  const fraction = Math.max(
+    0,
+    Math.min(1, 1 - Math.max(0, remainingSeconds) / durationSeconds),
+  );
   return {
     outgoing: Math.cos((Math.PI / 2) * fraction),
     incoming: Math.sin((Math.PI / 2) * fraction),
@@ -18,7 +21,12 @@ export function canPrepareNextTrack(args: {
   repeatOne: boolean;
   queued: boolean;
 }): boolean {
-  return args.playing && !args.repeatOne && args.queued &&
+  return (
+    args.playing &&
+    !args.repeatOne &&
+    args.queued &&
     Number.isFinite(args.remainingSeconds) &&
-    args.remainingSeconds > 0 && args.remainingSeconds <= 16;
+    args.remainingSeconds > 0 &&
+    args.remainingSeconds <= 16
+  );
 }
