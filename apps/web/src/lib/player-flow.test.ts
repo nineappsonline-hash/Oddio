@@ -68,6 +68,6 @@ describe('Oddio Flow queue', () => {
   it('does not erase a playing queue when no mix is available', () => {
     usePlayer.getState().play(track('a'), [track('b')]);
     usePlayer.getState().startFlow([]);
-    expect(usePlayer.getState().queue.map((item) => item.id).toEqual(['b']);
+    expect(usePlayer.getState().queue.map((item) => item.id)).toEqual(['b']);
   });
 });
