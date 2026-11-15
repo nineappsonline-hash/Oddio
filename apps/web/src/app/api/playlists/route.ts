@@ -1,5 +1,5 @@
 import { playlistInput } from '@ai-music/contracts';
-import { mutateDb, readDb } from '@/lib/data/db';
+import { mutateRuntimeDb, readRuntimeDb } from '@/lib/data/runtime-store';
 import { createPlaylist } from '@/lib/data/mutations';
 import {
   assertSameOrigin,
@@ -15,7 +15,7 @@ export const runtime = 'nodejs';
 export async function GET() {
   try {
     const user = await requireUser();
-    const playlists = readDb()
+    const playlists = (await readRuntimeDb())
       .playlists.filter((playlist) => playlist.ownerId === user.id)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return jsonOk({ playlists });
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const user = await requireUser();
     rateLimit(`playlist:create:${user.id}`, 20, 60_000);
     const input = await parseBody(request, playlistInput);
-    const playlist = mutateDb((db) => createPlaylist(db, user, input));
+    const playlist = await mutateRuntimeDb((db) => createPlaylist(db, user, input));
     return jsonOk({ playlist });
   } catch (error) {
     return jsonError(error);
