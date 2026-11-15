@@ -6,7 +6,10 @@ import { Sparkles, Save, Play } from 'lucide-react';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
-import { readDiscoveryExclusions } from '@/lib/discovery-preferences';
+import {
+  hydrateDiscoveryExclusions,
+  readDiscoveryExclusions,
+} from '@/lib/discovery-preferences';
 import type { Playlist } from '@ai-music/contracts';
 import { slugify } from '@/lib/links';
 
@@ -35,6 +38,7 @@ export function PromptPlaylist({
         '/api/discovery/prompt',
         { method: 'POST', body: JSON.stringify({ prompt: prompt.trim() }) },
       );
+      await hydrateDiscoveryExclusions(viewerId);
       const prefs = readDiscoveryExclusions(viewerId);
       const filtered = result.tracks.filter(
         (track) =>
