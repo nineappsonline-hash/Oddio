@@ -272,7 +272,8 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 ### Phase 8 slice 1 — installability groundwork (feature branch)
 
 - [x] Added a dark, standalone Oddio Web App Manifest at `/manifest.webmanifest`, using the existing glossy gradient play logo and both language layouts' manifest metadata.
-- [ ] Confirm installability icon dimensions on real devices and add a suitable service worker limited to safe static assets; do NOT cache private, signed, or personalized audio URLs. Background playback, Android/iOS packaging, lock-screen controls, offline permissions, gapless and crossfade are not yet delivered.
+- [x] Added a production-only service worker with a strict cache allowlist of same-origin immutable `/_next/static/` GET assets. It deliberately never intercepts playback, Cloudflare signed URLs, user pages, account content, or API calls; safe browsing works without worker registration.
+- [ ] Confirm installability icon dimensions and service worker behavior on real Android/iOS devices. This is **not** offline music support. Background playback, Android/iOS packaging, lock-screen controls, offline rights, gapless and crossfade are not yet delivered.
 
 ## Continuous release gates (every phase)
 
