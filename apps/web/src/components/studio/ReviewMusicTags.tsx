@@ -41,7 +41,9 @@ export function ReviewMusicTags({
       });
       router.refresh();
     } catch {
-      setError(ar ? 'تعذّر اعتماد الاقتراح. حاول مرة أخرى.' : 'Could not apply the suggestion.');
+      setError(
+        ar ? 'تعذّر اعتماد الاقتراح. حاول مرة أخرى.' : 'Could not apply the suggestion.',
+      );
     } finally {
       setPending(false);
     }
@@ -65,8 +67,8 @@ export function ReviewMusicTags({
       </p>
       <p className="mt-1 text-xs text-muted">
         {ar ? 'درجة تقديرية' : 'Estimated confidence'}:{' '}
-        {Math.round(proposal.confidence * 100)}% ·{' '}
-        {proposal.evidenceCount} {ar ? 'أمثلة قريبة' : 'similar references'}
+        {Math.round(proposal.confidence * 100)}% · {proposal.evidenceCount}{' '}
+        {ar ? 'أمثلة قريبة' : 'similar references'}
       </p>
       <button
         type="button"
@@ -74,9 +76,19 @@ export function ReviewMusicTags({
         disabled={pending}
         onClick={() => void accept()}
       >
-        {pending ? (ar ? 'جاري الاعتماد…' : 'Applying…') : (ar ? 'اعتماد الاقتراح' : 'Approve tags')}
+        {pending
+          ? ar
+            ? 'جاري الاعتماد…'
+            : 'Applying…'
+          : ar
+            ? 'اعتماد الاقتراح'
+            : 'Approve tags'}
       </button>
-      {error ? <p role="alert" className="mt-2 text-xs text-red-300">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="mt-2 text-xs text-red-300">
+          {error}
+        </p>
+      ) : null}
     </section>
   );
 }

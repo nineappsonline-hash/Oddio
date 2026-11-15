@@ -176,7 +176,9 @@ async function extractMusicFeatures(inputPath) {
   let tagSuggestion = null;
   if (process.env.ODDIO_CLASSIFIER_MODEL_PATH && fingerprint) {
     try {
-      const model = JSON.parse(await fsp.readFile(process.env.ODDIO_CLASSIFIER_MODEL_PATH, 'utf8'));
+      const model = JSON.parse(
+        await fsp.readFile(process.env.ODDIO_CLASSIFIER_MODEL_PATH, 'utf8'),
+      );
       tagSuggestion = suggestArtistTags(fingerprint, model);
     } catch (error) {
       log('warn', 'optional reviewed classifier unavailable', {
@@ -248,7 +250,11 @@ async function processDemoTrack(track, dir) {
     track.audio.bytes = info.size;
     track.audio.sha256 = await sha256File(source);
     try {
-      const { fingerprint: _fingerprint, tagSuggestion: _tagSuggestion, ...features } = await extractMusicFeatures(source);
+      const {
+        fingerprint: _fingerprint,
+        tagSuggestion: _tagSuggestion,
+        ...features
+      } = await extractMusicFeatures(source);
       track.audioFeatures = features;
     } catch (error) {
       // Analysis is advisory: never block a valid artist release.
@@ -281,7 +287,11 @@ async function processDemoTrack(track, dir) {
   };
   track.durationMs = Math.round(rendered.durationSec * 1000);
   try {
-    const { fingerprint: _fingerprint, tagSuggestion: _tagSuggestion, ...features } = await extractMusicFeatures(output);
+    const {
+      fingerprint: _fingerprint,
+      tagSuggestion: _tagSuggestion,
+      ...features
+    } = await extractMusicFeatures(output);
     track.audioFeatures = features;
   } catch (error) {
     log('warn', 'demo audio feature preview unavailable', {
@@ -533,14 +543,16 @@ async function handleTranscode(job) {
         duration_ms: Math.round((rendered.durationSec || info.durationSec) * 1000),
         quality_label: bitrate >= 320 ? 'high' : 'standard',
         ...(measured
-          ? { audio_features: {
-              schemaVersion: measured.schemaVersion,
-              tempoBpm: measured.tempoBpm,
-              tempoConfidence: measured.tempoConfidence,
-              rmsDbfs: measured.rmsDbfs,
-              peakDbfs: measured.peakDbfs,
-              analyzedSeconds: measured.analyzedSeconds,
-            } }
+          ? {
+              audio_features: {
+                schemaVersion: measured.schemaVersion,
+                tempoBpm: measured.tempoBpm,
+                tempoConfidence: measured.tempoConfidence,
+                rmsDbfs: measured.rmsDbfs,
+                peakDbfs: measured.peakDbfs,
+                analyzedSeconds: measured.analyzedSeconds,
+              },
+            }
           : {}),
       });
     }
@@ -557,7 +569,9 @@ async function handleTranscode(job) {
           const similarity = compareFingerprints(measured.fingerprint, row.signature);
           if (similarity.candidate) {
             log('warn', 'human review suggested for possible audio similarity', {
-              trackId, otherTrackId: row.track_id, similarity: similarity.similarity,
+              trackId,
+              otherTrackId: row.track_id,
+              similarity: similarity.similarity,
             });
           }
         }
@@ -569,7 +583,8 @@ async function handleTranscode(job) {
         );
       } catch (error) {
         log('warn', 'optional audio fingerprint comparison unavailable', {
-          trackId, reason: error instanceof Error ? error.name : 'fingerprint_error',
+          trackId,
+          reason: error instanceof Error ? error.name : 'fingerprint_error',
         });
       }
     }
@@ -583,7 +598,8 @@ async function handleTranscode(job) {
         );
       } catch (error) {
         log('warn', 'private tag suggestion could not be saved', {
-          trackId, reason: error instanceof Error ? error.name : 'suggestion_error',
+          trackId,
+          reason: error instanceof Error ? error.name : 'suggestion_error',
         });
       }
     }

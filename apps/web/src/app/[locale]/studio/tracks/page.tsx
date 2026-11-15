@@ -78,7 +78,10 @@ export default async function StudioTracksPage({
       ? await serviceClient()
           .from('audio_tag_suggestions')
           .select('track_id,suggestion')
-          .in('track_id', data.tracks.map((track) => track.id))
+          .in(
+            'track_id',
+            data.tracks.map((track) => track.id),
+          )
       : { data: [] };
 
   const approvedCount = data.tracks.filter(
@@ -264,32 +267,42 @@ export default async function StudioTracksPage({
               {(() => {
                 const suggestion = privateMusicTags?.find(
                   (item) => item.track_id === track.id,
-                )?.suggestion as {
-                  source?: string;
-                  genreSlug?: string;
-                  moodSlugs?: string[];
-                  confidence?: number;
-                  evidenceCount?: number;
-                } | null | undefined;
-                if (demoMode
-                  || track.publishStatus !== 'unpublished'
-                  || !['draft', 'ready_for_review', 'changes_requested'].includes(track.reviewStatus)
-                  || suggestion?.source !== 'artist-reviewed-local-model-v1'
-                  || typeof suggestion.genreSlug !== 'string'
-                  || !Array.isArray(suggestion.moodSlugs)
-                  || typeof suggestion.confidence !== 'number'
-                  || typeof suggestion.evidenceCount !== 'number') return null;
-                return <ReviewMusicTags
-                  trackId={track.id}
-                  locale={locale}
-                  proposal={{
-                    source: suggestion.source,
-                    genreSlug: suggestion.genreSlug,
-                    moodSlugs: suggestion.moodSlugs,
-                    confidence: suggestion.confidence,
-                    evidenceCount: suggestion.evidenceCount,
-                  }}
-                />;
+                )?.suggestion as
+                  | {
+                      source?: string;
+                      genreSlug?: string;
+                      moodSlugs?: string[];
+                      confidence?: number;
+                      evidenceCount?: number;
+                    }
+                  | null
+                  | undefined;
+                if (
+                  demoMode ||
+                  track.publishStatus !== 'unpublished' ||
+                  !['draft', 'ready_for_review', 'changes_requested'].includes(
+                    track.reviewStatus,
+                  ) ||
+                  suggestion?.source !== 'artist-reviewed-local-model-v1' ||
+                  typeof suggestion.genreSlug !== 'string' ||
+                  !Array.isArray(suggestion.moodSlugs) ||
+                  typeof suggestion.confidence !== 'number' ||
+                  typeof suggestion.evidenceCount !== 'number'
+                )
+                  return null;
+                return (
+                  <ReviewMusicTags
+                    trackId={track.id}
+                    locale={locale}
+                    proposal={{
+                      source: suggestion.source,
+                      genreSlug: suggestion.genreSlug,
+                      moodSlugs: suggestion.moodSlugs,
+                      confidence: suggestion.confidence,
+                      evidenceCount: suggestion.evidenceCount,
+                    }}
+                  />
+                );
               })()}
               <StudioTrackActions
                 trackId={track.id}

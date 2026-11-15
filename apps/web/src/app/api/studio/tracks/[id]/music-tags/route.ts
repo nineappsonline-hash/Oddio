@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { assertSameOrigin, jsonError, jsonOk, parseBody, rateLimit, requireUser } from '@/lib/api-helpers';
+import {
+  assertSameOrigin,
+  jsonError,
+  jsonOk,
+  parseBody,
+  rateLimit,
+  requireUser,
+} from '@/lib/api-helpers';
 import { demoMode } from '@/lib/env';
 import { mutateDb } from '@/lib/data/db';
 import { serviceClient } from '@/lib/data/supabase-store';
@@ -15,10 +22,14 @@ type Proposal = {
 const proposalFrom = (value: unknown): Proposal | null => {
   if (!value || typeof value !== 'object') return null;
   const suggestion = (value as { tagSuggestion?: Proposal }).tagSuggestion;
-  if (!suggestion || suggestion.source !== 'artist-reviewed-local-model-v1'
-    || typeof suggestion.genreSlug !== 'string'
-    || !Array.isArray(suggestion.moodSlugs)
-    || suggestion.moodSlugs.some((slug) => typeof slug !== 'string')) return null;
+  if (
+    !suggestion ||
+    suggestion.source !== 'artist-reviewed-local-model-v1' ||
+    typeof suggestion.genreSlug !== 'string' ||
+    !Array.isArray(suggestion.moodSlugs) ||
+    suggestion.moodSlugs.some((slug) => typeof slug !== 'string')
+  )
+    return null;
   return suggestion;
 };
 
@@ -37,23 +48,32 @@ export async function POST(
       const tags = mutateDb((db) => {
         const track = db.tracks.find((item) => item.id === id);
         const artist = db.artists.find((item) => item.id === track?.artistId);
-        if (!track || !artist || artist.ownerUserId !== user.id) throw Errors.notFound('Track not found');
-        if (track.publishStatus !== 'unpublished'
-          || !['draft', 'ready_for_review', 'changes_requested'].includes(track.reviewStatus)) {
+        if (!track || !artist || artist.ownerUserId !== user.id)
+          throw Errors.notFound('Track not found');
+        if (
+          track.publishStatus !== 'unpublished' ||
+          !['draft', 'ready_for_review', 'changes_requested'].includes(track.reviewStatus)
+        ) {
           throw Errors.forbidden();
         }
         const proposal = proposalFrom(track.audioFeatures);
         if (!proposal) throw Errors.invalid('No reviewed music suggestions available');
-        const genre = db.genres.find((item) => item.slug === proposal.genreSlug && item.active);
-        const moods = proposal.moodSlugs.map((slug) => db.moods.find((item) => item.slug === slug && item.active));
-        if (!genre || moods.some((mood) => !mood)) throw Errors.invalid('Suggested labels are not in catalog');
+        const genre = db.genres.find(
+          (item) => item.slug === proposal.genreSlug && item.active,
+        );
+        const moods = proposal.moodSlugs.map((slug) =>
+          db.moods.find((item) => item.slug === slug && item.active),
+        );
+        if (!genre || moods.some((mood) => !mood))
+          throw Errors.invalid('Suggested labels are not in catalog');
         track.genreId = genre.id;
         track.genreIds = [genre.id];
         track.moodIds = moods.map((mood) => mood!.id);
         track.audioFeatures = {
           ...(track.audioFeatures ?? {}),
           artistApprovedTags: {
-            genreSlug: genre.slug, moodSlugs: proposal.moodSlugs,
+            genreSlug: genre.slug,
+            moodSlugs: proposal.moodSlugs,
             approvedAt: new Date().toISOString(),
           },
         } as typeof track.audioFeatures;

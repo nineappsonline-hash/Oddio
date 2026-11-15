@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { fingerprintPcm16, compareFingerprints } from '../workers/media/src/audio-fingerprint.mjs';
+import {
+  fingerprintPcm16,
+  compareFingerprints,
+} from '../workers/media/src/audio-fingerprint.mjs';
 
 const rate = 11025;
 function render({ seconds = 24, gain = 0.5, offset = 0, transpose = 1 } = {}) {
@@ -9,11 +12,16 @@ function render({ seconds = 24, gain = 0.5, offset = 0, transpose = 1 } = {}) {
     const t = index / rate - offset;
     const note = t > 0 ? Math.floor(t * 2.3) % 9 : 0;
     const freq = (180 + note * note * 43) * transpose;
-    const val = t > 0
-      ? gain * (0.75 * Math.sin(2 * Math.PI * freq * t)
-        + 0.25 * Math.sin(2 * Math.PI * (freq * 1.49) * t))
-      : 0;
-    result.writeInt16LE(Math.max(-32767, Math.min(32767, Math.round(val * 32767))), index * 2);
+    const val =
+      t > 0
+        ? gain *
+          (0.75 * Math.sin(2 * Math.PI * freq * t) +
+            0.25 * Math.sin(2 * Math.PI * (freq * 1.49) * t))
+        : 0;
+    result.writeInt16LE(
+      Math.max(-32767, Math.min(32767, Math.round(val * 32767))),
+      index * 2,
+    );
   }
   return result;
 }

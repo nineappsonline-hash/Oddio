@@ -13,14 +13,21 @@ const MIN_GENRES = 2;
 const MIN_MACRO_RECALL = 0.7;
 
 function legalExample(row) {
-  return row && row.consent === true && row.artistReviewed === true
-    && typeof row.artistId === 'string' && row.artistId.length >= 3
-    && typeof row.genreSlug === 'string' && /^[a-z0-9-]{2,64}$/.test(row.genreSlug)
-    && Array.isArray(row.moodSlugs) && row.moodSlugs.length <= 5
-    && row.moodSlugs.every((m) => typeof m === 'string' && /^[a-z0-9-]{2,64}$/.test(m))
-    && row.fingerprint?.version === 1
-    && Array.isArray(row.fingerprint.shingles)
-    && row.fingerprint.shingles.length >= 8;
+  return (
+    row &&
+    row.consent === true &&
+    row.artistReviewed === true &&
+    typeof row.artistId === 'string' &&
+    row.artistId.length >= 3 &&
+    typeof row.genreSlug === 'string' &&
+    /^[a-z0-9-]{2,64}$/.test(row.genreSlug) &&
+    Array.isArray(row.moodSlugs) &&
+    row.moodSlugs.length <= 5 &&
+    row.moodSlugs.every((m) => typeof m === 'string' && /^[a-z0-9-]{2,64}$/.test(m)) &&
+    row.fingerprint?.version === 1 &&
+    Array.isArray(row.fingerprint.shingles) &&
+    row.fingerprint.shingles.length >= 8
+  );
 }
 
 function candidates(target, examples, excludeArtistId = null) {
@@ -73,7 +80,9 @@ function choose(target, examples, excludeArtistId = null) {
 export function trainReviewedClassifier(rows) {
   if (!Array.isArray(rows)) throw new Error('Expected reviewed examples array');
   if (rows.some((row) => !legalExample(row))) {
-    throw new Error('Every example needs consent, artist review, genre, moods and fingerprint');
+    throw new Error(
+      'Every example needs consent, artist review, genre, moods and fingerprint',
+    );
   }
   const examples = rows.map((row, i) => ({
     id: String(row.id ?? i),
@@ -86,23 +95,31 @@ export function trainReviewedClassifier(rows) {
     throw new Error('Duplicate example ids not allowed');
   }
   const fingerprintKeys = examples.map((item) =>
-    JSON.stringify([...new Set(item.fingerprint.shingles)].sort()));
+    JSON.stringify([...new Set(item.fingerprint.shingles)].sort()),
+  );
   if (new Set(fingerprintKeys).size !== fingerprintKeys.length) {
     throw new Error('Duplicate audio fingerprints are not independent training examples');
   }
   const counts = new Map();
-  for (const row of examples) counts.set(row.genreSlug, (counts.get(row.genreSlug) ?? 0) + 1);
-  if (counts.size < MIN_GENRES || [...counts.values()].some((count) => count < MIN_PER_GENRE)) {
+  for (const row of examples)
+    counts.set(row.genreSlug, (counts.get(row.genreSlug) ?? 0) + 1);
+  if (
+    counts.size < MIN_GENRES ||
+    [...counts.values()].some((count) => count < MIN_PER_GENRE)
+  ) {
     throw new Error('Needs at least two genres with four reviewed tracks in each');
   }
   for (const genre of counts.keys()) {
-    const artists = new Set(examples.filter((row) => row.genreSlug === genre)
-      .map((row) => row.artistId));
+    const artists = new Set(
+      examples.filter((row) => row.genreSlug === genre).map((row) => row.artistId),
+    );
     if (artists.size < 4) {
       throw new Error('Each genre needs at least four independent artists');
     }
   }
-  const perClass = new Map([...counts.keys()].map((slug) => [slug, { correct: 0, total: 0, covered: 0 }]));
+  const perClass = new Map(
+    [...counts.keys()].map((slug) => [slug, { correct: 0, total: 0, covered: 0 }]),
+  );
   for (const row of examples) {
     const evaluation = choose(row.fingerprint, examples, row.artistId);
     const stats = perClass.get(row.genreSlug);
@@ -111,11 +128,15 @@ export function trainReviewedClassifier(rows) {
     if (evaluation?.genreSlug === row.genreSlug) stats.correct++;
   }
   // Abstentions are counted as misses, preventing inflated precision.
-  const macroRecall = [...perClass.values()].reduce(
-    (sum, item) => sum + item.correct / item.total, 0) / counts.size;
-  const coverage = [...perClass.values()].reduce((sum, item) => sum + item.covered, 0) / examples.length;
+  const macroRecall =
+    [...perClass.values()].reduce((sum, item) => sum + item.correct / item.total, 0) /
+    counts.size;
+  const coverage =
+    [...perClass.values()].reduce((sum, item) => sum + item.covered, 0) / examples.length;
   if (macroRecall < MIN_MACRO_RECALL || coverage < 0.65) {
-    throw new Error(`Classifier did not meet offline validation: recall=${macroRecall.toFixed(2)} coverage=${coverage.toFixed(2)}`);
+    throw new Error(
+      `Classifier did not meet offline validation: recall=${macroRecall.toFixed(2)} coverage=${coverage.toFixed(2)}`,
+    );
   }
   return {
     schemaVersion: 1,
@@ -126,9 +147,15 @@ export function trainReviewedClassifier(rows) {
 }
 
 export function suggestArtistTags(fingerprint, model) {
-  if (!fingerprint || model?.schemaVersion !== 1 || model.trainedFromArtistReviewed !== true
-    || !Array.isArray(model.examples) || !model.metrics
-    || model.metrics.macroRecall < MIN_MACRO_RECALL || model.metrics.coverage < 0.65) {
+  if (
+    !fingerprint ||
+    model?.schemaVersion !== 1 ||
+    model.trainedFromArtistReviewed !== true ||
+    !Array.isArray(model.examples) ||
+    !model.metrics ||
+    model.metrics.macroRecall < MIN_MACRO_RECALL ||
+    model.metrics.coverage < 0.65
+  ) {
     return null;
   }
   const match = choose(fingerprint, model.examples);

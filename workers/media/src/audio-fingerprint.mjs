@@ -8,15 +8,20 @@ const FRAME = 1024;
 const HOP_SECONDS = 0.25;
 
 export function fingerprintPcm16(buffer, sampleRate = 11025) {
-  if (!Buffer.isBuffer(buffer) || sampleRate < 8000 || sampleRate > 48000
-    || buffer.length % 2 !== 0) throw new Error('Invalid mono PCM16LE');
+  if (
+    !Buffer.isBuffer(buffer) ||
+    sampleRate < 8000 ||
+    sampleRate > 48000 ||
+    buffer.length % 2 !== 0
+  )
+    throw new Error('Invalid mono PCM16LE');
   const sampleCount = buffer.length / 2;
   if (sampleCount < sampleRate * 8) return null;
   const hop = Math.round(sampleRate * HOP_SECONDS);
   const frameSize = Math.min(FRAME, hop);
-  const coefficients = BANDS_HZ
-    .filter((hz) => hz < sampleRate / 2 - 200)
-    .map((hz) => 2 * Math.cos(2 * Math.PI * hz / sampleRate));
+  const coefficients = BANDS_HZ.filter((hz) => hz < sampleRate / 2 - 200).map(
+    (hz) => 2 * Math.cos((2 * Math.PI * hz) / sampleRate),
+  );
   const patterns = [];
   let lastEnergy = 0;
   for (let start = 0; start + frameSize <= sampleCount; start += hop) {
@@ -34,8 +39,10 @@ export function fingerprintPcm16(buffer, sampleRate = 11025) {
         q1[band] = q;
       }
     }
-    const bands = coefficients.map((coefficient, index) =>
-      q1[index] ** 2 + q2[index] ** 2 - coefficient * q1[index] * q2[index]);
+    const bands = coefficients.map(
+      (coefficient, index) =>
+        q1[index] ** 2 + q2[index] ** 2 - coefficient * q1[index] * q2[index],
+    );
     const total = bands.reduce((a, b) => a + b, 0);
     // Top two musical-frequency bands, normalized against overall energy.
     const best = bands
@@ -43,9 +50,11 @@ export function fingerprintPcm16(buffer, sampleRate = 11025) {
       .sort((a, b) => b.power - a.power)
       .slice(0, 2);
     const loud = energy > frameSize * 0.000005;
-    patterns.push(loud && total > 0 && best.length === 2
-      ? `${best[0].index.toString(16)}${best[1].index.toString(16)}`
-      : '--');
+    patterns.push(
+      loud && total > 0 && best.length === 2
+        ? `${best[0].index.toString(16)}${best[1].index.toString(16)}`
+        : '--',
+    );
     lastEnergy = energy;
   }
   const active = patterns.filter((token) => token !== '--');
@@ -68,9 +77,16 @@ export function fingerprintPcm16(buffer, sampleRate = 11025) {
 }
 
 export function compareFingerprints(a, b) {
-  if (!a || !b || a.version !== 1 || b.version !== 1
-    || !Array.isArray(a.shingles) || !Array.isArray(b.shingles)
-    || a.shingles.length < 8 || b.shingles.length < 8) {
+  if (
+    !a ||
+    !b ||
+    a.version !== 1 ||
+    b.version !== 1 ||
+    !Array.isArray(a.shingles) ||
+    !Array.isArray(b.shingles) ||
+    a.shingles.length < 8 ||
+    b.shingles.length < 8
+  ) {
     return { similarity: 0, candidate: false };
   }
   const first = new Set(a.shingles);
