@@ -16,7 +16,7 @@ export function recoverablePlaybackPosition(
   fallbackTime: number,
   duration: number,
 ): number {
-  const point = Number.isFinite(currentTime) && currentTime >= 0 ? currentTime : fallbackTime;
+  // The HTML audio element may reset currentTime to zero when its source fails.\n  // In that case prefer the player store's latest meaningful position.\n  const mediaPositionIsUseful = Number.isFinite(currentTime) && currentTime > 0;\n  const point = mediaPositionIsUseful ? currentTime : fallbackTime;
   const safe = Number.isFinite(point) ? Math.max(0, point) : 0;
   return Number.isFinite(duration) && duration > 0 ? Math.min(safe, duration) : safe;
 }
