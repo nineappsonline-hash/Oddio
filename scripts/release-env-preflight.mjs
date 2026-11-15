@@ -32,8 +32,23 @@ export function auditReleaseEnvironment(env) {
       : undefined);
   try {
     const parsed = new URL(canonical || '');
-    if (parsed.protocol !== 'https:' || !parsed.hostname.includes('.')) {
-      blockers.push('Canonical site URL must use an HTTPS production domain');
+    const host = parsed.hostname.toLowerCase();
+    if (
+      parsed.protocol !== 'https:' ||
+      !host.includes('.') ||
+      host === 'localhost' ||
+      host.endsWith('.localhost') ||
+      host.endsWith('.local') ||
+      host.endsWith('.internal') ||
+      host === '127.0.0.1' ||
+      host === '0.0.0.0' ||
+      host === '[::1]' ||
+      parsed.username ||
+      parsed.password ||
+      parsed.search ||
+      parsed.hash
+    ) {
+      blockers.push('Canonical site URL must use a clean HTTPS production domain');
     }
   } catch {
     blockers.push(
@@ -42,8 +57,16 @@ export function auditReleaseEnvironment(env) {
   }
   try {
     const supabase = new URL(env.NEXT_PUBLIC_SUPABASE_URL || '');
-    if (supabase.protocol !== 'https:')
-      blockers.push('NEXT_PUBLIC_SUPABASE_URL must be HTTPS');
+    if (
+      supabase.protocol !== 'https:' ||
+      !supabase.hostname.includes('.') ||
+      supabase.username ||
+      supabase.password ||
+      supabase.search ||
+      supabase.hash
+    ) {
+      blockers.push('NEXT_PUBLIC_SUPABASE_URL must be a clean HTTPS URL');
+    }
   } catch {
     if (env.NEXT_PUBLIC_SUPABASE_URL)
       blockers.push('NEXT_PUBLIC_SUPABASE_URL must be a valid URL');
