@@ -41,7 +41,16 @@ export async function addPlaylistTrackAtomic(
   playlistId: string,
   trackId: string,
 ): Promise<void> {
-  const { error } = await serviceClient().rpc('oddio_add_playlist_track', {
+  const { data: collaborator, error: collabError } = await serviceClient()
+    .from('playlist_collaborators')
+    .select('playlist_id')
+    .eq('playlist_id', playlistId)
+    .eq('user_id', actor.id)
+    .maybeSingle();
+  if (collabError) throw new Error(collabError.message);
+  const { error } = await serviceClient().rpc(
+    collaborator ? 'oddio_collaborator_add_playlist_track' : 'oddio_add_playlist_track',
+    {
     p_user_id: actor.id,
     p_playlist_id: playlistId,
     p_track_id: trackId,
@@ -59,7 +68,16 @@ export async function removePlaylistTrackAtomic(
   playlistId: string,
   trackId: string,
 ): Promise<void> {
-  const { error } = await serviceClient().rpc('oddio_remove_playlist_track', {
+  const { data: collaborator, error: collabError } = await serviceClient()
+    .from('playlist_collaborators')
+    .select('playlist_id')
+    .eq('playlist_id', playlistId)
+    .eq('user_id', actor.id)
+    .maybeSingle();
+  if (collabError) throw new Error(collabError.message);
+  const { error } = await serviceClient().rpc(
+    collaborator ? 'oddio_collaborator_remove_playlist_track' : 'oddio_remove_playlist_track',
+    {
     p_user_id: actor.id,
     p_playlist_id: playlistId,
     p_track_id: trackId,
