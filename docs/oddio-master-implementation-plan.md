@@ -192,6 +192,14 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] Measure relevance with opt-in feedback and ensure large-catalog performance; current in-memory catalog scan is an MVP, not a scalable ranking service.
 - [ ] Build Oddio Flow/radio continuation, negative genre preferences, Daily Mix and transparent explanation controls only after a passing preview and privacy review. Avoid personalized claims if no signed-in preference signal exists.
 
+### Phase 5 second slice — Oddio Flow mix playback (development branch, 2026-11-15)
+
+- [x] Added a bilingual `Start Oddio Flow` button on Discover. It starts a 20-track maximum, ready-to-play discovery mix from the existing no-paid-API recommendation engine (personalized when opted-in account signals exist; otherwise a general popular mix).
+- [x] `startFlow` builds a deduplicated queue atomically, resets existing shuffle/repeat to preserve mix ordering, and triggers a new playback request even if the opening track matches the currently selected track. Existing audio `ended` handling advances through the queue.
+- [x] Added targeted player-store tests for advancement, rebuilding a current-track queue and empty mixes. Latest Vitest/format/build/browser CI results must be checked before claiming acceptance.
+- [ ] This is a **finite discovery mix**, not yet a dynamically refreshed infinite station. Existing player autoplay may transition to generic homepage tracks when the queue ends; a dedicated Flow continuation policy with explicit opt-out remains future work.
+- [ ] Test actual R2 playback, controls and resume on real Android/iOS browsers in staging. No production deployment or database migration was made for this slice.
+
 ## Phase 6 — artist studio
 
 - [ ] Reliable multipart uploads with progress and resume; structured release wizard.
