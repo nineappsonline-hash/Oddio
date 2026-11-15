@@ -63,6 +63,17 @@ Working branch: `feature/master-plan-phase-0-1`.
 
 `apps/web/src/lib/data/atomic-social.ts` calls `oddio_toggle_track_like`, `oddio_toggle_artist_follow`, `oddio_toggle_playlist_follow`, `oddio_add_playlist_track`, and `oddio_remove_playlist_track`. All five must be installed before releasing these production routes. Preview remains isolated with `DEMO_MODE=true`. No live data was changed during branch development.
 
+### Phase 1 follow-up — playback telemetry and worker hardening (2026-11-15)
+
+- [x] Production playback authorization sessions now use `mutateRuntimeDb`, rather than modifying an unpersisted Supabase snapshot.
+- [x] Playback event API no longer writes to ephemeral JSON in production. It persists event rows through the Supabase snapshot bridge and avoids incrementing the production qualified-play counter twice: the database trigger owns it. Added an isolated SQL check to `supabase/tests/playback_qualified.sql`.
+- [x] Reject playback events for another signed-in user's session even if the requester is anonymous.
+- [x] Corrected R2 object-key and AWS date regex escaping in `workers/media/src/index.mjs`. Added CI checks that fail if production worker config is incomplete; no demo fallback when `DEMO_MODE=false`.
+- [x] Updated `README.md` and `docs/production.md` to describe actual Supabase/R2 architecture and current 25 MiB single-PUT limit, instead of old demo-only assumptions.
+- [ ] Replace snapshot-diff session/event persistence with transactional, idempotent targeted SQL writes before significant scale; simultaneous qualified events and counters remain a potential source of races.
+- [ ] Verify a real, continuously running media worker and R2 integration; the repo cannot demonstrate that the worker is deployed from CI alone.
+- [ ] Verify a full production backup/restore, staging auth/data workflow, real R2 CORS/range uploads, and the latest browser/format gates before merge or release.
+
 ## Phase 2 — layout and player
 
 - [ ] Validate Arabic RTL, English LTR, mobile no-horizontal-scroll, footer clearance and bottom navigation.
