@@ -64,7 +64,7 @@ export function Footer({ locale }: { locale: Locale }) {
             </Link>
             <Link
               prefetch={false}
-              href={`/${locale}/apply/artist`}
+              href={`/${locale}/for-artists`}
               className="block hover:text-ink"
             >
               {t('nav.apply')}
