@@ -38,6 +38,9 @@ echo "==> supabase/tests/player_resume.sql"
 echo "==> supabase/tests/audio_features.sql"
 "${PSQL[@]}" -f supabase/tests/audio_features.sql
 
+echo "==> supabase/tests/music_intelligence.sql"
+"${PSQL[@]}" -f supabase/tests/music_intelligence.sql
+
 echo "==> scripts/test-social-concurrency.sh"
 bash scripts/test-social-concurrency.sh
 
