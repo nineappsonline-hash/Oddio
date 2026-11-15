@@ -1,4 +1,4 @@
-name: Format Phase 6-8 development batch - collaboration + larger uploads
+name: Format Phase 6-8 development batch - final PWA and invites
 on:
   push:
     branches: [feature/master-plan-phase-0-1]
@@ -41,7 +41,11 @@ jobs:
             apps/web/src/app/api/studio/uploads/multipart/route.ts \
             apps/web/src/components/library/ShareRecap.tsx \
             apps/web/public/sw.js \
-            workers/media/src/index.mjs
+            workers/media/src/index.mjs \
+            apps/web/src/app/api/playlists/route.ts \
+            apps/web/src/components/pwa/InstallOddio.tsx \
+            apps/web/src/app/'[locale]'/install/page.tsx \
+            apps/web/src/components/layout/Sidebar.tsx
       - run: |
           if git diff --quiet; then exit 0; fi
           git config user.name "oddio-ci-format"
