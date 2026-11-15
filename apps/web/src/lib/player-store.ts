@@ -19,6 +19,8 @@ interface PlayerState {
   repeat: RepeatMode;
   shuffle: boolean;
   autoplay: boolean;
+  crossfadeSeconds: number;
+  setCrossfadeSeconds: (seconds: number) => void;
   station: { kind: StationMode; seedId?: string } | null;
   expanded: boolean;
   error: string | null;
@@ -78,6 +80,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   repeat: 'off',
   shuffle: false,
   autoplay: true,
+  crossfadeSeconds: 0,
+  setCrossfadeSeconds: (seconds) => set({ crossfadeSeconds: [0, 3, 5, 8].includes(seconds) ? seconds : 0 }),
   station: null,
   expanded: false,
   error: null,
