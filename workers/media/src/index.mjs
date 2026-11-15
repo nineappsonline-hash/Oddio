@@ -25,6 +25,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { analyzePcm16 } from './music-features.mjs';
+import { fingerprintPcm16, compareFingerprints } from './audio-fingerprint.mjs';
+import { suggestArtistTags } from './music-classifier.mjs';
 
 const execFileAsync = promisify(execFile);
 
@@ -170,7 +172,21 @@ async function extractMusicFeatures(inputPath) {
     { timeout: 45_000, encoding: 'buffer', maxBuffer: 3 * 1024 * 1024 },
   );
   const analysis = analyzePcm16(stdout, sampleRate);
+  const fingerprint = fingerprintPcm16(stdout, sampleRate);
+  let tagSuggestion = null;
+  if (process.env.ODDIO_CLASSIFIER_MODEL_PATH && fingerprint) {
+    try {
+      const model = JSON.parse(await fsp.readFile(process.env.ODDIO_CLASSIFIER_MODEL_PATH, 'utf8'));
+      tagSuggestion = suggestArtistTags(fingerprint, model);
+    } catch (error) {
+      log('warn', 'optional reviewed classifier unavailable', {
+        reason: error instanceof Error ? error.name : 'invalid_model',
+      });
+    }
+  }
   return {
+    fingerprint,
+    tagSuggestion,
     schemaVersion: 1,
     tempoBpm: analysis.tempoBpm,
     tempoConfidence: analysis.tempoConfidence,
@@ -232,7 +248,8 @@ async function processDemoTrack(track, dir) {
     track.audio.bytes = info.size;
     track.audio.sha256 = await sha256File(source);
     try {
-      track.audioFeatures = await extractMusicFeatures(source);
+      const { fingerprint: _fingerprint, ...features } = await extractMusicFeatures(source);
+      track.audioFeatures = features;
     } catch (error) {
       // Analysis is advisory: never block a valid artist release.
       log('warn', 'demo audio feature preview unavailable', {
@@ -264,7 +281,8 @@ async function processDemoTrack(track, dir) {
   };
   track.durationMs = Math.round(rendered.durationSec * 1000);
   try {
-    track.audioFeatures = await extractMusicFeatures(output);
+    const { fingerprint: _fingerprint, ...features } = await extractMusicFeatures(output);
+    track.audioFeatures = features;
   } catch (error) {
     log('warn', 'demo audio feature preview unavailable', {
       trackId: track.id,
@@ -513,8 +531,45 @@ async function handleTranscode(job) {
       await rest('PATCH', `/rest/v1/tracks?id=eq.${encodeURIComponent(trackId)}`, {
         duration_ms: Math.round((rendered.durationSec || info.durationSec) * 1000),
         quality_label: bitrate >= 320 ? 'high' : 'standard',
-        ...(measured ? { audio_features: measured } : {}),
+        ...(measured
+          ? { audio_features: {
+              schemaVersion: measured.schemaVersion,
+              tempoBpm: measured.tempoBpm,
+              tempoConfidence: measured.tempoConfidence,
+              rmsDbfs: measured.rmsDbfs,
+              peakDbfs: measured.peakDbfs,
+              analyzedSeconds: measured.analyzedSeconds,
+              tagSuggestion: measured.tagSuggestion,
+            } }
+          : {}),
       });
+    }
+    // Store fingerprints in service-only table; never expose raw spectral
+    // signatures via public tracks or use a match as copyright evidence.
+    if (trackId && measured?.fingerprint) {
+      try {
+        const existing = await rest(
+          'GET',
+          '/rest/v1/audio_fingerprints?select=track_id,signature&limit=500',
+        );
+        for (const row of existing ?? []) {
+          if (row.track_id === trackId) continue;
+          const similarity = compareFingerprints(measured.fingerprint, row.signature);
+          if (similarity.candidate) {
+            log('warn', 'human review suggested for possible audio similarity', {
+              trackId, otherTrackId: row.track_id, similarity: similarity.similarity,
+            });
+          }
+        }
+        await rest('POST', '/rest/v1/audio_fingerprints?on_conflict=track_id', {
+          track_id: trackId,
+          signature: measured.fingerprint,
+        });
+      } catch (error) {
+        log('warn', 'optional audio fingerprint comparison unavailable', {
+          trackId, reason: error instanceof Error ? error.name : 'fingerprint_error',
+        });
+      }
     }
     log('info', 'transcode complete', { jobId: job.id, trackId, objectKey, bitrate });
   } finally {
