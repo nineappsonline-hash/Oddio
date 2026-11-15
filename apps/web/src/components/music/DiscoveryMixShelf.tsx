@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { TrackCard } from '@/components/music/TrackCard';
 import { FlowButton } from '@/components/player/FlowButton';
+import { usePlayer } from '@/lib/player-store';
 import {
   readDiscoveryExclusions,
   saveDiscoveryExclusions,
@@ -35,6 +36,17 @@ export function DiscoveryMixShelf({
   function update(next: DiscoveryExclusions) {
     setPrefs(next);
     saveDiscoveryExclusions(viewerId, next);
+    // Also remove newly hidden music from the active station queue.
+    const state = usePlayer.getState();
+    if (state.station) {
+      usePlayer.setState({
+        queue: state.queue.filter((track) =>
+          !next.trackIds.includes(track.id) &&
+          !(track.genreIds?.length ? track.genreIds : [track.genreId])
+            .some((id) => next.genreIds.includes(id)),
+        ),
+      });
+    }
   }
   const visible = tracks.filter((track) =>
     !prefs.trackIds.includes(track.id) &&
