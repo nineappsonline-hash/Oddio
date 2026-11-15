@@ -105,6 +105,11 @@ export function evaluateHeldoutModel(model, holdout, predictReviewedTags) {
     }
   }
   const genres = [...genreRows.entries()];
+  const trainedGenres = new Set(model.examples.map((row) => row.genreSlug));
+  if (genres.length !== trainedGenres.size
+    || genres.some(([genre]) => !trainedGenres.has(genre))) {
+    throw new Error('Held-out validation must cover every trained genre, without extra labels');
+  }
   if (genres.length < HELDOUT_GATES.minGenres
     || genres.some(([, s]) => s.total < HELDOUT_GATES.minTracksPerGenre
       || s.artists.size < HELDOUT_GATES.minArtistsPerGenre)) {
@@ -127,6 +132,8 @@ export function evaluateHeldoutModel(model, holdout, predictReviewedTags) {
   const passed = coverage >= HELDOUT_GATES.minCoverage
     && macroRecall >= HELDOUT_GATES.minMacroRecall
     && precision >= HELDOUT_GATES.minPrecision
+    && moodPrecision >= 0.7
+    && moodRecall >= 0.6
     && Object.values(recallByGenre).every((s) => s.recall >= 0.5);
   return {
     passed,
