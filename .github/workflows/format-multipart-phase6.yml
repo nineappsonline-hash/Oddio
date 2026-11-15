@@ -1,0 +1,37 @@
+name: Format multipart Phase 6 files
+on:
+  push:
+    branches:
+      - feature/master-plan-phase-0-1
+    paths:
+      - '.github/workflows/format-multipart-phase6.yml'
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: |
+          npx prettier --write \
+            apps/web/src/lib/storage/r2-multipart.ts \
+            apps/web/src/lib/storage/multipart-parts.ts \
+            apps/web/src/lib/storage/multipart-parts.test.ts \
+            apps/web/src/app/api/studio/uploads/multipart/route.ts \
+            apps/web/src/lib/upload-audio-multipart.ts \
+            apps/web/src/lib/upload-audio-progress.ts \
+            apps/web/src/components/studio/UploadForm.tsx
+      - run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "oddio-ci-format"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src
+          git commit -m "style(phase6): format resumable R2 multipart upload"
+          git push origin HEAD:feature/master-plan-phase-0-1
