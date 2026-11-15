@@ -107,7 +107,6 @@ export async function POST(request: Request) {
       const codeHash=crypto.createHash('sha256').update(code).digest('hex');
       const {data:room,error}=await db.from('listening_rooms').insert({
         host_id:user.id,title:input.title,code_hash:codeHash,
-        expires_at:new Date(Date.now()+6*3600_000).toISOString(),
       }).select('id').single();
       if (error) throw new Error(error.message);
       const {error:joinError}=await db.rpc('oddio_join_listening_room',{
