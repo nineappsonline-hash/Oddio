@@ -248,8 +248,13 @@ export function PlayerProvider({
       );
       pendingRestoreTrackId.current = trackId;
     } else {
-      pendingRestoreTime.current = null;
-      pendingRestoreTrackId.current = null;
+      // A newly restored session already has its playback position staged.
+      // Keep it until loadedmetadata seeks the media element; clear it only
+      // for an unrelated user-selected track.
+      if (pendingRestoreTrackId.current !== trackId) {
+        pendingRestoreTime.current = null;
+        pendingRestoreTrackId.current = null;
+      }
       audibleRef.current = { accumulated: 0, lastTime: 0, qualified: false, lastSent: 0 };
       startSentRef.current = false;
     }
