@@ -10,7 +10,9 @@ import assert from 'node:assert/strict';
 
 const signedUrl = process.env.ODDIO_R2_TEST_URL;
 if (!signedUrl) {
-  process.stderr.write('Set ODDIO_R2_TEST_URL to a temporary URL for a non-production R2 audio object.\n');
+  process.stderr.write(
+    'Set ODDIO_R2_TEST_URL to a temporary URL for a non-production R2 audio object.\n',
+  );
   process.exit(2);
 }
 

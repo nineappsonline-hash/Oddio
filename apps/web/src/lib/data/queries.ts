@@ -191,7 +191,9 @@ export function getHomeData(db: DemoDb, viewer: Viewer, now = new Date()): HomeD
     .filter((genre) => genre.active)
     .map((genre) => ({
       ...genre,
-      count: listable.filter((track) => (track.genreIds?.includes(genre.id) ?? track.genreId === genre.id)).length,
+      count: listable.filter(
+        (track) => track.genreIds?.includes(genre.id) ?? track.genreId === genre.id,
+      ).length,
     }));
 
   const moods = db.moods
@@ -274,7 +276,11 @@ export function searchCatalog(
     if (!matches(haystack)) return false;
     if (query.genre) {
       const genreRecord = db.genres.find((item) => item.slug === query.genre);
-      if (!genreRecord || !(track.genreIds?.includes(genreRecord.id) ?? track.genreId === genreRecord.id)) return false;
+      if (
+        !genreRecord ||
+        !(track.genreIds?.includes(genreRecord.id) ?? track.genreId === genreRecord.id)
+      )
+        return false;
     }
     if (query.mood) {
       const moodRecord = db.moods.find((item) => item.slug === query.mood);
@@ -374,7 +380,15 @@ export function getCharts(db: DemoDb, viewer: Viewer, query: ChartQuery): ChartP
     : null;
   const filtered = listable.filter((track) => {
     if (query.country && track.countryCode !== query.country) return false;
-    if (genreId && !(track.genreIds?.includes(genreId) ?? (track.genreIds?.includes(genreId) ?? track.genreId === genreId))) return false;
+    if (
+      genreId &&
+      !(
+        track.genreIds?.includes(genreId) ??
+        track.genreIds?.includes(genreId) ??
+        track.genreId === genreId
+      )
+    )
+      return false;
     return true;
   });
   const periodFactor =
@@ -543,7 +557,9 @@ export function getPlaylistPage(
 export function getGenrePage(db: DemoDb, viewer: Viewer, slug: string) {
   const genre = db.genres.find((item) => item.slug === slug && item.active);
   if (!genre) return null;
-  const tracks = listableTracks(db, viewer).filter((track) => (track.genreIds?.includes(genre.id) ?? track.genreId === genre.id));
+  const tracks = listableTracks(db, viewer).filter(
+    (track) => track.genreIds?.includes(genre.id) ?? track.genreId === genre.id,
+  );
   return { genre, tracks };
 }
 
@@ -712,7 +728,9 @@ export function getAdminData(db: DemoDb, role: StaffRole) {
   const genreCounts = db.genres
     .map((genre) => ({
       label: genre.labelEn,
-      count: publishedTracks.filter((track) => (track.genreIds?.includes(genre.id) ?? track.genreId === genre.id)).length,
+      count: publishedTracks.filter(
+        (track) => track.genreIds?.includes(genre.id) ?? track.genreId === genre.id,
+      ).length,
     }))
     .filter((entry) => entry.count > 0)
     .sort((a, b) => b.count - a.count);

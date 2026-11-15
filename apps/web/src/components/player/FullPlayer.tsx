@@ -149,22 +149,39 @@ export function FullPlayer() {
   async function generateLyrics() {
     if (!track || generatingLyrics) return;
     setGeneratingLyrics(true);
-    setLyricsMessage(rtl ? 'جاري استخراج الكلمات والتوقيتات…' : 'Generating timed lyrics…');
+    setLyricsMessage(
+      rtl ? 'جاري استخراج الكلمات والتوقيتات…' : 'Generating timed lyrics…',
+    );
     try {
-      const response = await fetch('/api/tracks/' + encodeURIComponent(track.id) + '/generate-lyrics', { method: 'POST' });
+      const response = await fetch(
+        '/api/tracks/' + encodeURIComponent(track.id) + '/generate-lyrics',
+        { method: 'POST' },
+      );
       const result = await response.json();
       if (!response.ok) throw new Error(result?.error?.message || 'Generation failed');
       if (result?.data?.status === 'ready' && result.data.srt) {
         setSrt(result.data.srt);
         setPlainLyrics(result.data.text || null);
-        setLyricsMessage(rtl ? 'تم حفظ الكلمات لكل المستمعين' : 'Lyrics saved for all listeners');
+        setLyricsMessage(
+          rtl ? 'تم حفظ الكلمات لكل المستمعين' : 'Lyrics saved for all listeners',
+        );
       } else if (result?.data?.status === 'processing') {
-        setLyricsMessage(rtl ? 'التوليد شغال بالفعل. جرّب تفتح الكلمات بعد شوية.' : 'Already generating. Check again shortly.');
+        setLyricsMessage(
+          rtl
+            ? 'التوليد شغال بالفعل. جرّب تفتح الكلمات بعد شوية.'
+            : 'Already generating. Check again shortly.',
+        );
       } else {
-        setLyricsMessage(result?.data?.message || (rtl ? 'التوليد غير متاح حاليًا' : 'Generation unavailable'));
+        setLyricsMessage(
+          result?.data?.message ||
+            (rtl ? 'التوليد غير متاح حاليًا' : 'Generation unavailable'),
+        );
       }
-    } catch (error) { setLyricsMessage(error instanceof Error ? error.message : 'Generation failed'); }
-    finally { setGeneratingLyrics(false); }
+    } catch (error) {
+      setLyricsMessage(error instanceof Error ? error.message : 'Generation failed');
+    } finally {
+      setGeneratingLyrics(false);
+    }
   }
   const cues = useMemo(() => (srt ? parseSrt(srt) : []), [srt]);
   const activeCue = cues.findIndex(
@@ -239,24 +256,64 @@ export function FullPlayer() {
                   className="pointer-events-none absolute -inset-24 animate-spin-slow opacity-40 [background:conic-gradient(from_0deg,transparent_0deg,rgba(157,92,255,0.5)_70deg,transparent_140deg,rgba(65,217,255,0.4)_240deg,transparent_300deg)]"
                 />
                 {mobileLyricsOpen ? (
-                  <div id="oddio-mobile-lyrics" className="absolute inset-1.5 z-40 flex flex-col rounded-[1.35rem] bg-[#130e20]/95 p-4 backdrop-blur-xl lg:hidden">
+                  <div
+                    id="oddio-mobile-lyrics"
+                    className="absolute inset-1.5 z-40 flex flex-col rounded-[1.35rem] bg-[#130e20]/95 p-4 backdrop-blur-xl lg:hidden"
+                  >
                     <div className="mb-2 flex items-center justify-between text-sm font-bold text-white">
                       <span>🎤 {rtl ? 'كلمات الأغنية' : 'Lyrics'}</span>
-                      <button type="button" onClick={() => setMobileLyricsOpen(false)} className="rounded-lg bg-white/10 px-3 py-1.5">{rtl ? 'إغلاق' : 'Close'}</button>
+                      <button
+                        type="button"
+                        onClick={() => setMobileLyricsOpen(false)}
+                        className="rounded-lg bg-white/10 px-3 py-1.5"
+                      >
+                        {rtl ? 'إغلاق' : 'Close'}
+                      </button>
                     </div>
                     <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
-                      {lyricsLoading ? <p className="text-sm text-white/70">{rtl ? 'جاري التحميل…' : 'Loading…'}</p> : cues.length ? (
-                        <div aria-live="off" className="flex w-full flex-col items-center justify-center px-2 text-center">
-                          <div className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-fuchsia-300/70"><Mic2 className="h-3.5 w-3.5" /> {rtl ? 'كلمات متزامنة' : 'LIVE LYRICS'}</div>
-                          <p key={activeCue} dir="auto" className="transition-all duration-300 text-balance text-center text-xl font-extrabold leading-relaxed text-white drop-shadow-[0_0_20px_rgba(188,103,255,0.55)] sm:text-2xl">
+                      {lyricsLoading ? (
+                        <p className="text-sm text-white/70">
+                          {rtl ? 'جاري التحميل…' : 'Loading…'}
+                        </p>
+                      ) : cues.length ? (
+                        <div
+                          aria-live="off"
+                          className="flex w-full flex-col items-center justify-center px-2 text-center"
+                        >
+                          <div className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-fuchsia-300/70">
+                            <Mic2 className="h-3.5 w-3.5" />{' '}
+                            {rtl ? 'كلمات متزامنة' : 'LIVE LYRICS'}
+                          </div>
+                          <p
+                            key={activeCue}
+                            dir="auto"
+                            className="transition-all duration-300 text-balance text-center text-xl font-extrabold leading-relaxed text-white drop-shadow-[0_0_20px_rgba(188,103,255,0.55)] sm:text-2xl"
+                          >
                             {activeCue >= 0 ? cues[activeCue]?.text : '♪'}
                           </p>
                         </div>
                       ) : (
                         <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-                          <p className="text-sm text-white/80">{rtl ? 'مفيش كلمات محفوظة للأغنية' : 'No saved lyrics yet'}</p>
-                          <button type="button" disabled={generatingLyrics} onClick={generateLyrics} className="rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white disabled:opacity-50">{generatingLyrics ? (rtl ? 'جاري التوليد…' : 'Generating…') : '✨ Generate Lyrics'}</button>
-                          {lyricsMessage ? <p role="status" className="text-xs text-white/80">{lyricsMessage}</p> : null}
+                          <p className="text-sm text-white/80">
+                            {rtl ? 'مفيش كلمات محفوظة للأغنية' : 'No saved lyrics yet'}
+                          </p>
+                          <button
+                            type="button"
+                            disabled={generatingLyrics}
+                            onClick={generateLyrics}
+                            className="rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white disabled:opacity-50"
+                          >
+                            {generatingLyrics
+                              ? rtl
+                                ? 'جاري التوليد…'
+                                : 'Generating…'
+                              : '✨ Generate Lyrics'}
+                          </button>
+                          {lyricsMessage ? (
+                            <p role="status" className="text-xs text-white/80">
+                              {lyricsMessage}
+                            </p>
+                          ) : null}
                         </div>
                       )}
                     </div>
@@ -264,10 +321,38 @@ export function FullPlayer() {
                 ) : null}
               </div>
               <div className="relative z-30 mt-3 flex items-center justify-center lg:hidden">
-                <button type="button" aria-expanded={mobileLyricsOpen} aria-controls="oddio-mobile-lyrics" onClick={(event) => { event.preventDefault(); event.stopPropagation(); setMobileLyricsOpen((value) => !value); }} className={cn("relative z-30 inline-flex min-h-11 touch-manipulation cursor-pointer items-center justify-center gap-2.5 rounded-full border px-5 py-2.5 text-sm font-semibold shadow-lg backdrop-blur-md transition-all duration-200 active:scale-95", mobileLyricsOpen ? "border-fuchsia-400/50 bg-gradient-to-r from-violet-600/80 to-fuchsia-600/80 text-white shadow-fuchsia-500/20" : "border-white/15 bg-white/[0.08] text-white/90 hover:border-fuchsia-400/40 hover:bg-white/[0.14]")}>
+                <button
+                  type="button"
+                  aria-expanded={mobileLyricsOpen}
+                  aria-controls="oddio-mobile-lyrics"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setMobileLyricsOpen((value) => !value);
+                  }}
+                  className={cn(
+                    'relative z-30 inline-flex min-h-11 touch-manipulation cursor-pointer items-center justify-center gap-2.5 rounded-full border px-5 py-2.5 text-sm font-semibold shadow-lg backdrop-blur-md transition-all duration-200 active:scale-95',
+                    mobileLyricsOpen
+                      ? 'border-fuchsia-400/50 bg-gradient-to-r from-violet-600/80 to-fuchsia-600/80 text-white shadow-fuchsia-500/20'
+                      : 'border-white/15 bg-white/[0.08] text-white/90 hover:border-fuchsia-400/40 hover:bg-white/[0.14]',
+                  )}
+                >
                   <Mic2 className="h-4 w-4 text-fuchsia-200" />
-                  <span>{mobileLyricsOpen ? (rtl ? "إخفاء الكلمات" : "Hide lyrics") : (rtl ? "عرض الكلمات" : "Show lyrics")}</span>
-                  <span className={cn("h-1.5 w-1.5 rounded-full", mobileLyricsOpen ? "bg-cyan-300" : "bg-fuchsia-400/70")} />
+                  <span>
+                    {mobileLyricsOpen
+                      ? rtl
+                        ? 'إخفاء الكلمات'
+                        : 'Hide lyrics'
+                      : rtl
+                        ? 'عرض الكلمات'
+                        : 'Show lyrics'}
+                  </span>
+                  <span
+                    className={cn(
+                      'h-1.5 w-1.5 rounded-full',
+                      mobileLyricsOpen ? 'bg-cyan-300' : 'bg-fuchsia-400/70',
+                    )}
+                  />
                 </button>
               </div>
               <div className="mt-3 hidden h-8 items-end justify-center gap-1 sm:flex">
@@ -306,12 +391,15 @@ export function FullPlayer() {
                   trackId={track.id}
                   label={t('track.addToPlaylist')}
                 />
-                <div className="flex items-center gap-2"><LikeButton
-                  trackId={track.id}
-                  initialLiked={track.isLiked}
-                  initialCount={track.likeCount}
-                  compact
-                /><DislikeButton trackId={track.id} /></div>
+                <div className="flex items-center gap-2">
+                  <LikeButton
+                    trackId={track.id}
+                    initialLiked={track.isLiked}
+                    initialCount={track.likeCount}
+                    compact
+                  />
+                  <DislikeButton trackId={track.id} />
+                </div>
                 <span className="text-xs text-muted">
                   {formatNumber(track.qualifiedPlays)} {t('common.plays')}
                 </span>
@@ -402,9 +490,13 @@ export function FullPlayer() {
                 className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-28 sm:w-28"
               >
                 {isPlaying ? (
-                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-background sm:h-24 sm:w-24"><Pause className="h-7 w-7" fill="currentColor" /></span>
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-background sm:h-24 sm:w-24">
+                    <Pause className="h-7 w-7" fill="currentColor" />
+                  </span>
                 ) : (
-                  <span className="scale-[0.7] sm:scale-100"><OddioPlayIcon size={112} /></span>
+                  <span className="scale-[0.7] sm:scale-100">
+                    <OddioPlayIcon size={112} />
+                  </span>
                 )}
               </button>
               <button
@@ -504,7 +596,9 @@ export function FullPlayer() {
             <p className="mt-4 text-center text-[11px] text-muted">
               {t('player.qualifiedHint')}
             </p>
-            <div className="mt-5"><TimedComments key={track.id} trackId={track.id} /></div>
+            <div className="mt-5">
+              <TimedComments key={track.id} trackId={track.id} />
+            </div>
           </div>
 
           <aside
@@ -557,8 +651,14 @@ export function FullPlayer() {
                   </p>
                 ) : cues.length > 0 ? (
                   <div className="flex min-h-64 flex-col items-center justify-center px-4 text-center">
-                    <span className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-primary/70">{rtl ? 'كلمات متزامنة' : 'LIVE LYRICS'}</span>
-                    <p key={activeCue} dir="auto" className="text-balance text-center text-2xl font-extrabold leading-relaxed text-ink transition-all duration-300">
+                    <span className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-primary/70">
+                      {rtl ? 'كلمات متزامنة' : 'LIVE LYRICS'}
+                    </span>
+                    <p
+                      key={activeCue}
+                      dir="auto"
+                      className="text-balance text-center text-2xl font-extrabold leading-relaxed text-ink transition-all duration-300"
+                    >
                       {activeCue >= 0 ? cues[activeCue]?.text : '♪'}
                     </p>
                   </div>
@@ -573,8 +673,23 @@ export function FullPlayer() {
                         ? 'اضغط على الزرار علشان الـAI يستخرج الكلمات مرة واحدة ويحفظها.'
                         : 'Generate timed lyrics once and save them for everyone.'}
                     </p>
-                    <button type="button" onClick={generateLyrics} disabled={generatingLyrics} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50">{generatingLyrics ? (rtl ? 'جاري التوليد…' : 'Generating…') : '✨ Generate Lyrics'}</button>
-                    {lyricsMessage ? <p role="status" className="text-xs text-primary">{lyricsMessage}</p> : null}
+                    <button
+                      type="button"
+                      onClick={generateLyrics}
+                      disabled={generatingLyrics}
+                      className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                    >
+                      {generatingLyrics
+                        ? rtl
+                          ? 'جاري التوليد…'
+                          : 'Generating…'
+                        : '✨ Generate Lyrics'}
+                    </button>
+                    {lyricsMessage ? (
+                      <p role="status" className="text-xs text-primary">
+                        {lyricsMessage}
+                      </p>
+                    ) : null}
                   </div>
                 )}
               </div>
@@ -605,12 +720,28 @@ export function FullPlayer() {
                   ) : null}
                 </div>
                 <div className="mb-3 flex items-center gap-3 rounded-xl border border-primary/50 bg-primary/15 p-3">
-                  <Equalizer bars={3} paused={!isPlaying} className="h-5 shrink-0 text-primary" />
-                  <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="h-10 w-10 shrink-0" rounded="rounded-lg" />
+                  <Equalizer
+                    bars={3}
+                    paused={!isPlaying}
+                    className="h-5 shrink-0 text-primary"
+                  />
+                  <Artwork
+                    title={track.title}
+                    url={track.artwork.url}
+                    accent={track.artwork.accent}
+                    className="h-10 w-10 shrink-0"
+                    rounded="rounded-lg"
+                  />
                   <div className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-bold uppercase text-primary">{rtl ? 'بتشتغل دلوقتي' : 'Now playing'}</span>
-                    <span className="block truncate text-sm font-bold text-white">{track.title}</span>
-                    <span className="block truncate text-xs text-muted">{track.artist?.name ?? '—'}</span>
+                    <span className="block text-[10px] font-bold uppercase text-primary">
+                      {rtl ? 'بتشتغل دلوقتي' : 'Now playing'}
+                    </span>
+                    <span className="block truncate text-sm font-bold text-white">
+                      {track.title}
+                    </span>
+                    <span className="block truncate text-xs text-muted">
+                      {track.artist?.name ?? '—'}
+                    </span>
                   </div>
                 </div>
                 {queue.length === 0 ? (

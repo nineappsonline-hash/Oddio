@@ -103,8 +103,14 @@ export default async function DiscoverPage({
             className={`oddio-explore-shortcut oddio-explore-shortcut-${index % 6}`}
           >
             <GenreArtwork slug={genre.slug} index={index} />
-            <span className="relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">{genreLabel(genre)}</span>
-            <ArrowUpRight className="relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" size={17} aria-hidden="true" />
+            <span className="relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              {genreLabel(genre)}
+            </span>
+            <ArrowUpRight
+              className="relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+              size={17}
+              aria-hidden="true"
+            />
           </Link>
         ))}
       </section>

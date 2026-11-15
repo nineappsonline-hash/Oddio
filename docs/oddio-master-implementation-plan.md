@@ -84,12 +84,12 @@ assets**; at the time of review there were **0 playback sessions and 0
 playback events**. These are snapshots, not proof of ongoing worker health.
 
 - [ ] Inspect those five jobs/objects with appropriate artist access and
-  production logs, validate actual file signatures, distinguish old fixture
-  failures from current worker failures and reconcile asset statuses.
+      production logs, validate actual file signatures, distinguish old fixture
+      failures from current worker failures and reconcile asset statuses.
 - [ ] Do not automatically replay dead jobs or delete original R2 objects.
-  Any requeue requires a reviewed cause and a verified backup.
+      Any requeue requires a reviewed cause and a verified backup.
 - [ ] Confirm the permanent media worker process is actually running and
-  publishing in production; successful historical jobs alone do not prove it.
+      publishing in production; successful historical jobs alone do not prove it.
 
 ## Phase 2 — layout and player
 

@@ -17,8 +17,8 @@ export const runtime = 'nodejs';
 export async function GET() {
   try {
     const user = await requireUser();
-    const playlists = (await readRuntimeDb())
-      .playlists.filter((playlist) => playlist.ownerId === user.id)
+    const playlists = (await readRuntimeDb()).playlists
+      .filter((playlist) => playlist.ownerId === user.id)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return jsonOk({ playlists });
   } catch (error) {

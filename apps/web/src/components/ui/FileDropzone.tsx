@@ -101,8 +101,20 @@ export function FileDropzone({ kind, file, onFile, locale, required }: Props) {
         }}
         className={`cursor-pointer rounded-2xl border-2 px-5 py-8 text-center transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${dragging ? 'scale-[1.01] border-primary bg-primary/20' : file ? 'border-emerald-400/70 bg-emerald-400/[0.09] shadow-[0_0_24px_rgba(52,211,153,0.09)]' : 'border-dashed border-white/20 bg-white/[0.03] hover:border-primary/70'}`}
       >
-        <div aria-hidden="true" className="mb-3 flex justify-center">{file ? <CheckCircle2 className="h-11 w-11 text-emerald-400" /> : isAudio ? <FileAudio2 className="h-11 w-11 text-violet-300" /> : <ImageIcon className="h-11 w-11 text-violet-300" />}</div>
-        {file && <p role="status" className="mb-2 text-sm font-extrabold text-emerald-300">{locale === 'ar' ? '✓ تم اختيار الملف بنجاح' : '✓ File selected successfully'}</p>}
+        <div aria-hidden="true" className="mb-3 flex justify-center">
+          {file ? (
+            <CheckCircle2 className="h-11 w-11 text-emerald-400" />
+          ) : isAudio ? (
+            <FileAudio2 className="h-11 w-11 text-violet-300" />
+          ) : (
+            <ImageIcon className="h-11 w-11 text-violet-300" />
+          )}
+        </div>
+        {file && (
+          <p role="status" className="mb-2 text-sm font-extrabold text-emerald-300">
+            {locale === 'ar' ? '✓ تم اختيار الملف بنجاح' : '✓ File selected successfully'}
+          </p>
+        )}
         <p className={`break-all font-semibold ${file ? 'text-white' : 'text-ink'}`}>
           {file
             ? file.name
@@ -111,9 +123,7 @@ export function FileDropzone({ kind, file, onFile, locale, required }: Props) {
               : 'Drag & drop here, or click to browse'}
         </p>
         <p className="mt-1 text-xs text-muted">
-          {isAudio
-            ? 'MP3 · max 25 MB'
-            : 'PNG, JPEG, WEBP, GIF · max 5 MB'}
+          {isAudio ? 'MP3 · max 25 MB' : 'PNG, JPEG, WEBP, GIF · max 5 MB'}
         </p>
         {file && (
           <p className="mt-2 text-xs font-semibold text-emerald-300">

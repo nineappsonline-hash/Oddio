@@ -77,9 +77,6 @@ function run() {
   if (process.argv.includes('--strict') && !result.ready) process.exitCode = 1;
 }
 
-if (
-  process.argv[1] &&
-  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   run();
 }

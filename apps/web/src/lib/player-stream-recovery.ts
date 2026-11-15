@@ -5,7 +5,11 @@
 export const MAX_STREAM_RECOVERY_ATTEMPTS = 2;
 
 export function streamRecoveryDelayMs(attempt: number): number | null {
-  if (!Number.isSafeInteger(attempt) || attempt < 1 || attempt > MAX_STREAM_RECOVERY_ATTEMPTS) {
+  if (
+    !Number.isSafeInteger(attempt) ||
+    attempt < 1 ||
+    attempt > MAX_STREAM_RECOVERY_ATTEMPTS
+  ) {
     return null;
   }
   return attempt * 1500;

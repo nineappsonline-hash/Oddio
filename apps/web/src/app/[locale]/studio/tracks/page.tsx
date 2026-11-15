@@ -72,37 +72,75 @@ export default async function StudioTracksPage({
           .order('created_at', { ascending: false })
       : { data: [] };
 
-  const approvedCount = data.tracks.filter((track) => track.reviewStatus === 'approved').length;
-  const pendingCount = data.tracks.filter((track) => ['pending_review', 'ready_for_review'].includes(track.reviewStatus)).length;
-  const rejectedCount = data.tracks.filter((track) => track.reviewStatus === 'rejected').length;
+  const approvedCount = data.tracks.filter(
+    (track) => track.reviewStatus === 'approved',
+  ).length;
+  const pendingCount = data.tracks.filter((track) =>
+    ['pending_review', 'ready_for_review'].includes(track.reviewStatus),
+  ).length;
+  const rejectedCount = data.tracks.filter(
+    (track) => track.reviewStatus === 'rejected',
+  ).length;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-gradient-to-r from-violet-500/15 to-cyan-500/5 p-5">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-violet-300">{locale === 'ar' ? 'استوديو الفنان' : 'ARTIST STUDIO'}</p>
-          <h1 className="mt-1 text-2xl font-extrabold text-white">{locale === 'ar' ? 'أغانيك' : 'Your tracks'}</h1>
-          <p className="mt-1 text-xs text-muted">{locale === 'ar' ? 'تابع حالة المراجعة والنشر وعدّل تفاصيل كل أغنية بسهولة.' : 'Track review, publishing and updates in one place.'}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-violet-300">
+            {locale === 'ar' ? 'استوديو الفنان' : 'ARTIST STUDIO'}
+          </p>
+          <h1 className="mt-1 text-2xl font-extrabold text-white">
+            {locale === 'ar' ? 'أغانيك' : 'Your tracks'}
+          </h1>
+          <p className="mt-1 text-xs text-muted">
+            {locale === 'ar'
+              ? 'تابع حالة المراجعة والنشر وعدّل تفاصيل كل أغنية بسهولة.'
+              : 'Track review, publishing and updates in one place.'}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-        <p className="text-sm text-muted">
-          {t('studio.quotaRemaining', {
-            remaining: String(data.quota.remaining),
-            limit: String(data.quota.dailyLimit),
-          })}
-        </p>
-        <ButtonLink href={`/${locale}/studio/tracks/new`} size="sm">
-          {t('studio.uploadTrack')}
-        </ButtonLink>
+          <p className="text-sm text-muted">
+            {t('studio.quotaRemaining', {
+              remaining: String(data.quota.remaining),
+              limit: String(data.quota.dailyLimit),
+            })}
+          </p>
+          <ButtonLink href={`/${locale}/studio/tracks/new`} size="sm">
+            {t('studio.uploadTrack')}
+          </ButtonLink>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: locale === 'ar' ? 'كل الأغاني' : 'All tracks', count: data.tracks.length, color: 'text-white' },
-          { label: locale === 'ar' ? 'مقبولة' : 'Approved', count: approvedCount, color: 'text-emerald-300' },
-          { label: locale === 'ar' ? 'قيد المراجعة' : 'In review', count: pendingCount, color: 'text-amber-300' },
-          { label: locale === 'ar' ? 'مرفوضة' : 'Rejected', count: rejectedCount, color: 'text-rose-300' },
-        ].map((stat) => <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><p className="text-xs text-muted">{stat.label}</p><p className={`mt-2 text-3xl font-extrabold ${stat.color}`}>{stat.count}</p></div>)}
+          {
+            label: locale === 'ar' ? 'كل الأغاني' : 'All tracks',
+            count: data.tracks.length,
+            color: 'text-white',
+          },
+          {
+            label: locale === 'ar' ? 'مقبولة' : 'Approved',
+            count: approvedCount,
+            color: 'text-emerald-300',
+          },
+          {
+            label: locale === 'ar' ? 'قيد المراجعة' : 'In review',
+            count: pendingCount,
+            color: 'text-amber-300',
+          },
+          {
+            label: locale === 'ar' ? 'مرفوضة' : 'Rejected',
+            count: rejectedCount,
+            color: 'text-rose-300',
+          },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"
+          >
+            <p className="text-xs text-muted">{stat.label}</p>
+            <p className={`mt-2 text-3xl font-extrabold ${stat.color}`}>{stat.count}</p>
+          </div>
+        ))}
       </div>
       {data.tracks.length === 0 ? (
         <EmptyState
@@ -116,7 +154,10 @@ export default async function StudioTracksPage({
       ) : (
         <div className="space-y-3">
           {data.tracks.map((track) => (
-            <article key={track.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 transition-colors hover:border-violet-400/30">
+            <article
+              key={track.id}
+              className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 transition-colors hover:border-violet-400/30"
+            >
               <Link href={`/tracks/${track.id}-${track.slug}`} className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-ink hover:underline">
                   {track.title}
@@ -126,7 +167,9 @@ export default async function StudioTracksPage({
                   {track.visibility}
                 </p>
               </Link>
-              <span className="text-[10px] font-bold uppercase tracking-wide text-muted">{locale === 'ar' ? 'حالة المراجعة' : 'Review'}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-muted">
+                {locale === 'ar' ? 'حالة المراجعة' : 'Review'}
+              </span>
               <Badge
                 tone={
                   track.reviewStatus === 'approved'
@@ -157,51 +200,55 @@ export default async function StudioTracksPage({
               {!demoMode ? (
                 <details className="group w-full rounded-xl border border-white/10 bg-black/20 p-3 open:border-violet-400/30">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-bold text-fuchsia-200 marker:hidden">
-                    <span>{locale === 'ar' ? 'الكلمات والغلاف · عرض وإدارة الطلبات' : 'Lyrics & cover artwork · View and manage requests'}</span>
+                    <span>
+                      {locale === 'ar'
+                        ? 'الكلمات والغلاف · عرض وإدارة الطلبات'
+                        : 'Lyrics & cover artwork · View and manage requests'}
+                    </span>
                     <span className="text-muted group-open:rotate-180">⌄</span>
                   </summary>
                   <div className="mt-3 space-y-3">
-                  <div className="flex flex-wrap gap-2">
-                    {(['srt', 'lyrics_text', 'artwork'] as const).map((kind) => {
-                      const latest = changeRequests?.find(
-                        (request) =>
-                          request.track_id === track.id && request.change_type === kind,
-                      );
-                      return (
-                        <span
-                          key={kind}
-                          className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-muted"
-                        >
-                          {kind === 'srt'
-                            ? 'SRT lyrics'
-                            : kind === 'lyrics_text'
-                              ? 'Pasted lyrics'
-                              : 'Cover artwork'}
-                          :{' '}
-                          <strong
-                            className={
-                              latest?.status === 'approved'
-                                ? 'text-emerald-300'
-                                : latest?.status === 'pending'
-                                  ? 'text-amber-300'
-                                  : latest?.status === 'rejected'
-                                    ? 'text-rose-300'
-                                    : 'text-muted'
-                            }
+                    <div className="flex flex-wrap gap-2">
+                      {(['srt', 'lyrics_text', 'artwork'] as const).map((kind) => {
+                        const latest = changeRequests?.find(
+                          (request) =>
+                            request.track_id === track.id && request.change_type === kind,
+                        );
+                        return (
+                          <span
+                            key={kind}
+                            className="rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-muted"
                           >
-                            {latest?.status ?? 'Not submitted'}
-                          </strong>
-                        </span>
-                      );
-                    })}
-                  </div>
-                  <TrackChangeUploader
-                    trackId={track.id}
-                    hasApprovedSrt={Boolean(
-                      approvedLyrics?.find((item) => item.id === track.id)
-                        ?.synced_lyrics_srt,
-                    )}
-                  />
+                            {kind === 'srt'
+                              ? 'SRT lyrics'
+                              : kind === 'lyrics_text'
+                                ? 'Pasted lyrics'
+                                : 'Cover artwork'}
+                            :{' '}
+                            <strong
+                              className={
+                                latest?.status === 'approved'
+                                  ? 'text-emerald-300'
+                                  : latest?.status === 'pending'
+                                    ? 'text-amber-300'
+                                    : latest?.status === 'rejected'
+                                      ? 'text-rose-300'
+                                      : 'text-muted'
+                              }
+                            >
+                              {latest?.status ?? 'Not submitted'}
+                            </strong>
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <TrackChangeUploader
+                      trackId={track.id}
+                      hasApprovedSrt={Boolean(
+                        approvedLyrics?.find((item) => item.id === track.id)
+                          ?.synced_lyrics_srt,
+                      )}
+                    />
                   </div>
                 </details>
               ) : null}

@@ -312,8 +312,26 @@ export function AdminCommentToggle({
 
   return (
     <div className="flex flex-wrap gap-2">
-      {status !== 'visible' ? <Button size="sm" variant="outline" onClick={() => onClick('visible')} loading={pending}>{status === 'pending' ? 'Approve' : t('admin.unhideComment')}</Button> : null}
-      {status !== 'hidden' ? <Button size="sm" variant="outline" onClick={() => onClick('hidden')} loading={pending}>{status === 'pending' ? 'Reject' : t('admin.hideComment')}</Button> : null}
+      {status !== 'visible' ? (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onClick('visible')}
+          loading={pending}
+        >
+          {status === 'pending' ? 'Approve' : t('admin.unhideComment')}
+        </Button>
+      ) : null}
+      {status !== 'hidden' ? (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onClick('hidden')}
+          loading={pending}
+        >
+          {status === 'pending' ? 'Reject' : t('admin.hideComment')}
+        </Button>
+      ) : null}
     </div>
   );
 }

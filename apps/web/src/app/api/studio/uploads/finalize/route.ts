@@ -53,7 +53,9 @@ export async function POST(request: Request) {
       title: field(form, 'title'),
       description: field(form, 'description'),
       genreId: field(form, 'genreId'),
-      genreIds: field(form, 'genres').split(',').filter(Boolean).length ? field(form, 'genres').split(',').filter(Boolean) : [field(form, 'genreId')],
+      genreIds: field(form, 'genres').split(',').filter(Boolean).length
+        ? field(form, 'genres').split(',').filter(Boolean)
+        : [field(form, 'genreId')],
       moodIds: field(form, 'moods').split(',').filter(Boolean),
       languageCode: field(form, 'languageCode') || 'en',
       countryCode: field(form, 'countryCode'),

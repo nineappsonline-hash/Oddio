@@ -121,14 +121,44 @@ export function PlayerBar() {
         </div>
       ) : null}
       <div className="mb-2 flex min-w-0 items-center gap-3 border-b border-white/10 pb-2 lg:hidden">
-        <button type="button" onClick={() => setExpanded(true)} className="shrink-0" aria-label={t('player.expand')}>
-          <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="h-10 w-10" rounded="rounded-lg" />
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="shrink-0"
+          aria-label={t('player.expand')}
+        >
+          <Artwork
+            title={track.title}
+            url={track.artwork.url}
+            accent={track.artwork.accent}
+            className="h-10 w-10"
+            rounded="rounded-lg"
+          />
         </button>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <Link href={`/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`} className="block w-full truncate text-xs font-semibold leading-4 text-white">{track.title}</Link>
-          {track.artist ? <Link href={`/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`} className="block w-full truncate text-[11px] leading-4 text-muted">{track.artist.name}</Link> : null}
+          <Link
+            href={`/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
+            className="block w-full truncate text-xs font-semibold leading-4 text-white"
+          >
+            {track.title}
+          </Link>
+          {track.artist ? (
+            <Link
+              href={`/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
+              className="block w-full truncate text-[11px] leading-4 text-muted"
+            >
+              {track.artist.name}
+            </Link>
+          ) : null}
         </div>
-        <button type="button" onClick={() => setExpanded(true)} className="shrink-0 rounded-full border border-white/10 p-2 text-muted" aria-label={t('player.expand')}><Maximize2 className="h-4 w-4" /></button>
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="shrink-0 rounded-full border border-white/10 p-2 text-muted"
+          aria-label={t('player.expand')}
+        >
+          <Maximize2 className="h-4 w-4" />
+        </button>
       </div>
       <div className="flex min-w-0 items-center justify-center gap-1 lg:gap-3">
         <button
@@ -222,9 +252,13 @@ export function PlayerBar() {
               className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-[88px] sm:w-[88px]"
             >
               {isPlaying ? (
-                <span className="flex h-[56px] w-[56px] items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] sm:h-[72px] sm:w-[72px]"><OddioGlyph name="pause" size={21} className="oddio-glyph" /></span>
+                <span className="flex h-[56px] w-[56px] items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] sm:h-[72px] sm:w-[72px]">
+                  <OddioGlyph name="pause" size={21} className="oddio-glyph" />
+                </span>
               ) : (
-                <span className="scale-[0.72] sm:scale-100"><OddioPlayIcon size={88} /></span>
+                <span className="scale-[0.72] sm:scale-100">
+                  <OddioPlayIcon size={88} />
+                </span>
               )}
             </button>
             <button
@@ -343,7 +377,10 @@ export function PlayerBar() {
           />
           <button
             type="button"
-            onClick={() => { window.dispatchEvent(new Event('oddio:open-queue')); setExpanded(true); }}
+            onClick={() => {
+              window.dispatchEvent(new Event('oddio:open-queue'));
+              setExpanded(true);
+            }}
             aria-label={t('player.queue')}
             title={t('player.queue')}
             className="relative rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
@@ -359,13 +396,20 @@ export function PlayerBar() {
 
         <button
           type="button"
-          onClick={() => { window.dispatchEvent(new Event('oddio:open-queue')); setExpanded(true); }}
+          onClick={() => {
+            window.dispatchEvent(new Event('oddio:open-queue'));
+            setExpanded(true);
+          }}
           className="relative hidden shrink-0 rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink sm:inline-flex lg:hidden"
           aria-label={t('player.queue')}
           title={t('player.queue')}
         >
           <OddioGlyph name="queue" size={20} className="oddio-glyph" />
-          {queueLength > 0 ? <span className="absolute -end-0.5 -top-0.5 rounded-full bg-primary px-1 text-[9px] font-bold text-white">{queueLength}</span> : null}
+          {queueLength > 0 ? (
+            <span className="absolute -end-0.5 -top-0.5 rounded-full bg-primary px-1 text-[9px] font-bold text-white">
+              {queueLength}
+            </span>
+          ) : null}
         </button>
 
         <button

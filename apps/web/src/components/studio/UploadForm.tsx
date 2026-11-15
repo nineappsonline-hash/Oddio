@@ -107,13 +107,22 @@ export function UploadForm({
         )
           setGenreId(draft.genreId);
         if (Array.isArray(draft.selectedGenres)) {
-          const restored = draft.selectedGenres.filter((id): id is string => typeof id === 'string' && genres.some((genre) => genre.id === id)).slice(0, 5);
+          const restored = draft.selectedGenres
+            .filter(
+              (id): id is string =>
+                typeof id === 'string' && genres.some((genre) => genre.id === id),
+            )
+            .slice(0, 5);
           const primary = restored[0];
           if (primary) {
             setSelectedGenres(restored);
             setGenreId(primary);
           }
-        } else if (typeof draft.genreId === 'string' && genres.some((genre) => genre.id === draft.genreId)) setSelectedGenres([draft.genreId]);
+        } else if (
+          typeof draft.genreId === 'string' &&
+          genres.some((genre) => genre.id === draft.genreId)
+        )
+          setSelectedGenres([draft.genreId]);
         if (Array.isArray(draft.selectedMoods))
           setSelectedMoods(
             draft.selectedMoods
@@ -195,7 +204,9 @@ export function UploadForm({
 
   function toggleGenre(id: string) {
     setSelectedGenres((current) => {
-      const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id].slice(0, 5);
+      const next = current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id].slice(0, 5);
       setGenreId(next[0] ?? '');
       return next;
     });
@@ -248,7 +259,12 @@ export function UploadForm({
       return;
     }
     if (!selectedGenres.length) {
-      toast(locale === 'ar' ? 'اختار نوع موسيقي واحد على الأقل.' : 'Select at least one genre.', 'error');
+      toast(
+        locale === 'ar'
+          ? 'اختار نوع موسيقي واحد على الأقل.'
+          : 'Select at least one genre.',
+        'error',
+      );
       setStep(2);
       return;
     }
@@ -298,9 +314,18 @@ export function UploadForm({
             body: audioFile,
           });
         } catch {
-          throw new Error(locale === 'ar' ? 'تعذّر الاتصال بمخزن الملفات. تأكد من إعدادات CORS في Cloudflare R2 للسماح لموقع oddio.online برفع الملفات، ثم حاول مرة أخرى.' : 'Could not reach audio storage. Check Cloudflare R2 CORS settings to allow uploads from oddio.online, then try again.');
+          throw new Error(
+            locale === 'ar'
+              ? 'تعذّر الاتصال بمخزن الملفات. تأكد من إعدادات CORS في Cloudflare R2 للسماح لموقع oddio.online برفع الملفات، ثم حاول مرة أخرى.'
+              : 'Could not reach audio storage. Check Cloudflare R2 CORS settings to allow uploads from oddio.online, then try again.',
+          );
         }
-        if (!uploaded.ok) throw new Error(locale === 'ar' ? `فشل رفع الصوت إلى التخزين (HTTP ${uploaded.status}). حاول مرة أخرى.` : `Audio storage rejected the upload (HTTP ${uploaded.status}). Please try again.`);
+        if (!uploaded.ok)
+          throw new Error(
+            locale === 'ar'
+              ? `فشل رفع الصوت إلى التخزين (HTTP ${uploaded.status}). حاول مرة أخرى.`
+              : `Audio storage rejected the upload (HTTP ${uploaded.status}). Please try again.`,
+          );
         form.delete('audio');
         form.delete('artwork');
         form.set('objectKey', grant.objectKey);
@@ -443,15 +468,53 @@ export function UploadForm({
             />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t('studio.genre')} hint={locale === 'ar' ? 'اختار لحد 5 أنواع موسيقية' : 'Select up to 5 genres'}>
-              <input type="search" value={genreSearch} onChange={(event) => setGenreSearch(event.target.value)} className="input mb-2 w-full" placeholder={locale === 'ar' ? 'ابحث عن نوع موسيقي…' : 'Search genres…'} aria-label={locale === 'ar' ? 'بحث في الأنواع الموسيقية' : 'Search genres'} />
+            <Field
+              label={t('studio.genre')}
+              hint={
+                locale === 'ar' ? 'اختار لحد 5 أنواع موسيقية' : 'Select up to 5 genres'
+              }
+            >
+              <input
+                type="search"
+                value={genreSearch}
+                onChange={(event) => setGenreSearch(event.target.value)}
+                className="input mb-2 w-full"
+                placeholder={locale === 'ar' ? 'ابحث عن نوع موسيقي…' : 'Search genres…'}
+                aria-label={
+                  locale === 'ar' ? 'بحث في الأنواع الموسيقية' : 'Search genres'
+                }
+              />
               <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                {genres.filter((genre) => genre.active && `${genre.labelAr} ${genre.labelEn}`.toLocaleLowerCase().includes(genreSearch.trim().toLocaleLowerCase())).map((genre) => {
-                  const active = selectedGenres.includes(genre.id);
-                  return <button key={genre.id} type="button" aria-pressed={active} onClick={() => toggleGenre(genre.id)} className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${active ? 'border-violet-400 bg-violet-500/25 text-white' : 'border-white/15 bg-white/5 text-muted hover:border-violet-400/50'}`}>{active ? '✓ ' : '+ '}{locale === 'ar' ? genre.labelAr : genre.labelEn}</button>;
-                })}
+                {genres
+                  .filter(
+                    (genre) =>
+                      genre.active &&
+                      `${genre.labelAr} ${genre.labelEn}`
+                        .toLocaleLowerCase()
+                        .includes(genreSearch.trim().toLocaleLowerCase()),
+                  )
+                  .map((genre) => {
+                    const active = selectedGenres.includes(genre.id);
+                    return (
+                      <button
+                        key={genre.id}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => toggleGenre(genre.id)}
+                        className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${active ? 'border-violet-400 bg-violet-500/25 text-white' : 'border-white/15 bg-white/5 text-muted hover:border-violet-400/50'}`}
+                      >
+                        {active ? '✓ ' : '+ '}
+                        {locale === 'ar' ? genre.labelAr : genre.labelEn}
+                      </button>
+                    );
+                  })}
               </div>
-              <p className="mt-2 text-xs text-violet-300">{selectedGenres.length}/5 {locale === 'ar' ? 'أنواع مختارة · أول نوع هو الأساسي' : 'selected · first is primary'}</p>
+              <p className="mt-2 text-xs text-violet-300">
+                {selectedGenres.length}/5{' '}
+                {locale === 'ar'
+                  ? 'أنواع مختارة · أول نوع هو الأساسي'
+                  : 'selected · first is primary'}
+              </p>
             </Field>
             <Field label={t('studio.language')} htmlFor="upload-language">
               <SearchableSelect
@@ -468,29 +531,48 @@ export function UploadForm({
               />
             </Field>
           </div>
-          <Field label={t('studio.moods')} hint={locale === 'ar' ? 'اختار لحد 5 حالات مزاجية' : 'Select up to 5 moods'}>
-            <input type="search" value={moodSearch} onChange={(event) => setMoodSearch(event.target.value)} className="input mb-2 w-full" placeholder={locale === 'ar' ? 'ابحث عن حالة مزاجية…' : 'Search moods…'} aria-label={locale === 'ar' ? 'بحث في الحالات المزاجية' : 'Search moods'} />
+          <Field
+            label={t('studio.moods')}
+            hint={locale === 'ar' ? 'اختار لحد 5 حالات مزاجية' : 'Select up to 5 moods'}
+          >
+            <input
+              type="search"
+              value={moodSearch}
+              onChange={(event) => setMoodSearch(event.target.value)}
+              className="input mb-2 w-full"
+              placeholder={locale === 'ar' ? 'ابحث عن حالة مزاجية…' : 'Search moods…'}
+              aria-label={locale === 'ar' ? 'بحث في الحالات المزاجية' : 'Search moods'}
+            />
             <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto">
-              {moods.filter((mood) => `${mood.labelAr} ${mood.labelEn}`.toLocaleLowerCase().includes(moodSearch.trim().toLocaleLowerCase())).map((mood) => {
-                const active = selectedMoods.includes(mood.id);
-                return (
-                  <button
-                    key={mood.id}
-                    type="button"
-                    onClick={() => toggleMood(mood.id)}
-                    aria-pressed={active}
-                    className={`rounded-pill border px-3 py-1.5 text-xs transition ${
-                      active
-                        ? 'border-primary bg-primary/20 text-ink'
-                        : 'border-white/10 bg-white/5 text-muted hover:text-ink'
-                    }`}
-                  >
-                    {locale === 'ar' ? mood.labelAr : mood.labelEn}
-                  </button>
-                );
-              })}
+              {moods
+                .filter((mood) =>
+                  `${mood.labelAr} ${mood.labelEn}`
+                    .toLocaleLowerCase()
+                    .includes(moodSearch.trim().toLocaleLowerCase()),
+                )
+                .map((mood) => {
+                  const active = selectedMoods.includes(mood.id);
+                  return (
+                    <button
+                      key={mood.id}
+                      type="button"
+                      onClick={() => toggleMood(mood.id)}
+                      aria-pressed={active}
+                      className={`rounded-pill border px-3 py-1.5 text-xs transition ${
+                        active
+                          ? 'border-primary bg-primary/20 text-ink'
+                          : 'border-white/10 bg-white/5 text-muted hover:text-ink'
+                      }`}
+                    >
+                      {locale === 'ar' ? mood.labelAr : mood.labelEn}
+                    </button>
+                  );
+                })}
             </div>
-            <p className="mt-2 text-xs text-violet-300">{selectedMoods.length}/5 {locale === 'ar' ? 'حالات مختارة' : 'moods selected'}</p>
+            <p className="mt-2 text-xs text-violet-300">
+              {selectedMoods.length}/5{' '}
+              {locale === 'ar' ? 'حالات مختارة' : 'moods selected'}
+            </p>
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('studio.productionType')} htmlFor="upload-production">

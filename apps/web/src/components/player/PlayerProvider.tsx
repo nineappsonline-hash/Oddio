@@ -352,7 +352,8 @@ export function PlayerProvider({
         if (
           recoveryGenerationRef.current !== generation ||
           usePlayer.getState().track?.id !== currentTrackId
-        ) return;
+        )
+          return;
         void apiRequest<PlaybackAuthorization>(`/api/tracks/${currentTrackId}/playback`, {
           method: 'POST',
         })
@@ -360,7 +361,8 @@ export function PlayerProvider({
             if (
               recoveryGenerationRef.current !== generation ||
               usePlayer.getState().track?.id !== currentTrackId
-            ) return;
+            )
+              return;
             sessionRef.current = result.sessionId;
             streamRef.current = result.streamUrl;
             recoveryPendingRef.current = false;
@@ -370,7 +372,8 @@ export function PlayerProvider({
             if (
               recoveryGenerationRef.current !== generation ||
               usePlayer.getState().track?.id !== currentTrackId
-            ) return;
+            )
+              return;
             recoveryPendingRef.current = false;
             usePlayer.getState().setBuffering(false);
             usePlayer.getState().setError('Playback failed. Try again.');
