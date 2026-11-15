@@ -262,8 +262,8 @@ export function UploadForm({
       toast('Only MP3 audio files are allowed.', 'error');
       return;
     }
-    if (audioFile.size > 25 * 1024 * 1024) {
-      toast('MP3 file must be 25 MB or smaller.', 'error');
+    if (audioFile.size > 100 * 1024 * 1024) {
+      toast('MP3 file must be 100 MiB or smaller.', 'error');
       return;
     }
     if (!selectedGenres.length) {
@@ -854,7 +854,7 @@ export function UploadForm({
       </fieldset>
       <p className="text-xs text-muted">
         {locale === 'ar'
-          ? 'التفاصيل بتتحفظ على الجهاز. لو رفع ملف MP3 من 8 إلى 25 ميجابايت اتقطع، اختار نفس الملف تاني عشان يكمل الأجزاء الناقصة. الغلاف لازم تختاره من جديد.'
+          ? 'التفاصيل بتتحفظ على الجهاز. لو رفع ملف MP3 من 8 إلى 100 ميجابايت اتقطع، اختار نفس الملف تاني عشان يكمل الأجزاء الناقصة. الغلاف لازم تختاره من جديد.'
           : 'Details save on this device. For interrupted uploads of 8–25 MB, reselect the exact same MP3 to resume the remaining R2 parts. Artwork must be selected again.'}
       </p>
       <div className="sticky bottom-3 z-20 flex gap-3 rounded-2xl border border-violet-400/20 bg-[#191622]/95 p-3 shadow-xl backdrop-blur">
