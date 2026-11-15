@@ -29,6 +29,9 @@ echo "==> supabase/tests/social_atomic.sql"
 echo "==> supabase/tests/playback_qualified.sql"
 "${PSQL[@]}" -f supabase/tests/playback_qualified.sql
 
+echo "==> supabase/tests/history_erasure.sql"
+"${PSQL[@]}" -f supabase/tests/history_erasure.sql
+
 echo "==> supabase/tests/player_resume.sql"
 "${PSQL[@]}" -f supabase/tests/player_resume.sql
 
