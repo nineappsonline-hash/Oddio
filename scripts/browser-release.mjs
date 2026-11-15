@@ -36,7 +36,7 @@ try {
     ]) {
       const label = `${engine}/${locale}/${viewport.width === 390 ? 'mobile' : 'desktop'}`;
       const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
-      const page = await context.newPage();
+      let page = await context.newPage();
       const pageErrors = [];
       page.on('pageerror', (error) => pageErrors.push(error.message));
 
@@ -212,6 +212,14 @@ try {
           `page horizontal overflow: ${documentOverflow}px`,
         );
       });
+
+      // Isolate the audio player's pending network requests from unrelated
+      // route checks. WebKit can report canceled playback/lyrics fetches when a
+      // playing page navigates away; those are not discover/search failures.
+      await page.close();
+      pageErrors.length = 0;
+      page = await context.newPage();
+      page.on('pageerror', (error) => pageErrors.push(error.message));
 
       await test(`${label} discover and search without crashes`, async () => {
         const discover = await page.goto(`${base}/${locale}/discover`, {
