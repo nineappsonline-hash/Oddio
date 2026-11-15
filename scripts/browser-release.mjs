@@ -96,6 +96,27 @@ try {
         assert.ok(overflow <= 2, `horizontal overflow: ${overflow}px`);
       });
 
+      if (viewport.width === 390) {
+        await test(`${label} mobile drawer stays left and closes on Escape`, async () => {
+          await page.goto(`${base}/${locale}`, { waitUntil: 'domcontentloaded' });
+          await page.locator('#oddio-mobile-menu-trigger').click();
+          const dialog = page.getByRole('dialog', {
+            name: locale === 'ar' ? 'القائمة' : 'Menu',
+          });
+          await dialog.waitFor({ state: 'visible' });
+          const left = await dialog.evaluate(
+            (element) => element.getBoundingClientRect().left,
+          );
+          assert.ok(Math.abs(left) <= 2, `drawer not anchored left: ${left}px`);
+          await page.keyboard.press('Escape');
+          await dialog.waitFor({ state: 'detached' });
+          assert.equal(
+            await page.locator('#oddio-mobile-menu-trigger').getAttribute('aria-expanded'),
+            'false',
+          );
+        });
+      }
+
       await test(`${label} discover and search without crashes`, async () => {
         const discover = await page.goto(`${base}/${locale}/discover`, {
           waitUntil: 'domcontentloaded',
