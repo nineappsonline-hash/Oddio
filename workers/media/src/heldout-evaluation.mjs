@@ -1,5 +1,3 @@
-import { compareFingerprints } from './audio-fingerprint.mjs';
-
 export const HELDOUT_GATES = Object.freeze({
   minGenres: 2,
   minTracksPerGenre: 4,
