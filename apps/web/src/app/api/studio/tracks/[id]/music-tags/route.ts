@@ -64,13 +64,21 @@ export async function POST(
     }
     const { data: artistTrack, error } = await serviceClient()
       .from('tracks')
-      .select('id,artist_id,audio_features,artists!inner(owner_user_id)')
+      .select('id,artist_id,artists!inner(owner_user_id)')
       .eq('id', id)
       .eq('artists.owner_user_id', user.id)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!artistTrack) throw Errors.notFound('Track not found');
-    const proposal = proposalFrom(artistTrack.audio_features);
+    const { data: pendingSuggestion, error: suggestionError } = await serviceClient()
+      .from('audio_tag_suggestions')
+      .select('suggestion')
+      .eq('track_id', id)
+      .maybeSingle();
+    if (suggestionError) throw new Error(suggestionError.message);
+    const proposal = proposalFrom({
+      tagSuggestion: pendingSuggestion?.suggestion,
+    });
     if (!proposal) throw Errors.invalid('No approved classifier suggestion available');
     // DB RPC checks ownership, editability, stored suggestion and active labels
     // again under row lock. A second request cannot silently change them.
