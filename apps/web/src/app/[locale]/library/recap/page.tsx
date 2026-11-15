@@ -4,7 +4,7 @@ import type { Locale } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
 import { readRuntimeDb } from '@/lib/data/runtime-store';
 import { getHistoryData } from '@/lib/data/queries';
-import { monthlyListeningRecap } from '@/lib/data/monthly-recap';
+import { monthlyListeningRecap, qualifiedRecapEvents } from '@/lib/data/monthly-recap';
 import { ShareRecap } from '@/components/library/ShareRecap';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
@@ -37,7 +37,8 @@ export default async function RecapPage({ params }: {
   const db = await readRuntimeDb();
   const now = new Date();
   const history = getHistoryData(db, { userId: user.id, roles: user.roles });
-  const summary = monthlyListeningRecap(history, now.getUTCFullYear(), now.getUTCMonth() + 1);
+  const listens = qualifiedRecapEvents(history, db.playbackSessions, db.playbackEvents, user.id);
+  const summary = monthlyListeningRecap(listens, now.getUTCFullYear(), now.getUTCMonth() + 1);
   const monthLabel = new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-US', {
     month: 'long', year: 'numeric', timeZone: 'UTC',
   }).format(now);
