@@ -159,6 +159,16 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] Gather lawful/consented representative real-audio training + held-out evaluation by Genre (including Arabic genres) and Mood, plus calibration/precision reporting. Until that dataset is available, Studio displays no classifier proposal.
 - [ ] Test genuine FFmpeg MP3 re-encodes and real R2 worker staging, along with large-catalog scalable candidate matching, false positive reviews, creator appeals and data retention. **All migrations must be rolled out to safe staging before any production worker/web deployment.**
 
+### Phase 4 third slice: consented audio preparation + independent model evaluation (development)
+
+- [x] Added `scripts/prepare-music-dataset.mjs` to decode **only local, permitted audio** using FFmpeg and write private bounded spectral features, not audio bytes or source paths. Every example must have artist-reviewed labels, a rights basis, specific local-training consent scope, a consent record reference and timestamp.
+- [x] Added `workers/media/src/heldout-evaluation.mjs` to reject train/test leakage by artist, recording ID or fingerprint and require the blind holdout to represent **every trained Genre** with at least four new artists per genre. Report coverage, per-genre recall/precision, aggregate precision, Mood precision/recall and abstentions.
+- [x] Training CLI now requires `--holdout`; it **does not write a model** if the independent evaluation fails. Worker-side `suggestArtistTags` refuses to emit proposed tags unless the model carries a passing heldout release report.
+- [x] New independent evaluation and CLI permission tests, including local FFmpeg dataset-preparation smoke with *synthetic fixtures*; these demonstrate safeguards, not real-world Genre accuracy.
+- [x] Added `docs/music-intelligence-dataset.md` with a consent/reference manifest template, local commands, music rights handling, artist-disjoint review and non-production release gates.
+- [ ] **No real, rights-authorized Oddio music dataset is provided or imported.** A real consent/withdrawal process and training + holdout recordings, including Arabic genres and moods, are required before fitting/approving a model. No permission can be inferred solely from music being available to stream.
+- [ ] Supabase migrations, actual R2 transcoding/worker integration, and real Android/iPhone acceptance must be tested in isolated staging with restorable backups before any live rollout. No staging or production migration was executed as part of this work.
+
 ## Phase 5 — personalized discovery
 
 - [ ] Personal recommendations, Oddio Flow and control over unwanted genres.
