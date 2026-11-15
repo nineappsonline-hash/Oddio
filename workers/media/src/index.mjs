@@ -445,6 +445,17 @@ async function handleTranscode(job) {
     }
 
     await transcode(input, output);
+    let measured = null;
+    try {
+      measured = await extractMusicFeatures(output);
+    } catch (error) {
+      // Audio feature estimation must never turn a valid upload into a failed
+      // transcode. This analysis is advisory, not editorial metadata.
+      log('warn', 'audio feature analysis unavailable', {
+        trackId,
+        reason: error instanceof Error ? error.name : 'analysis_error',
+      });
+    }
     const hash = await sha256File(output);
     const objectKey = `${trackId}/${hash}-${TARGET_BITRATE}.mp3`;
     const bitrate = TARGET_BITRATE;
@@ -486,6 +497,7 @@ async function handleTranscode(job) {
       await rest('PATCH', `/rest/v1/tracks?id=eq.${encodeURIComponent(trackId)}`, {
         duration_ms: Math.round((rendered.durationSec || info.durationSec) * 1000),
         quality_label: bitrate >= 320 ? 'high' : 'standard',
+        ...(measured ? { audio_features: measured } : {}),
       });
     }
     log('info', 'transcode complete', { jobId: job.id, trackId, objectKey, bitrate });
