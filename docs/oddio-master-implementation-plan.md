@@ -240,6 +240,14 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] Creator credits, rights disclosures, editorial review and appeals.
 - [ ] Aggregated artist analytics, audience insights, scheduled releases and profiles.
 
+### Phase 6 slice 1 — private artist analytics (feature branch; no production deploy)
+
+- [x] Built bilingual `/[locale]/studio/insights` for signed-in artist managers, including 7/30-day qualified listening totals, a 30-day UTC chart, per-track recent/lifetime qualified plays, likes, follower count, release and review state.
+- [x] Calculations filter tracks to the current owner, count only qualified playback events, exclude future events, and return aggregates without listener IDs or session IDs.
+- [x] Added owner-isolation and aggregation unit tests; linked Insights from Artist Studio home.
+- [ ] Validate typecheck, formatting, CI, and real catalog semantics; historical per-track counters are a separate lifetime measure from recent recorded playback events. No invented historical trends.
+- [ ] Continue Phase 6 with reliable R2 multipart upload/resume, artist release workflow, rights review/appeals and enhanced insights.
+
 ## Phase 7 — community and growth
 
 - [ ] Collaborative playlists, sharing cards, reactions and creator stories.
