@@ -32,7 +32,12 @@ export function monthlyListeningRecap(
   const topTracks = [...counts.values()]
     .sort((a, b) => b.plays - a.plays || a.track.id.localeCompare(b.track.id))
     .slice(0, 5)
-    .map(({ track, plays }) => ({ id: track.id, title: track.title, artist: track.artist?.name ?? 'Oddio Artist', plays }));
+    .map(({ track, plays }) => ({
+      id: track.id,
+      title: track.title,
+      artist: track.artist?.name ?? 'Oddio Artist',
+      plays,
+    }));
   const topArtists = [...artistCounts.entries()]
     .map(([id, value]) => ({ id, ...value }))
     .sort((a, b) => b.plays - a.plays || a.id.localeCompare(b.id))
@@ -63,7 +68,11 @@ export function qualifiedRecapEvents(
     sessions.filter((session) => session.userId === userId).map((session) => session.id),
   );
   return events.flatMap((event) => {
-    if (!event.qualified || event.eventType !== 'qualified' || !ownedSessions.has(event.sessionId)) {
+    if (
+      !event.qualified ||
+      event.eventType !== 'qualified' ||
+      !ownedSessions.has(event.sessionId)
+    ) {
       return [];
     }
     const track = accessible.get(event.trackId);
