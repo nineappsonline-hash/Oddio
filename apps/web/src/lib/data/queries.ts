@@ -576,6 +576,7 @@ export function getLibraryData(db: DemoDb, viewer: Viewer) {
   const now = new Date();
   const likedTracks = db.likes
     .filter((like) => like.userId === viewer.userId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .flatMap((like) => {
       const track = db.tracks.find((item) => item.id === like.trackId);
       if (!track) return [];
