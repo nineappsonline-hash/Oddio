@@ -1,6 +1,6 @@
 import { playbackEventInput } from '@ai-music/contracts';
 import { getSessionUser } from '@/lib/auth/session';
-import { mutateDb } from '@/lib/data/db';
+import { mutateRuntimeDb } from '@/lib/data/runtime-store';
 import { recordPlaybackEvent } from '@/lib/data/mutations';
 import {
   assertSameOrigin,
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     rateLimit(`events:${clientIp(request)}`, 240, 60_000);
     const input = await parseBody(request, playbackEventInput);
     const user = await getSessionUser();
-    const result = mutateDb((db) =>
+    const result = await mutateRuntimeDb((db) =>
       recordPlaybackEvent(db, user ? { id: user.id, roles: user.roles } : null, input),
     );
     return jsonOk(result);
