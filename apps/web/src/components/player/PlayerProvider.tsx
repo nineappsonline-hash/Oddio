@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlaybackEventInput } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
+import { readDiscoveryExclusions } from '@/lib/discovery-preferences';
 import {
   recoverablePlaybackPosition,
   streamRecoveryDelayMs,
@@ -482,6 +483,35 @@ export function PlayerProvider({
         return;
       }
       const advanced = state.advance();
+      if (!advanced && state.station && state.autoplay) {
+        const currentId = state.track?.id;
+        const station = state.station;
+        const exclusions = readDiscoveryExclusions(viewerId);
+        const alreadyPlayed = [
+          ...state.history.map((item) => item.id),
+          ...(currentId ? [currentId] : []),
+          ...exclusions.trackIds,
+        ].slice(-100);
+        const params = new URLSearchParams({ kind: station.kind });
+        if (station.seedId) params.set('seed', station.seedId);
+        if (alreadyPlayed.length) params.set('exclude', alreadyPlayed.join(','));
+        if (exclusions.genreIds.length)
+          params.set('blockedGenres', exclusions.genreIds.join(','));
+        void apiRequest<{ tracks: CatalogTrack[] }>('/api/discovery/mix?' + params.toString())
+          .then(({ tracks }) => {
+            const latest = usePlayer.getState();
+            if (
+              latest.track?.id !== currentId ||
+              latest.station?.kind !== station.kind ||
+              latest.station?.seedId !== station.seedId ||
+              latest.isPlaying ||
+              !latest.autoplay
+            ) return;
+            if (tracks.length > 0) latest.startFlow(tracks, station);
+          })
+          .catch(() => undefined);
+        return;
+      }
       if (!advanced && state.autoplay) {
         void apiRequest<HomeData>('/api/home')
           .then((home) => {
@@ -512,7 +542,7 @@ export function PlayerProvider({
       audio.removeEventListener('error', onError);
       audio.removeEventListener('ended', onEnded);
     };
-  }, [sendEvent, toast]);
+  }, [sendEvent, toast, viewerId]);
 
   useEffect(() => {
     if (!track || typeof navigator === 'undefined' || !('mediaSession' in navigator))
