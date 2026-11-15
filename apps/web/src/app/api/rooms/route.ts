@@ -20,6 +20,7 @@ const actions = z.discriminatedUnion('action', [
   z.object({ action: z.literal('message'), roomId: uuid, body: z.string().trim().min(1).max(300) }),
   z.object({ action: z.literal('moderate'), roomId: uuid, targetId: uuid, operation: z.enum(['mute','unmute','kick','hide']), messageId: z.number().int().positive().optional() }),
   z.object({ action: z.literal('close'), roomId: uuid }),
+  z.object({ action: z.literal('leave'), roomId: uuid }),
 ]);
 
 async function roomMember(roomId: string, userId: string) {
@@ -48,6 +49,12 @@ export async function GET(request: Request) {
     if (!parsed.success) throw Errors.invalid('Invalid room ID');
     const roomId = parsed.data;
     const { room, member } = await roomMember(roomId, user.id);
+    // Presence is refreshed at most once every 30 seconds to reduce DB writes.
+    const {error:presenceError}=await serviceClient().from('listening_room_members')
+      .update({last_seen_at:new Date().toISOString()})
+      .eq('room_id',roomId).eq('user_id',user.id)
+      .lt('last_seen_at',new Date(Date.now()-30_000).toISOString());
+    if(presenceError) throw new Error(presenceError.message);
     const db = serviceClient();
     const [{data: people,error:peopleError},{data: messages,error:messageError}] = await Promise.all([
       db.from('listening_room_members').select('user_id,role,muted,last_seen_at')
@@ -69,6 +76,7 @@ export async function GET(request: Request) {
       ? getTrackPage(await readRuntimeDb(),viewer,room.track_id)?.track ?? null
       : null;
     return jsonOk({
+      serverNow:new Date().toISOString(),
       room: {
         id:room.id,title:room.title,hostId:room.host_id,version:Number(room.version),
         trackId:track?.id??null,playing:track?Boolean(room.is_playing):false,
@@ -130,6 +138,13 @@ export async function POST(request: Request) {
       return jsonOk({roomId:input.roomId});
     }
     const {room,member}=await roomMember(input.roomId,user.id);
+    if(input.action==='leave') {
+      if(room.host_id===user.id) throw Errors.invalid('Host must close the room instead');
+      const {error}=await db.from('listening_room_members').delete()
+        .eq('room_id',room.id).eq('user_id',user.id).eq('role','listener');
+      if(error) throw new Error(error.message);
+      return jsonOk({left:true});
+    }
     if(input.action==='message') {
       rateLimit(`room:chat:${user.id}`,8,60_000);
       const {data:id,error}=await db.rpc('oddio_room_message',{
