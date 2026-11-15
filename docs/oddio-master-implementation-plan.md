@@ -246,6 +246,7 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [x] Calculations filter tracks to the current owner, count only qualified playback events, exclude future events, and return aggregates without listener IDs or session IDs.
 - [x] Added owner-isolation and aggregation unit tests; linked Insights from Artist Studio home.
 - [ ] Validate typecheck, formatting, CI, and real catalog semantics; historical per-track counters are a separate lifetime measure from recent recorded playback events. No invented historical trends.
+- [x] Added a direct-to-R2 XHR transport that reports byte-level browser upload progress (showing 100% only after 2xx acknowledgement), plus a cancel button in the existing three-step release wizard. This avoids proxying audio via Vercel; it is **single-PUT only** and does not resume interrupted transfers.
 - [ ] Continue Phase 6 with reliable R2 multipart upload/resume, artist release workflow, rights review/appeals and enhanced insights.
 
 ## Phase 7 — community and growth
