@@ -37,6 +37,19 @@ jobs:
         run: |
           mkdir -p apps/web/.data/seed-audio
           ffmpeg -y -hide_banner -loglevel error -f lavfi -i 'sine=frequency=440:duration=4' -c:a libmp3lame -b:a 320k -ar 44100 apps/web/.data/seed-audio/track-1.mp3
+      - name: Smoke-test free audio analyzer on synthetic MP3
+        run: |
+          node scripts/analyze-audio.mjs apps/web/.data/seed-audio/track-1.mp3 > /tmp/oddio-analysis.json
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const result = JSON.parse(fs.readFileSync("/tmp/oddio-analysis.json", "utf8"));
+            if (result.schemaVersion !== 1 || !/^[a-f0-9]{64}$/.test(result.fileSha256))
+              throw new Error("Analyzer did not report valid SHA-256");
+            if (!(result.durationSeconds >= 3 && result.durationSeconds <= 5))
+              throw new Error("Unexpected decoded signal duration");
+            if (result.tempoBpm !== null)
+              throw new Error("Very short audio must not invent a BPM");
+          '
       - name: HTTP smoke test — bilingual routes, SEO and audio bytes
         env:
           DEMO_MODE: 'true'
