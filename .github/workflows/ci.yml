@@ -19,6 +19,8 @@ jobs:
       - name: Verify media worker credentials and Cloudflare signing safety
         run: node --test scripts/media-worker-safety.test.mjs
       - run: npm test
+      - name: Verify free audio feature extraction and tempo abstention
+        run: node --test scripts/music-features.test.mjs
       - run: npm run test:release-env
       - name: Detect unresolved production persistence risks (advisory)
         run: |
