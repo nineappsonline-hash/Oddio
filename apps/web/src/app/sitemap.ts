@@ -17,7 +17,6 @@ function languages(path: string) {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const entries = getSitemapEntries(db);
-  const now = new Date();
   const items: MetadataRoute.Sitemap = [];
 
   const staticPaths = [
@@ -39,7 +38,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const path of staticPaths) {
       items.push({
         url: absoluteUrl(`/${locale}${path}`),
-        lastModified: now,
         changeFrequency: path === '' ? 'daily' : 'weekly',
         priority: path === '' ? 1 : 0.6,
         alternates: { languages: languages(path) },
@@ -49,7 +47,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const path = `/genres/${genre.slug}`;
       items.push({
         url: absoluteUrl(`/${locale}${path}`),
-        lastModified: now,
         changeFrequency: 'weekly',
         priority: 0.5,
         alternates: { languages: languages(path) },
@@ -59,7 +56,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const path = `/moods/${mood.slug}`;
       items.push({
         url: absoluteUrl(`/${locale}${path}`),
-        lastModified: now,
         changeFrequency: 'weekly',
         priority: 0.5,
         alternates: { languages: languages(path) },
@@ -69,7 +65,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const path = `/artists/${artist.slug}`;
       items.push({
         url: absoluteUrl(`/${locale}${path}`),
-        lastModified: now,
         changeFrequency: 'weekly',
         priority: 0.7,
         alternates: { languages: languages(path) },
@@ -89,7 +84,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const path = `/albums/${album.id}`;
       items.push({
         url: absoluteUrl(`/${locale}${path}`),
-        lastModified: new Date(album.releaseAt),
         changeFrequency: 'monthly',
         priority: 0.6,
         alternates: { languages: languages(path) },
@@ -99,7 +93,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const path = `/playlists/${playlist.id}`;
       items.push({
         url: absoluteUrl(`/${locale}${path}`),
-        lastModified: now,
         changeFrequency: 'weekly',
         priority: 0.5,
         alternates: { languages: languages(path) },
