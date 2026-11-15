@@ -40,7 +40,7 @@ begin
     raise exception 'First like must enable like'; end if;
   if public.oddio_toggle_track_like(listener,track_id) then
     raise exception 'Second like must remove like'; end if;
-  if (select count(*) from public.likes where user_id=listener and track_id=track_id) <> 0 then
+  if (select count(*) from public.likes l where l.user_id=listener and l.track_id=track_id) <> 0 then
     raise exception 'Like row not removed'; end if;
   begin
     perform public.oddio_toggle_track_like(listener,private_track);
@@ -60,7 +60,7 @@ begin
 
   perform public.oddio_add_playlist_track(owner_id,list_id,track_id);
   perform public.oddio_add_playlist_track(owner_id,list_id,track_id);
-  if (select count(*) from public.playlist_tracks where playlist_id=list_id) <> 1 then
+  if (select count(*) from public.playlist_tracks pt where pt.playlist_id=list_id) <> 1 then
     raise exception 'Duplicate playlist track was inserted'; end if;
   begin
     perform public.oddio_add_playlist_track(listener,list_id,track_id);
