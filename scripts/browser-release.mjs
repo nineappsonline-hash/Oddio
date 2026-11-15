@@ -244,6 +244,47 @@ try {
         assert.equal(pageErrors.length, 0, pageErrors.join('; '));
       });
 
+      await test(`${label} Flow and radio mixes are interactive`, async () => {
+        await page.goto(`${base}/${locale}/discover`, {
+          waitUntil: 'domcontentloaded',
+        });
+        const title = locale === 'ar' ? 'شغّل Oddio Flow' : 'Start Oddio Flow';
+        const start = page.getByRole('button', { name: title, exact: true });
+        await start.waitFor({ state: 'visible', timeout: 15_000 });
+        const responsePromise = page.waitForResponse(
+          (response) =>
+            response.url().includes('/api/discovery/mix?kind=flow') &&
+            response.request().method() === 'GET',
+        );
+        await start.click();
+        const response = await responsePromise;
+        assert.equal(response.status(), 200);
+        const body = await response.json();
+        assert.ok(body.data?.tracks?.length > 0, 'Flow must return playable tracks');
+        const weeklyTitle =
+          locale === 'ar' ? 'شغّل Discover Weekly' : 'Play Discover Weekly';
+        assert.equal(
+          await page.getByRole('button', { name: weeklyTitle, exact: true }).count(),
+          1,
+        );
+        const hidden = page.getByRole('button', {
+          name: locale === 'ar' ? 'مش مهتم' : 'Not interested',
+        });
+        await hidden.first().click();
+        const clear = page.getByRole('button', {
+          name: locale === 'ar' ? 'مسح الاستبعادات' : 'Clear hidden music',
+        });
+        await clear.waitFor({ state: 'visible' });
+        await clear.click();
+        assert.equal(await clear.count(), 0);
+      });
+
+      // A station can initiate streaming; isolate it before later navigation.
+      await page.close();
+      pageErrors.length = 0;
+      page = await context.newPage();
+      page.on('pageerror', (error) => pageErrors.push(error.message));
+
       await test(`${label} bilingual search filters survive pagination and submission`, async () => {
         await page.goto(`${base}/${locale}/search?sort=newest`, {
           waitUntil: 'domcontentloaded',
