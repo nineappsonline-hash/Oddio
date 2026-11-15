@@ -6,6 +6,7 @@ import type { CatalogTrack } from '@/lib/data/queries';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
 import { roomShouldSeek, roomSyncedPosition } from '@/lib/room-playback-sync';
+import { RoomTrackPicker } from '@/components/rooms/RoomTrackPicker';
 
 interface RoomView {
   serverNow: string;
@@ -233,6 +234,21 @@ export function RoomSession({ roomId, locale }: { roomId: string; locale: 'ar' |
               {ar ? 'نسخ بيانات الدعوة' : 'Copy invitation details'}
             </button>
           </div>
+        ) : null}
+        {host ? (
+          <RoomTrackPicker
+            locale={locale}
+            busy={busy}
+            onSelect={(song) => {
+              usePlayer.getState().play(song, [song]);
+              void action({
+                action: 'transport',
+                trackId: song.id,
+                playing: true,
+                seconds: 0,
+              });
+            }}
+          />
         ) : null}
         {host ? (
           <div className="flex flex-wrap gap-2">
