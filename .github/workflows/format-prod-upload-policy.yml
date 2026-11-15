@@ -1,0 +1,30 @@
+name: Format production upload policy hotfix
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/format-prod-upload-policy.yml']
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: |
+          npx prettier --write \
+            apps/web/src/app/api/studio/uploads/policy/route.ts \
+            apps/web/src/components/studio/UploadForm.tsx
+      - run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "oddio-ci-format"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src
+          git commit -m "style(prod): normalize upload cap hotfix"
+          git push origin HEAD:main
