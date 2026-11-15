@@ -5,13 +5,17 @@ import { trainReviewedClassifier, suggestArtistTags } from '../workers/media/src
 function example(id, genreSlug, prefix) {
   return {
     id,
+    artistId: `artist-${id}`,
     genreSlug,
     moodSlugs: genreSlug === 'ambient' ? ['calm'] : ['energetic'],
     consent: true,
     artistReviewed: true,
     fingerprint: {
       version: 1,
-      shingles: Array.from({ length: 25 }, (_, i) => `${prefix}-${i}`),
+      shingles: [
+        ...Array.from({ length: 25 }, (_, i) => `${prefix}-${i}`),
+        `${prefix}-unique-${id}`,
+      ],
     },
   };
 }
@@ -36,6 +40,16 @@ test('requires consent and artist review, and abstains when audio evidence is ab
   const model = trainReviewedClassifier(good);
   assert.equal(suggestArtistTags({ version: 1, shingles: ['unrelated'] }, model), null);
   assert.equal(suggestArtistTags(good[0].fingerprint, null), null);
+});
+
+test('rejects repeated audio or one-artist label leakage', () => {
+  assert.throws(() => trainReviewedClassifier([
+    ...good.slice(0, 9),
+    { ...good[9], fingerprint: good[5].fingerprint },
+  ]), /Duplicate audio fingerprints/);
+  assert.throws(() => trainReviewedClassifier(good.map((row) =>
+    row.genreSlug === 'ambient' ? { ...row, artistId: 'one-artist' } : row,
+  )), /independent artists/);
 });
 
 test('rejects uncalibrated, underrepresented or duplicate-id models', () => {
