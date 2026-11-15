@@ -21,8 +21,8 @@ export function canonicalR2Query(params: Record<string, string>) {
     left < right ? -1 : left > right ? 1 : 0;
   return Object.entries(params)
     .map(([key, value]) => [encoded(key), encoded(value)] as const)
-    .sort(([keyA, valueA], [keyB, valueB]) =>
-      compare(keyA, keyB) || compare(valueA, valueB),
+    .sort(
+      ([keyA, valueA], [keyB, valueB]) => compare(keyA, keyB) || compare(valueA, valueB),
     )
     .map(([key, value]) => `${key}=${value}`)
     .join('&');
@@ -97,8 +97,9 @@ async function signedS3(
     method,
     headers: {
       ...request.headers,
-      ...(body ? { 'Content-Type': 'application/xml' } :
-        Object.prototype.hasOwnProperty.call(params, 'uploads')
+      ...(body
+        ? { 'Content-Type': 'application/xml' }
+        : Object.prototype.hasOwnProperty.call(params, 'uploads')
           ? { 'Content-Type': 'audio/mpeg' }
           : {}),
     },

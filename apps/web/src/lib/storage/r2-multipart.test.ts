@@ -14,8 +14,6 @@ describe('Cloudflare R2 signature v4 canonical parameters', () => {
   });
 
   it('encodes RFC3986 reserved characters before signing', () => {
-    expect(canonicalR2Query({ 'a!': 'a b', 'a-': 'x/y' })).toBe(
-      'a%21=a%20b&a-=x%2Fy',
-    );
+    expect(canonicalR2Query({ 'a!': 'a b', 'a-': 'x/y' })).toBe('a%21=a%20b&a-=x%2Fy');
   });
 });
