@@ -30,6 +30,7 @@ jobs:
             apps/web/src/app/api/discovery/mix/route.ts \
             apps/web/src/lib/discovery-preferences.ts \
             apps/web/src/components/music/DiscoveryMixShelf.tsx \
+            apps/web/src/components/music/PromptPlaylist.tsx \
             apps/web/src/components/player/FlowButton.tsx \
             apps/web/src/lib/data/discovery-quality.ts \
             apps/web/src/lib/data/discovery-quality.test.ts \
