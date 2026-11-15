@@ -45,7 +45,8 @@ export async function generateMetadata({
       : safeLocale === 'ar'
         ? `اسمع قائمة تشغيل ${page.playlist.title} على Oddio. اكتشف أغاني وموسيقى بالذكاء الاصطناعي ضمن قائمة مختارة للاستماع.`
         : `Listen to ${page.playlist.title} on Oddio. Explore a curated playlist of AI-generated songs and discover new music.`,
-    path: `/playlists/${id}`,
+    path: `/playlists/${page.playlist.id}`,
+    noindex: page.playlist.visibility !== 'public' || page.tracks.length === 0,
   });
 }
 
