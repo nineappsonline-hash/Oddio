@@ -63,8 +63,18 @@ const INTERVAL = Math.max(
   ),
 );
 
+// Never silently switch to demo processing when production configuration is
+// incomplete. That would make queued media jobs appear to succeed locally.
+if ((SUPABASE_URL && !SERVICE_KEY) || (!SUPABASE_URL && SERVICE_KEY)) {
+  process.stderr.write('Media worker requires both SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.\\n');
+  process.exit(1);
+}
+if (process.env.DEMO_MODE === 'false' && (!SUPABASE_URL || !SERVICE_KEY)) {
+  process.stderr.write('Production media worker refuses demo fallback.\\n');
+  process.exit(1);
+}
 const workerId = crypto.randomUUID().slice(0, 8);
-const demoMode = !SUPABASE_URL || !SERVICE_KEY;
+const demoMode = !SUPABASE_URL && !SERVICE_KEY;
 
 function log(level, message, extra = {}) {
   const line = {
