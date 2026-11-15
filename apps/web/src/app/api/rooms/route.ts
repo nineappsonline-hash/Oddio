@@ -101,6 +101,12 @@ export async function POST(request: Request) {
     const input = await parseBody(request,actions);
     const db = serviceClient();
     if (input.action === 'create') {
+      // Close expired own rooms before the DB partial unique index checks.
+      const {error:cleanupError}=await db.from('listening_rooms')
+        .update({status:'closed',is_playing:false})
+        .eq('host_id',user.id).eq('status','open')
+        .lte('expires_at',new Date().toISOString());
+      if(cleanupError) throw new Error(cleanupError.message);
       const {data:existing,error:priorError}=await db.from('listening_rooms')
         .select('id').eq('host_id',user.id).eq('status','open')
         .gt('expires_at',new Date().toISOString()).limit(1);
@@ -111,6 +117,7 @@ export async function POST(request: Request) {
       const {data:room,error}=await db.from('listening_rooms').insert({
         host_id:user.id,title:input.title,code_hash:codeHash,
       }).select('id').single();
+      if (error?.code==='23505') throw Errors.conflict('You already have an open room');
       if (error) throw new Error(error.message);
       const {error:joinError}=await db.rpc('oddio_join_listening_room',{
         p_room_id:room.id,p_user_id:user.id,p_code_hash:codeHash,
@@ -146,6 +153,7 @@ export async function POST(request: Request) {
         p_room_id:room.id,p_user_id:user.id,p_body:input.body,
       });
       if(error?.code==='42501') throw Errors.forbidden();
+      if(error?.code==='P0001') throw Errors.rateLimited();
       if(error) throw new Error(error.message);
       return jsonOk({id});
     }
