@@ -34,6 +34,18 @@ describe('Oddio bilingual search normalization', () => {
     );
   });
 
+  it('tolerates one missing or incorrect letter in longer Arabic and English words', () => {
+    expect(matchesMusicSearch('المدينة الجميلة', searchWords('المدينه الجميلا'))).toBe(true);
+    expect(matchesMusicSearch('Midnight Souk', searchWords('Midnigt'))).toBe(true);
+    expect(matchesMusicSearch('Ambient', searchWords('Ambiant'))).toBe(true);
+  });
+
+  it('does not match unrelated short words or two-character typos', () => {
+    expect(matchesMusicSearch('Pop', searchWords('Poo'))).toBe(false);
+    expect(matchesMusicSearch('Midnight Souk', searchWords('Midxxght'))).toBe(false);
+    expect(matchesMusicSearch('أحمد', searchWords('أخمد'))).toBe(false);
+  });
+
   it('does not claim arbitrary English phonetics map to Arabic names', () => {
     expect(matchesMusicSearch('أحمد', searchWords('Ahmed'))).toBe(false);
   });
