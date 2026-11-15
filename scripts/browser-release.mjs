@@ -244,6 +244,27 @@ try {
         assert.equal(pageErrors.length, 0, pageErrors.join('; '));
       });
 
+      await test(`${label} bilingual search filters survive pagination and submission`, async () => {
+        await page.goto(`${base}/${locale}/search?sort=newest`, {
+          waitUntil: 'domcontentloaded',
+        });
+        const filters = page.locator('form:has(select[name="genre"])');
+        await filters.waitFor({ state: 'visible' });
+        assert.equal(await filters.locator('select[name="sort"]').inputValue(), 'newest');
+        const genres = filters.locator('select[name="genre"] option');
+        const count = await genres.count();
+        assert.ok(count > 1, 'active genres should be available in search filters');
+        const chosen = await genres.nth(1).getAttribute('value');
+        assert.ok(chosen);
+        await filters.locator('select[name="genre"]').selectOption(chosen);
+        await filters.getByRole('button', {
+          name: locale === 'ar' ? 'تطبيق الفلاتر' : 'Apply filters',
+        }).click();
+        await page.waitForURL((url) => url.searchParams.get('genre') === chosen);
+        assert.equal(await filters.locator('select[name="genre"]').inputValue(), chosen);
+        assert.equal(await filters.locator('select[name="sort"]').inputValue(), 'newest');
+      });
+
       await test(`${label} anonymous library stays protected`, async () => {
         await page.goto(`${base}/${locale}/library`, { waitUntil: 'domcontentloaded' });
         await page.waitForURL(new RegExp(`/${locale}/login\\?next=`), {
