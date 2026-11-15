@@ -1,5 +1,7 @@
 import { getSessionUser } from '@/lib/auth/session';
-import { mutateRuntimeDb } from '@/lib/data/runtime-store';
+import { mutateDb } from '@/lib/data/db';
+import { demoMode } from '@/lib/env';
+import { toggleSocialAtomic } from '@/lib/data/atomic-social';
 import { toggleLike } from '@/lib/data/mutations';
 import {
   assertSameOrigin,
@@ -20,7 +22,9 @@ export async function POST(
     const user = await requireUser();
     rateLimit(`like:${user.id}`, 60, 60_000);
     const { id } = await context.params;
-    const liked = await mutateRuntimeDb((db) => toggleLike(db, user, id));
+    const liked = demoMode
+      ? mutateDb((db) => toggleLike(db, user, id))
+      : await toggleSocialAtomic('like', user, id);
     return jsonOk({ liked });
   } catch (error) {
     return jsonError(error);
