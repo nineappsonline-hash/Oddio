@@ -1,4 +1,5 @@
 import type { CatalogTrack } from './queries';
+import type { PlaybackEventRecord, PlaybackSessionRecord } from './types';
 
 export type RecapListen = CatalogTrack & { playedAt: string };
 
@@ -45,4 +46,27 @@ export function monthlyListeningRecap(
     topTracks,
     topArtists,
   };
+}
+
+/** A library history row is only the latest listen per track. Use actual
+ * qualified events to count repeats while retaining the library's current
+ * access checks. Never expose session or listener IDs to the recap UI.
+ */
+export function qualifiedRecapEvents(
+  accessibleHistory: RecapListen[],
+  sessions: PlaybackSessionRecord[],
+  events: PlaybackEventRecord[],
+  userId: string,
+): RecapListen[] {
+  const accessible = new Map(accessibleHistory.map((item) => [item.id, item]));
+  const ownedSessions = new Set(
+    sessions.filter((session) => session.userId === userId).map((session) => session.id),
+  );
+  return events.flatMap((event) => {
+    if (!event.qualified || event.eventType !== 'qualified' || !ownedSessions.has(event.sessionId)) {
+      return [];
+    }
+    const track = accessible.get(event.trackId);
+    return track ? [{ ...track, playedAt: event.occurredAt }] : [];
+  });
 }
