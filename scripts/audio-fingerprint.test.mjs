@@ -36,6 +36,14 @@ test('detects same arrangement at different volume without exact bytes', () => {
   assert.equal(comparison.candidate, true);
 });
 
+test('flags an encoder-style leading offset without changing the melody', () => {
+  const original = fingerprintPcm16(render());
+  const delayed = fingerprintPcm16(render({ offset: 0.5 }));
+  const result = compareFingerprints(original, delayed);
+  assert.equal(result.candidate, true);
+  assert.ok(result.similarity >= 0.82);
+});
+
 test('does not claim an unrelated pitch-shifted melody is identical', () => {
   const original = fingerprintPcm16(render());
   const unrelated = fingerprintPcm16(render({ transpose: 2.05 }));
