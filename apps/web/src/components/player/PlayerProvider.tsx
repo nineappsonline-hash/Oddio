@@ -5,6 +5,10 @@ import type { PlaybackEventInput } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
 import {
+  recoverablePlaybackPosition,
+  streamRecoveryDelayMs,
+} from '@/lib/player-stream-recovery';
+import {
   PLAYER_SESSION_KEY,
   buildPlayerSession,
   parsePlayerSession,
@@ -36,6 +40,11 @@ export function PlayerProvider({
     lastSent: 0,
   });
   const [stream, setStream] = useState<string | null>(null);
+  const streamRef = useRef<string | null>(null);
+  const recoveryAttemptsRef = useRef(0);
+  const recoveryPendingRef = useRef(false);
+  const recoveryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recoveryGenerationRef = useRef(0);
   const { toast } = useToast();
   const track = usePlayer((state) => state.track);
   const trackId = track?.id;
@@ -47,6 +56,20 @@ export function PlayerProvider({
   const volume = usePlayer((state) => state.volume);
   const muted = usePlayer((state) => state.muted);
   const seekRequest = usePlayer((state) => state.seekRequest);
+
+  // A track change invalidates all in-flight stream refresh attempts.
+  useEffect(() => {
+    recoveryGenerationRef.current += 1;
+    recoveryAttemptsRef.current = 0;
+    recoveryPendingRef.current = false;
+    if (recoveryTimerRef.current) clearTimeout(recoveryTimerRef.current);
+    recoveryTimerRef.current = null;
+    streamRef.current = null;
+    return () => {
+      recoveryGenerationRef.current += 1;
+      if (recoveryTimerRef.current) clearTimeout(recoveryTimerRef.current);
+    };
+  }, [trackId]);
 
   // Keep the current queue and preferences in this tab. Restoring never
   // automatically starts audio: playback always needs a user gesture.
@@ -158,6 +181,7 @@ export function PlayerProvider({
     state.setBuffering(true);
     sessionRef.current = null;
     startSentRef.current = false;
+    streamRef.current = null;
     setStream(null);
     audibleRef.current = { accumulated: 0, lastTime: 0, qualified: false, lastSent: 0 };
 
@@ -167,6 +191,7 @@ export function PlayerProvider({
       .then((result) => {
         if (cancelled) return;
         sessionRef.current = result.sessionId;
+        streamRef.current = result.streamUrl;
         setStream(result.streamUrl);
         usePlayer.getState().setDuration(result.durationMs / 1000);
       })
@@ -284,8 +309,57 @@ export function PlayerProvider({
       }
     };
     const onError = () => {
-      usePlayer.getState().setBuffering(false);
-      usePlayer.getState().setError('Playback failed. Try again.');
+      const state = usePlayer.getState();
+      const currentTrackId = state.track?.id;
+      // Ignore errors caused by clearing the old source during a track change.
+      if (!currentTrackId || !streamRef.current || recoveryPendingRef.current) return;
+      const attempt = ++recoveryAttemptsRef.current;
+      const delay = streamRecoveryDelayMs(attempt);
+      if (delay === null) {
+        state.setBuffering(false);
+        state.setError('Playback failed. Try again.');
+        return;
+      }
+
+      const resumeAt = recoverablePlaybackPosition(
+        audio.currentTime,
+        state.currentTime,
+        state.duration,
+      );
+      pendingRestoreTime.current = resumeAt;
+      pendingRestoreTrackId.current = currentTrackId;
+      recoveryPendingRef.current = true;
+      state.setBuffering(true);
+      const generation = recoveryGenerationRef.current;
+      recoveryTimerRef.current = setTimeout(() => {
+        recoveryTimerRef.current = null;
+        if (
+          recoveryGenerationRef.current !== generation ||
+          usePlayer.getState().track?.id !== currentTrackId
+        ) return;
+        void apiRequest<PlaybackAuthorization>(`/api/tracks/${currentTrackId}/playback`, {
+          method: 'POST',
+        })
+          .then((result) => {
+            if (
+              recoveryGenerationRef.current !== generation ||
+              usePlayer.getState().track?.id !== currentTrackId
+            ) return;
+            sessionRef.current = result.sessionId;
+            streamRef.current = result.streamUrl;
+            recoveryPendingRef.current = false;
+            setStream(result.streamUrl);
+          })
+          .catch(() => {
+            if (
+              recoveryGenerationRef.current !== generation ||
+              usePlayer.getState().track?.id !== currentTrackId
+            ) return;
+            recoveryPendingRef.current = false;
+            usePlayer.getState().setBuffering(false);
+            usePlayer.getState().setError('Playback failed. Try again.');
+          });
+      }, delay);
     };
     const onEnded = () => {
       const state = usePlayer.getState();
