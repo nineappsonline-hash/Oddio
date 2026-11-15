@@ -1,0 +1,54 @@
+name: Format development branch
+on:
+  push:
+    branches:
+      - feature/master-plan-phase-0-1
+    paths:
+      - '.github/workflows/format-feature.yml'
+      - 'apps/web/src/**'
+permissions:
+  contents: write
+concurrency:
+  group: format-feature-branch
+  cancel-in-progress: false
+jobs:
+  format:
+    if: github.repository == 'nineappsonline-hash/Oddio'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format only pending application files
+        run: |
+          npx prettier --write \
+            'apps/web/src/app/[locale]/artists/[slug]/page.tsx' \
+            'apps/web/src/app/[locale]/discover/page.tsx' \
+            'apps/web/src/app/[locale]/tracks/[id]/page.tsx' \
+            apps/web/src/app/api/discovery/mix/route.ts \
+            apps/web/src/components/music/DiscoveryMixShelf.tsx \
+            apps/web/src/components/player/FlowButton.tsx \
+            apps/web/src/components/player/PlayerProvider.tsx \
+            apps/web/src/lib/data/discovery-mixes.test.ts \
+            apps/web/src/lib/data/discovery-mixes.ts \
+            apps/web/src/lib/data/recommendations.test.ts \
+            apps/web/src/lib/data/recommendations.ts \
+            apps/web/src/lib/discovery-preferences.ts \
+            apps/web/src/lib/player-store.ts \
+            apps/web/src/lib/storage/r2-stream-architecture.test.ts
+      - name: Commit formatting in development branch only
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes"
+            exit 0
+          fi
+          git config user.name "oddio-ci-format"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src
+          git commit -m "style: format Oddio development features with Prettier"
+          git push origin HEAD:feature/master-plan-phase-0-1
