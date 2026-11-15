@@ -36,8 +36,14 @@ export async function generateMetadata({
     });
   return buildMetadata({
     locale: safeLocale,
-    title: page.playlist.title,
-    description: page.playlist.description || 'Curated playlist',
+    title: safeLocale === 'ar'
+      ? `قائمة تشغيل ${page.playlist.title}`
+      : `${page.playlist.title} — AI Music Playlist`,
+    description: page.playlist.description
+      ? `${page.playlist.description.slice(0, 145)} — Listen on Oddio.`
+      : safeLocale === 'ar'
+        ? `اسمع قائمة تشغيل ${page.playlist.title} على Oddio. اكتشف أغاني وموسيقى بالذكاء الاصطناعي ضمن قائمة مختارة للاستماع.`
+        : `Listen to ${page.playlist.title} on Oddio. Explore a curated playlist of AI-generated songs and discover new music.`,
     path: `/playlists/${id}`,
   });
 }
