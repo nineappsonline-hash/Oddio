@@ -336,6 +336,16 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] The room feature requires its new migration, older staged migrations and paired worker/web deployment. Do not enable room routes on production until the release gate and database backup are validated.
 - [ ] Future iteration: durable room-level audit records, moderation appeals/reporting of chat abuse, periodic cleanup of expired rooms and a cross-device load test under the maximum membership cap.
 
+### Phase 8 slice 4 — audio transitions and mobile build scaffolds (development only)
+
+- [x] Added a crossfade duration selector (Off, 3s, 5s, 8s), saved locally per browser. Implemented a second, independently authorized HTMLAudioElement which prebuffers the next queued track shortly before the end, plays an **equal-power overlap** when enabled, and hands off to the ordinary playback pipeline when the first track finishes. Pausing and deliberate seeking cancel/pause transitions; autoplay restrictions and playback authorization errors fall back to normal playback.
+- [x] When Crossfade is Off, the same speculative authorization/prebuffer shortens the next-song gap, **but this is best-effort gap reduction, not a verified sample-accurate gapless decoder**. Each queued track is still authorized through `/api/tracks/[id]/playback`, never by copying someone else's Cloudflare R2 URL. No server-side audio proxy or unlicensed caching was introduced.
+- [x] Added equal-power gain/transition eligibility unit tests and formatted web-player setting controls.
+- [x] Added `mobile/android/` Bubblewrap Trusted Web Activity build entry point and signing/assetlinks guidance for Ubuntu; added `mobile/ios/` SwiftUI/WKWebView source scaffolds and real-device/test-signing instructions for Xcode/macOS. Source files are **not** compiled APK, AAB, Xcode project, or signed IPA.
+- [ ] Critical: run real browser audio overlap, fallback, qualified-play accounting, stream token expiry, repeat/shuffle/auto-play and Bluetooth/media-session tests. Check signed URLs are neither persisted nor cached. **Do not claim gapless/crossfade production-ready on CI alone.**
+- [ ] Before packaging: publish an actually valid square PWA icon set and verify the manifest path exists on the live site; complete Android Digital Asset Links with the real package signing fingerprint. iOS requires an actual Xcode project, proper native features and App Store review readiness, not just an embedded WebView.
+- [ ] Offline rights: no track download is enabled or cached by the PWA worker. Before implementing offline, establish clear per-track artist license consent and revocation, per-user entitlements, encrypted local media and expiration/erase policy. Never cache signed Cloudflare R2 streams indiscriminately.
+
 ## Continuous release gates (every phase)
 
 1. No direct production deploy from a work-in-progress branch.
