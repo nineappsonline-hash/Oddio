@@ -169,6 +169,13 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] **No real, rights-authorized Oddio music dataset is provided or imported.** A real consent/withdrawal process and training + holdout recordings, including Arabic genres and moods, are required before fitting/approving a model. No permission can be inferred solely from music being available to stream.
 - [ ] Supabase migrations, actual R2 transcoding/worker integration, and real Android/iPhone acceptance must be tested in isolated staging with restorable backups before any live rollout. No staging or production migration was executed as part of this work.
 
+### Cloudflare R2 signed DELETE hardening (development branch, 2026-11-15)
+
+- [x] Corrected the R2 rendition-object regex, AWS timestamp normalization and SigV4 canonical newline escaping in `presignR2Delete`. Previously these had double-escaped literals which could reject valid .mp3 rendition keys and produce invalid deletion signatures.
+- [x] Added a source-level regression guard to `r2-stream-architecture.test.ts` for the corrected signer. **Not yet verified against the Cloudflare API**; no files were deleted.
+- [ ] Confirm the new Vitest/format/CI gates on the development branch and stage a test-object upload/delete using a non-production R2 bucket before treating the behavior as accepted. Production media objects must not be deleted for testing.
+- [ ] Inspect the five dead transcoding jobs using worker logs and actual object evidence, never blind-requeue or purge. Release blockers (backup/restore, staging database migrations, R2 browser acceptance and worker deployment) remain open.
+
 ## Phase 5 — personalized discovery
 
 - [ ] Personal recommendations, Oddio Flow and control over unwanted genres.
