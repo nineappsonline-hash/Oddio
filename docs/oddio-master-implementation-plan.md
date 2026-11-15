@@ -131,6 +131,17 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] Add listening-history privacy/deletion controls, persistent continue-listening and cross-device queue (requires careful database ownership, authorization and migration review).
 - [ ] Add consent-safe typo suggestions, artist-authorized transliteration aliases, and broader music-language support; the current normalizer intentionally does not invent artist name transliterations.
 
+### Phase 3 account privacy, cross-device resume and aliases (development branch)
+
+- [x] Added an authenticated, CSRF-protected DELETE `/api/library/history` endpoint and bilingual confirmation button. In demo it removes owned sessions/events/history; in production it deletes **only the authenticated user's playback_sessions**, with `ON DELETE CASCADE` removing raw playback events. It does **not** rewind anonymous listens, other users' data or already-aggregated chart statistics.
+- [x] Changed signed-in browser session persistence from tab-lifetime `sessionStorage` to user-namespaced `localStorage`; guests keep per-tab storage. Added a paused-state reload browser test.
+- [x] Added an account-owned `player_resume_states` migration, service-only RLS privileges and GET/PUT `/api/player/resume`. It stores track/queue IDs, position and playback preferences (no signed audio URLs or autoplay on restore). Restored tracks are rechecked for viewer access. A disposable PostgreSQL permission test is in the DB CI.
+- [x] Added `searchAliases` for artist-confirmed spellings and a studio editor backed by an owner-only API. Both artist and track search consider aliases but do not invent transliterations.
+- [ ] **Do not merge or deploy until the two new migrations** `20261115190000_player_resume_states.sql` and `20261115191000_artist_search_aliases.sql` **are tested and applied in a safe database rollout before the dependent web routes.** The older atomic social RPC migration is also still awaiting a staged release.
+- [ ] Verify production authenticated server routes and multi-device refresh against a **non-production Supabase project** with both migrations installed. Demo tests cannot prove cross-device Supabase behavior.
+- [ ] Define an explicit retention policy for aggregate chart counters and derived anonymized analytics. History deletion removes raw owned playback events but does not modify previously accumulated nonpersonal counters.
+- [ ] Test real mobile navigation and audio seek after cross-device restoration with a real R2 object.
+
 ## Phase 4 — music intelligence
 
 - [ ] Consent/rights-aware music metadata and AI creation disclosures.
