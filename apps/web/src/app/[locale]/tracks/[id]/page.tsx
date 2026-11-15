@@ -42,9 +42,14 @@ export async function generateMetadata({
     });
   return buildMetadata({
     locale: safeLocale,
-    title: page.track.title,
-    description:
-      page.track.description || `${page.track.title} — ${page.track.artist?.name ?? ''}`,
+    title: safeLocale === 'ar'
+      ? `اسمع ${page.track.title} — ${page.track.artist?.name ?? 'Oddio'}`
+      : `${page.track.title} by ${page.track.artist?.name ?? 'Oddio'} — AI Song`,
+    description: page.track.description
+      ? `${page.track.description.slice(0, 135)} — Listen on Oddio.`
+      : safeLocale === 'ar'
+        ? `اسمع أغنية ${page.track.title} للفنان ${page.track.artist?.name ?? 'Oddio'} على Oddio. اكتشف موسيقى بالذكاء الاصطناعي وأغاني مشابهة.`
+        : `Listen to ${page.track.title} by ${page.track.artist?.name ?? 'Oddio'} on Oddio. Discover original AI-generated music and related songs.`,
     path: `/tracks/${id}`,
     type: 'music.song',
   });
@@ -96,10 +101,11 @@ export default async function TrackPage({
         data={musicRecordingJsonLd({
           title: track.title,
           artistName: artist?.name ?? '',
-          url: `/tracks/${track.id}-${track.slug}`,
+          url: `/${locale}/tracks/${track.id}-${track.slug}`,
           durationMs: track.durationMs,
           releaseAt: track.releaseAt,
           genre: genreLabel,
+          languageCode: track.languageCode,
         })}
       />
 
