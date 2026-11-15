@@ -74,9 +74,9 @@ export function musicRecordingJsonLd(input: {
     '@context': 'https://schema.org',
     '@type': 'MusicRecording',
     name: input.title,
-    byArtist: { '@type': 'MusicGroup', name: input.artistName },
-    url: input.url,
-    duration: `PT${Math.round(input.durationMs / 1000)}S`,
+    ...(input.artistName ? { byArtist: { '@type': 'MusicGroup', name: input.artistName } } : {}),
+    url: new URL(input.url, absoluteUrl('/')).toString(),
+    ...(input.durationMs > 0 ? { duration: `PT${Math.round(input.durationMs / 1000)}S` } : {}),
     datePublished: input.releaseAt,
     genre: input.genre,
     ...(input.languageCode ? { inLanguage: input.languageCode } : {}),
@@ -95,13 +95,13 @@ export function musicAlbumJsonLd(input: {
     '@type': 'MusicAlbum',
     name: input.title,
     byArtist: { '@type': 'MusicGroup', name: input.artistName },
-    url: input.url,
+    url: new URL(input.url, absoluteUrl('/')).toString(),
     datePublished: input.releaseAt,
     numTracks: input.tracks.length,
     track: input.tracks.map((track) => ({
       '@type': 'MusicRecording',
       name: track.title,
-      url: track.url,
+      url: new URL(track.url, absoluteUrl('/')).toString(),
     })),
   };
 }
@@ -111,7 +111,7 @@ export function artistJsonLd(input: { name: string; url: string; description: st
     '@context': 'https://schema.org',
     '@type': 'MusicGroup',
     name: input.name,
-    url: input.url,
-    description: input.description,
+    url: new URL(input.url, absoluteUrl('/')).toString(),
+    ...(input.description ? { description: input.description } : {}),
   };
 }
