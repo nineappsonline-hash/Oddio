@@ -58,6 +58,11 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
       label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace',
       icon: 'soundspace',
     },
+    {
+      href: `/${locale}/rooms`,
+      label: locale === 'ar' ? 'غرف الاستماع' : 'Listening rooms',
+      icon: 'soundspace',
+    },
     { href: `/${locale}/charts`, label: t('nav.charts'), icon: 'charts' },
     { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
     {
