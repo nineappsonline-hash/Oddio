@@ -35,7 +35,9 @@ describe('Oddio bilingual search normalization', () => {
   });
 
   it('tolerates one missing or incorrect letter in longer Arabic and English words', () => {
-    expect(matchesMusicSearch('المدينة الجميلة', searchWords('المدينه الجميلا'))).toBe(true);
+    expect(matchesMusicSearch('المدينة الجميلة', searchWords('المدينه الجميلا'))).toBe(
+      true,
+    );
     expect(matchesMusicSearch('Midnight Souk', searchWords('Midnigt'))).toBe(true);
     expect(matchesMusicSearch('Ambient', searchWords('Ambiant'))).toBe(true);
   });
