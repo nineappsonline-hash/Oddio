@@ -291,6 +291,12 @@ export function PlayerProvider({
 
   useEffect(() => {
     if (!trackId) return;
+    if(crossfadingRef.current && crossfadeTargetRef.current!==trackId){
+      standbyRef.current?.pause();
+      crossfadingRef.current=false;
+      crossfadeTargetRef.current=null;
+      incomingTimeRef.current=0;
+    }
     let cancelled = false;
     const state = usePlayer.getState();
     // Manual Retry is for the same track: retain the listening position and
