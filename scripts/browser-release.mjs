@@ -257,9 +257,11 @@ try {
         const chosen = await genres.nth(1).getAttribute('value');
         assert.ok(chosen);
         await filters.locator('select[name="genre"]').selectOption(chosen);
-        await filters.getByRole('button', {
-          name: locale === 'ar' ? 'تطبيق الفلاتر' : 'Apply filters',
-        }).click();
+        await filters
+          .getByRole('button', {
+            name: locale === 'ar' ? 'تطبيق الفلاتر' : 'Apply filters',
+          })
+          .click();
         await page.waitForURL((url) => url.searchParams.get('genre') === chosen);
         assert.equal(await filters.locator('select[name="genre"]').inputValue(), chosen);
         assert.equal(await filters.locator('select[name="sort"]').inputValue(), 'newest');

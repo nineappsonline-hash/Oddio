@@ -48,7 +48,7 @@ export default async function SearchPage({
   const q = typeof sp.q === 'string' ? sp.q : '';
   const cursor =
     typeof sp.cursor === 'string' && /^\d+$/.test(sp.cursor) ? sp.cursor : undefined;
-  const value = (key: string) => typeof sp[key] === 'string' ? sp[key] : undefined;
+  const value = (key: string) => (typeof sp[key] === 'string' ? sp[key] : undefined);
   const parsed = searchQuery.safeParse({
     q,
     genre: value('genre') || undefined,
@@ -110,25 +110,45 @@ export default async function SearchPage({
         </button>
       </form>
 
-      <form method="get" action={`/${locale}/search`} className="mb-8 flex flex-wrap items-end gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <form
+        method="get"
+        action={`/${locale}/search`}
+        className="mb-8 flex flex-wrap items-end gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+      >
         <input type="hidden" name="q" value={q} />
         <label className="flex min-w-[140px] flex-1 flex-col gap-1.5 text-xs font-semibold text-muted">
           {locale === 'ar' ? 'النوع الموسيقي' : 'Genre'}
-          <select name="genre" defaultValue={query.genre ?? ''} className="input min-h-11">
+          <select
+            name="genre"
+            defaultValue={query.genre ?? ''}
+            className="input min-h-11"
+          >
             <option value="">{locale === 'ar' ? 'كل الأنواع' : 'All genres'}</option>
-            {genres.map((genre) => <option key={genre.id} value={genre.slug}>{locale === 'ar' ? genre.labelAr : genre.labelEn}</option>)}
+            {genres.map((genre) => (
+              <option key={genre.id} value={genre.slug}>
+                {locale === 'ar' ? genre.labelAr : genre.labelEn}
+              </option>
+            ))}
           </select>
         </label>
         <label className="flex min-w-[140px] flex-1 flex-col gap-1.5 text-xs font-semibold text-muted">
           {locale === 'ar' ? 'المزاج' : 'Mood'}
           <select name="mood" defaultValue={query.mood ?? ''} className="input min-h-11">
             <option value="">{locale === 'ar' ? 'كل الحالات' : 'All moods'}</option>
-            {moods.map((mood) => <option key={mood.id} value={mood.slug}>{locale === 'ar' ? mood.labelAr : mood.labelEn}</option>)}
+            {moods.map((mood) => (
+              <option key={mood.id} value={mood.slug}>
+                {locale === 'ar' ? mood.labelAr : mood.labelEn}
+              </option>
+            ))}
           </select>
         </label>
         <label className="flex min-w-[120px] flex-1 flex-col gap-1.5 text-xs font-semibold text-muted">
           {locale === 'ar' ? 'اللغة' : 'Language'}
-          <select name="language" defaultValue={query.language ?? ''} className="input min-h-11">
+          <select
+            name="language"
+            defaultValue={query.language ?? ''}
+            className="input min-h-11"
+          >
             <option value="">{locale === 'ar' ? 'كل اللغات' : 'All languages'}</option>
             <option value="ar">{locale === 'ar' ? 'العربية' : 'Arabic'}</option>
             <option value="en">{locale === 'ar' ? 'الإنجليزية' : 'English'}</option>
@@ -137,12 +157,19 @@ export default async function SearchPage({
         <label className="flex min-w-[120px] flex-1 flex-col gap-1.5 text-xs font-semibold text-muted">
           {locale === 'ar' ? 'الترتيب' : 'Sort by'}
           <select name="sort" defaultValue={query.sort} className="input min-h-11">
-            <option value="relevant">{locale === 'ar' ? 'الأكثر صلة' : 'Relevance'}</option>
+            <option value="relevant">
+              {locale === 'ar' ? 'الأكثر صلة' : 'Relevance'}
+            </option>
             <option value="newest">{locale === 'ar' ? 'الأحدث' : 'Newest'}</option>
-            <option value="popular">{locale === 'ar' ? 'الأكثر استماعًا' : 'Most played'}</option>
+            <option value="popular">
+              {locale === 'ar' ? 'الأكثر استماعًا' : 'Most played'}
+            </option>
           </select>
         </label>
-        <button type="submit" className="min-h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-[#211518]">
+        <button
+          type="submit"
+          className="min-h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-[#211518]"
+        >
           {locale === 'ar' ? 'تطبيق الفلاتر' : 'Apply filters'}
         </button>
       </form>

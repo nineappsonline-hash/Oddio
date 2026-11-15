@@ -334,7 +334,12 @@ export function searchCatalog(
     .slice(0, 8);
 
   const albums = db.albums
-    .filter((album) => tokens.length > 0 && album.status === 'published' && album.visibility === 'public')
+    .filter(
+      (album) =>
+        tokens.length > 0 &&
+        album.status === 'published' &&
+        album.visibility === 'public',
+    )
     .filter((album) => isReleased(album, now))
     .filter((album) =>
       matches(`${album.title} ${artistById.get(album.artistId)?.name ?? ''}`),
