@@ -30,7 +30,8 @@ begin
     raise exception 'Only unpublished editable tracks may change tags'
       using errcode = '42501';
   end if;
-  suggested := current_track.audio_features -> 'tagSuggestion';
+  select s.suggestion into suggested
+  from public.audio_tag_suggestions s where s.track_id = p_track_id;
   if suggested is null
     or suggested ->> 'source' <> 'artist-reviewed-local-model-v1'
     or suggested ->> 'genreSlug' is distinct from p_genre_slug
@@ -75,6 +76,7 @@ begin
   delete from public.track_moods where track_id = p_track_id;
   insert into public.track_moods(track_id, mood_id)
   select p_track_id, unnest(selected_moods);
+  delete from public.audio_tag_suggestions where track_id = p_track_id;
 end;
 $$;
 
