@@ -1,4 +1,4 @@
-name: Format Phase 6-8 development batch - final PWA and invites
+name: Format Phase 6-8 development batch - final mobile menu
 on:
   push:
     branches: [feature/master-plan-phase-0-1]
@@ -45,7 +45,8 @@ jobs:
             apps/web/src/app/api/playlists/route.ts \
             apps/web/src/components/pwa/InstallOddio.tsx \
             apps/web/src/app/'[locale]'/install/page.tsx \
-            apps/web/src/components/layout/Sidebar.tsx
+            apps/web/src/components/layout/Sidebar.tsx \
+            apps/web/src/components/layout/MobileNav.tsx
       - run: |
           if git diff --quiet; then exit 0; fi
           git config user.name "oddio-ci-format"
