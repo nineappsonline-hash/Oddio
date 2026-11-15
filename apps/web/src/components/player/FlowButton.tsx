@@ -4,7 +4,10 @@ import { useState } from 'react';
 import { Radio } from 'lucide-react';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { usePlayer, type StationMode } from '@/lib/player-store';
-import { readDiscoveryExclusions } from '@/lib/discovery-preferences';
+import {
+  hydrateDiscoveryExclusions,
+  readDiscoveryExclusions,
+} from '@/lib/discovery-preferences';
 
 export function FlowButton({
   tracks = [],
@@ -37,6 +40,7 @@ export function FlowButton({
     setBusy(true);
     setFailed(false);
     try {
+      await hydrateDiscoveryExclusions(viewerId);
       const hidden = readDiscoveryExclusions(viewerId);
       const params = new URLSearchParams({ kind });
       if (seedId) params.set('seed', seedId);
