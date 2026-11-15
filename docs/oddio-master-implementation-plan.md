@@ -34,7 +34,7 @@ Working branch: `feature/master-plan-phase-0-1`.
 - [ ] Map JSON IDs and relationships to the Supabase schema; establish an idempotent import with dry-run and reconciliation counts.
 - [ ] Preserve existing account ownership, review state, playlists, likes, follows, release schedules and qualified play counts.
 - [ ] Backfill existing content with a recovery plan; verify RLS in CI and staging.
-- [ ] Migrate each write route behind a controlled rollout and verify read-after-write behavior. Initial branch coverage: track like, artist follow, playlist list/create/update/delete. **NOT production deployed**. Snapshot diff writes are not transactional or concurrency-safe: targeted atomic SQL/RPC operations and integration tests are required before broad rollout.
+- [ ] Migrate each write route behind a controlled rollout and verify read-after-write behavior. Initial branch coverage: track like, artist follow, playlist list/create/update/delete, add track to playlist and playlist follow. **NOT production deployed**. Snapshot diff writes are not transactional or concurrency-safe: targeted atomic SQL/RPC operations and integration tests are required before broad rollout.
 - [ ] Verify R2 master/rendition upload grants, worker processing, signed streaming, seeking and retry behavior.
 - [ ] Enable production persistence only after matched reconciliation, tested backup/restore and successful staging acceptance.
 - [ ] Monitor database errors, upload failures and playback errors after rollout.
