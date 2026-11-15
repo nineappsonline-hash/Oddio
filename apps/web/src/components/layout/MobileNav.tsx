@@ -262,6 +262,12 @@ export function MobileNav() {
                   icon: 'discover',
                 },
                 {
+                  href: `/${locale}/install`,
+                  label: locale === 'ar' ? 'ثبّت Oddio' : 'Install Oddio',
+                  icon: 'soundspace',
+                },
+
+                {
                   href: `/${locale}/discover#artists`,
                   label: locale === 'ar' ? 'الفنانون' : 'Artists',
                   icon: Mic2,
