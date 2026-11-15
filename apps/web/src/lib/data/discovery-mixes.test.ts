@@ -104,7 +104,7 @@ describe('Oddio discovery stations', () => {
       kind: 'genre', seedId: 'pop', now: date,
     });
     expect(result.tracks.length).toBeGreaterThan(0);
-    expect(result.tracks.every((track) => track.genreIds.includes('pop'))).toBe(true);
+    expect(result.tracks.every((track) => (track.genreIds ?? [track.genreId]).includes('pop'))).toBe(true);
   });
 
   it('mood radio selects only tracks with the chosen mood', () => {
