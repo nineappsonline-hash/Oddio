@@ -50,7 +50,7 @@ export async function generateMetadata({
       : safeLocale === 'ar'
         ? `اسمع أغنية ${page.track.title} للفنان ${page.track.artist?.name ?? 'Oddio'} على Oddio. اكتشف موسيقى بالذكاء الاصطناعي وأغاني مشابهة.`
         : `Listen to ${page.track.title} by ${page.track.artist?.name ?? 'Oddio'} on Oddio. Discover original AI-generated music and related songs.`,
-    path: `/tracks/${id}`,
+    path: `/tracks/${page.track.id}-${page.track.slug}`,
     type: 'music.song',
   });
 }
@@ -83,7 +83,9 @@ export default async function TrackPage({
     },
     { label: t('track.country'), value: track.countryCode },
     { label: t('track.released'), value: formatDate(track.releaseAt, locale) },
-    { label: t('track.duration'), value: formatDuration(track.durationMs) },
+    ...(track.durationMs > 0
+      ? [{ label: t('track.duration'), value: formatDuration(track.durationMs) }]
+      : []),
     { label: t('track.quality'), value: track.qualityLabel },
     ...(track.audioFeatures?.tempoBpm && track.audioFeatures.tempoConfidence >= 0.5
       ? [
@@ -130,7 +132,7 @@ export default async function TrackPage({
             {track.explicit ? <Badge tone="danger">Explicit</Badge> : null}
             {track.genre ? (
               <Link
-                href={`/genres/${track.genre.slug}`}
+                href={`/${locale}/genres/${track.genre.slug}`}
                 className="text-xs font-medium text-primary hover:underline"
               >
                 {genreLabel}
@@ -142,7 +144,7 @@ export default async function TrackPage({
           </h1>
           {artist ? (
             <Link
-              href={`/artists/${artist.slug}`}
+              href={`/${locale}/artists/${artist.slug}`}
               className="mt-2 w-fit text-base font-semibold text-muted hover:text-ink"
             >
               {artist.name}
@@ -218,7 +220,7 @@ export default async function TrackPage({
                 {track.moods.map((mood) => (
                   <Link
                     key={mood.id}
-                    href={`/moods/${mood.slug}`}
+                    href={`/${locale}/moods/${mood.slug}`}
                     className="rounded-pill border border-white/10 bg-white/5 px-3 py-1 text-xs text-ink hover:border-cyan/40"
                   >
                     {locale === 'ar' ? mood.labelAr : mood.labelEn}
