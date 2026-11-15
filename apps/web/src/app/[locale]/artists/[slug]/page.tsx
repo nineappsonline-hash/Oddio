@@ -1,3 +1,4 @@
+import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ExternalLink } from 'lucide-react';
@@ -97,6 +98,11 @@ export default async function ArtistPage({
 
   return (
     <div>
+      <SeoBreadcrumbs items={[
+        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+        { label: locale === 'ar' ? 'الفنانون' : 'Artists', href: `/${locale}/artists` },
+        { label: artist.name, href: `/${locale}/artists/${artist.slug}` },
+      ]} />
       <JsonLd
         data={artistJsonLd({
           name: artist.name,
