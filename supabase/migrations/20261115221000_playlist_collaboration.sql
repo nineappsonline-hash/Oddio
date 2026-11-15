@@ -30,7 +30,7 @@ revoke all on public.playlist_collaboration_invites from public,anon,authenticat
 grant select,insert,update,delete on public.playlist_collaboration_invites to service_role;
 
 create or replace function public.oddio_join_playlist_invite(
- p_user_id uuid, p_code_hash text
+ p_user_id uuid, p_playlist_id uuid, p_code_hash text
 ) returns uuid
 language plpgsql security invoker set search_path = ''
 as $$
@@ -40,7 +40,7 @@ declare
 begin
   select i.* into invite
   from public.playlist_collaboration_invites i
-  where i.code_hash=p_code_hash
+  where i.code_hash=p_code_hash and i.playlist_id=p_playlist_id
     and i.revoked_at is null
     and i.expires_at>now()
   for update;
@@ -114,9 +114,9 @@ begin
 end;
 $$;
 
-revoke all on function public.oddio_join_playlist_invite(uuid,text) from public,anon,authenticated;
+revoke all on function public.oddio_join_playlist_invite(uuid,uuid,text) from public,anon,authenticated;
 revoke all on function public.oddio_collaborator_add_playlist_track(uuid,uuid,uuid) from public,anon,authenticated;
 revoke all on function public.oddio_collaborator_remove_playlist_track(uuid,uuid,uuid) from public,anon,authenticated;
-grant execute on function public.oddio_join_playlist_invite(uuid,text) to service_role;
+grant execute on function public.oddio_join_playlist_invite(uuid,uuid,text) to service_role;
 grant execute on function public.oddio_collaborator_add_playlist_track(uuid,uuid,uuid) to service_role;
 grant execute on function public.oddio_collaborator_remove_playlist_track(uuid,uuid,uuid) to service_role;
