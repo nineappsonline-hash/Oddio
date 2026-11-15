@@ -118,6 +118,16 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] Continue listening and queue persistence.
 - [ ] Bilingual typo-tolerant search, artist transliteration, filters, genre families and moods.
 
+### Phase 3 delivery slice (2026-11-15)
+
+- [x] Added bilingual search filters to the web page: active Genre, Mood, Arabic/English language, relevance/newest/popular sorting. Filters also work without a text query, and cursor-based “More tracks” retains the applied choices.
+- [x] Fixed empty-search-state detection to include matching public playlists, and prevented genre-only queries from returning unrelated artists/albums/playlists.
+- [x] Liked-song “Recently added” library order now uses each like's `createdAt` rather than unspecified database row order.
+- [x] Added isolated Vitest coverage for liked song ordering/private-track exclusion, genre-only search, paginated public tracks, and private-playlist search visibility; added a bilingual browser test for filter submissions.
+- [ ] Validate all current Phase 3 CI runs before merge. Existing Phase 2 and Phase 1 production release gates remain in effect.
+- [ ] Add listening-history privacy/deletion controls, persistent continue-listening and cross-device queue (requires careful database ownership, authorization and migration review).
+- [ ] Add consent-safe typo suggestions, artist-authorized transliteration aliases, and broader music-language support; the current normalizer intentionally does not invent artist name transliterations.
+
 ## Phase 4 — music intelligence
 
 - [ ] Consent/rights-aware music metadata and AI creation disclosures.
