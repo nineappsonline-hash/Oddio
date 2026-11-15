@@ -43,4 +43,16 @@ describe('Cloudflare R2 streaming architecture guard', () => {
     );
     expect(streamRoute).not.toContain('await fetch(presignR2Get(');
   });
+  it('signs delete requests with the same canonical newline and AWS timestamp format', () => {
+    const body = signing.slice(signing.indexOf('export function presignR2Delete('));
+    expect(body).toContain(String.raw`/^[a-zA-Z0-9/_-]+\.[a-zA-Z0-9]+$/`);
+    expect(body).toContain(String.raw`replace(/[:-]|\.\d{3}/g, '')`);
+    expect(body).toContain("host',");
+    expect(body).toContain(String.raw`'UNSIGNED-PAYLOAD'`);
+    expect(body).toContain("].join('\\n')");
+    expect(body).not.toContain(String.raw`].join('\\n')`);
+    expect(body).not.toContain(String.raw`replace(/[:-]|\\.\\d{3}/g, '')`);
+    expect(body).not.toContain(String.raw`/^[a-zA-Z0-9/_-]+\\.[a-zA-Z0-9]+$/`);
+  });
+
 });
