@@ -13,7 +13,8 @@ export function roomSyncedPosition(args: {
       Math.max(0, args.elapsedClientMs / 1000)
     : 0;
   const result = base + offset;
-  return typeof args.durationSeconds === 'number' && Number.isFinite(args.durationSeconds) &&
+  return typeof args.durationSeconds === 'number' &&
+    Number.isFinite(args.durationSeconds) &&
     args.durationSeconds > 0
     ? Math.min(result, args.durationSeconds)
     : result;

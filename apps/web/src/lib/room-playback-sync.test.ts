@@ -16,10 +16,14 @@ describe('listening room clock-safe synchronization', () => {
   });
   it('caps at track duration and ignores network/clock skew backwards', () => {
     expect(roomSyncedPosition({ ...base, playing: true, durationSeconds: 43 })).toBe(43);
-    expect(roomSyncedPosition({
-      ...base, playing: true, elapsedClientMs: -10000,
-      serverNow:'2026-11-15T11:59:59.000Z',
-    })).toBe(40);
+    expect(
+      roomSyncedPosition({
+        ...base,
+        playing: true,
+        elapsedClientMs: -10000,
+        serverNow: '2026-11-15T11:59:59.000Z',
+      }),
+    ).toBe(40);
   });
   it('does not thrash audio seeks for normal drift', () => {
     expect(roomShouldSeek(45, 46.9)).toBe(false);
