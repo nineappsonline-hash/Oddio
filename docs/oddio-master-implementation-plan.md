@@ -178,10 +178,10 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 
 ## Phase 5 — personalized discovery
 
-- [ ] Personal recommendations, Oddio Flow and control over unwanted genres.
-- [ ] Song/artist/genre/mood radio, Daily Mix and Discover Weekly.
-- [ ] Prompt-driven playlist generation with a no-paid-API baseline.
-- [ ] Personalized home, Rising Artists, Spotlight and fair exposure controls.
+- [x] Personal recommendations, Oddio Flow and local-browser control over unwanted genres (server-side preference sync remains pending).
+- [x] Song/artist/genre/mood radio, Daily Mix and Discover Weekly (development implementation; real-device acceptance outstanding).
+- [x] Prompt-driven playlist generation with a no-paid-API baseline and private playlist save (staging test required for atomic playlist RPCs).
+- [x] Personalized home, Rising Artists, Spotlight and weekly fair-exposure rotation (pending production evaluation and tuning).
 
 ### Phase 5 first slice — zero-paid-API recommendations (development branch, 2026-11-15)
 
@@ -209,6 +209,18 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [x] Added mix-rotation, access, blocked-genre, seed and player-refill tests; fixed a Flow test syntax failure found in a Vercel preview build. Recheck the latest CI/Vercel status.
 - [x] When the full eligible catalog has been heard, the station requests a new rotation excluding the last finished track and all user-blocked music. It stops if there are genuinely no other playable choices; this is deterministic catalog cycling, not an unlimited supply of new content. Real-browser behavior still needs staging acceptance.
 - [ ] Production rollout remains blocked on complete CI and browser tests, real Cloudflare R2 staging tests, safe Supabase migration rollout/backup and real-device acceptance. This batch has **not been merged or deployed to production**.
+
+### Phase 5 fourth slice — implementation complete on feature branch, not production accepted
+
+- [x] **Genre Radio and Mood Radio**: backend `buildDiscoveryMix` accepts validated active Genre/Mood IDs, restricts tracks to the category, enforces ready public/listable audio and respects hidden genres. Bilingual one-tap station buttons are visible on Genre/Mood pages. Mood pages now load from the production Supabase snapshot instead of using a demo JSON store.
+- [x] **Seeded radio continuation**: song and artist radio keep the original playable seed as an affinity reference even after it enters the played-history exclusion list, preventing silent fallback to unrelated songs.
+- [x] **Prompt to Playlist**: bounded bilingual keyword/synonym and catalog metadata matching through a rate-limited same-origin endpoint; no external AI calls. Reject unrecognized prompts rather than claiming a semantic match. User can play results immediately or save an authenticated **private** playlist using the existing playlist APIs. Partial saves are reported and the private list remains recoverable.
+- [x] **Personalized home**: reuse the likes/qualified-play recommendation shelf and existing `Not Interested` controls from Discover. Anonymous sessions get transparently labeled general choices.
+- [x] **Rising Artists and Spotlight**: use only publicly released, ready-audio artists. Spotlight honors time-bounded editorial artist pins when present; otherwise it picks from weekly rotating underexposed artists. The rising list selects from lower plays-per-track artists, preventing a raw popularity takeover. Artist eligibility never uses private owner-only content.
+- [x] Added unit tests for category radio, invalid seeds, completed song radio, prompt matching/abstention, fair artist exposure and editorial publishing windows.
+- [ ] **Phase 5 acceptance gates**: latest typecheck, unit tests, format, browser CI and actual Supabase/R2 staging audio tests must pass before production. No migrations have been executed for this feature slice, and it remains on the feature branch.
+- [ ] **Cross-device Not Interested sync**: browser storage remains device-local. Requires privacy-reviewed account-owned Supabase storage and secure API/migration rollout; defer to the Phase 3 cross-device persistence release. Do not claim device synchronization today.
+- [ ] Measure opt-in relevance, skip/save rate, cold-start fairness and catalog-scale query performance against real traffic; current algorithm is deterministic MVP, not a trained semantic model.
 
 ## Phase 6 — artist studio
 
