@@ -26,6 +26,9 @@ echo "==> supabase/tests/rls.sql"
 echo "==> supabase/tests/social_atomic.sql"
 "${PSQL[@]}" -f supabase/tests/social_atomic.sql
 
+echo "==> supabase/tests/playback_qualified.sql"
+"${PSQL[@]}" -f supabase/tests/playback_qualified.sql
+
 echo "==> scripts/test-social-concurrency.sh"
 bash scripts/test-social-concurrency.sh
 
