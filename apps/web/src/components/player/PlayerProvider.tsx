@@ -75,8 +75,14 @@ export function PlayerProvider({
   // Keep the current queue and preferences in this tab. Restoring never
   // automatically starts audio: playback always needs a user gesture.
   useEffect(() => {
+    // Signed-in listeners retain their queue across browser restarts. Guests
+    // retain the original per-tab behavior to avoid persistent shared data.
+    const storage = viewerId ? window.localStorage : window.sessionStorage;
+    let disposed = false;
+    let localExists = false;
     try {
-      const session = parsePlayerSession(window.sessionStorage.getItem(storageKey));
+      const session = parsePlayerSession(storage.getItem(storageKey));
+      localExists = Boolean(session);
       if (session) {
         pendingRestoreTime.current = session.currentTime;
         pendingRestoreTrackId.current = session.track?.id ?? null;
@@ -114,14 +120,42 @@ export function PlayerProvider({
       // Browser storage might be disabled; the player works without it.
     }
 
+    // Only fetch cloud state for a blank local session. Do not replace a
+    // track manually selected while the request was in flight. Never autoplay.
+    if (viewerId && !localExists) {
+      void apiRequest<{ session: unknown }>('/api/player/resume')
+        .then(({ session }) => {
+          if (disposed || usePlayer.getState().track) return;
+          const restored = parsePlayerSession(JSON.stringify(session));
+          if (!restored) return;
+          pendingRestoreTime.current = restored.currentTime;
+          pendingRestoreTrackId.current = restored.track?.id ?? null;
+          usePlayer.setState({
+            track: restored.track,
+            queue: restored.queue,
+            currentTime: restored.currentTime,
+            duration: (restored.track?.durationMs ?? 0) / 1000,
+            volume: restored.volume,
+            muted: restored.muted,
+            repeat: restored.repeat,
+            shuffle: restored.shuffle,
+            autoplay: restored.autoplay,
+            isPlaying: false,
+            expanded: false,
+            seekRequest: null,
+          });
+        })
+        .catch(() => undefined);
+    }
+
     const save = () => {
       const state = usePlayer.getState();
       try {
         if (!state.track) {
-          window.sessionStorage.removeItem(storageKey);
+          storage.removeItem(storageKey);
           return;
         }
-        window.sessionStorage.setItem(
+        storage.setItem(
           storageKey,
           JSON.stringify(
             buildPlayerSession({
@@ -142,18 +176,43 @@ export function PlayerProvider({
       }
     };
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let cloudTimer: ReturnType<typeof setTimeout> | null = null;
+    const saveCloud = () => {
+      if (!viewerId) return;
+      const state = usePlayer.getState();
+      if (!state.track) return;
+      void apiRequest('/api/player/resume', {
+        method: 'PUT',
+        body: JSON.stringify({
+          trackId: state.track.id,
+          queueTrackIds: state.queue.map((item) => item.id).slice(0, 50),
+          currentTime: Math.max(0, Math.min(state.currentTime, 14400)),
+          volume: state.volume,
+          muted: state.muted,
+          repeat: state.repeat,
+          shuffle: state.shuffle,
+          autoplay: state.autoplay,
+        }),
+      }).catch(() => undefined);
+    };
     const unsubscribe = usePlayer.subscribe(() => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(save, 400);
+      if (viewerId) {
+        if (cloudTimer) clearTimeout(cloudTimer);
+        cloudTimer = setTimeout(saveCloud, 12_000);
+      }
     });
     window.addEventListener('pagehide', save);
     return () => {
+      disposed = true;
       if (timer) clearTimeout(timer);
+      if (cloudTimer) clearTimeout(cloudTimer);
       save();
       unsubscribe();
       window.removeEventListener('pagehide', save);
     };
-  }, [storageKey]);
+  }, [storageKey, viewerId]);
 
   const sendEvent = useCallback(
     (eventType: PlaybackEventInput['eventType'], audibleMs: number) => {
