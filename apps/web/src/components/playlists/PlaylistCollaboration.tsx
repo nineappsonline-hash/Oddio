@@ -63,7 +63,7 @@ export function PlaylistCollaboration({
         const data = await apiRequest<{ playlistId: string }>(
           '/api/playlists/collaboration', {
             method: 'POST',
-            body: JSON.stringify({ action: 'join', code: code.trim().toLowerCase() }),
+            body: JSON.stringify({ action: 'join', playlistId, code: code.trim().toLowerCase() }),
           });
         if (data.playlistId !== playlistId) {
           setMessage(ar ? 'الدعوة دي لقائمة مختلفة.' : 'This invitation belongs to a different playlist.');
