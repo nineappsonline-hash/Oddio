@@ -79,6 +79,16 @@ export const SEO_PAGES: Record<string, SeoCopies> = {
       description: 'أضف موقع Oddio إلى الشاشة الرئيسية في موبايلك للوصول بسرعة إلى الموسيقى بالذكاء الاصطناعي، والأغاني والفنانين وقوائم التشغيل.',
     },
   },
+  '/for-artists': {
+    en: {
+      title: 'Publish AI Music on Oddio — For Artists',
+      description: 'Create an artist presence on Oddio. Learn how AI music artists can apply, submit original tracks for review and manage releases after approval.',
+    },
+    ar: {
+      title: 'انشر موسيقى بالذكاء الاصطناعي | للفنانين',
+      description: 'عاوز تنشر أغانيك على Oddio؟ تعرّف على خطوات تقديم الفنانين، ومتطلبات مراجعة الأغاني، وإدارة إصدارات الموسيقى بالذكاء الاصطناعي.',
+    },
+  },
   '/about': {
     en: {
       title: 'About Oddio — An AI Music Listening Platform',
