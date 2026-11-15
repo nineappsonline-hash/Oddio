@@ -33,14 +33,22 @@ function sessionFor(file: File): MultipartDraft | null {
     const raw = window.localStorage.getItem(DRAFT_KEY);
     if (!raw) return null;
     const value = JSON.parse(raw) as MultipartDraft;
-    if (value.filename !== file.name || value.size !== file.size ||
+    if (
+      value.filename !== file.name ||
+      value.size !== file.size ||
       value.lastModified !== file.lastModified ||
-      value.createdAt > Date.now() || Date.now() - value.createdAt > MAX_SESSION_AGE_MS ||
+      value.createdAt > Date.now() ||
+      Date.now() - value.createdAt > MAX_SESSION_AGE_MS ||
       value.partSize !== 8 * 1024 * 1024 ||
       !/^incoming\/[a-f0-9-]+\/[a-f0-9-]+$/.test(value.objectKey) ||
-      typeof value.uploadId !== 'string' || value.uploadId.length > 512) return null;
+      typeof value.uploadId !== 'string' ||
+      value.uploadId.length > 512
+    )
+      return null;
     return value;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 function saveSession(draft: MultipartDraft | null) {
   try {
@@ -57,7 +65,9 @@ export function clearCompletedMultipartDraft(objectKey: string) {
     if (!raw) return;
     const value = JSON.parse(raw) as MultipartDraft;
     if (value.objectKey === objectKey && value.completed) saveSession(null);
-  } catch { /* browser storage is optional */ }
+  } catch {
+    /* browser storage is optional */
+  }
 }
 
 async function action<T>(payload: MultipartAction): Promise<T> {
@@ -93,10 +103,15 @@ export async function uploadAudioMultipart(
       contentType: 'audio/mpeg',
       bytes: file.size,
     });
-    draft = { filename: file.name, size: file.size,
-      lastModified: file.lastModified, createdAt: Date.now(),
-      objectKey: started.objectKey, uploadId: started.uploadId,
-      partSize: started.partSize };
+    draft = {
+      filename: file.name,
+      size: file.size,
+      lastModified: file.lastModified,
+      createdAt: Date.now(),
+      objectKey: started.objectKey,
+      uploadId: started.uploadId,
+      partSize: started.partSize,
+    };
     saveSession(draft);
   }
 
@@ -106,27 +121,37 @@ export async function uploadAudioMultipart(
   }
   const base = { objectKey: draft.objectKey, uploadId: draft.uploadId, bytes: file.size };
   const totalParts = Math.ceil(file.size / draft.partSize);
-  const { parts } = await action<{ parts: Array<{ partNumber: number; size: number; etag: string }> }>({
-    action: 'list', ...base,
+  const { parts } = await action<{
+    parts: Array<{ partNumber: number; size: number; etag: string }>;
+  }>({
+    action: 'list',
+    ...base,
   });
   const done = new Map(parts.map((part) => [part.partNumber, part.size]));
   for (let partNumber = 1; partNumber <= totalParts; partNumber += 1) {
     const start = (partNumber - 1) * draft.partSize;
     const end = Math.min(file.size, start + draft.partSize);
     if (done.get(partNumber) === end - start) {
-      options.progress(Math.min(99, Math.floor(end / file.size * 100)));
+      options.progress(Math.min(99, Math.floor((end / file.size) * 100)));
       continue;
     }
     const { uploadUrl } = await action<{ uploadUrl: string }>({
-      action: 'part', ...base, partNumber,
+      action: 'part',
+      ...base,
+      partNumber,
     });
     // Signed URL stays browser-bound; R2 receives the bytes directly.
     await uploadAudioWithProgress(
       uploadUrl,
       file.slice(start, end),
       {},
-      (percent) => options.progress(Math.min(99,
-        Math.floor(((start + (end - start) * percent / 100) / file.size) * 100))),
+      (percent) =>
+        options.progress(
+          Math.min(
+            99,
+            Math.floor(((start + ((end - start) * percent) / 100) / file.size) * 100),
+          ),
+        ),
       options.onRequest,
     );
   }

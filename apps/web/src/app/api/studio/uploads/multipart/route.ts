@@ -41,7 +41,10 @@ const actions = z.discriminatedUnion('action', [
     bytes: z.number().int().positive(),
   }),
   owned.extend({ action: z.literal('list') }),
-  owned.extend({ action: z.literal('part'), partNumber: z.number().int().min(1).max(10000) }),
+  owned.extend({
+    action: z.literal('part'),
+    partNumber: z.number().int().min(1).max(10000),
+  }),
   owned.extend({ action: z.literal('complete') }),
   owned.extend({ action: z.literal('abort') }),
 ]);
@@ -97,15 +100,22 @@ export async function POST(request: Request) {
       return jsonOk({ parts, partSize: PART_SIZE });
     }
     if (input.action === 'part') {
-      if (input.partNumber > totalParts) throw Errors.invalid('Part exceeds the upload size');
+      if (input.partNumber > totalParts)
+        throw Errors.invalid('Part exceeds the upload size');
       return jsonOk({
-        uploadUrl: presignMultipartPart(input.objectKey, input.uploadId, input.partNumber),
+        uploadUrl: presignMultipartPart(
+          input.objectKey,
+          input.uploadId,
+          input.partNumber,
+        ),
         partNumber: input.partNumber,
         bytes: multipartPartLength(input.bytes, input.partNumber),
       });
     }
-    if (parts.length !== totalParts ||
-        parts.some((part, index) => part.partNumber !== index + 1)) {
+    if (
+      parts.length !== totalParts ||
+      parts.some((part, index) => part.partNumber !== index + 1)
+    ) {
       throw Errors.invalid('Not all audio parts have arrived in R2');
     }
     await finishMultipart(input.objectKey, input.uploadId, parts);

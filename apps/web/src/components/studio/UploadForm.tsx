@@ -7,7 +7,11 @@ import { useRouter } from 'next/navigation';
 import type { Artist, Genre, Locale, Mood } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { uploadAudioWithProgress } from '@/lib/upload-audio-progress';
-import { MULTIPART_THRESHOLD, clearCompletedMultipartDraft, uploadAudioMultipart } from '@/lib/upload-audio-multipart';
+import {
+  MULTIPART_THRESHOLD,
+  clearCompletedMultipartDraft,
+  uploadAudioMultipart,
+} from '@/lib/upload-audio-multipart';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -302,7 +306,9 @@ export function UploadForm({
           setUploadPercent(0);
           const completed = await uploadAudioMultipart(audioFile, {
             progress: setUploadPercent,
-            onRequest: (request) => { uploadRequest.current = request; },
+            onRequest: (request) => {
+              uploadRequest.current = request;
+            },
           });
           form.delete('audio');
           form.delete('artwork');
@@ -327,50 +333,50 @@ export function UploadForm({
             }
           }
         } else {
-        const grant = await apiRequest<{
-          uploadUrl: string;
-          objectKey: string;
-          headers: Record<string, string>;
-        }>('/api/studio/uploads/authorize', {
-          method: 'POST',
-          body: JSON.stringify({
-            filename: audioFile.name,
-            contentType: audioFile.type || 'audio/mpeg',
-            bytes: audioFile.size,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-        });
-        setUploadPercent(0);
-        await uploadAudioWithProgress(
-          grant.uploadUrl,
-          audioFile,
-          grant.headers,
-          setUploadPercent,
-          (request) => {
-            uploadRequest.current = request;
-          },
-        );
-        form.delete('audio');
-        form.delete('artwork');
-        form.set('objectKey', grant.objectKey);
-        form.set('bytes', String(audioFile.size));
-        form.set('contentType', audioFile.type || 'audio/mpeg');
-        const finalized = await apiRequest<{ id: string }>(
-          '/api/studio/uploads/finalize',
-          { method: 'POST', body: form },
-        );
-        if (artworkFile) {
-          const artworkForm = new FormData();
-          artworkForm.set('artwork', artworkFile);
-          try {
-            await apiRequest(`/api/studio/tracks/${finalized.id}/artwork`, {
-              method: 'POST',
-              body: artworkForm,
-            });
-          } catch {
-            artworkFailed = true;
+          const grant = await apiRequest<{
+            uploadUrl: string;
+            objectKey: string;
+            headers: Record<string, string>;
+          }>('/api/studio/uploads/authorize', {
+            method: 'POST',
+            body: JSON.stringify({
+              filename: audioFile.name,
+              contentType: audioFile.type || 'audio/mpeg',
+              bytes: audioFile.size,
+            }),
+            headers: { 'Content-Type': 'application/json' },
+          });
+          setUploadPercent(0);
+          await uploadAudioWithProgress(
+            grant.uploadUrl,
+            audioFile,
+            grant.headers,
+            setUploadPercent,
+            (request) => {
+              uploadRequest.current = request;
+            },
+          );
+          form.delete('audio');
+          form.delete('artwork');
+          form.set('objectKey', grant.objectKey);
+          form.set('bytes', String(audioFile.size));
+          form.set('contentType', audioFile.type || 'audio/mpeg');
+          const finalized = await apiRequest<{ id: string }>(
+            '/api/studio/uploads/finalize',
+            { method: 'POST', body: form },
+          );
+          if (artworkFile) {
+            const artworkForm = new FormData();
+            artworkForm.set('artwork', artworkFile);
+            try {
+              await apiRequest(`/api/studio/tracks/${finalized.id}/artwork`, {
+                method: 'POST',
+                body: artworkForm,
+              });
+            } catch {
+              artworkFailed = true;
+            }
           }
-        }
         }
       } else {
         await apiRequest('/api/studio/tracks', { method: 'POST', body: form });
