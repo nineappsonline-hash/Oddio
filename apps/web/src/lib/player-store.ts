@@ -27,6 +27,7 @@ interface PlayerState {
   retryPlayback: () => void;
   play: (track: CatalogTrack, upcoming?: CatalogTrack[]) => void;
   startFlow: (tracks: CatalogTrack[], station?: { kind: StationMode; seedId?: string }) => void;
+  continueStation: (tracks: CatalogTrack[]) => void;
   toggle: () => void;
   setPlaying: (playing: boolean) => void;
   next: (automatic?: boolean) => boolean;
@@ -137,6 +138,32 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       duration: first.durationMs / 1000,
       seekRequest: { seconds: 0, nonce: (get().seekRequest?.nonce ?? 0) + 1 },
       playbackRequestId: get().playbackRequestId + 1,
+      error: null,
+      buffering: true,
+    });
+  },
+  continueStation: (tracks) => {
+    const state = get();
+    if (!state.station || state.isPlaying || state.queue.length > 0) return;
+    const previous = new Set([
+      ...(state.track ? [state.track.id] : []),
+      ...state.history.map((item) => item.id),
+    ]);
+    const fresh = tracks.filter(
+      (item, index, all) =>
+        !previous.has(item.id) &&
+        all.findIndex((other) => other.id === item.id) === index,
+    );
+    const [first, ...rest] = fresh;
+    if (!first) return;
+    set({
+      track: first,
+      queue: rest,
+      history: state.track ? [...state.history, state.track].slice(-100) : state.history,
+      isPlaying: true,
+      currentTime: 0,
+      duration: first.durationMs / 1000,
+      playbackRequestId: state.playbackRequestId + 1,
       error: null,
       buffering: true,
     });
