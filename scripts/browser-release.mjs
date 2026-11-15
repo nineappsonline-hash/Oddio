@@ -325,6 +325,32 @@ try {
         });
       }
 
+      if (locale === 'en' && viewport.width === 1366) {
+        await test('signed-in listener can erase underlying listening history', async () => {
+          await page.goto(`${base}/en/library`, { waitUntil: 'domcontentloaded' });
+          const clear = page.getByRole('button', { name: 'Delete listening history' });
+          if (await clear.count()) {
+            page.once('dialog', (dialog) => void dialog.accept());
+            const deleted = page.waitForResponse(
+              (response) =>
+                response.url().endsWith('/api/library/history') &&
+                response.request().method() === 'DELETE',
+            );
+            await clear.click();
+            assert.equal((await deleted).status(), 200);
+          } else {
+            // Earlier browser engines may already have erased the same
+            // shared demo user's seeded history; DELETE must stay idempotent.
+            const response = await page.request.delete(`${base}/api/library/history`, {
+              headers: { origin: base },
+            });
+            assert.equal(response.status(), 200);
+          }
+          await page.reload({ waitUntil: 'domcontentloaded' });
+          assert.equal(await page.getByRole('button', { name: 'Delete listening history' }).count(), 0);
+        });
+      }
+
       await context.close();
     }
   }
