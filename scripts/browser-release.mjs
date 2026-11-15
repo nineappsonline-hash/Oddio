@@ -285,6 +285,45 @@ try {
       page = await context.newPage();
       page.on('pageerror', (error) => pageErrors.push(error.message));
 
+      if (locale === 'en' && viewport.width === 1366) {
+        await test('Phase 5 genre/mood radio and prompt mix endpoints', async () => {
+          const home = await page.request.get(`${base}/api/home`);
+          assert.equal(home.status(), 200);
+          const body = await home.json();
+          for (const [kind, items] of [
+            ['genre', body.data?.genres],
+            ['mood', body.data?.moods],
+          ]) {
+            const category = items?.find((item) => item.count > 0 && item.active);
+            if (!category) continue;
+            const response = await page.request.get(
+              `${base}/api/discovery/mix?kind=${kind}&seed=${encodeURIComponent(category.id)}`,
+            );
+            assert.equal(response.status(), 200);
+            const payload = await response.json();
+            assert.ok(Array.isArray(payload.data?.tracks));
+            for (const track of payload.data.tracks) {
+              assert.ok(
+                kind === 'genre'
+                  ? (track.genreIds ?? [track.genreId]).includes(category.id)
+                  : track.moodIds.includes(category.id),
+                `${kind} radio returned an unrelated track`,
+              );
+            }
+          }
+          const promptResponse = await page.request.post(`${base}/api/discovery/prompt`, {
+            data: { prompt: 'calm pop' },
+            headers: { origin: base },
+          });
+          assert.equal(promptResponse.status(), 200);
+          const promptResult = await promptResponse.json();
+          assert.ok(Array.isArray(promptResult.data?.tracks));
+          await page.goto(`${base}/en/discover`, { waitUntil: 'domcontentloaded' });
+          await page.getByRole('button', { name: 'Create mix', exact: true }).waitFor();
+          assert.equal(pageErrors.length, 0, pageErrors.join('; '));
+        });
+      }
+
       await test(`${label} bilingual search filters survive pagination and submission`, async () => {
         await page.goto(`${base}/${locale}/search?sort=newest`, {
           waitUntil: 'domcontentloaded',
