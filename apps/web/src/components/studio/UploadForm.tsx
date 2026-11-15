@@ -60,6 +60,23 @@ export function UploadForm({
   );
   const [releaseAt, setReleaseAt] = useState('');
   const [artworkAccent, setArtworkAccent] = useState('#9D5CFF');
+  // Fail safely at the existing production cap if the policy endpoint is unavailable.
+  const [maxUploadBytes, setMaxUploadBytes] = useState(25 * 1024 * 1024);
+  useEffect(() => {
+    if (!production) {
+      setMaxUploadBytes(100 * 1024 * 1024);
+      return;
+    }
+    let active = true;
+    void apiRequest<{ maxUploadBytes: number }>('/api/studio/uploads/policy')
+      .then(({ maxUploadBytes: limit }) => {
+        if (active && Number.isSafeInteger(limit) && limit > 0 && limit <= 100 * 1024 * 1024) {
+          setMaxUploadBytes(limit);
+        }
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [production]);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [artworkFile, setArtworkFile] = useState<File | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -262,8 +279,13 @@ export function UploadForm({
       toast('Only MP3 audio files are allowed.', 'error');
       return;
     }
-    if (audioFile.size > 100 * 1024 * 1024) {
-      toast('MP3 file must be 100 MiB or smaller.', 'error');
+    if (audioFile.size > maxUploadBytes) {
+      toast(
+        locale === 'ar'
+          ? `الحد الأقصى لملف MP3 حاليًا ${Math.floor(maxUploadBytes / 1024 / 1024)} ميجابايت.`
+          : `MP3 file must be ${Math.floor(maxUploadBytes / 1024 / 1024)} MiB or smaller.`,
+        'error',
+      );
       return;
     }
     if (!selectedGenres.length) {
