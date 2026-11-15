@@ -548,6 +548,7 @@ export function FullPlayer() {
                   );
                 }}
                 aria-label={t('player.repeat')}
+                aria-pressed={repeat !== 'off'}
                 title={
                   repeat === 'off'
                     ? rtl
