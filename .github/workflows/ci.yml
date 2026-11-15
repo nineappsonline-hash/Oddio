@@ -18,6 +18,10 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:release-env
+      - name: Detect unresolved production persistence risks (advisory)
+        run: |
+          node --test scripts/audit-persistence.test.mjs
+          node scripts/audit-persistence.mjs
       - run: npm run build
         env:
           DEMO_MODE: 'true'
