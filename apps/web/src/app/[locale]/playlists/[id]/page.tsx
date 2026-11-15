@@ -6,7 +6,8 @@ import { readRuntimeDb } from '@/lib/data/runtime-store';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
-import { buildMetadata } from '@/lib/seo';
+import { buildMetadata, musicPlaylistJsonLd } from '@/lib/seo';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { idFromSegment } from '@/lib/links';
 import { Artwork } from '@/components/ui/Artwork';
 import { Badge } from '@/components/ui/Badge';
@@ -66,6 +67,19 @@ export default async function PlaylistPage({
 
   return (
     <div>
+      {playlist.visibility === 'public' ? (
+        <JsonLd
+          data={musicPlaylistJsonLd({
+            name: playlist.title,
+            description: playlist.description,
+            url: `/${locale}/playlists/${playlist.id}`,
+            tracks: tracks.map((track) => ({
+              name: track.title,
+              url: `/${locale}/tracks/${track.id}-${track.slug}`,
+            })),
+          })}
+        />
+      ) : null}
       <section className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-end">
         <Artwork
           title={playlist.title}
