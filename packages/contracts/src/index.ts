@@ -94,6 +94,8 @@ export interface Artist {
   slug: string;
   name: string;
   bio: string;
+  /** Artist-confirmed alternate spellings, not guessed transliterations. */
+  searchAliases?: string[];
   avatarUrl: string;
   coverUrl: string;
   accent: string;
