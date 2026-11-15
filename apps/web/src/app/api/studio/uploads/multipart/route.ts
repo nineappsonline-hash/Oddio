@@ -50,7 +50,7 @@ const actions = z.discriminatedUnion('action', [
 ]);
 
 const PART_SIZE = R2_UPLOAD_PART_BYTES;
-const MAX_BYTES = Math.min(env.audioMaxUploadBytes, 25 * 1024 * 1024);
+const MAX_BYTES = Math.min(env.audioMaxUploadBytes, 100 * 1024 * 1024);
 function verifyBytes(bytes: number) {
   if (bytes < 5 * 1024 * 1024 || bytes > MAX_BYTES) {
     throw Errors.invalid('Multipart MP3 upload size is outside the allowed range');
