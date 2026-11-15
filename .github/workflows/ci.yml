@@ -16,6 +16,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - name: Verify media worker credentials and Cloudflare signing safety
+        run: node --test scripts/media-worker-safety.test.mjs
       - run: npm test
       - run: npm run test:release-env
       - name: Detect unresolved production persistence risks (advisory)
