@@ -61,6 +61,11 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
     { href: `/${locale}/charts`, label: t('nav.charts'), icon: 'charts' },
     { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
     {
+      href: `/${locale}/install`,
+      label: locale === 'ar' ? 'ثبّت Oddio' : 'Install Oddio',
+      icon: 'soundspace',
+    },
+    {
       href: `/${locale}/genres`,
       label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres',
       icon: 'discover',
