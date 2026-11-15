@@ -82,8 +82,6 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
   useEffect(()=>{
     if(!snapshot || !following || snapshot.me.host)return;
     const signature=`${snapshot.room.trackId}:${snapshot.room.version}`;
-    if(lastSynced.current===signature)return;
-    lastSynced.current=signature;
     if(snapshot.track) {
       const current=usePlayer.getState();
       const pos=roomSyncedPosition({
@@ -92,12 +90,18 @@ export function RoomSession({roomId,locale}:{roomId:string;locale:'ar'|'en'}){
         elapsedClientMs:Date.now()-snapshot.receivedAt,
         durationSeconds:snapshot.track.durationMs/1000,
       });
-      if(current.track?.id!==snapshot.track.id){
-        current.play(snapshot.track,[snapshot.track]);
-      }
-      current.seek(pos);
-      current.setPlaying(snapshot.room.playing);
-    } else usePlayer.getState().setPlaying(false);
+      const changed = lastSynced.current !== signature;
+      const wrongTrack = current.track?.id !== snapshot.track.id;
+      if(!changed && !wrongTrack && !roomShouldSeek(current.currentTime,pos) &&
+        current.isPlaying===snapshot.room.playing) return;
+      lastSynced.current=signature;
+      if(wrongTrack) current.play(snapshot.track,[snapshot.track]);
+      if(changed || wrongTrack || roomShouldSeek(current.currentTime,pos)) current.seek(pos);
+      if(current.isPlaying!==snapshot.room.playing) current.setPlaying(snapshot.room.playing);
+    } else {
+      lastSynced.current=signature;
+      usePlayer.getState().setPlaying(false);
+    }
   },[snapshot,following]);
 
   async function setTransport(playing:boolean,reset=false){
