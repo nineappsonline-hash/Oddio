@@ -90,6 +90,9 @@ export default async function LibraryPage({
         <Link href={`/${locale}/library/recap`} className="chip">
           {locale === 'ar' ? 'ملخصي الشهري' : 'Monthly recap'}
         </Link>
+        <Link href={`/${locale}/library/rewind`} className="chip">
+          {locale === 'ar' ? 'حصاد السنة · Music DNA' : 'Rewind · Music DNA'}
+        </Link>
       </nav>
 
       <section id="liked" className="scroll-mt-24">
