@@ -74,6 +74,21 @@ describe('Oddio Phase 3 library/search regression', () => {
     ).toBe(true);
   });
 
+  it('matches an artist and public tracks using owner-provided Arabic spelling', () => {
+    const db = createSeedDb();
+    const artist = db.artists.find((item) => item.id === seedIds.artists.nova);
+    expect(artist).toBeDefined();
+    artist!.searchAliases = ['نوفا خبري', 'Nova Khepri'];
+    const results = searchCatalog(db, viewer, {
+      q: 'نوفا خبري',
+      sort: 'relevant',
+      limit: 25,
+    });
+    expect(results.artists.some((item) => item.id === artist!.id)).toBe(true);
+    expect(results.tracks.some((item) => item.artistId === artist!.id)).toBe(true);
+    expect(results.tracks.every((item) => item.access.listable)).toBe(true);
+  });
+
   it('never includes private playlists from another user in public search', () => {
     const db = createSeedDb();
     const results = searchCatalog(db, viewer, { q: 'neon', limit: 25, sort: 'relevant' });
