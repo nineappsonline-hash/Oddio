@@ -300,6 +300,12 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
       },
       audioUrl: '',
       audio: playable,
+      audioFeatures:
+        row.audio_features &&
+        typeof row.audio_features === 'object' &&
+        !Array.isArray(row.audio_features)
+          ? (row.audio_features as Track['audioFeatures'])
+          : null,
       qualityLabel: text(row.quality_label, 'standard'),
       qualifiedPlays: num(row.qualified_plays),
       likeCount: num(row.like_count),
