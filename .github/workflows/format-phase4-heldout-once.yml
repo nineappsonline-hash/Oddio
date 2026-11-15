@@ -31,7 +31,7 @@ jobs:
             scripts/prepare-music-dataset.mjs \
             scripts/music-classifier.test.mjs \
             scripts/heldout-evaluation.test.mjs \
-            scripts/model-release-cli.test.mjs
+            scripts/model-release-cli.test.mjs \
             scripts/prepare-dataset-ffmpeg.test.mjs
       - name: Commit formatting only
         shell: bash
