@@ -266,6 +266,11 @@ export function MobileNav() {
                   label: locale === 'ar' ? 'ثبّت Oddio' : 'Install Oddio',
                   icon: 'soundspace',
                 },
+                {
+                  href: `/${locale}/rooms`,
+                  label: locale === 'ar' ? 'غرف الاستماع' : 'Listening rooms',
+                  icon: 'soundspace',
+                },
 
                 {
                   href: `/${locale}/discover#artists`,
