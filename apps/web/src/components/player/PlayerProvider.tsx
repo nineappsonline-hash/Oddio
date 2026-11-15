@@ -42,6 +42,7 @@ export function PlayerProvider({
   const [stream, setStream] = useState<string | null>(null);
   const streamRef = useRef<string | null>(null);
   const recoveryAttemptsRef = useRef(0);
+  const previousAuthorizedTrackRef = useRef<string | null>(null);
   const recoveryPendingRef = useRef(false);
   const recoveryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recoveryGenerationRef = useRef(0);
@@ -177,13 +178,28 @@ export function PlayerProvider({
     if (!trackId) return;
     let cancelled = false;
     const state = usePlayer.getState();
+    // Manual Retry is for the same track: retain the listening position and
+    // accumulated progress rather than replaying from the beginning.
+    const retryingSameTrack = previousAuthorizedTrackRef.current === trackId;
+    if (retryingSameTrack) {
+      pendingRestoreTime.current = recoverablePlaybackPosition(
+        audioRef.current?.currentTime ?? Number.NaN,
+        state.currentTime,
+        state.duration,
+      );
+      pendingRestoreTrackId.current = trackId;
+    } else {
+      pendingRestoreTime.current = null;
+      pendingRestoreTrackId.current = null;
+      audibleRef.current = { accumulated: 0, lastTime: 0, qualified: false, lastSent: 0 };
+      startSentRef.current = false;
+    }
+    previousAuthorizedTrackRef.current = trackId;
     state.setError(null);
     state.setBuffering(true);
     sessionRef.current = null;
-    startSentRef.current = false;
     streamRef.current = null;
     setStream(null);
-    audibleRef.current = { accumulated: 0, lastTime: 0, qualified: false, lastSent: 0 };
 
     apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
       method: 'POST',
