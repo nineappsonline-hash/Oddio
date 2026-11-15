@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import type { Locale } from '@ai-music/contracts';
 import { AppShell } from '@/components/layout/AppShell';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { absoluteUrl } from '@/lib/utils';
 import { StaticServiceWorker } from '@/components/providers/StaticServiceWorker';
 import { dirFor, isLocale, locales } from '@/i18n/config';
 import { getSessionUser } from '@/lib/auth/session';
@@ -86,6 +88,28 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <body className="bg-background text-ink">
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            '@id': absoluteUrl('/#website'),
+            url: absoluteUrl('/'),
+            name: 'Oddio',
+            description: 'Listen to and discover original AI-generated music, artists and playlists.',
+            inLanguage: ['en', 'ar'],
+            publisher: { '@id': absoluteUrl('/#organization') },
+          }}
+        />
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            '@id': absoluteUrl('/#organization'),
+            name: 'Oddio',
+            url: absoluteUrl('/'),
+            logo: absoluteUrl('/oddio-gradient-play-logo.png'),
+          }}
+        />
         <StaticServiceWorker />
         <AppShell locale={locale} user={user}>
           {children}
