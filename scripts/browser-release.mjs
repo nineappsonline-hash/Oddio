@@ -351,6 +351,29 @@ try {
         });
       }
 
+      if (locale === 'en' && viewport.width === 1366) {
+        await test('signed-in queue and song position persist after reloading', async () => {
+          await page.goto(`${base}/en`, { waitUntil: 'domcontentloaded' });
+          await page.locator('.oddio-stage-play').click();
+          await page.waitForFunction(() =>
+            Object.keys(window.localStorage).some((key) => key.startsWith('oddio-player-session-v1:')),
+          );
+          const before = await page.evaluate(() =>
+            Object.entries(window.localStorage)
+              .filter(([key]) => key.startsWith('oddio-player-session-v1:'))
+              .map(([, value]) => JSON.parse(value)),
+          );
+          assert.ok(before.some((saved) => saved.track?.id), 'signed-in state must use persistent localStorage');
+          await page.reload({ waitUntil: 'domcontentloaded' });
+          const mini = page.getByRole('region', { name: /mini player/i });
+          await mini.waitFor({ state: 'visible' });
+          assert.ok(
+            await mini.getByRole('button', { name: /play|resume/i }).count(),
+            'restored player must remain paused until listener presses Play',
+          );
+        });
+      }
+
       await context.close();
     }
   }
