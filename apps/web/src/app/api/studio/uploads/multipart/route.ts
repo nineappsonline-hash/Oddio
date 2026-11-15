@@ -12,6 +12,12 @@ import {
   requireUser,
 } from '@/lib/api-helpers';
 import {
+  R2_UPLOAD_PART_BYTES,
+  multipartPartCount,
+  multipartPartLength,
+  uploadedMultipartPartsAreValid,
+} from '@/lib/storage/multipart-parts';
+import {
   abortMultipart,
   beginMultipart,
   finishMultipart,
