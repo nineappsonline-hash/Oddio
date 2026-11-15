@@ -141,7 +141,7 @@ export function MobileNav() {
     <>
       <nav
         aria-label={t('nav.main')}
-        className="fixed inset-x-0 bottom-0 z-40 grid h-[calc(72px+env(safe-area-inset-bottom))] grid-cols-5 border-t border-white/10 bg-[#151515]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid h-[calc(72px+env(safe-area-inset-bottom))] grid-cols-5 border-t border-white/10 bg-[#19131e]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl lg:hidden"
       >
         {items.map((item) => {
           const active = item.exact
@@ -155,14 +155,14 @@ export function MobileNav() {
               href={item.href}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'group/mnav relative flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition',
+                'group/mnav relative flex min-w-0 flex-col items-center justify-center gap-1 px-1 py-2.5 text-[10px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
                 active ? 'text-primary' : 'text-muted hover:text-ink',
               )}
             >
               {active ? (
-                <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-[#f1f1f1]" />
+                <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-primary" />
               ) : null}
-              <OddioGlyph name={glyph} size={22} className="oddio-glyph" />
+              <OddioGlyph name={glyph} size={22} className="oddio-glyph shrink-0" />
               {item.label}
             </Link>
           );
@@ -174,7 +174,7 @@ export function MobileNav() {
           aria-label={locale === 'ar' ? 'القائمة' : 'Menu'}
           aria-expanded={menuOpen}
           className={cn(
-            'flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold transition',
+            'flex min-w-0 flex-col items-center justify-center gap-1 px-1 py-2.5 text-[10px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
             menuOpen ? 'text-[#eab997]' : 'text-muted hover:text-ink',
           )}
         >
