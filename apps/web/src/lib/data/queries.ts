@@ -268,6 +268,7 @@ export function searchCatalog(
       track.title,
       track.description,
       track.artist?.name ?? '',
+      ...(track.artist?.searchAliases ?? []),
       album?.title ?? '',
       genre?.labelEn ?? '',
       genre?.labelAr ?? '',
@@ -325,7 +326,11 @@ export function searchCatalog(
   const nextCursor = offset + limit < tracks.length ? String(offset + limit) : null;
 
   const artists = db.artists
-    .filter((artist) => tokens.length > 0 && matches(`${artist.name} ${artist.bio}`))
+    .filter(
+      (artist) =>
+        tokens.length > 0 &&
+        matches([artist.name, artist.bio, ...(artist.searchAliases ?? [])].join(' ')),
+    )
     .map((artist) => ({
       ...artist,
       trackCount: listable.filter((track) => track.artistId === artist.id).length,
