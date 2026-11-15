@@ -29,12 +29,12 @@ Working branch: `feature/master-plan-phase-0-1`.
 
 ## Phase 1 — persistent data and media
 
-- [ ] Inventory readers/writers using `apps/web/src/lib/data/queries.ts`, `mutations.ts` and the demo repository. Confirmed `data/db.ts` reads/writes `demo.json` under Vercel `/tmp`.
-- [ ] Define an explicit repository interface and Supabase-backed adapter without changing public API contracts.
+- [ ] Complete route-by-route inventory. Confirmed the application already has a full Supabase snapshot adapter (`supabase-store.ts`); Home and Discover read from it in production. Some API routes were still calling `mutateDb` or `readDb` directly, which is ephemeral on Vercel. This branch migrated likes, artist follows, and playlist CRUD to a runtime selector.
+- [x] Existing Supabase snapshot adapter identified; added `runtime-store.ts` selecting the configured DB and preserving public API shapes. This is a bridge, not a final transactionally safe design.
 - [ ] Map JSON IDs and relationships to the Supabase schema; establish an idempotent import with dry-run and reconciliation counts.
 - [ ] Preserve existing account ownership, review state, playlists, likes, follows, release schedules and qualified play counts.
 - [ ] Backfill existing content with a recovery plan; verify RLS in CI and staging.
-- [ ] Migrate each write route behind a controlled rollout and verify read-after-write behavior.
+- [ ] Migrate each write route behind a controlled rollout and verify read-after-write behavior. Initial branch coverage: track like, artist follow, playlist list/create/update/delete. **NOT production deployed**. Snapshot diff writes are not transactional or concurrency-safe: targeted atomic SQL/RPC operations and integration tests are required before broad rollout.
 - [ ] Verify R2 master/rendition upload grants, worker processing, signed streaming, seeking and retry behavior.
 - [ ] Enable production persistence only after matched reconciliation, tested backup/restore and successful staging acceptance.
 - [ ] Monitor database errors, upload failures and playback errors after rollout.
@@ -98,6 +98,6 @@ Working branch: `feature/master-plan-phase-0-1`.
 ## Known facts and outstanding verification
 
 - The repository documentation currently describes the runtime data store as demo JSON despite Supabase schema artifacts being present. **This is a source-code/documentation finding, not a live production audit.**
-- Existing CI already includes PostgreSQL RLS and browser coverage; do not duplicate it. Added `scripts/audit-persistence.mjs` and focused tests to warn about non-durable production file-backed storage. Use `node scripts/audit-persistence.mjs --strict` as a release gate only after the adapter has been completed.
+- Existing CI already includes PostgreSQL RLS and browser coverage; do not duplicate it. Updated `scripts/audit-persistence.mjs` to detect API routes with unguarded demo-only access rather than treating the coexistence of demo JSON and Supabase adapter as a blocker. CI runs it advisory-only; full production readiness still requires runtime tests and route audit.
 - Production backend, live domain routing, backups and storage credentials have **not** been verified by this change.
 - Do not run destructive database migrations or import demo content into production without an inventory and recovery plan.
