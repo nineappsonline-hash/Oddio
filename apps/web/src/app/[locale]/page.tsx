@@ -77,8 +77,8 @@ export default async function HomePage({
           <h1>{ar ? 'اكتشف صوتك.' : 'Find your frequency.'}</h1>
           <p>
             {ar
-              ? 'أغاني جديدة، فنانين مختلفين، ومود يناسب كل لحظة.'
-              : 'Original sounds, different perspectives, your kind of discovery.'}
+              ? 'اكتشف واسمع أغاني أصلية وموسيقى بالذكاء الاصطناعي، وتعرّف على فنانين جدد واستكشف أنواع موسيقية تناسب مزاجك.'
+              : 'Discover and listen to original AI-generated music, new songs, independent AI music artists and playlists for every mood.'}
           </p>
         </div>
         <Link href={`/${locale}/discover`} className="oddio-intro-link">
