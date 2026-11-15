@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import type { Artist, Genre, Locale, Mood } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { uploadAudioWithProgress } from '@/lib/upload-audio-progress';
+import { MULTIPART_THRESHOLD, uploadAudioMultipart } from '@/lib/upload-audio-multipart';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -297,6 +298,34 @@ export function UploadForm({
     try {
       let artworkFailed = false;
       if (production) {
+        if (audioFile.size >= MULTIPART_THRESHOLD) {
+          setUploadPercent(0);
+          const completed = await uploadAudioMultipart(audioFile, {
+            progress: setUploadPercent,
+            onRequest: (request) => { uploadRequest.current = request; },
+          });
+          form.delete('audio');
+          form.delete('artwork');
+          form.set('objectKey', completed.objectKey);
+          form.set('bytes', String(audioFile.size));
+          form.set('contentType', 'audio/mpeg');
+          const finalized = await apiRequest<{ id: string }>(
+            '/api/studio/uploads/finalize',
+            { method: 'POST', body: form },
+          );
+          if (artworkFile) {
+            const artworkForm = new FormData();
+            artworkForm.set('artwork', artworkFile);
+            try {
+              await apiRequest(`/api/studio/tracks/${finalized.id}/artwork`, {
+                method: 'POST',
+                body: artworkForm,
+              });
+            } catch {
+              artworkFailed = true;
+            }
+          }
+        } else {
         const grant = await apiRequest<{
           uploadUrl: string;
           objectKey: string;
@@ -340,6 +369,7 @@ export function UploadForm({
           } catch {
             artworkFailed = true;
           }
+        }
         }
       } else {
         await apiRequest('/api/studio/tracks', { method: 'POST', body: form });
