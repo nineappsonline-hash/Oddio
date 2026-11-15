@@ -2,10 +2,15 @@ import type { DemoDb } from './types';
 
 /** Only owner-visible aggregated insights. No listener IDs or sessions leave the server. */
 export function artistInsights(db: DemoDb, ownerUserId: string, now = new Date()) {
-  const artistIds = new Set(db.artists.filter((artist) => artist.ownerUserId === ownerUserId).map((artist) => artist.id));
+  const artistIds = new Set(
+    db.artists
+      .filter((artist) => artist.ownerUserId === ownerUserId)
+      .map((artist) => artist.id),
+  );
   const owned = db.tracks.filter((track) => artistIds.has(track.artistId));
   const ownedIds = new Set(owned.map((track) => track.id));
-  const dayStart = (value: Date) => Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate());
+  const dayStart = (value: Date) =>
+    Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate());
   const today = dayStart(now);
   const daily = Array.from({ length: 30 }, (_, index) => {
     const date = new Date(today - (29 - index) * 86400000);
@@ -16,7 +21,12 @@ export function artistInsights(db: DemoDb, ownerUserId: string, now = new Date()
   for (const event of db.playbackEvents) {
     if (!event.qualified || !ownedIds.has(event.trackId)) continue;
     const occurred = Date.parse(event.occurredAt);
-    if (!Number.isFinite(occurred) || occurred > now.getTime() || occurred < today - 29 * 86400000) continue;
+    if (
+      !Number.isFinite(occurred) ||
+      occurred > now.getTime() ||
+      occurred < today - 29 * 86400000
+    )
+      continue;
     const key = new Date(occurred).toISOString().slice(0, 10);
     const bucket = byDay.get(key);
     if (!bucket) continue;
@@ -35,16 +45,27 @@ export function artistInsights(db: DemoDb, ownerUserId: string, now = new Date()
       reviewStatus: track.reviewStatus,
       publishStatus: track.publishStatus,
     }))
-    .sort((a, b) => b.recentQualifiedPlays - a.recentQualifiedPlays ||
-      b.qualifiedPlays - a.qualifiedPlays || a.id.localeCompare(b.id));
-  const followerCount = db.artistFollows.filter((follow) => artistIds.has(follow.artistId)).length;
+    .sort(
+      (a, b) =>
+        b.recentQualifiedPlays - a.recentQualifiedPlays ||
+        b.qualifiedPlays - a.qualifiedPlays ||
+        a.id.localeCompare(b.id),
+    );
+  const followerCount = db.artistFollows.filter((follow) =>
+    artistIds.has(follow.artistId),
+  ).length;
   return {
     artists: artistIds.size,
     totalTracks: owned.length,
     released: owned.filter((track) => track.publishStatus === 'published').length,
-    pendingReview: owned.filter((track) => ['ready_for_review', 'pending_review', 'processing'].includes(track.reviewStatus)).length,
+    pendingReview: owned.filter((track) =>
+      ['ready_for_review', 'pending_review', 'processing'].includes(track.reviewStatus),
+    ).length,
     followers: followerCount,
-    totalQualifiedPlays: owned.reduce((sum, track) => sum + (track.qualifiedPlays ?? 0), 0),
+    totalQualifiedPlays: owned.reduce(
+      (sum, track) => sum + (track.qualifiedPlays ?? 0),
+      0,
+    ),
     sevenDays,
     thirtyDays,
     daily,

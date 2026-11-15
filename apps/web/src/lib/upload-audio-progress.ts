@@ -12,7 +12,9 @@ export function uploadAudioWithProgress(
     const request = new XMLHttpRequest();
     onRequest?.(request);
     request.open('PUT', url);
-    Object.entries(headers).forEach(([name, value]) => request.setRequestHeader(name, value));
+    Object.entries(headers).forEach(([name, value]) =>
+      request.setRequestHeader(name, value),
+    );
     request.upload.onprogress = (event) => {
       if (event.lengthComputable && event.total > 0) {
         // 100% is only shown after R2 acknowledges the full upload.
@@ -24,15 +26,20 @@ export function uploadAudioWithProgress(
       if (request.status >= 200 && request.status < 300) {
         onProgress(100);
         resolve();
-      } else reject(new Error(`Audio storage rejected the upload (HTTP ${request.status}).`));
+      } else
+        reject(new Error(`Audio storage rejected the upload (HTTP ${request.status}).`));
     };
     request.onerror = () => {
       onRequest?.(null);
-      reject(new Error('Audio storage connection failed. Check Cloudflare R2 CORS and retry.'));
+      reject(
+        new Error('Audio storage connection failed. Check Cloudflare R2 CORS and retry.'),
+      );
     };
     request.onabort = () => {
       onRequest?.(null);
-      reject(new Error('Upload cancelled. The original audio file remains on your device.'));
+      reject(
+        new Error('Upload cancelled. The original audio file remains on your device.'),
+      );
     };
     try {
       request.send(file);

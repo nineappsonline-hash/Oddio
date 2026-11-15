@@ -2,9 +2,15 @@ import { describe, expect, it } from 'vitest';
 import type { DemoDb } from './types';
 import { artistInsights } from './artist-insights';
 
-const track = (id: string, artistId: string, plays = 0) =>
-  ({ id, title: id, artistId, qualifiedPlays: plays, likeCount: 0,
-    reviewStatus: 'approved', publishStatus: 'published' });
+const track = (id: string, artistId: string, plays = 0) => ({
+  id,
+  title: id,
+  artistId,
+  qualifiedPlays: plays,
+  likeCount: 0,
+  reviewStatus: 'approved',
+  publishStatus: 'published',
+});
 
 function fixture(): DemoDb {
   return {
@@ -18,18 +24,46 @@ function fixture(): DemoDb {
       { artistId: 'foreign-artist', userId: 'listener-b' },
     ],
     playbackEvents: [
-      { id: 'event-1', sessionId: 's1', trackId: 'mine', qualified: true,
-        eventType: 'qualified', audibleMs: 30000, requestId: 'r1',
-        occurredAt: '2026-11-14T15:00:00.000Z' },
-      { id: 'event-2', sessionId: 's2', trackId: 'theirs', qualified: true,
-        eventType: 'qualified', audibleMs: 30000, requestId: 'r2',
-        occurredAt: '2026-11-14T15:00:00.000Z' },
-      { id: 'event-3', sessionId: 's3', trackId: 'mine', qualified: false,
-        eventType: 'progress', audibleMs: 1000, requestId: 'r3',
-        occurredAt: '2026-11-14T17:00:00.000Z' },
-      { id: 'event-4', sessionId: 's4', trackId: 'mine', qualified: true,
-        eventType: 'qualified', audibleMs: 30000, requestId: 'r4',
-        occurredAt: '2026-09-14T15:00:00.000Z' },
+      {
+        id: 'event-1',
+        sessionId: 's1',
+        trackId: 'mine',
+        qualified: true,
+        eventType: 'qualified',
+        audibleMs: 30000,
+        requestId: 'r1',
+        occurredAt: '2026-11-14T15:00:00.000Z',
+      },
+      {
+        id: 'event-2',
+        sessionId: 's2',
+        trackId: 'theirs',
+        qualified: true,
+        eventType: 'qualified',
+        audibleMs: 30000,
+        requestId: 'r2',
+        occurredAt: '2026-11-14T15:00:00.000Z',
+      },
+      {
+        id: 'event-3',
+        sessionId: 's3',
+        trackId: 'mine',
+        qualified: false,
+        eventType: 'progress',
+        audibleMs: 1000,
+        requestId: 'r3',
+        occurredAt: '2026-11-14T17:00:00.000Z',
+      },
+      {
+        id: 'event-4',
+        sessionId: 's4',
+        trackId: 'mine',
+        qualified: true,
+        eventType: 'qualified',
+        audibleMs: 30000,
+        requestId: 'r4',
+        occurredAt: '2026-09-14T15:00:00.000Z',
+      },
     ],
   } as unknown as DemoDb;
 }

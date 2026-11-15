@@ -103,15 +103,17 @@ export default async function StudioDashboard({
             },
             {
               title: locale === 'ar' ? 'تحليلات الفنان' : 'Artist Insights',
-              description: locale === 'ar'
-                ? 'تابع الاستماعات المؤهلة خلال 7 و30 يومًا وأداء كل أغنية.'
-                : 'See 7/30 day qualified listening trends and per-track performance.',
+              description:
+                locale === 'ar'
+                  ? 'تابع الاستماعات المؤهلة خلال 7 و30 يومًا وأداء كل أغنية.'
+                  : 'See 7/30 day qualified listening trends and per-track performance.',
               href: `/${locale}/studio/insights`,
               icon: BarChart3,
               label: 'MUSIC INSIGHTS',
               glow: 'from-emerald-500/20 via-cyan-500/10 to-transparent',
               iconColor: 'text-emerald-300',
-              status: locale === 'ar' ? 'تحليلات خاصة بحسابك' : 'Private artist analytics',
+              status:
+                locale === 'ar' ? 'تحليلات خاصة بحسابك' : 'Private artist analytics',
             },
             {
               title: 'Songs Review and Release',

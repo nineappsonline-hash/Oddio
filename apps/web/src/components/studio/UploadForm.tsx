@@ -316,7 +316,9 @@ export function UploadForm({
           audioFile,
           grant.headers,
           setUploadPercent,
-          (request) => { uploadRequest.current = request; },
+          (request) => {
+            uploadRequest.current = request;
+          },
         );
         form.delete('audio');
         form.delete('artwork');
@@ -773,15 +775,30 @@ export function UploadForm({
             </p>
           </fieldset>
           {uploadPercent !== null ? (
-            <div className="space-y-2 rounded-xl border border-primary/25 bg-primary/5 p-3" role="status" aria-live="polite">
+            <div
+              className="space-y-2 rounded-xl border border-primary/25 bg-primary/5 p-3"
+              role="status"
+              aria-live="polite"
+            >
               <div className="flex items-center justify-between gap-3 text-sm">
-                <span>{locale === 'ar' ? 'رفع الصوت إلى Cloudflare R2' : 'Uploading audio to Cloudflare R2'}</span>
+                <span>
+                  {locale === 'ar'
+                    ? 'رفع الصوت إلى Cloudflare R2'
+                    : 'Uploading audio to Cloudflare R2'}
+                </span>
                 <span className="tabular-nums">{uploadPercent}%</span>
               </div>
-              <progress className="h-2 w-full accent-primary" max={100} value={uploadPercent} />
+              <progress
+                className="h-2 w-full accent-primary"
+                max={100}
+                value={uploadPercent}
+              />
               {uploadRequest.current && uploadPercent < 100 ? (
-                <button type="button" onClick={() => uploadRequest.current?.abort()}
-                  className="min-h-10 rounded-lg border border-rose-400/40 px-3 text-xs text-rose-200">
+                <button
+                  type="button"
+                  onClick={() => uploadRequest.current?.abort()}
+                  className="min-h-10 rounded-lg border border-rose-400/40 px-3 text-xs text-rose-200"
+                >
                   {locale === 'ar' ? 'إلغاء الرفع' : 'Cancel upload'}
                 </button>
               ) : null}
