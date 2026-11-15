@@ -56,7 +56,7 @@ Working branch: `feature/master-plan-phase-0-1`.
 - Aligned signed R2 GET expiration (rendition and original-MP3 fallback) to **1800 seconds** to match the current 30-minute playback token, reducing mid-track seek/retry expiration failures. Signed links remain bearer URLs; reassess the TTL for private/unlisted content and implement refresh-on-failure for long sessions.
 - Added `Cache-Control: private, no-store` and `Referrer-Policy: no-referrer` on the streaming redirect, and a static regression test under `apps/web/src/lib/storage/r2-stream-architecture.test.ts`.
 - **R2 outbound transfer to the internet is not itself billed**, but R2 operations/storage and any Cloudflare/Worker features beyond free allowances can cost money. R2 presigned URLs are issued for the S3 API endpoint and cannot be used on a custom domain directly.
-- [ ] Validate real streaming and HTTP byte ranges from the browser against a non-production R2 object, including Safari, long listening sessions and signed URL refresh.
+- [ ] Validate real streaming and HTTP byte ranges from the browser against a non-production R2 object, including Safari, long listening sessions and signed URL refresh. PlayerProvider now retries failed media loading by requesting a new playback authorization (maximum two times per track, 1.5s/3s backoff), and restores the previous playback position on loadedmetadata; Vitest checks bounded policy/position but does not emulate a browser's real R2 Range handling.
 - [ ] Check the correct cache/edge-delivery architecture and bucket configuration using the user's Cloudflare account. No Cloudflare bucket settings or production audio files were changed in this branch.
 
 ### Rollout dependency: required SQL migration
