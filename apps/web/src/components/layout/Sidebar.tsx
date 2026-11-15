@@ -102,7 +102,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         {items.map((item) => {
           const active = item.exact
             ? pathname === item.href
-            : pathname.startsWith(item.href.split('#')[0]) && !item.href.includes('#');
+            : !item.href.includes('#') && pathname.startsWith(item.href.split('#')[0] ?? item.href);
           const glyph = item.icon as OddioGlyphName;
           return (
             <Link
