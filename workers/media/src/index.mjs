@@ -24,6 +24,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { analyzePcm16 } from './music-features.mjs';
 
 const execFileAsync = promisify(execFile);
 
@@ -142,6 +143,27 @@ async function transcode(inputPath, outputPath) {
   );
 }
 
+async function extractMusicFeatures(inputPath) {
+  // Decode only a bounded 90-second preview; no model downloads/API costs.
+  // BPM is an uncertain rhythmic estimate, never a genre/mood label.
+  const sampleRate = 11025;
+  const { stdout } = await execFileAsync('ffmpeg', [
+    '-hide_banner', '-loglevel', 'error',
+    '-i', inputPath, '-map', '0:a:0', '-t', '90',
+    '-ac', '1', '-ar', String(sampleRate),
+    '-f', 's16le', 'pipe:1',
+  ], { timeout: 45_000, encoding: 'buffer', maxBuffer: 3 * 1024 * 1024 });
+  const analysis = analyzePcm16(stdout, sampleRate);
+  return {
+    schemaVersion: 1,
+    tempoBpm: analysis.tempoBpm,
+    tempoConfidence: analysis.tempoConfidence,
+    rmsDbfs: analysis.rmsDbfs,
+    peakDbfs: analysis.peakDbfs,
+    analyzedSeconds: analysis.durationSeconds,
+  };
+}
+
 async function sha256File(filePath) {
   const hash = crypto.createHash('sha256');
   await new Promise((resolve, reject) => {
@@ -193,6 +215,15 @@ async function processDemoTrack(track, dir) {
     track.audio.channels = info.channels;
     track.audio.bytes = info.size;
     track.audio.sha256 = await sha256File(source);
+    try {
+      track.audioFeatures = await extractMusicFeatures(source);
+    } catch (error) {
+      // Analysis is advisory: never block a valid artist release.
+      log('warn', 'demo audio feature preview unavailable', {
+        trackId: track.id,
+        reason: error instanceof Error ? error.name : 'analysis_error',
+      });
+    }
     track.qualityLabel = 'high';
     track.updatedAt = new Date().toISOString();
     return true;
@@ -216,6 +247,14 @@ async function processDemoTrack(track, dir) {
     processingStatus: 'ready',
   };
   track.durationMs = Math.round(rendered.durationSec * 1000);
+  try {
+    track.audioFeatures = await extractMusicFeatures(output);
+  } catch (error) {
+    log('warn', 'demo audio feature preview unavailable', {
+      trackId: track.id,
+      reason: error instanceof Error ? error.name : 'analysis_error',
+    });
+  }
   track.qualityLabel = 'high';
   track.updatedAt = new Date().toISOString();
   log('info', 'demo track transcoded', { trackId: track.id, output: outputName });
