@@ -147,7 +147,7 @@ returns void
 language plpgsql
 security invoker
 set search_path = ''
-as $
+as $$
 begin
   perform 1 from public.playlists
   where id = p_playlist_id and owner_id = p_user_id
@@ -158,7 +158,7 @@ begin
   delete from public.playlist_tracks
   where playlist_id = p_playlist_id and track_id = p_track_id;
 end;
-$;
+$$;
 
 -- Revoke the default PUBLIC function execute privilege before granting only
 -- trusted server role access (same effective privilege for service_role).
