@@ -41,10 +41,12 @@ export function buildDiscoveryMix(
   const limit = Math.max(0, Math.min(20, Math.floor(options.limit ?? 20)));
   const exclude = new Set((options.excludeIds ?? []).slice(0, 100));
   const blockedGenres = new Set((options.blockedGenreIds ?? []).slice(0, 50));
-  const catalog = listableTracks(db, viewer, now).filter(
+  const playable = listableTracks(db, viewer, now).filter(
+    (track) => track.access.allowed && track.audio?.processingStatus === 'ready',
+  );
+  const catalog = playable.filter(
     (track) =>
-      track.access.allowed &&
-      track.audio?.processingStatus === 'ready' &&
+
       !exclude.has(track.id) &&
       !(track.genreIds?.length ? track.genreIds : [track.genreId]).some((id) =>
         blockedGenres.has(id),
@@ -53,7 +55,7 @@ export function buildDiscoveryMix(
   const allowed = new Set(catalog.map((track) => track.id));
   const base = recommendTracks(db, viewer, 20);
   const ranked = base.tracks.filter((track) => allowed.has(track.id));
-  const seed = catalog.find((track) => track.id === options.seedId);
+  const seed = playable.find((track) => track.id === options.seedId);
   // Never convert an invalid/deleted radio target into an unrelated mix.
   if ((options.kind === 'song' || options.kind === 'artist') && !seed)
     return { tracks: [], personalized: false };
@@ -110,7 +112,9 @@ export function buildDiscoveryMix(
     });
   }
   // Keep song-radio's seed first; otherwise use the ranking's strongest track.
-  const first = options.kind === 'song' && seed ? seed : candidates[0];
+  const first = options.kind === 'song' && seed && !exclude.has(seed.id) && candidates.some((item) => item.id === seed.id)
+    ? seed
+    : candidates[0];
   const selected: CatalogTrack[] = first ? [first] : [];
   const seenArtists = new Set(selected.map((track) => track.artistId));
   for (const track of candidates) {
