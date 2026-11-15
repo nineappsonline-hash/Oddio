@@ -416,6 +416,27 @@ try {
       }
 
       if (locale === 'en' && viewport.width === 1366) {
+        await test('demo account discovery exclusions never claim cloud sync', async () => {
+          const read = await page.request.get(`${base}/api/discovery/preferences`);
+          assert.equal(read.status(), 200);
+          const prefs = await read.json();
+          assert.equal(prefs.data?.available, false);
+          const write = await page.request.put(`${base}/api/discovery/preferences`, {
+            data: { trackIds: [], genreIds: [] },
+            headers: { origin: base },
+          });
+          assert.equal(write.status(), 200);
+          const result = await write.json();
+          assert.equal(result.data?.saved, false);
+          await page.goto(`${base}/en/discover`, { waitUntil: 'domcontentloaded' });
+          await page.getByText('Hidden music is currently saved on this device.').waitFor({
+            state: 'visible',
+            timeout: 15_000,
+          });
+        });
+      }
+
+      if (locale === 'en' && viewport.width === 1366) {
         await test('signed-in listener can erase underlying listening history', async () => {
           await page.goto(`${base}/en/library`, { waitUntil: 'domcontentloaded' });
           const clear = page.getByRole('button', { name: 'Delete listening history' });
