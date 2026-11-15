@@ -113,6 +113,7 @@ export function PlayerProvider({
         pendingRestoreTrackId.current = session.track?.id ?? null;
         usePlayer.setState({
           track: session.track,
+          station: null,
           queue: session.queue,
           history: [],
           currentTime: session.currentTime,
@@ -131,6 +132,7 @@ export function PlayerProvider({
       } else {
         usePlayer.setState({
           track: null,
+          station: null,
           queue: [],
           history: [],
           isPlaying: false,
@@ -157,6 +159,7 @@ export function PlayerProvider({
           pendingRestoreTrackId.current = restored.track?.id ?? null;
           usePlayer.setState({
             track: restored.track,
+            station: null,
             queue: restored.queue,
             currentTime: restored.currentTime,
             duration: (restored.track?.durationMs ?? 0) / 1000,
