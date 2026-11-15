@@ -207,7 +207,7 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [x] Connected the station buttons on Discover and Song/Artist pages; the player can request the next batch when its station queue runs out, preserving up to 100 previously played tracks in the local station history. It does not silently fall back to unrelated generic homepage songs during a station.
 - [x] Added per-account local-browser `Not interested` (song and Genre exclusions) controls and a reset action. Hidden material is removed from the visible discovery shelf and active station queue. Guest exclusions last for the browser tab; signed-in exclusions are local to that user's browser/device. **These are not synced to Supabase or other devices.**
 - [x] Added mix-rotation, access, blocked-genre, seed and player-refill tests; fixed a Flow test syntax failure found in a Vercel preview build. Recheck the latest CI/Vercel status.
-- [ ] Continuous station playback still has finite-catalog limits: if every eligible song has been heard, the station stops rather than looping instantly. Add an artist-diverse rerotation after an explicit catalog-exhaustion policy decision.
+- [x] When the full eligible catalog has been heard, the station requests a new rotation excluding the last finished track and all user-blocked music. It stops if there are genuinely no other playable choices; this is deterministic catalog cycling, not an unlimited supply of new content. Real-browser behavior still needs staging acceptance.
 - [ ] Production rollout remains blocked on complete CI and browser tests, real Cloudflare R2 staging tests, safe Supabase migration rollout/backup and real-device acceptance. This batch has **not been merged or deployed to production**.
 
 ## Phase 6 — artist studio
