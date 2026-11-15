@@ -40,7 +40,7 @@ const actions = z.discriminatedUnion('action', [
   owned.extend({ action: z.literal('abort') }),
 ]);
 
-const PART_SIZE = 8 * 1024 * 1024;
+const PART_SIZE = R2_UPLOAD_PART_BYTES;
 const MAX_BYTES = Math.min(env.audioMaxUploadBytes, 25 * 1024 * 1024);
 function verifyBytes(bytes: number) {
   if (bytes < 5 * 1024 * 1024 || bytes > MAX_BYTES) {
@@ -51,10 +51,6 @@ function verifyOwned(objectKey: string, userId: string) {
   if (!new RegExp(`^incoming/${userId}/[a-f0-9-]{36}$`).test(objectKey)) {
     throw Errors.forbidden();
   }
-}
-function expectedSize(bytes: number, partNumber: number) {
-  const offset = (partNumber - 1) * PART_SIZE;
-  return Math.max(0, Math.min(PART_SIZE, bytes - offset));
 }
 
 export async function POST(request: Request) {
@@ -88,10 +84,8 @@ export async function POST(request: Request) {
       return jsonOk({ aborted: true });
     }
     const parts = await listMultipartParts(input.objectKey, input.uploadId);
-    const totalParts = Math.ceil(input.bytes / PART_SIZE);
-    const valid = parts.every((part) =>
-      part.partNumber >= 1 && part.partNumber <= totalParts &&
-      part.size === expectedSize(input.bytes, part.partNumber));
+    const totalParts = multipartPartCount(input.bytes);
+    const valid = uploadedMultipartPartsAreValid(input.bytes, parts);
     if (!valid) throw Errors.invalid('Multipart upload parts do not match the file size');
     if (input.action === 'list') {
       return jsonOk({ parts, partSize: PART_SIZE });
@@ -101,7 +95,7 @@ export async function POST(request: Request) {
       return jsonOk({
         uploadUrl: presignMultipartPart(input.objectKey, input.uploadId, input.partNumber),
         partNumber: input.partNumber,
-        bytes: expectedSize(input.bytes, input.partNumber),
+        bytes: multipartPartLength(input.bytes, input.partNumber),
       });
     }
     if (parts.length !== totalParts ||
