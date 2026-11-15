@@ -160,7 +160,9 @@ export async function listMultipartParts(
   const xml = await signedS3('GET', objectKey, { uploadId });
   const parts: UploadedPart[] = [];
   for (const match of xml.matchAll(/<Part>([\s\S]*?)<\/Part>/gi)) {
-    const number = Number(xmlValue(match[1], 'PartNumber'));
+    const fragment = match[1];
+    if (!fragment) continue;
+    const number = Number(xmlValue(fragment, 'PartNumber'));
     const size = Number(xmlValue(fragment, 'Size'));
     const etag = xmlValue(fragment, 'ETag');
     if (
