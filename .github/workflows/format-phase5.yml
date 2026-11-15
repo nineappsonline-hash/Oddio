@@ -1,0 +1,47 @@
+name: Format Phase 5 changed files
+on:
+  push:
+    branches: [feature/master-plan-phase-0-1]
+    paths:
+      - '.github/workflows/format-phase5.yml'
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format new discovery components and tests
+        run: |
+          npx prettier --write \
+            'apps/web/src/app/[locale]/page.tsx' \
+            'apps/web/src/app/[locale]/discover/page.tsx' \
+            'apps/web/src/app/[locale]/genres/[slug]/page.tsx' \
+            'apps/web/src/app/[locale]/moods/[slug]/page.tsx' \
+            apps/web/src/app/api/discovery/mix/route.ts \
+            apps/web/src/app/api/discovery/prompt/route.ts \
+            apps/web/src/components/player/FlowButton.tsx \
+            apps/web/src/components/music/PromptPlaylist.tsx \
+            apps/web/src/lib/player-store.ts \
+            apps/web/src/lib/data/discovery-mixes.ts \
+            apps/web/src/lib/data/discovery-mixes.test.ts \
+            apps/web/src/lib/data/discovery-artists.ts \
+            apps/web/src/lib/data/discovery-artists.test.ts \
+            apps/web/src/lib/data/prompt-discovery.ts \
+            apps/web/src/lib/data/prompt-discovery.test.ts \
+            scripts/browser-release.mjs
+      - name: Commit formatter output on development branch
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "oddio-ci-format"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src scripts/browser-release.mjs
+          git commit -m "style(phase5): format discovery implementation"
+          git push origin HEAD:feature/master-plan-phase-0-1
