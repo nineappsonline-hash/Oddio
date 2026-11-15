@@ -31,7 +31,8 @@ export function DiscoveryMixShelf({
     setPrefs(readDiscoveryExclusions(viewerId));
     const refresh = () => setPrefs(readDiscoveryExclusions(viewerId));
     window.addEventListener('oddio-discovery-preferences-changed', refresh);
-    return () => window.removeEventListener('oddio-discovery-preferences-changed', refresh);
+    return () =>
+      window.removeEventListener('oddio-discovery-preferences-changed', refresh);
   }, [viewerId]);
   function update(next: DiscoveryExclusions) {
     setPrefs(next);
@@ -40,30 +41,50 @@ export function DiscoveryMixShelf({
     const state = usePlayer.getState();
     if (state.station) {
       usePlayer.setState({
-        queue: state.queue.filter((track) =>
-          !next.trackIds.includes(track.id) &&
-          !(track.genreIds?.length ? track.genreIds : [track.genreId])
-            .some((id) => next.genreIds.includes(id)),
+        queue: state.queue.filter(
+          (track) =>
+            !next.trackIds.includes(track.id) &&
+            !(track.genreIds?.length ? track.genreIds : [track.genreId]).some((id) =>
+              next.genreIds.includes(id),
+            ),
         ),
       });
     }
   }
-  const visible = tracks.filter((track) =>
-    !prefs.trackIds.includes(track.id) &&
-    !(track.genreIds?.length ? track.genreIds : [track.genreId])
-      .some((id) => prefs.genreIds.includes(id)),
+  const visible = tracks.filter(
+    (track) =>
+      !prefs.trackIds.includes(track.id) &&
+      !(track.genreIds?.length ? track.genreIds : [track.genreId]).some((id) =>
+        prefs.genreIds.includes(id),
+      ),
   );
   const cards = visible.slice(0, 5);
   return (
-    <section className="oddio-dashboard-section mb-8" aria-label={ar ? 'اختيارات لك' : 'Music picks'}>
+    <section
+      className="oddio-dashboard-section mb-8"
+      aria-label={ar ? 'اختيارات لك' : 'Music picks'}
+    >
       <div className="oddio-section-title-row flex-wrap gap-3">
         <div>
           <p className="oddio-micro-label">ODDIO PICKS</p>
-          <h2>{personalized ? (ar ? 'مختارة على ذوقك' : 'Picked for your taste') :
-            (ar ? 'ابدأ من هنا' : 'Start listening here')}</h2>
-          <p className="text-sm text-muted">{personalized
-            ? (ar ? 'حسب إعجاباتك واستماعك المكتمل.' : 'Inspired by your likes and completed listens.')
-            : (ar ? 'اختيارات عامة لحد ما نعرف ذوقك.' : 'Popular picks while you find your sound.')}</p>
+          <h2>
+            {personalized
+              ? ar
+                ? 'مختارة على ذوقك'
+                : 'Picked for your taste'
+              : ar
+                ? 'ابدأ من هنا'
+                : 'Start listening here'}
+          </h2>
+          <p className="text-sm text-muted">
+            {personalized
+              ? ar
+                ? 'حسب إعجاباتك واستماعك المكتمل.'
+                : 'Inspired by your likes and completed listens.'
+              : ar
+                ? 'اختيارات عامة لحد ما نعرف ذوقك.'
+                : 'Popular picks while you find your sound.'}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <FlowButton tracks={visible} locale={locale} viewerId={viewerId} />
@@ -80,10 +101,12 @@ export function DiscoveryMixShelf({
                 <button
                   type="button"
                   className="min-h-9 rounded-full border border-white/10 px-3 text-xs text-muted hover:text-ink"
-                  onClick={() => update({
-                    ...prefs,
-                    trackIds: [...new Set([...prefs.trackIds, track.id])].slice(-100),
-                  })}
+                  onClick={() =>
+                    update({
+                      ...prefs,
+                      trackIds: [...new Set([...prefs.trackIds, track.id])].slice(-100),
+                    })
+                  }
                 >
                   {ar ? 'مش مهتم' : 'Not interested'}
                 </button>
@@ -91,10 +114,14 @@ export function DiscoveryMixShelf({
                   <button
                     type="button"
                     className="min-h-9 rounded-full border border-white/10 px-3 text-xs text-muted hover:text-ink"
-                    onClick={() => update({
-                      ...prefs,
-                      genreIds: [...new Set([...prefs.genreIds, track.genreId])].slice(-50),
-                    })}
+                    onClick={() =>
+                      update({
+                        ...prefs,
+                        genreIds: [...new Set([...prefs.genreIds, track.genreId])].slice(
+                          -50,
+                        ),
+                      })
+                    }
                   >
                     {ar ? 'إخفاء النوع ده' : 'Hide this genre'}
                   </button>
@@ -105,11 +132,12 @@ export function DiscoveryMixShelf({
         </div>
       ) : (
         <p className="text-sm text-muted">
-          {ar ? 'مفيش اختيارات بعد الاستبعاد. تقدر تمسح الاستبعادات.'
+          {ar
+            ? 'مفيش اختيارات بعد الاستبعاد. تقدر تمسح الاستبعادات.'
             : 'No picks remain after filtering. Clear exclusions to start again.'}
         </p>
       )}
-      {(prefs.trackIds.length > 0 || prefs.genreIds.length > 0) ? (
+      {prefs.trackIds.length > 0 || prefs.genreIds.length > 0 ? (
         <button
           type="button"
           className="mt-4 min-h-10 rounded-full border border-primary/40 px-4 text-sm text-primary"

@@ -118,8 +118,12 @@ export default async function DiscoverPage({
           </Link>
         ))}
       </section>
-      {recommendations.tracks.length > 0 && !first(sp.q) && !first(sp.genre) &&
-      !first(sp.mood) && !first(sp.language) && !first(sp.country) &&
+      {recommendations.tracks.length > 0 &&
+      !first(sp.q) &&
+      !first(sp.genre) &&
+      !first(sp.mood) &&
+      !first(sp.language) &&
+      !first(sp.country) &&
       !first(sp.cursor) ? (
         <DiscoveryMixShelf
           tracks={recommendations.tracks}

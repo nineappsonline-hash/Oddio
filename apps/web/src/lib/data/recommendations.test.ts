@@ -10,16 +10,32 @@ function fixture(): DemoDb {
     ['other', 'artist-c', 'genre-b', ['mood-b'], 100],
     ['match-two', 'artist-b', 'genre-a', ['mood-a'], 2],
   ].map(([id, artistId, genreId, moodIds, plays]) => ({
-    id, artistId, genreId, genreIds: [genreId], moodIds,
-    qualifiedPlays: plays, releaseAt: now, visibility: 'public',
-    reviewStatus: 'approved', publishStatus: 'published',
+    id,
+    artistId,
+    genreId,
+    genreIds: [genreId],
+    moodIds,
+    qualifiedPlays: plays,
+    releaseAt: now,
+    visibility: 'public',
+    reviewStatus: 'approved',
+    publishStatus: 'published',
     audio: { kind: 'rendition', objectKey: id + '.mp3', processingStatus: 'ready' },
   }));
   return {
     tracks,
-    artists: [{ id: 'artist-a', ownerUserId: 'owner' }, { id: 'artist-b', ownerUserId: 'owner' }, { id: 'artist-c', ownerUserId: 'owner' }],
-    albums: [], genres: [], moods: [], comments: [], likes: [],
-    playbackSessions: [], playbackEvents: [],
+    artists: [
+      { id: 'artist-a', ownerUserId: 'owner' },
+      { id: 'artist-b', ownerUserId: 'owner' },
+      { id: 'artist-c', ownerUserId: 'owner' },
+    ],
+    albums: [],
+    genres: [],
+    moods: [],
+    comments: [],
+    likes: [],
+    playbackSessions: [],
+    playbackEvents: [],
   } as unknown as DemoDb;
 }
 
@@ -29,7 +45,11 @@ describe('Oddio recommendations', () => {
   it('uses a deterministic popular fallback for guests', () => {
     const result = recommendTracks(fixture(), { userId: null, roles: [] }, 3);
     expect(result.personalized).toBe(false);
-    expect(result.tracks.map((track) => track.id)).toEqual(['other', 'match-two', 'seed']);
+    expect(result.tracks.map((track) => track.id)).toEqual([
+      'other',
+      'match-two',
+      'seed',
+    ]);
   });
 
   it('prefers genre and mood matches without replaying liked tracks', () => {
@@ -44,12 +64,42 @@ describe('Oddio recommendations', () => {
   it('uses only qualified events belonging to the signed-in user', () => {
     const db = fixture();
     db.playbackSessions.push(
-      { id: 'mine', userId: 'listener', anonymousSessionHash: null, startedAt: '', lastSeenAt: '' },
-      { id: 'theirs', userId: 'other', anonymousSessionHash: null, startedAt: '', lastSeenAt: '' },
+      {
+        id: 'mine',
+        userId: 'listener',
+        anonymousSessionHash: null,
+        startedAt: '',
+        lastSeenAt: '',
+      },
+      {
+        id: 'theirs',
+        userId: 'other',
+        anonymousSessionHash: null,
+        startedAt: '',
+        lastSeenAt: '',
+      },
     );
     db.playbackEvents.push(
-      { id: '1', sessionId: 'mine', trackId: 'seed', qualified: true, eventType: 'qualified', audibleMs: 30000, occurredAt: '', requestId: '1' },
-      { id: '2', sessionId: 'theirs', trackId: 'other', qualified: true, eventType: 'qualified', audibleMs: 30000, occurredAt: '', requestId: '2' },
+      {
+        id: '1',
+        sessionId: 'mine',
+        trackId: 'seed',
+        qualified: true,
+        eventType: 'qualified',
+        audibleMs: 30000,
+        occurredAt: '',
+        requestId: '1',
+      },
+      {
+        id: '2',
+        sessionId: 'theirs',
+        trackId: 'other',
+        qualified: true,
+        eventType: 'qualified',
+        audibleMs: 30000,
+        occurredAt: '',
+        requestId: '2',
+      },
     );
     const result = recommendTracks(db, viewer, 2);
     expect(result.personalized).toBe(true);

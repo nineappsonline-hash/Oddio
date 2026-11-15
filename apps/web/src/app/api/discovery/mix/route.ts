@@ -11,7 +11,9 @@ export const dynamic = 'force-dynamic';
 
 const allowedKinds: MixKind[] = ['flow', 'daily', 'weekly', 'song', 'artist'];
 function list(value: string | null, max: number): string[] {
-  return (value ?? '').split(',').filter((item) => /^[a-zA-Z0-9_-]{1,80}$/.test(item))
+  return (value ?? '')
+    .split(',')
+    .filter((item) => /^[a-zA-Z0-9_-]{1,80}$/.test(item))
     .slice(0, max);
 }
 

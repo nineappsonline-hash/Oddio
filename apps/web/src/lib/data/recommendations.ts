@@ -3,7 +3,11 @@ import type { DemoDb } from './types';
 import { listableTracks, type CatalogTrack } from './queries';
 
 /** Transparent, zero-API-cost recommendations. No playback data is sent outside Oddio. */
-export function recommendTracks(db: DemoDb, viewer: Viewer, limit = 6): {
+export function recommendTracks(
+  db: DemoDb,
+  viewer: Viewer,
+  limit = 6,
+): {
   tracks: CatalogTrack[];
   personalized: boolean;
 } {
@@ -12,7 +16,9 @@ export function recommendTracks(db: DemoDb, viewer: Viewer, limit = 6): {
   );
   const userId = viewer.userId;
   const likedIds = new Set(
-    userId ? db.likes.filter((like) => like.userId === userId).map((like) => like.trackId) : [],
+    userId
+      ? db.likes.filter((like) => like.userId === userId).map((like) => like.trackId)
+      : [],
   );
   const sessionIds = new Set(
     userId
@@ -46,21 +52,27 @@ export function recommendTracks(db: DemoDb, viewer: Viewer, limit = 6): {
   const ranked = available
     .filter((track) => !likedIds.has(track.id) && !listenedIds.has(track.id))
     .map((track) => {
-      const genreScore = (track.genreIds?.length ? track.genreIds : [track.genreId])
-        .reduce((sum, id) => sum + (genreWeights.get(id) ?? 0), 0);
+      const genreScore = (
+        track.genreIds?.length ? track.genreIds : [track.genreId]
+      ).reduce((sum, id) => sum + (genreWeights.get(id) ?? 0), 0);
       const moodScore = track.moodIds.reduce(
-        (sum, id) => sum + (moodWeights.get(id) ?? 0), 0,
+        (sum, id) => sum + (moodWeights.get(id) ?? 0),
+        0,
       );
       const popularity = Math.log1p(Math.max(0, track.qualifiedPlays)) * 0.12;
       const score = personalized
-        ? genreScore * 3 + moodScore * 2 + (artistWeights.get(track.artistId) ?? 0) + popularity
+        ? genreScore * 3 +
+          moodScore * 2 +
+          (artistWeights.get(track.artistId) ?? 0) +
+          popularity
         : popularity;
       return { track, score };
     })
-    .sort((a, b) =>
-      b.score - a.score ||
-      b.track.releaseAt.localeCompare(a.track.releaseAt) ||
-      a.track.id.localeCompare(b.track.id),
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        b.track.releaseAt.localeCompare(a.track.releaseAt) ||
+        a.track.id.localeCompare(b.track.id),
     );
 
   // Prefer different artists in the first pass; fill remaining slots by score.

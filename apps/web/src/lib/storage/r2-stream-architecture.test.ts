@@ -45,9 +45,7 @@ describe('Cloudflare R2 streaming architecture guard', () => {
   });
 
   it('signs delete requests with the same canonical newline and AWS timestamp format', () => {
-    const body = signing.slice(
-      signing.indexOf('export function presignR2Delete('),
-    );
+    const body = signing.slice(signing.indexOf('export function presignR2Delete('));
     expect(body).toContain(String.raw`/^[a-zA-Z0-9/_-]+\.[a-zA-Z0-9]+$/`);
     expect(body).toContain(String.raw`replace(/[:-]|\.\d{3}/g, '')`);
     expect(body).toContain("host',");

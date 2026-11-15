@@ -26,7 +26,10 @@ interface PlayerState {
   playbackRequestId: number;
   retryPlayback: () => void;
   play: (track: CatalogTrack, upcoming?: CatalogTrack[]) => void;
-  startFlow: (tracks: CatalogTrack[], station?: { kind: StationMode; seedId?: string }) => void;
+  startFlow: (
+    tracks: CatalogTrack[],
+    station?: { kind: StationMode; seedId?: string },
+  ) => void;
   continueStation: (tracks: CatalogTrack[]) => void;
   toggle: () => void;
   setPlaying: (playing: boolean) => void;

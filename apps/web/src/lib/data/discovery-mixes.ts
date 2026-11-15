@@ -57,11 +57,15 @@ export function buildDiscoveryMix(
   const affinity = (track: CatalogTrack) => {
     if (!seed) return 0;
     const genres = new Set(seed.genreIds?.length ? seed.genreIds : [seed.genreId]);
-    const sharedGenre = (track.genreIds?.length ? track.genreIds : [track.genreId])
-      .some((id) => genres.has(id));
+    const sharedGenre = (track.genreIds?.length ? track.genreIds : [track.genreId]).some(
+      (id) => genres.has(id),
+    );
     const sharedMood = track.moodIds.some((id) => seed.moodIds.includes(id));
-    return Number(track.artistId === seed.artistId) * 5 +
-      Number(sharedGenre) * 4 + Number(sharedMood) * 3;
+    return (
+      Number(track.artistId === seed.artistId) * 5 +
+      Number(sharedGenre) * 4 +
+      Number(sharedMood) * 3
+    );
   };
   const byId = new Map<string, CatalogTrack>();
   for (const track of [...ranked, ...catalog]) byId.set(track.id, track);
@@ -78,9 +82,11 @@ export function buildDiscoveryMix(
     const principal = viewer.userId ?? 'guest';
     const preferenceRank = new Map(ranked.map((track, index) => [track.id, index]));
     candidates = candidates.sort((a, b) => {
-      const aScore = (preferenceRank.has(a.id) ? 10 : 0) +
+      const aScore =
+        (preferenceRank.has(a.id) ? 10 : 0) +
         (stableNumber(principal + ':' + rotation + ':' + a.id) % 1000) / 1000;
-      const bScore = (preferenceRank.has(b.id) ? 10 : 0) +
+      const bScore =
+        (preferenceRank.has(b.id) ? 10 : 0) +
         (stableNumber(principal + ':' + rotation + ':' + b.id) % 1000) / 1000;
       return bScore - aScore || a.id.localeCompare(b.id);
     });
@@ -102,6 +108,7 @@ export function buildDiscoveryMix(
   }
   return {
     tracks: selected.slice(0, limit),
-    personalized: base.personalized && options.kind !== 'song' && options.kind !== 'artist',
+    personalized:
+      base.personalized && options.kind !== 'song' && options.kind !== 'artist',
   };
 }

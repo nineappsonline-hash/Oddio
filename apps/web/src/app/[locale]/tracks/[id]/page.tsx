@@ -149,7 +149,12 @@ export default async function TrackPage({
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <PlayButton track={track} queue={[track, ...related]} size="lg" />
-            <FlowButton kind="song" seedId={track.id} locale={locale} viewerId={viewer.userId} />
+            <FlowButton
+              kind="song"
+              seedId={track.id}
+              locale={locale}
+              viewerId={viewer.userId}
+            />
             <LikeButton
               trackId={track.id}
               initialLiked={track.isLiked}

@@ -500,7 +500,9 @@ export function PlayerProvider({
         if (alreadyPlayed.length) params.set('exclude', alreadyPlayed.join(','));
         if (exclusions.genreIds.length)
           params.set('blockedGenres', exclusions.genreIds.join(','));
-        void apiRequest<{ tracks: CatalogTrack[] }>('/api/discovery/mix?' + params.toString())
+        void apiRequest<{ tracks: CatalogTrack[] }>(
+          '/api/discovery/mix?' + params.toString(),
+        )
           .then(async ({ tracks }) => {
             if (tracks.length > 0) return { tracks, restart: false };
             // The whole eligible catalog has been played. Start a fresh cycle,
@@ -512,10 +514,12 @@ export function PlayerProvider({
               current.station?.seedId !== station.seedId ||
               current.isPlaying ||
               !current.autoplay
-            ) return { tracks: [], restart: false };
+            )
+              return { tracks: [], restart: false };
             const restarted = new URLSearchParams(params);
             const avoid = [...exclusions.trackIds, ...(currentId ? [currentId] : [])];
-            if (avoid.length) restarted.set('exclude', [...new Set(avoid)].slice(-100).join(','));
+            if (avoid.length)
+              restarted.set('exclude', [...new Set(avoid)].slice(-100).join(','));
             else restarted.delete('exclude');
             const next = await apiRequest<{ tracks: CatalogTrack[] }>(
               '/api/discovery/mix?' + restarted.toString(),
@@ -530,7 +534,8 @@ export function PlayerProvider({
               latest.station?.seedId !== station.seedId ||
               latest.isPlaying ||
               !latest.autoplay
-            ) return;
+            )
+              return;
             if (tracks.length > 0) {
               if (restart) latest.startFlow(tracks, station);
               else latest.continueStation(tracks);

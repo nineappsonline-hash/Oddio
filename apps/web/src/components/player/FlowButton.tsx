@@ -46,7 +46,10 @@ export function FlowButton({
       });
       if (!response.ok) throw new Error('Mix unavailable');
       const payload: unknown = await response.json();
-      const data = payload as { tracks?: CatalogTrack[]; data?: { tracks?: CatalogTrack[] } };
+      const data = payload as {
+        tracks?: CatalogTrack[];
+        data?: { tracks?: CatalogTrack[] };
+      };
       const recommended = data.data?.tracks ?? data.tracks;
       if (!Array.isArray(recommended) || recommended.length === 0)
         throw new Error('No playable music available');
@@ -54,10 +57,12 @@ export function FlowButton({
     } catch {
       // The original server-rendered Flow list is a backup for transient API failures.
       const hidden = readDiscoveryExclusions(viewerId);
-      const fallback = tracks.filter((item) =>
-        !hidden.trackIds.includes(item.id) &&
-        !(item.genreIds?.length ? item.genreIds : [item.genreId])
-          .some((id) => hidden.genreIds.includes(id)),
+      const fallback = tracks.filter(
+        (item) =>
+          !hidden.trackIds.includes(item.id) &&
+          !(item.genreIds?.length ? item.genreIds : [item.genreId]).some((id) =>
+            hidden.genreIds.includes(id),
+          ),
       );
       if (fallback.length) startFlow(fallback, { kind, ...(seedId ? { seedId } : {}) });
       else setFailed(true);
@@ -80,7 +85,9 @@ export function FlowButton({
       </button>
       {failed ? (
         <span role="status" className="text-xs text-muted">
-          {ar ? 'مفيش أغاني مناسبة متاحة حاليًا.' : 'No matching playable tracks right now.'}
+          {ar
+            ? 'مفيش أغاني مناسبة متاحة حاليًا.'
+            : 'No matching playable tracks right now.'}
         </span>
       ) : null}
     </span>

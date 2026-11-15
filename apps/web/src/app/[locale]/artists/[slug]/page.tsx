@@ -138,7 +138,12 @@ export default async function ArtistPage({
           <div className="flex flex-wrap gap-2">
             <GenrePlayAllButton tracks={queue} ar={locale === 'ar'} />
             {queue.length > 0 ? (
-              <FlowButton kind="artist" seedId={queue[0]!.id} locale={locale} viewerId={viewer.userId} />
+              <FlowButton
+                kind="artist"
+                seedId={queue[0]!.id}
+                locale={locale}
+                viewerId={viewer.userId}
+              />
             ) : null}
             <FollowButton
               artistId={artist.id}

@@ -15,9 +15,14 @@ export function readDiscoveryExclusions(userId: string | null): DiscoveryExclusi
     if (!parsed || typeof parsed !== 'object') throw new Error('Invalid preferences');
     const obj = parsed as Record<string, unknown>;
     const clean = (items: unknown, max: number) =>
-      Array.isArray(items) ? items.filter((id): id is string =>
-        typeof id === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(id),
-      ).slice(0, max) : [];
+      Array.isArray(items)
+        ? items
+            .filter(
+              (id): id is string =>
+                typeof id === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(id),
+            )
+            .slice(0, max)
+        : [];
     return { trackIds: clean(obj.trackIds, 100), genreIds: clean(obj.genreIds, 50) };
   } catch {
     return { trackIds: [], genreIds: [] };
