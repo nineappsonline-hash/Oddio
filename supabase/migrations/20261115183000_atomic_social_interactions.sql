@@ -140,13 +140,35 @@ begin
 end;
 $$;
 
+create or replace function public.oddio_remove_playlist_track(
+  p_user_id uuid, p_playlist_id uuid, p_track_id uuid
+)
+returns void
+language plpgsql
+security invoker
+set search_path = ''
+as $
+begin
+  perform 1 from public.playlists
+  where id = p_playlist_id and owner_id = p_user_id
+  for update;
+  if not found then
+    raise exception 'Playlist unavailable' using errcode = 'P0002';
+  end if;
+  delete from public.playlist_tracks
+  where playlist_id = p_playlist_id and track_id = p_track_id;
+end;
+$;
+
 -- Revoke the default PUBLIC function execute privilege before granting only
 -- trusted server role access (same effective privilege for service_role).
 revoke all on function public.oddio_toggle_track_like(uuid,uuid) from public, anon, authenticated;
 revoke all on function public.oddio_toggle_artist_follow(uuid,uuid) from public, anon, authenticated;
 revoke all on function public.oddio_toggle_playlist_follow(uuid,uuid) from public, anon, authenticated;
 revoke all on function public.oddio_add_playlist_track(uuid,uuid,uuid) from public, anon, authenticated;
+revoke all on function public.oddio_remove_playlist_track(uuid,uuid,uuid) from public, anon, authenticated;
 grant execute on function public.oddio_toggle_track_like(uuid,uuid) to service_role;
 grant execute on function public.oddio_toggle_artist_follow(uuid,uuid) to service_role;
 grant execute on function public.oddio_toggle_playlist_follow(uuid,uuid) to service_role;
 grant execute on function public.oddio_add_playlist_track(uuid,uuid,uuid) to service_role;
+grant execute on function public.oddio_remove_playlist_track(uuid,uuid,uuid) to service_role;
