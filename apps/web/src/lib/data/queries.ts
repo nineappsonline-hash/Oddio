@@ -801,8 +801,22 @@ export function getSitemapEntries(db: DemoDb) {
         album.visibility === 'public' &&
         listable.some((track) => track.albumId === album.id),
     ),
-    playlists: db.playlists.filter((playlist) => playlist.visibility === 'public'),
-    genres: db.genres.filter((genre) => genre.active),
-    moods: db.moods.filter((mood) => mood.active),
+    playlists: db.playlists.filter(
+      (playlist) =>
+        playlist.visibility === 'public' &&
+        playlist.trackIds.some((id) => listable.some((track) => track.id === id)),
+    ),
+    genres: db.genres.filter(
+      (genre) =>
+        genre.active &&
+        listable.some((track) =>
+          track.genreIds?.includes(genre.id) ?? track.genreId === genre.id,
+        ),
+    ),
+    moods: db.moods.filter(
+      (mood) =>
+        mood.active &&
+        listable.some((track) => track.moodIds.includes(mood.id)),
+    ),
   };
 }
