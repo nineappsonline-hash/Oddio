@@ -42,10 +42,14 @@ export async function generateMetadata({
     });
   return buildMetadata({
     locale: safeLocale,
-    title: page.artist.name,
-    description:
-      page.artist.bio ||
-      `${page.artist.name} — ${createTranslator(safeLocale)('app.shortTagline')}`,
+    title: safeLocale === 'ar'
+      ? `${page.artist.name} | أغاني وفنانين على Oddio`
+      : `${page.artist.name} — AI Music Artist`,
+    description: page.artist.bio
+      ? `${page.artist.bio.slice(0, 145)} — Listen on Oddio.`
+      : safeLocale === 'ar'
+        ? `اكتشف أغاني وإصدارات الفنان ${page.artist.name} على Oddio، واستمع لموسيقى أصلية بالذكاء الاصطناعي.`
+        : `Explore ${page.artist.name}'s songs and releases on Oddio. Listen to original AI music and discover more artists.`,
     path: `/artists/${slug}`,
     type: 'profile',
   });
