@@ -31,7 +31,11 @@ export async function generateMetadata({
   return buildMetadata({
     locale: safeLocale,
     title: label,
-    description: `${label} — ${createTranslator(safeLocale)('app.shortTagline')}`,
+    description:
+      safeLocale === 'ar'
+        ? `اسمع أغاني تناسب مود ${label} على Oddio، واكتشف موسيقى بالذكاء الاصطناعي وترشيحات تناسب إحساسك.`
+        : `Listen to ${label} mood music on Oddio. Discover AI-generated songs and explore tracks that fit how you feel.`,
+    noindex: !page,
     path: `/moods/${slug}`,
   });
 }
