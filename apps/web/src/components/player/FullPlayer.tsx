@@ -105,6 +105,8 @@ export function FullPlayer() {
   const repeat = usePlayer((state) => state.repeat);
   const shuffle = usePlayer((state) => state.shuffle);
   const autoplay = usePlayer((state) => state.autoplay);
+  const crossfadeSeconds = usePlayer((state) => state.crossfadeSeconds);
+  const setCrossfadeSeconds = usePlayer((state) => state.setCrossfadeSeconds);
   const setExpanded = usePlayer((state) => state.setExpanded);
   const toggle = usePlayer((state) => state.toggle);
   const next = usePlayer((state) => state.next);
@@ -649,6 +651,20 @@ export function FullPlayer() {
                   className="h-4 w-4 rounded border-white/20 bg-black/30 accent-primary"
                 />
                 {t('player.autoplay')}
+              </label>
+              <label className="flex min-h-11 items-center gap-2 text-xs text-muted">
+                <span>{rtl ? 'التداخل بين الأغاني' : 'Crossfade'}</span>
+                <select
+                  aria-label={rtl ? 'مدة تداخل الأغاني' : 'Crossfade duration'}
+                  className="rounded-lg border border-white/20 bg-[#211d27] px-2 py-2 text-white"
+                  value={crossfadeSeconds}
+                  onChange={(event) => setCrossfadeSeconds(Number(event.target.value))}
+                >
+                  <option value={0}>{rtl ? 'بدون تداخل' : 'Off'}</option>
+                  <option value={3}>3s</option>
+                  <option value={5}>5s</option>
+                  <option value={8}>8s</option>
+                </select>
               </label>
               <ShareButton title={track.title} label={t('common.share')} />
             </div>
