@@ -222,6 +222,18 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] **Cross-device Not Interested sync**: browser storage remains device-local. Requires privacy-reviewed account-owned Supabase storage and secure API/migration rollout; defer to the Phase 3 cross-device persistence release. Do not claim device synchronization today.
 - [ ] Measure opt-in relevance, skip/save rate, cold-start fairness and catalog-scale query performance against real traffic; current algorithm is deterministic MVP, not a trained semantic model.
 
+### Phase 5 fifth slice — quality gates and cross-device exclusions (development only)
+
+- [x] Latest prior full Phase 5 CI on commit `6c40f4b7`, GitHub run `43720369045`, eventually passed all three jobs: verify (typecheck/unit tests/build/lint/format), disposable PostgreSQL, and automated demo desktop/mobile browser flows. New commits **require another complete green run**.
+- [x] Added `public.discovery_preferences` as a new **staging-first** account-owned table, with FK cascade, bounded UUID lists, RLS and service-role-only access; anonymous/authenticated Data API roles have no direct table privileges. This migration has NOT been applied to the live Supabase project.
+- [x] Added authenticated, origin-checked and rate-limited GET/PUT `/api/discovery/preferences` with server-side account ownership; demo API explicitly reports unavailable instead of claiming cloud sync. Added a disposable PostgreSQL RLS/limits test, and a browser check rejecting anonymous preference reads/writes.
+- [x] Local browser preferences are maintained as a safe fallback when Staging/Supabase is unavailable. On first successful cloud sync, legacy local exclusions are merged with cloud values and sent back; on later visits, the server is authoritative. Writes from the same browser tab are serialized. The UI explains whether preferences are account-synced or only on the device. Station launch reconciles preferences before requesting a mix.
+- [x] Added no-PII `evaluateDiscoveryQuality`: artist coverage, top-artist share, recommendation size, and hidden track/genre leakage counts. Unit tests cover exposure and privacy. Discovery mix API provides these **aggregated** diagnostics for internal/staging QA with no event tracking or personal identifiers.
+- [ ] **Mandatory release blocker**: prepare and verify a restorable Supabase backup, isolate a Staging environment, apply the new preference migration plus earlier Phase 1/3/4 migrations, test multi-device concurrent edits, real playback/R2 audio and mobile Safari/Android. Do not merge the schema-dependent API to production before database rollout.
+- [ ] The initial preference sync is a last-write-wins MVP with serialized writes per tab. Future concurrent updates from separate devices require an explicit conflict/merge policy and ETag/row version; do not claim conflict-free synchronization.
+- [ ] Evaluate real recommendation engagement (save/skip/qualified listens) only with reviewed user-consent, anonymous aggregate reporting, and privacy retention boundaries. Current metrics are offline batch diagnostics, not measured production conversion.
+- [ ] Security, latency, diversity and relevance need large-catalog and real-browser staging acceptance before the phase can be marked **production completed**.
+
 ## Phase 6 — artist studio
 
 - [ ] Reliable multipart uploads with progress and resume; structured release wizard.
