@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronDown,
   ListMusic,
@@ -77,6 +77,7 @@ export function FullPlayer() {
   const [generatingLyrics, setGeneratingLyrics] = useState(false);
   const [lyricsMessage, setLyricsMessage] = useState('');
   const [mobileLyricsOpen, setMobileLyricsOpen] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [controlNotice, setControlNotice] = useState('');
   useEffect(() => {
     if (!controlNotice) return;
@@ -117,24 +118,58 @@ export function FullPlayer() {
   const removeFromQueue = usePlayer((state) => state.removeFromQueue);
   const clearQueue = usePlayer((state) => state.clearQueue);
 
-  // Full-screen playback is a modal. Prevent touch and wheel scrolling behind
-  // it, and restore the page's original scroll behavior on close/unmount.
+  // The full player is a modal: lock background scrolling and keep keyboard
+  // focus inside it, restoring the opener when the modal closes.
   useEffect(() => {
     if (!expanded || !track) return;
     const previousOverflow = document.body.style.overflow;
+    const opener = document.activeElement;
     document.body.style.overflow = 'hidden';
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        if (mobileLyricsOpen) setMobileLyricsOpen(false);
-        else setExpanded(false);
-      }
-    };
-    document.addEventListener('keydown', onEscape);
+    dialogRef.current?.focus();
     return () => {
       document.body.style.overflow = previousOverflow;
-      document.removeEventListener('keydown', onEscape);
+      if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
     };
-  }, [expanded, track, mobileLyricsOpen, setExpanded]);
+  }, [expanded, track?.id]);
+
+  useEffect(() => {
+    if (!expanded || !track) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (mobileLyricsOpen) setMobileLyricsOpen(false);
+        else setExpanded(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getClientRects().length > 0);
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [expanded, track?.id, mobileLyricsOpen, setExpanded]);
 
   useEffect(() => {
     if (!track?.id) {
@@ -213,6 +248,8 @@ export function FullPlayer() {
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       className="fixed inset-0 z-[60] w-full max-w-full overflow-x-clip overflow-y-auto overscroll-x-none bg-background scroll-thin"
       role="dialog"
       aria-modal="true"
