@@ -2,10 +2,11 @@
 
 import { useT } from '@/i18n/use-translator';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Artist, Genre, Locale, Mood } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
+import { uploadAudioWithProgress } from '@/lib/upload-audio-progress';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
@@ -58,6 +59,8 @@ export function UploadForm({
   const [artworkFile, setArtworkFile] = useState<File | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [pending, setPending] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState<number | null>(null);
+  const uploadRequest = useRef<XMLHttpRequest | null>(null);
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [voiceConfirmed, setVoiceConfirmed] = useState(false);
 
@@ -290,6 +293,7 @@ export function UploadForm({
     form.set('audio', audioFile);
     if (artworkFile) form.set('artwork', artworkFile);
     setPending(true);
+    setUploadPercent(null);
     try {
       let artworkFailed = false;
       if (production) {
@@ -306,26 +310,14 @@ export function UploadForm({
           }),
           headers: { 'Content-Type': 'application/json' },
         });
-        let uploaded: Response;
-        try {
-          uploaded = await fetch(grant.uploadUrl, {
-            method: 'PUT',
-            headers: grant.headers,
-            body: audioFile,
-          });
-        } catch {
-          throw new Error(
-            locale === 'ar'
-              ? 'تعذّر الاتصال بمخزن الملفات. تأكد من إعدادات CORS في Cloudflare R2 للسماح لموقع oddio.online برفع الملفات، ثم حاول مرة أخرى.'
-              : 'Could not reach audio storage. Check Cloudflare R2 CORS settings to allow uploads from oddio.online, then try again.',
-          );
-        }
-        if (!uploaded.ok)
-          throw new Error(
-            locale === 'ar'
-              ? `فشل رفع الصوت إلى التخزين (HTTP ${uploaded.status}). حاول مرة أخرى.`
-              : `Audio storage rejected the upload (HTTP ${uploaded.status}). Please try again.`,
-          );
+        setUploadPercent(0);
+        await uploadAudioWithProgress(
+          grant.uploadUrl,
+          audioFile,
+          grant.headers,
+          setUploadPercent,
+          (request) => { uploadRequest.current = request; },
+        );
         form.delete('audio');
         form.delete('artwork');
         form.set('objectKey', grant.objectKey);
@@ -369,6 +361,8 @@ export function UploadForm({
       const message = caught instanceof Error ? caught.message : t('studio.uploadFailed');
       toast(message, 'error');
     } finally {
+      uploadRequest.current = null;
+      setUploadPercent(null);
       setPending(false);
     }
   }
@@ -778,6 +772,21 @@ export function UploadForm({
                 : 'This declaration is recorded for audit; it does not prove licensing. Every submission remains subject to moderation.'}
             </p>
           </fieldset>
+          {uploadPercent !== null ? (
+            <div className="space-y-2 rounded-xl border border-primary/25 bg-primary/5 p-3" role="status" aria-live="polite">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span>{locale === 'ar' ? 'رفع الصوت إلى Cloudflare R2' : 'Uploading audio to Cloudflare R2'}</span>
+                <span className="tabular-nums">{uploadPercent}%</span>
+              </div>
+              <progress className="h-2 w-full accent-primary" max={100} value={uploadPercent} />
+              {uploadRequest.current && uploadPercent < 100 ? (
+                <button type="button" onClick={() => uploadRequest.current?.abort()}
+                  className="min-h-10 rounded-lg border border-rose-400/40 px-3 text-xs text-rose-200">
+                  {locale === 'ar' ? 'إلغاء الرفع' : 'Cancel upload'}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
           <Button
             type="submit"
             disabled={!rightsConfirmed || !voiceConfirmed}
