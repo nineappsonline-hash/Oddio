@@ -37,7 +37,10 @@ export function initials(name: string): string {
 }
 
 export function absoluteUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const productionDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (productionDomain ? `https://${productionDomain}` : 'http://localhost:3000');
   return `${base.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
 }
 

@@ -28,6 +28,7 @@ export async function generateMetadata({
     title: t('apply.title'),
     description: t('apply.subtitle'),
     path: '/apply/artist',
+    noindex: true,
   });
 }
 

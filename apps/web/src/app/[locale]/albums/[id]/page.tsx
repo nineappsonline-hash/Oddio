@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getAlbumPage } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
+import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
@@ -22,7 +24,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, id } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getAlbumPage(db, { userId: null, roles: [] }, idFromSegment(id));
   if (!page)
     return buildMetadata({
@@ -33,8 +35,14 @@ export async function generateMetadata({
     });
   return buildMetadata({
     locale: safeLocale,
-    title: page.album.title,
-    description: page.album.description || `${page.album.title} — ${page.artist.name}`,
+    title: safeLocale === 'ar'
+      ? `ألبوم ${page.album.title} — ${page.artist.name}`
+      : `${page.album.title} by ${page.artist.name} — AI Music Album`,
+    description: page.album.description
+      ? `${page.album.description.slice(0, 150)} — ${page.artist.name} on Oddio.`
+      : safeLocale === 'ar'
+        ? `اسمع ألبوم ${page.album.title} للفنان ${page.artist.name} على Oddio. استكشف أغاني الألبوم والمزيد من الموسيقى بالذكاء الاصطناعي.`
+        : `Listen to ${page.album.title} by ${page.artist.name} on Oddio. Explore tracks from this AI music album and discover more original songs.`,
     path: `/albums/${id}`,
     type: 'music.album',
   });
@@ -50,7 +58,7 @@ export default async function AlbumPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = readDb();
+  const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getAlbumPage(db, viewer, idFromSegment(id));
   if (!page) notFound();
   const { album, artist, tracks } = page;
@@ -62,11 +70,11 @@ export default async function AlbumPage({
         data={musicAlbumJsonLd({
           title: album.title,
           artistName: artist.name,
-          url: `/albums/${album.id}`,
+          url: `/${locale}/albums/${album.id}`,
           releaseAt: album.releaseAt,
           tracks: tracks.map((track) => ({
             title: track.title,
-            url: `/tracks/${track.id}-${track.slug}`,
+            url: `/${locale}/tracks/${track.id}-${track.slug}`,
           })),
         })}
       />
@@ -86,7 +94,7 @@ export default async function AlbumPage({
             {album.title}
           </h1>
           <Link
-            href={`/artists/${artist.slug}`}
+            href={`/${locale}/artists/${artist.slug}`}
             className="mt-2 inline-block text-sm font-semibold text-primary hover:underline"
           >
             {t('album.by', { artist: artist.name })}

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { absoluteUrl } from '@/lib/utils';
+import { seoAbsoluteUrl as absoluteUrl } from '@/lib/seo-origin';
 
 export default function robots(): MetadataRoute.Robots {
   return {

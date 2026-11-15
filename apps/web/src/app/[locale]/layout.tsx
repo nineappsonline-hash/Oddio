@@ -4,10 +4,11 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import type { Locale } from '@ai-music/contracts';
 import { AppShell } from '@/components/layout/AppShell';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { seoAbsoluteUrl as absoluteUrl, SEO_CANONICAL_ORIGIN } from '@/lib/seo-origin';
 import { StaticServiceWorker } from '@/components/providers/StaticServiceWorker';
 import { dirFor, isLocale, locales } from '@/i18n/config';
 import { getSessionUser } from '@/lib/auth/session';
-import { env } from '@/lib/env';
 import '../globals.css';
 
 const inter = Inter({
@@ -41,13 +42,15 @@ export async function generateMetadata({
   const { locale } = await params;
   const safeLocale: Locale = isLocale(locale) ? locale : 'en';
   const title =
-    safeLocale === 'ar' ? 'Oddio — عالمك الموسيقي' : 'Oddio — Your music universe';
+    safeLocale === 'ar'
+      ? 'Oddio | اكتشف واسمع موسيقى بالذكاء الاصطناعي'
+      : 'Oddio — Discover & Listen to AI-Generated Music';
   const description =
     safeLocale === 'ar'
-      ? 'منصة عالمية لسماع ونشر الموسيقى المعمولة بالذكاء الاصطناعي، ببلاش ومن غير إعلانات وبيتراجع بشريًا قبل ما تنزل.'
-      : 'A global listening and publishing platform for AI-generated music. Free, ad-free and human-reviewed before release.';
+      ? 'اكتشف أغاني أصلية وموسيقى بالذكاء الاصطناعي على Oddio. اسمع إصدارات جديدة، وتعرّف على فنانين وموسيقى عربية وعالمية.'
+      : 'Discover original AI-generated songs, music artists and playlists on Oddio. Browse fresh releases, genres and mood-based music discovery.';
   return {
-    metadataBase: new URL(env.siteUrl),
+    metadataBase: new URL(SEO_CANONICAL_ORIGIN),
     title: { default: title, template: `%s · Oddio` },
     description,
     applicationName: 'Oddio',
@@ -60,8 +63,8 @@ export async function generateMetadata({
       apple: '/glossy-gradient-play-loop-logo.png',
     },
     alternates: {
-      canonical: `${env.siteUrl}/${safeLocale}`,
-      languages: { en: `${env.siteUrl}/en`, ar: `${env.siteUrl}/ar` },
+      canonical: absoluteUrl(`/${safeLocale}`),
+      languages: { en: absoluteUrl('/en'), ar: absoluteUrl('/ar'), 'x-default': absoluteUrl('/en') },
     },
     openGraph: { title, description, siteName: 'Oddio', type: 'website' },
     twitter: { card: 'summary_large_image', title, description },
@@ -86,6 +89,28 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <body className="bg-background text-ink">
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            '@id': absoluteUrl('/#website'),
+            url: absoluteUrl('/'),
+            name: 'Oddio',
+            description: 'Listen to and discover original AI-generated music, artists and playlists.',
+            inLanguage: ['en', 'ar'],
+            publisher: { '@id': absoluteUrl('/#organization') },
+          }}
+        />
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            '@id': absoluteUrl('/#organization'),
+            name: 'Oddio',
+            url: absoluteUrl('/'),
+            logo: absoluteUrl('/oddio-gradient-play-logo.png'),
+          }}
+        />
         <StaticServiceWorker />
         <AppShell locale={locale} user={user}>
           {children}

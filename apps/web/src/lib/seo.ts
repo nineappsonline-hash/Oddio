@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { Locale } from '@ai-music/contracts';
-import { absoluteUrl } from './utils';
+import { seoAbsoluteUrl as absoluteUrl } from './seo-origin';
+import { seoPage } from './seo-copy';
 
 export function buildMetadata({
   locale,
@@ -17,14 +18,19 @@ export function buildMetadata({
   noindex?: boolean;
   type?: 'website' | 'music.song' | 'music.album' | 'profile' | 'article';
 }): Metadata {
+  const copy = seoPage(locale, path);
+  const pageTitle = copy?.title ?? title;
+  const pageDescription = copy?.description ?? description;
+  const fullTitle = pageTitle.includes('Oddio') ? pageTitle : `${pageTitle} | Oddio`;
   const localizedPath = `/${locale}${path}`;
   const canonical = absoluteUrl(localizedPath);
   const ogImage = absoluteUrl(
-    `/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(description.slice(0, 120))}`,
+    `/api/og?title=${encodeURIComponent(pageTitle)}&subtitle=${encodeURIComponent(pageDescription.slice(0, 120))}`,
   );
   return {
-    title,
-    description,
+    title: { absolute: fullTitle },
+    description: pageDescription,
+    applicationName: 'Oddio',
     metadataBase: new URL(absoluteUrl('/')),
     alternates: {
       canonical,
@@ -38,18 +44,18 @@ export function buildMetadata({
       ? { index: false, follow: false, nocache: true }
       : { index: true, follow: true },
     openGraph: {
-      title,
-      description,
+      title: fullTitle,
+      description: pageDescription,
       url: canonical,
-      siteName: 'Project AI Music',
-      locale: locale === 'ar' ? 'ar_AR' : 'en_US',
+      siteName: 'Oddio',
+      locale: locale === 'ar' ? 'ar_EG' : 'en_US',
       type: type as 'website',
-      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: pageTitle }],
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
+      title: fullTitle,
+      description: pageDescription,
       images: [ogImage],
     },
   };
@@ -62,17 +68,18 @@ export function musicRecordingJsonLd(input: {
   durationMs: number;
   releaseAt: string;
   genre?: string;
+  languageCode?: string;
 }) {
   return {
     '@context': 'https://schema.org',
     '@type': 'MusicRecording',
     name: input.title,
-    byArtist: { '@type': 'MusicGroup', name: input.artistName },
-    url: input.url,
-    duration: `PT${Math.round(input.durationMs / 1000)}S`,
+    ...(input.artistName ? { byArtist: { '@type': 'MusicGroup', name: input.artistName } } : {}),
+    url: new URL(input.url, absoluteUrl('/')).toString(),
+    ...(input.durationMs > 0 ? { duration: `PT${Math.round(input.durationMs / 1000)}S` } : {}),
     datePublished: input.releaseAt,
     genre: input.genre,
-    inLanguage: 'ar',
+    ...(input.languageCode ? { inLanguage: input.languageCode } : {}),
   };
 }
 
@@ -88,13 +95,13 @@ export function musicAlbumJsonLd(input: {
     '@type': 'MusicAlbum',
     name: input.title,
     byArtist: { '@type': 'MusicGroup', name: input.artistName },
-    url: input.url,
+    url: new URL(input.url, absoluteUrl('/')).toString(),
     datePublished: input.releaseAt,
     numTracks: input.tracks.length,
     track: input.tracks.map((track) => ({
       '@type': 'MusicRecording',
       name: track.title,
-      url: track.url,
+      url: new URL(track.url, absoluteUrl('/')).toString(),
     })),
   };
 }
@@ -104,7 +111,28 @@ export function artistJsonLd(input: { name: string; url: string; description: st
     '@context': 'https://schema.org',
     '@type': 'MusicGroup',
     name: input.name,
-    url: input.url,
-    description: input.description,
+    url: new URL(input.url, absoluteUrl('/')).toString(),
+    ...(input.description ? { description: input.description } : {}),
+  };
+}
+
+export function musicPlaylistJsonLd(input: {
+  name: string;
+  description?: string;
+  url: string;
+  tracks: Array<{ name: string; url: string }>;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'MusicPlaylist',
+    name: input.name,
+    url: new URL(input.url, absoluteUrl('/')).toString(),
+    ...(input.description ? { description: input.description } : {}),
+    numTracks: input.tracks.length,
+    track: input.tracks.map((track) => ({
+      '@type': 'MusicRecording',
+      name: track.name,
+      url: new URL(track.url, absoluteUrl('/')).toString(),
+    })),
   };
 }

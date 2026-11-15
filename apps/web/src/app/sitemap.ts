@@ -3,7 +3,7 @@ import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { getSitemapEntries } from '@/lib/data/queries';
-import { absoluteUrl } from '@/lib/utils';
+import { seoAbsoluteUrl as absoluteUrl } from '@/lib/seo-origin';
 import { locales } from '@/i18n/config';
 
 export const dynamic = 'force-dynamic';
@@ -23,9 +23,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPaths = [
     '',
     '/discover',
+    '/genres',
+    '/about',
+    '/install',
     '/soundspace',
     '/charts',
-    '/apply/artist',
+    '/for-artists',
     '/legal/terms',
     '/legal/privacy',
     '/legal/content-policy',

@@ -43,6 +43,20 @@ export function Footer({ locale }: { locale: Locale }) {
             </Link>
             <Link
               prefetch={false}
+              href={`/${locale}/genres`}
+              className="block hover:text-ink"
+            >
+              {locale === 'ar' ? 'الأنواع الموسيقية' : 'Music genres'}
+            </Link>
+            <Link
+              prefetch={false}
+              href={`/${locale}/about`}
+              className="block hover:text-ink"
+            >
+              {locale === 'ar' ? 'عن Oddio' : 'About Oddio'}
+            </Link>
+            <Link
+              prefetch={false}
               href={`/${locale}/charts`}
               className="block hover:text-ink"
             >
@@ -50,7 +64,7 @@ export function Footer({ locale }: { locale: Locale }) {
             </Link>
             <Link
               prefetch={false}
-              href={`/${locale}/apply/artist`}
+              href={`/${locale}/for-artists`}
               className="block hover:text-ink"
             >
               {t('nav.apply')}

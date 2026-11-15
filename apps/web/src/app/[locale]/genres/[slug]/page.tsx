@@ -33,7 +33,11 @@ export async function generateMetadata({
   return buildMetadata({
     locale: safeLocale,
     title: label,
-    description: `${label} — Oddio music discovery`,
+    description:
+      safeLocale === 'ar'
+        ? `استكشف أغاني ${label} على Oddio. اسمع أحدث الموسيقى المصنوعة بالذكاء الاصطناعي في النوع ده، وتعرّف على الفنانين والإصدارات.`
+        : `Explore ${label} AI-generated music on Oddio. Listen to new songs, discover artists and browse tracks in this genre.`,
+    noindex: !page,
     path: `/genres/${slug}`,
   });
 }
