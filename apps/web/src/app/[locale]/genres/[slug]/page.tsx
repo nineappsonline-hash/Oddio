@@ -12,6 +12,7 @@ import { buildMetadata } from '@/lib/seo';
 import { TrackCard } from '@/components/music/TrackCard';
 import { ArtistCard } from '@/components/music/ArtistCard';
 import { GenrePlayAllButton } from '@/components/music/GenrePlayAllButton';
+import { FlowButton } from '@/components/player/FlowButton';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -147,7 +148,10 @@ export default async function GenrePage({
             </span>
           </div>
           <div className="pt-3">
-            <GenrePlayAllButton tracks={byPlays} ar={ar} />
+            <div className="flex flex-wrap items-center gap-2">
+              <GenrePlayAllButton tracks={byPlays} ar={ar} />
+              {all.length > 0 ? <FlowButton kind="genre" seedId={page.genre.id} locale={locale} viewerId={viewer.userId} /> : null}
+            </div>
           </div>
         </div>
       </header>
