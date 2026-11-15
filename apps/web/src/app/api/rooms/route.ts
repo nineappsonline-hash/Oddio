@@ -71,19 +71,14 @@ export async function GET(request: Request) {
       : {data:[] as Array<{id:string;display_name:string}>,error:null};
     if (profileError) throw new Error(profileError.message);
     const names = new Map((profiles??[]).map(p=>[p.id,p.display_name]));
-    const viewer = {userId:user.id,roles:user.roles};
-    const track = room.track_id
-      ? getTrackPage(await readRuntimeDb(),viewer,room.track_id)?.track ?? null
-      : null;
     return jsonOk({
       serverNow:new Date().toISOString(),
       room: {
         id:room.id,title:room.title,hostId:room.host_id,version:Number(room.version),
-        trackId:track?.id??null,playing:track?Boolean(room.is_playing):false,
+        trackId:room.track_id,playing:Boolean(room.is_playing),
         seconds:Number(room.position_seconds),syncedAt:room.synced_at,
         expiresAt:room.expires_at,
       },
-      track,
       me:{id:user.id,muted:member.muted,host:room.host_id===user.id},
       members:(people??[]).map(p=>({
         id:p.user_id,name:names.get(p.user_id)??'Oddio listener',
