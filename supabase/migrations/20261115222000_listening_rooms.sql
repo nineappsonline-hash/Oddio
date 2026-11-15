@@ -46,6 +46,7 @@ create table if not exists public.listening_room_messages (
   created_at timestamptz not null default now()
 );
 create index if not exists room_messages_recent_idx on public.listening_room_messages(room_id,id desc);
+create index if not exists room_messages_user_created_idx on public.listening_room_messages(user_id,created_at desc);
 alter table public.listening_room_messages enable row level security;
 revoke all on public.listening_room_messages from public,anon,authenticated;
 grant select,insert,update on public.listening_room_messages to service_role;
