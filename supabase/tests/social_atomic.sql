@@ -26,7 +26,7 @@ do $$
 declare
   listener uuid := '71000000-0000-4000-8000-000000000001';
   owner_id uuid := '71000000-0000-4000-8000-000000000002';
-  track_id uuid := '51000000-0000-4000-8000-000000000001';
+  target_track_id uuid := '51000000-0000-4000-8000-000000000001';
   private_track uuid := '51000000-0000-4000-8000-000000000002';
   artist_id uuid := '31000000-0000-4000-8000-000000000001';
   list_id uuid := '61000000-0000-4000-8000-000000000001';
@@ -36,11 +36,11 @@ begin
      or not has_function_privilege('service_role','public.oddio_toggle_track_like(uuid,uuid)','EXECUTE')
   then raise exception 'RPC function execute grants invalid'; end if;
 
-  if not public.oddio_toggle_track_like(listener,track_id) then
+  if not public.oddio_toggle_track_like(listener,target_track_id) then
     raise exception 'First like must enable like'; end if;
-  if public.oddio_toggle_track_like(listener,track_id) then
+  if public.oddio_toggle_track_like(listener,target_track_id) then
     raise exception 'Second like must remove like'; end if;
-  if (select count(*) from public.likes l where l.user_id=listener and l.track_id=track_id) <> 0 then
+  if (select count(*) from public.likes l where l.user_id=listener and l.track_id=target_track_id) <> 0 then
     raise exception 'Like row not removed'; end if;
   begin
     perform public.oddio_toggle_track_like(listener,private_track);
@@ -58,12 +58,12 @@ begin
   if public.oddio_toggle_playlist_follow(listener,list_id) then
     raise exception 'Playlist follow did not disable'; end if;
 
-  perform public.oddio_add_playlist_track(owner_id,list_id,track_id);
-  perform public.oddio_add_playlist_track(owner_id,list_id,track_id);
+  perform public.oddio_add_playlist_track(owner_id,list_id,target_track_id);
+  perform public.oddio_add_playlist_track(owner_id,list_id,target_track_id);
   if (select count(*) from public.playlist_tracks pt where pt.playlist_id=list_id) <> 1 then
     raise exception 'Duplicate playlist track was inserted'; end if;
   begin
-    perform public.oddio_add_playlist_track(listener,list_id,track_id);
+    perform public.oddio_add_playlist_track(listener,list_id,target_track_id);
     raise exception 'Non-owner added to playlist';
   exception when sqlstate 'P0002' then null;
   end;
