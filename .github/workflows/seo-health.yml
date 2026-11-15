@@ -1,0 +1,22 @@
+name: Oddio SEO health
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every Monday, 07:15 UTC. Failures surface in GitHub Actions.
+    - cron: '15 7 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-public-seo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Oddio production SEO signals
+        run: node scripts/seo-smoke-test.mjs https://oddio.online

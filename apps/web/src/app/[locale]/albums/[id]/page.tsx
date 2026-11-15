@@ -1,3 +1,4 @@
+import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
@@ -43,7 +44,7 @@ export async function generateMetadata({
       : safeLocale === 'ar'
         ? `اسمع ألبوم ${page.album.title} للفنان ${page.artist.name} على Oddio. استكشف أغاني الألبوم والمزيد من الموسيقى بالذكاء الاصطناعي.`
         : `Listen to ${page.album.title} by ${page.artist.name} on Oddio. Explore tracks from this AI music album and discover more original songs.`,
-    path: `/albums/${id}`,
+    path: `/albums/${page.album.id}`,
     type: 'music.album',
   });
 }
@@ -66,6 +67,11 @@ export default async function AlbumPage({
 
   return (
     <div>
+      <SeoBreadcrumbs items={[
+        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+        { label: artist.name, href: `/${locale}/artists/${artist.slug}` },
+        { label: album.title, href: `/${locale}/albums/${album.id}` },
+      ]} />
       <JsonLd
         data={musicAlbumJsonLd({
           title: album.title,

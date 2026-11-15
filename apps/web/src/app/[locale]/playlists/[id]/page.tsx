@@ -1,3 +1,4 @@
+import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
@@ -45,7 +46,8 @@ export async function generateMetadata({
       : safeLocale === 'ar'
         ? `اسمع قائمة تشغيل ${page.playlist.title} على Oddio. اكتشف أغاني وموسيقى بالذكاء الاصطناعي ضمن قائمة مختارة للاستماع.`
         : `Listen to ${page.playlist.title} on Oddio. Explore a curated playlist of AI-generated songs and discover new music.`,
-    path: `/playlists/${id}`,
+    path: `/playlists/${page.playlist.id}`,
+    noindex: page.playlist.visibility !== 'public' || page.tracks.length === 0,
   });
 }
 
@@ -67,6 +69,11 @@ export default async function PlaylistPage({
 
   return (
     <div>
+      <SeoBreadcrumbs items={[
+        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+        { label: locale === 'ar' ? 'اكتشف الموسيقى' : 'Discover music', href: `/${locale}/discover` },
+        { label: playlist.title, href: `/${locale}/playlists/${playlist.id}` },
+      ]} />
       {playlist.visibility === 'public' ? (
         <JsonLd
           data={musicPlaylistJsonLd({

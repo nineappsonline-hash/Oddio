@@ -1,3 +1,4 @@
+import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ExternalLink } from 'lucide-react';
@@ -50,8 +51,9 @@ export async function generateMetadata({
       : safeLocale === 'ar'
         ? `اكتشف أغاني وإصدارات الفنان ${page.artist.name} على Oddio، واستمع لموسيقى أصلية بالذكاء الاصطناعي.`
         : `Explore ${page.artist.name}'s songs and releases on Oddio. Listen to original AI music and discover more artists.`,
-    path: `/artists/${slug}`,
+    path: `/artists/${page.artist.slug}`,
     type: 'profile',
+    noindex: page.tracks.length === 0,
   });
 }
 
@@ -97,6 +99,11 @@ export default async function ArtistPage({
 
   return (
     <div>
+      <SeoBreadcrumbs items={[
+        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+        { label: locale === 'ar' ? 'الفنانون' : 'Artists', href: `/${locale}/artists` },
+        { label: artist.name, href: `/${locale}/artists/${artist.slug}` },
+      ]} />
       <JsonLd
         data={artistJsonLd({
           name: artist.name,
@@ -194,7 +201,7 @@ export default async function ArtistPage({
           {genres.map((genre) => (
             <Link
               key={genre.id}
-              href={`/${locale}/discover?genre=${encodeURIComponent(genre.slug)}`}
+              href={`/${locale}/genres/${genre.slug}`}
               className="inline-flex min-h-10 items-center rounded-full border border-white/15 bg-white/5 px-4 text-xs text-ink transition hover:border-primary/50"
             >
               {locale === 'ar' ? genre.labelAr : genre.labelEn}
