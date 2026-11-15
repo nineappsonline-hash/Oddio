@@ -41,6 +41,15 @@ Working branch: `feature/master-plan-phase-0-1`.
 - [ ] Enable production persistence only after matched reconciliation, tested backup/restore and successful staging acceptance.
 - [ ] Monitor database errors, upload failures and playback errors after rollout.
 
+### Verification snapshot (2026-11-15)
+
+- GitHub Actions database job **passed** on commit `7dcf5f95a38c7605b518736d65da289a723577e7` (run 43708717643). The job runs the full schema on a disposable PostgreSQL instance, RLS checks, atomic social SQL checks, and a parallel concurrency exercise (8 toggles for each social edge and 8 concurrent adds). No production rows were used.
+- A Vercel Preview of commit `f795b43623a401e5afc7603788944a498598611f` was **READY**. The newest Preview still requires status confirmation.
+- `project-ai-music` has no Supabase development branches. We avoided creating one because it may incur hourly charges; the CI disposable database is NOT a full staging project.
+- Whole-repository formatting currently fails on legacy files (31 were reported by the CI run checked). Do not claim all quality gates passed until this is resolved.
+- No verified restorable production backup/restore procedure is available through the current connector. **Do not deploy the new RPC-dependent code to production until a backup and staging release are verified.**
+- The current PR stays Draft, production remains unchanged.
+
 ### Rollout dependency: required SQL migration
 
 `apps/web/src/lib/data/atomic-social.ts` calls `oddio_toggle_track_like`, `oddio_toggle_artist_follow`, `oddio_toggle_playlist_follow`, `oddio_add_playlist_track`, and `oddio_remove_playlist_track`. All five must be installed before releasing these production routes. Preview remains isolated with `DEMO_MODE=true`. No live data was changed during branch development.
