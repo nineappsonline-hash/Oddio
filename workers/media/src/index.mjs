@@ -47,10 +47,11 @@ const SUPABASE_URL = (
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const TARGET_BITRATE = Number(process.env.AUDIO_TARGET_BITRATE_KBPS || 320);
 const MAX_DURATION = Number(process.env.AUDIO_MAX_DURATION_SECONDS || 900);
-const MAX_AUDIO_BYTES = Math.min(
-  Math.max(1, Number(process.env.AUDIO_MAX_UPLOAD_BYTES || 100 * 1024 * 1024)),
-  100 * 1024 * 1024,
-);
+const configuredAudioBytes = Number(process.env.AUDIO_MAX_UPLOAD_BYTES);
+const MAX_AUDIO_BYTES =
+  Number.isSafeInteger(configuredAudioBytes) && configuredAudioBytes > 0
+    ? Math.min(configuredAudioBytes, 100 * 1024 * 1024)
+    : 100 * 1024 * 1024;
 const MIN_BITRATE = Number(process.env.AUDIO_MIN_BITRATE_KBPS || 256);
 const BATCH = Number(process.env.MEDIA_WORKER_BATCH || 5);
 const EMAIL_API_URL = process.env.EMAIL_API_URL || 'https://api.resend.com/emails';
