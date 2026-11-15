@@ -14,6 +14,7 @@ import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { TrackCard } from '@/components/music/TrackCard';
 import { DiscoveryMixShelf } from '@/components/music/DiscoveryMixShelf';
+import { PromptPlaylist } from '@/components/music/PromptPlaylist';
 import { GenreArtwork } from '@/components/music/GenreArtwork';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -132,6 +133,7 @@ export default async function DiscoverPage({
           viewerId={viewer.userId}
         />
       ) : null}
+      <PromptPlaylist locale={locale} viewerId={viewer.userId} />
       <div className="oddio-explore-filter-label">
         <SlidersHorizontal size={16} />
         <span>
