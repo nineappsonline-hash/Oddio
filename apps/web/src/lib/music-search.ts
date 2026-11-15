@@ -24,10 +24,45 @@ export function searchWords(value: string): string[] {
   return normalizeMusicSearch(value).split(' ').filter(Boolean);
 }
 
+/**
+ * Return true when two normalized words differ by at most one inserted,
+ * deleted or substituted character. Restrict fuzzy matching to 5+ characters
+ * so short queries and artist initials do not produce broad false positives.
+ */
+function oneEditAway(query: string, candidate: string): boolean {
+  if (query.length < 5 || candidate.length < 4) return false;
+  if (Math.abs(query.length - candidate.length) > 1) return false;
+  let i = 0;
+  let j = 0;
+  let edits = 0;
+  while (i < query.length && j < candidate.length) {
+    if (query[i] === candidate[j]) {
+      i++;
+      j++;
+      continue;
+    }
+    if (++edits > 1) return false;
+    if (query.length > candidate.length) i++;
+    else if (query.length < candidate.length) j++;
+    else {
+      i++;
+      j++;
+    }
+  }
+  return edits + Number(i < query.length || j < candidate.length) <= 1;
+}
+
 export function matchesMusicSearch(haystack: string, words: string[]): boolean {
   if (words.length === 0) return true;
   const normalized = normalizeMusicSearch(haystack);
-  return words.every((word) => normalized.includes(word));
+  // Fast exact path avoids allocating candidate words for ordinary searches.
+  if (words.every((word) => normalized.includes(word))) return true;
+  const candidates = normalized.split(' ');
+  return words.every(
+    (word) =>
+      normalized.includes(word) ||
+      candidates.some((candidate) => oneEditAway(word, candidate)),
+  );
 }
 
 /** Prefer exact track/artist matches over text buried in metadata. */
