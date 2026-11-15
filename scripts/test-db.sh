@@ -35,6 +35,9 @@ echo "==> supabase/tests/history_erasure.sql"
 echo "==> supabase/tests/player_resume.sql"
 "${PSQL[@]}" -f supabase/tests/player_resume.sql
 
+echo "==> supabase/tests/audio_features.sql"
+"${PSQL[@]}" -f supabase/tests/audio_features.sql
+
 echo "==> scripts/test-social-concurrency.sh"
 bash scripts/test-social-concurrency.sh
 
