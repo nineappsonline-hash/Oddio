@@ -975,7 +975,7 @@ export function recordPlaybackEvent(
     throw new AppError('playback_denied', 'Playback is not authorized.', 403);
   const session = db.playbackSessions.find((item) => item.id === input.sessionId);
   if (!session) throw Errors.notFound('Playback session not found');
-  if (session.userId && actor && session.userId !== actor.id) throw Errors.forbidden();
+  if (session.userId && session.userId !== actor?.id) throw Errors.forbidden();
   const previous = db.playbackEvents.filter(
     (event) => event.sessionId === input.sessionId && event.trackId === input.trackId,
   );
