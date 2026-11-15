@@ -261,6 +261,14 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [ ] Add a server-side durable upload ledger and rate limits backed by Redis/Postgres to prevent uploads being reissued endlessly across Vercel instances. The current server rate limit is in-memory; it is not a distributed quota.
 - [ ] Other Phase 6 tasks: workflow for copyright appeals, more release-group UX, and per-audience analytics. Do not mark the phase production-complete.
 
+### Phase 6 slice 3 — creator review appeals (development only)
+
+- [x] Added service-only `track_review_appeals` table with RLS and one-open-appeal-per-track constraint in `supabase/migrations/20261115220000_track_review_appeals.sql` — **NOT applied to production**.
+- [x] Added artist-owned appeal API and bilingual form for rejected/changes-requested tracks. Only the existing owner can appeal and submissions require a substantive written explanation.
+- [x] Added staff-only review API and private moderation queue; a reviewer can uphold or overturn an appeal with a written explanation. **Overturning an appeal never automatically publishes or approves a track.**
+- [x] Added RLS/grant SQL checks to the disposable DB test suite.
+- [ ] Apply this migration only in the coordinated future release; test concurrent moderator decisions, abuse rate limits and notifications. Production schema currently lacks the appeal table.
+
 ## Phase 7 — community and growth
 
 - [ ] Collaborative playlists, sharing cards, reactions and creator stories.
