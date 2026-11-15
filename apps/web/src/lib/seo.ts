@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { Locale } from '@ai-music/contracts';
-import { absoluteUrl } from './utils';
+import { seoAbsoluteUrl as absoluteUrl } from './seo-origin';
 import { seoPage } from './seo-copy';
 
 export function buildMetadata({
