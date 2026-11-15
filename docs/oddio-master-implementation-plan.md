@@ -282,6 +282,13 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [x] Added **opt-in** native share/copy of three aggregate recap numbers, not track-by-track history. Linked from Library. No automatic public posting.
 - [ ] Community playlists, creator stories, collaborative editing and moderated listening rooms remain pending; do not call Phase 7 complete.
 
+### Phase 7 slice 2 — Music DNA and annual Rewind (development only)
+
+- [x] Added bilingual, private `/[locale]/library/rewind` with annual qualified listening metrics, top tracks, artists, catalog-labeled primary genres and active months, including current/previous-year selection.
+- [x] Reused authenticated session ownership and accessible-track filtering from monthly recap. No exposed listener IDs, no inferred listening minutes, no fictional AI genre tags, no automatic sharing.
+- [x] Added UTC year-boundary, repeat-play and empty-data unit tests.
+- [ ] True collaboratively editable playlists, moderated real-time listening rooms, creator stories and interactive sharing cards remain open.
+
 ## Phase 8 — mobile and advanced playback
 
 - [ ] PWA eligibility and cross-device account sync.
@@ -294,6 +301,11 @@ playback events**. These are snapshots, not proof of ongoing worker health.
 - [x] Added a dark, standalone Oddio Web App Manifest at `/manifest.webmanifest`, using the existing glossy gradient play logo and both language layouts' manifest metadata.
 - [x] Added a production-only service worker with a strict cache allowlist of same-origin immutable `/_next/static/` GET assets. It deliberately never intercepts playback, Cloudflare signed URLs, user pages, account content, or API calls; safe browsing works without worker registration.
 - [ ] Confirm installability icon dimensions and service worker behavior on real Android/iOS devices. This is **not** offline music support. Background playback, Android/iOS packaging, lock-screen controls, offline rights, gapless and crossfade are not yet delivered.
+
+### Phase 8 slice 2 — mobile lock-screen transport (development only)
+
+- [x] Browser Media Session now exposes best-effort play/pause state, reported duration/position and 10-second forward/backward headset/lock-screen seek actions, in addition to prior next/previous and direct seeking.
+- [ ] Real Android and iOS device verification is still needed. Mobile OS background policies differ and this does **not** constitute a native wrapper, offline listening, crossfade, gapless playback or unrestricted background playback support.
 
 ## Continuous release gates (every phase)
 
