@@ -10,6 +10,7 @@ import { LikeButton } from '@/components/community/LikeButton';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { TrackDuration } from '@/components/music/TrackDuration';
+import { ScrollingTrackTitle } from '@/components/music/ScrollingTrackTitle';
 import { cn, formatNumber } from '@/lib/utils';
 import type { Locale } from '@ai-music/contracts';
 
@@ -45,7 +46,10 @@ export function TrackRow({
   return (
     <div
       className={cn(
-        'group relative grid grid-cols-[auto_auto_minmax(0,1fr)_auto] items-center gap-3 overflow-hidden rounded-xl px-2 py-2 transition duration-300 sm:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto]',
+        'group relative grid w-full min-w-0 items-center gap-2 overflow-hidden rounded-xl px-2 py-2 transition duration-300 sm:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] sm:gap-3',
+        rank !== undefined
+          ? 'grid-cols-[auto_auto_minmax(0,1fr)_auto]'
+          : 'grid-cols-[auto_minmax(0,1fr)_auto]',
         isCurrent
           ? 'bg-[linear-gradient(90deg,rgba(157,92,255,0.16),rgba(65,217,255,0.04))] shadow-[inset_0_0_0_1px_rgba(157,92,255,0.2)]'
           : 'hover:bg-white/[0.05]',
@@ -92,16 +96,15 @@ export function TrackRow({
         ) : null}
       </button>
       <div className="min-w-0">
-        <span className="flex items-center gap-1.5">
-          <Link
-            href={`/${locale}/tracks/${track.id}-${track.slug}`}
-            className={cn(
-              'block truncate text-sm font-semibold transition hover:underline',
-              isCurrent ? 'text-primary' : 'text-ink group-hover:text-ink',
-            )}
-          >
-            {track.title}
-          </Link>
+        <span className="flex min-w-0 items-center gap-1.5">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <ScrollingTrackTitle
+              href={`/${locale}/tracks/${track.id}-${track.slug}`}
+              title={track.title}
+              active={isCurrent}
+              rtl={locale === 'ar'}
+            />
+          </div>
           {isCurrent ? (
             <Equalizer
               bars={4}
@@ -122,7 +125,7 @@ export function TrackRow({
       <span className="hidden text-xs text-muted sm:block">
         {formatNumber(track.qualifiedPlays, locale)} {t('common.plays')}
       </span>
-      <div className="flex items-center gap-1">
+      <div className="flex min-w-[58px] shrink-0 items-center justify-end gap-1 justify-self-end">
         <LikeButton
           trackId={track.id}
           initialLiked={track.isLiked}
@@ -141,7 +144,7 @@ export function TrackRow({
         >
           <ListPlus className="h-4 w-4" />
         </button>
-        <span className="w-10 text-end text-xs tabular-nums text-muted">
+        <span className="block w-[58px] shrink-0 whitespace-nowrap text-end text-xs tabular-nums text-muted">
           <TrackDuration trackId={track.id} durationMs={track.durationMs} />
         </span>
       </div>
