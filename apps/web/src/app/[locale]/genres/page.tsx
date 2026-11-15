@@ -90,8 +90,15 @@ export default async function GenresPage({
     .sort((a, b) =>
       (ar ? a.labelAr : a.labelEn).localeCompare(ar ? b.labelAr : b.labelEn),
     );
-  const groups = GENRE_GROUPS.map((group) => ({
-    ...group,
+  const groups: Array<{
+    key: string;
+    en: string;
+    ar: string;
+    items: typeof genres;
+  }> = GENRE_GROUPS.map((group) => ({
+    key: group.key,
+    en: group.en,
+    ar: group.ar,
     items: genres.filter((genre) => genreGroupKey(genre) === group.key),
   })).filter((group) => group.items.length > 0);
   const otherGenres = genres.filter((genre) => genreGroupKey(genre) === 'other');
@@ -100,7 +107,6 @@ export default async function GenresPage({
       key: 'other',
       en: 'More genres',
       ar: 'أنواع موسيقية أخرى',
-      keywords: [],
       items: otherGenres,
     });
   }
