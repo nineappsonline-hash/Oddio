@@ -126,7 +126,7 @@ export default async function AboutPage({
       </section>
       <p className="text-sm text-muted">
         {ar ? 'عاوز تنشر موسيقاك؟ ' : 'Want to publish your music? '}
-        <Link href={`/${locale}/apply/artist`} className="font-semibold text-primary underline-offset-4 hover:underline">
+        <Link href={`/${locale}/for-artists`} className="font-semibold text-primary underline-offset-4 hover:underline">
           {ar ? 'قدّم كفنان على Oddio' : 'Apply to become an Oddio artist'}
         </Link>
       </p>
