@@ -156,6 +156,7 @@ export function FullPlayer() {
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
       if (!dialog.contains(document.activeElement)) {
         event.preventDefault();
         first.focus();
