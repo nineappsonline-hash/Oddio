@@ -350,8 +350,15 @@ export function PlayerProvider({
       // The secondary element may already be playing the new track. Keep it
       // audible until the primary element has started the authorized source.
       if (crossfadingRef.current && crossfadeTargetRef.current === trackId) {
+        const overlapSeconds = Math.max(0, incomingTimeRef.current);
         pendingRestoreTrackId.current = trackId;
-        pendingRestoreTime.current = incomingTimeRef.current;
+        pendingRestoreTime.current = overlapSeconds;
+        // Preserve actual audible overlap for qualified play counting.
+        // No duplicate events are submitted for an inaudible prefetched song.
+        audibleRef.current.accumulated = overlapSeconds * 1000;
+        audibleRef.current.lastTime = overlapSeconds;
+        audibleRef.current.lastSent = 0;
+        audibleRef.current.qualified = false;
       }
     } else
       apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
