@@ -15,6 +15,19 @@ const validKey = (key: string) => /^incoming\/[a-f0-9-]{36}\/[a-f0-9-]{36}$/.tes
 const validUploadId = (value: string) =>
   value.length > 0 && value.length <= 512 && !/[\x00-\x1f\x7f]/.test(value);
 
+/** SigV4 canonical query uses bytewise ASCII order, not localeCompare. */
+export function canonicalR2Query(params: Record<string, string>) {
+  const compare = (left: string, right: string) =>
+    left < right ? -1 : left > right ? 1 : 0;
+  return Object.entries(params)
+    .map(([key, value]) => [encoded(key), encoded(value)] as const)
+    .sort(([keyA, valueA], [keyB, valueB]) =>
+      compare(keyA, keyB) || compare(valueA, valueB),
+    )
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+}
+
 type Method = 'POST' | 'GET' | 'DELETE' | 'PUT';
 
 function signature(
@@ -45,11 +58,7 @@ function signature(
       'X-Amz-SignedHeaders': 'host',
     });
   }
-  const canonicalQuery = Object.entries(query)
-    .map(([key, value]) => [encoded(key), encoded(value)] as const)
-    .sort(([a, av], [b, bv]) => a.localeCompare(b) || av.localeCompare(bv))
-    .map(([key, value]) => `${key}=${value}`)
-    .join('&');
+  const canonicalQuery = canonicalR2Query(query);
   const payload = expires ? 'UNSIGNED-PAYLOAD' : hexSha(body);
   const headers = expires
     ? `host:${host}\n`
@@ -88,7 +97,10 @@ async function signedS3(
     method,
     headers: {
       ...request.headers,
-      ...(body ? { 'Content-Type': 'application/xml' } : {}),
+      ...(body ? { 'Content-Type': 'application/xml' } :
+        Object.prototype.hasOwnProperty.call(params, 'uploads')
+          ? { 'Content-Type': 'audio/mpeg' }
+          : {}),
     },
     ...(body ? { body } : {}),
     cache: 'no-store',
