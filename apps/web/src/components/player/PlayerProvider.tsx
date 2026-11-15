@@ -598,9 +598,46 @@ export function PlayerProvider({
         if (typeof details.seekTime === 'number')
           usePlayer.getState().seek(details.seekTime);
       });
+      mediaSession.setActionHandler('seekbackward', (details) => {
+        const state = usePlayer.getState();
+        state.seek(Math.max(0, state.currentTime - (details.seekOffset ?? 10)));
+      });
+      mediaSession.setActionHandler('seekforward', (details) => {
+        const state = usePlayer.getState();
+        state.seek(Math.min(state.duration, state.currentTime + (details.seekOffset ?? 10)));
+      });
     } catch {
       // Media Session is best-effort.
     }
+  }, [track]);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    navigator.mediaSession.playbackState = !track
+      ? 'none'
+      : isPlaying ? 'playing' : 'paused';
+  }, [isPlaying, track]);
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+    const mediaSession = navigator.mediaSession;
+    if (!('setPositionState' in mediaSession)) return;
+    const updatePosition = () => {
+      const state = usePlayer.getState();
+      if (!state.track || !Number.isFinite(state.duration) || state.duration <= 0) return;
+      try {
+        mediaSession.setPositionState({
+          duration: state.duration,
+          playbackRate: 1,
+          position: Math.max(0, Math.min(state.currentTime, state.duration)),
+        });
+      } catch {
+        // Lock-screen controls are optional browser capabilities.
+      }
+    };
+    updatePosition();
+    const interval = window.setInterval(updatePosition, 1000);
+    return () => window.clearInterval(interval);
   }, [track]);
 
   useEffect(() => {
