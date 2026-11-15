@@ -46,7 +46,7 @@ function signature(
     });
   }
   const canonicalQuery = Object.entries(query)
-    .map(([key, value]) => [encoded(key), encoded(value)])
+    .map(([key, value]) => [encoded(key), encoded(value)] as const)
     .sort(([a, av], [b, bv]) => a.localeCompare(b) || av.localeCompare(bv))
     .map(([key, value]) => `${key}=${value}`)
     .join('&');
@@ -161,8 +161,8 @@ export async function listMultipartParts(
   const parts: UploadedPart[] = [];
   for (const match of xml.matchAll(/<Part>([\s\S]*?)<\/Part>/gi)) {
     const number = Number(xmlValue(match[1], 'PartNumber'));
-    const size = Number(xmlValue(match[1], 'Size'));
-    const etag = xmlValue(match[1], 'ETag');
+    const size = Number(xmlValue(fragment, 'Size'));
+    const etag = xmlValue(fragment, 'ETag');
     if (
       Number.isInteger(number) &&
       number > 0 &&
