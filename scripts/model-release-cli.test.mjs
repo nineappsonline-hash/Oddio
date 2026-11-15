@@ -38,7 +38,9 @@ test('offline release CLI refuses missing holdout or consent and emits nothing',
     ];
     const holdout = [
       ...Array.from({ length: 4 }, (_, i) => syntheticFixture('holdout', 'ambient', i)),
-      ...Array.from({ length: 4 }, (_, i) => syntheticFixture('holdout', 'electronic', i)),
+      ...Array.from({ length: 4 }, (_, i) =>
+        syntheticFixture('holdout', 'electronic', i),
+      ),
     ];
     const trainPath = path.join(directory, 'train.json');
     const holdoutPath = path.join(directory, 'holdout.json');
@@ -47,29 +49,48 @@ test('offline release CLI refuses missing holdout or consent and emits nothing',
     writeFileSync(trainPath, JSON.stringify(train));
     writeFileSync(holdoutPath, JSON.stringify(holdout));
 
-    const noHoldout = spawnSync(process.execPath, [script, trainPath, '--output', modelPath]);
+    const noHoldout = spawnSync(process.execPath, [
+      script,
+      trainPath,
+      '--output',
+      modelPath,
+    ]);
     assert.notEqual(noHoldout.status, 0);
     assert.equal(existsSync(modelPath), false);
 
-    writeFileSync(holdoutPath, JSON.stringify([
-      { ...holdout[0], consent: false }, ...holdout.slice(1),
-    ]));
+    writeFileSync(
+      holdoutPath,
+      JSON.stringify([{ ...holdout[0], consent: false }, ...holdout.slice(1)]),
+    );
     const noConsent = spawnSync(process.execPath, [
-      script, trainPath, '--holdout', holdoutPath, '--output', modelPath,
+      script,
+      trainPath,
+      '--holdout',
+      holdoutPath,
+      '--output',
+      modelPath,
     ]);
     assert.notEqual(noConsent.status, 0);
     assert.equal(existsSync(modelPath), false);
 
     writeFileSync(holdoutPath, JSON.stringify(holdout));
     const accepted = spawnSync(process.execPath, [
-      script, trainPath, '--holdout', holdoutPath, '--output', modelPath,
+      script,
+      trainPath,
+      '--holdout',
+      holdoutPath,
+      '--output',
+      modelPath,
     ]);
     assert.equal(accepted.status, 0, accepted.stderr.toString());
     const model = JSON.parse(readFileSync(modelPath, 'utf8'));
     assert.equal(model.heldoutValidation.passed, true);
     assert.equal(model.heldoutValidation.metrics.examples, 8);
     assert.equal(model.examples.length, 10);
-    assert.equal(model.examples.some((row) => 'consentRef' in row), false);
+    assert.equal(
+      model.examples.some((row) => 'consentRef' in row),
+      false,
+    );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

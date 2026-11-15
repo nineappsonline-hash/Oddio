@@ -34,7 +34,11 @@ test('trained local examples can suggest genres and moods without any paid API',
   const model = trainReviewedClassifier(good);
   assert.equal(model.metrics.macroRecall, 1);
   const suggestion = predictReviewedTags(good[0].fingerprint, model);
-  assert.equal(suggestArtistTags(good[0].fingerprint, model), null, 'unvalidated model must not produce worker suggestions');
+  assert.equal(
+    suggestArtistTags(good[0].fingerprint, model),
+    null,
+    'unvalidated model must not produce worker suggestions',
+  );
   assert.equal(suggestion?.genreSlug, 'ambient');
   assert.deepEqual(suggestion?.moodSlugs, ['calm']);
   assert.equal(suggestion?.source, 'artist-reviewed-local-model-v1');

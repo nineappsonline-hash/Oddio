@@ -168,9 +168,12 @@ export function predictReviewedTags(fingerprint, model) {
  * Internal prediction is exposed above only for offline evaluation.
  */
 export function suggestArtistTags(fingerprint, model) {
-  if (model?.heldoutValidation?.passed !== true
-    || model.heldoutValidation.metrics?.macroRecall < 0.7
-    || model.heldoutValidation.metrics?.coverage < 0.65
-    || model.heldoutValidation.metrics?.precision < 0.8) return null;
+  if (
+    model?.heldoutValidation?.passed !== true ||
+    model.heldoutValidation.metrics?.macroRecall < 0.7 ||
+    model.heldoutValidation.metrics?.coverage < 0.65 ||
+    model.heldoutValidation.metrics?.precision < 0.8
+  )
+    return null;
   return predictReviewedTags(fingerprint, model);
 }

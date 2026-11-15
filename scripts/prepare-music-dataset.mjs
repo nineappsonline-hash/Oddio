@@ -21,7 +21,9 @@ const manifest = process.argv[2];
 const outputAt = process.argv.indexOf('--output');
 const output = outputAt > 0 ? process.argv[outputAt + 1] : null;
 if (!manifest || !output || output.startsWith('--')) {
-  process.stderr.write('Usage: node scripts/prepare-music-dataset.mjs approved-manifest.json --output /private/reviewed.json\n');
+  process.stderr.write(
+    'Usage: node scripts/prepare-music-dataset.mjs approved-manifest.json --output /private/reviewed.json\n',
+  );
   process.exit(2);
 }
 try {
@@ -35,29 +37,55 @@ try {
       throw new Error('Local audio file path is required');
     }
     // Validate all human declarations before touching any audio file.
-    const permissions = { ...row, fingerprint: { version: 1, shingles: Array(8).fill('not-an-audio-fingerprint') } };
+    const permissions = {
+      ...row,
+      fingerprint: { version: 1, shingles: Array(8).fill('not-an-audio-fingerprint') },
+    };
     validateReviewedRows([permissions]);
     const stats = await fs.stat(row.filePath);
     if (!stats.isFile() || stats.size < 1000 || stats.size > 300 * 1024 * 1024) {
       throw new Error('Local audio must be a nonempty regular file under 300 MiB');
     }
-    const { stdout } = await exec('ffmpeg', [
-      '-hide_banner', '-loglevel', 'error', '-i', row.filePath,
-      '-map', '0:a:0', '-t', '90', '-ar', '11025', '-ac', '1',
-      '-f', 's16le', 'pipe:1',
-    ], { encoding: 'buffer', timeout: 60_000, maxBuffer: 3 * 1024 * 1024 });
+    const { stdout } = await exec(
+      'ffmpeg',
+      [
+        '-hide_banner',
+        '-loglevel',
+        'error',
+        '-i',
+        row.filePath,
+        '-map',
+        '0:a:0',
+        '-t',
+        '90',
+        '-ar',
+        '11025',
+        '-ac',
+        '1',
+        '-f',
+        's16le',
+        'pipe:1',
+      ],
+      { encoding: 'buffer', timeout: 60_000, maxBuffer: 3 * 1024 * 1024 },
+    );
     const fingerprint = fingerprintPcm16(stdout, 11025);
-    if (!fingerprint) throw new Error('Audio too short, silent or insufficiently distinctive');
+    if (!fingerprint)
+      throw new Error('Audio too short, silent or insufficiently distinctive');
     const { filePath: _privatePath, ...meta } = row;
     prepared.push({ ...meta, fingerprint });
   }
   validateReviewedRows(prepared);
   await fs.writeFile(output, JSON.stringify(prepared, null, 2), {
-    flag: 'wx', mode: 0o600,
+    flag: 'wx',
+    mode: 0o600,
   });
-  process.stdout.write(JSON.stringify({ prepared: prepared.length, localOnly: true }) + '\n');
+  process.stdout.write(
+    JSON.stringify({ prepared: prepared.length, localOnly: true }) + '\n',
+  );
 } catch (error) {
   // Do not print local filenames or consent identifiers in errors.
-  process.stderr.write(`Dataset preparation blocked: ${error instanceof Error ? error.message : 'invalid_input'}\n`);
+  process.stderr.write(
+    `Dataset preparation blocked: ${error instanceof Error ? error.message : 'invalid_input'}\n`,
+  );
   process.exitCode = 1;
 }

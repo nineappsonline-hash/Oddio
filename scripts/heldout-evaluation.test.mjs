@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { trainReviewedClassifier, predictReviewedTags, suggestArtistTags } from '../workers/media/src/music-classifier.mjs';
-import { validateReviewedRows, evaluateHeldoutModel } from '../workers/media/src/heldout-evaluation.mjs';
+import {
+  trainReviewedClassifier,
+  predictReviewedTags,
+  suggestArtistTags,
+} from '../workers/media/src/music-classifier.mjs';
+import {
+  validateReviewedRows,
+  evaluateHeldoutModel,
+} from '../workers/media/src/heldout-evaluation.mjs';
 
 function reviewed(genreSlug, artistNo, split) {
   const id = `${split}-${genreSlug}-${artistNo}`;
@@ -37,7 +44,11 @@ const holdout = [
 test('independent artists and recordings validate, then unlock predictions', () => {
   const model = trainReviewedClassifier(validateReviewedRows(training));
   assert.equal(suggestArtistTags(holdout[0].fingerprint, model), null);
-  const evaluation = evaluateHeldoutModel(model, validateReviewedRows(holdout), predictReviewedTags);
+  const evaluation = evaluateHeldoutModel(
+    model,
+    validateReviewedRows(holdout),
+    predictReviewedTags,
+  );
   assert.equal(evaluation.passed, true);
   assert.equal(evaluation.metrics.coverage, 1);
   assert.equal(evaluation.metrics.macroRecall, 1);
@@ -69,16 +80,22 @@ test('explicit rights and verified consent scope are mandatory', () => {
 test('held-out artist and fingerprint leakage are rejected before scoring', () => {
   const model = trainReviewedClassifier(validateReviewedRows(training));
   assert.throws(
-    () => evaluateHeldoutModel(model, [
-      { ...holdout[0], artistId: training[0].artistId },
-      ...holdout.slice(1),
-    ], predictReviewedTags), /leakage/i,
+    () =>
+      evaluateHeldoutModel(
+        model,
+        [{ ...holdout[0], artistId: training[0].artistId }, ...holdout.slice(1)],
+        predictReviewedTags,
+      ),
+    /leakage/i,
   );
   assert.throws(
-    () => evaluateHeldoutModel(model, [
-      { ...holdout[0], fingerprint: training[0].fingerprint },
-      ...holdout.slice(1),
-    ], predictReviewedTags), /leakage/i,
+    () =>
+      evaluateHeldoutModel(
+        model,
+        [{ ...holdout[0], fingerprint: training[0].fingerprint }, ...holdout.slice(1)],
+        predictReviewedTags,
+      ),
+    /leakage/i,
   );
 });
 
@@ -101,7 +118,11 @@ test('inadequate representation and poor predictions cannot pass deployment gate
   const failed = evaluateHeldoutModel(model, degraded, predictReviewedTags);
   assert.equal(failed.passed, false);
   assert.equal(failed.metrics.coverage, 0);
-  assert.equal(suggestArtistTags(holdout[0].fingerprint, {
-    ...model, heldoutValidation: failed,
-  }), null);
+  assert.equal(
+    suggestArtistTags(holdout[0].fingerprint, {
+      ...model,
+      heldoutValidation: failed,
+    }),
+    null,
+  );
 });
