@@ -35,7 +35,10 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
   const currentUser = session.user ?? user;
 
   return (
-    <header dir="ltr" className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-background/70 px-4 py-3 backdrop-blur-2xl lg:hidden">
+    <header
+      dir="ltr"
+      className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-background/70 px-4 py-3 backdrop-blur-2xl lg:hidden"
+    >
       <div className="flex min-w-0 items-center gap-2.5">
         <button
           type="button"
