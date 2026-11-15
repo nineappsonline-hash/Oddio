@@ -1,0 +1,53 @@
+name: Format development branch
+on:
+  push:
+    branches:
+      - feature/master-plan-phase-0-1
+    paths:
+      - '.github/workflows/format-feature.yml'
+      - 'apps/web/src/**'
+permissions:
+  contents: write
+concurrency:
+  group: format-feature-branch
+  cancel-in-progress: false
+jobs:
+  format:
+    if: github.repository == 'nineappsonline-hash/Oddio'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format only pending Phase 5 files
+        run: |
+          npx prettier --write \
+            'apps/web/src/app/[locale]/genres/[slug]/page.tsx' \
+            'apps/web/src/app/[locale]/moods/[slug]/page.tsx' \
+            'apps/web/src/app/[locale]/page.tsx' \
+            apps/web/src/app/api/discovery/mix/route.ts \
+            apps/web/src/app/api/discovery/prompt/route.ts \
+            apps/web/src/components/music/PromptPlaylist.tsx \
+            apps/web/src/lib/data/discovery-artists.test.ts \
+            apps/web/src/lib/data/discovery-artists.ts \
+            apps/web/src/lib/data/discovery-mixes.test.ts \
+            apps/web/src/lib/data/discovery-mixes.ts \
+            apps/web/src/lib/data/prompt-discovery.test.ts \
+            apps/web/src/lib/data/prompt-discovery.ts \
+            apps/web/src/lib/player-store.ts
+      - name: Commit formatting in development branch only
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes"
+            exit 0
+          fi
+          git config user.name "oddio-ci-format"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src
+          git commit -m "style(phase5): normalize discovery files via Prettier"
+          git push origin HEAD:feature/master-plan-phase-0-1
