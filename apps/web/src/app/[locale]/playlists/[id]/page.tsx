@@ -52,7 +52,7 @@ export default async function PlaylistPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = readDb();
+  const db = await readRuntimeDb();
   const page = getPlaylistPage(db, viewer, idFromSegment(id));
   if (!page) notFound();
   const { playlist, tracks, isFollowing, canEdit } = page;
