@@ -20,7 +20,7 @@ jobs:
         run: node --test scripts/media-worker-safety.test.mjs
       - run: npm test
       - name: Verify free audio feature extraction and tempo abstention
-        run: node --test scripts/music-features.test.mjs
+        run: node --test scripts/music-features.test.mjs scripts/audio-fingerprint.test.mjs scripts/music-classifier.test.mjs
       - run: npm run test:release-env
       - name: Detect unresolved production persistence risks (advisory)
         run: |
