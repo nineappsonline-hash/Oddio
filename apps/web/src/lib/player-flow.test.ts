@@ -11,6 +11,7 @@ beforeEach(() => {
     queue: [],
     history: [],
     isPlaying: false,
+    station: null,
     repeat: 'off',
     shuffle: false,
     autoplay: true,
@@ -43,6 +44,25 @@ describe('Oddio Flow queue', () => {
     expect(state.repeat).toBe('off');
     expect(state.shuffle).toBe(false);
     expect(state.playbackRequestId).toBeGreaterThan(previousRequestId);
+  });
+
+  it('continues a station without repeating its played tracks', () => {
+    const a = track('a');
+    const b = track('b');
+    const c = track('c');
+    usePlayer.getState().startFlow([a, b], { kind: 'flow' });
+    usePlayer.getState().advance();
+    expect(usePlayer.getState().advance()).toBe(false);
+    usePlayer.getState().continueStation([a, b, c]);
+    expect(usePlayer.getState().track?.id).toBe('c');
+    expect(usePlayer.getState().history.map((item) => item.id)).toEqual(['a', 'b']);
+    expect(usePlayer.getState().station?.kind).toBe('flow');
+  });
+
+  it('does not replace an active song while waiting on a station refresh', () => {
+    usePlayer.getState().startFlow([track('a')], { kind: 'weekly' });
+    usePlayer.getState().continueStation([track('b')]);
+    expect(usePlayer.getState().track?.id).toBe('a');
   });
 
   it('does not erase a playing queue when no mix is available', () => {
