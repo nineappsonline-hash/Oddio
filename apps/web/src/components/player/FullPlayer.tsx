@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
+import { isPodcastPlayback } from '@/lib/podcast-playback';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronDown,
@@ -93,6 +94,7 @@ export function FullPlayer() {
   const rtl = useLocale() === 'ar';
   const expanded = usePlayer((state) => state.expanded);
   const track = usePlayer((state) => state.track);
+  const podcast = isPodcastPlayback(track);
   const hasTrack = Boolean(track);
   const queue = usePlayer((state) => state.queue);
   const isPlaying = usePlayer((state) => state.isPlaying);
@@ -176,7 +178,7 @@ export function FullPlayer() {
   }, [expanded, hasTrack, mobileLyricsOpen, setExpanded]);
 
   useEffect(() => {
-    if (!track?.id) {
+    if (!track?.id || isPodcastPlayback(track)) {
       setSrt(null);
       setPlainLyrics(null);
       setLyricsLoading(false);
@@ -430,7 +432,7 @@ export function FullPlayer() {
                 </h1>
                 {track.artist ? (
                   <Link
-                    href={`/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
+                    href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}` : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
                     className="text-sm text-muted transition hover:text-ink"
                   >
                     {track.artist.name}
@@ -438,15 +440,15 @@ export function FullPlayer() {
                 ) : null}
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <Badge tone="cyan">{track.qualityLabel}</Badge>
-                  <Badge tone="primary">
+                  {!podcast && <Badge tone="primary">
                     {track.productionType === 'fully_ai'
                       ? t('track.fullyAi')
                       : t('track.aiAssisted')}
-                  </Badge>
+                  </Badge>}
                   {track.genre ? <Badge tone="neutral">{track.genre.slug}</Badge> : null}
                 </div>
               </div>
-              <div className="flex shrink-0 flex-col items-end gap-2">
+              {!podcast && <div className="flex shrink-0 flex-col items-end gap-2">
                 <AddToPlaylistButton
                   trackId={track.id}
                   label={t('track.addToPlaylist')}
@@ -463,7 +465,7 @@ export function FullPlayer() {
                 <span className="text-xs text-muted">
                   {formatNumber(track.qualifiedPlays)} {t('common.plays')}
                 </span>
-              </div>
+              </div>}
             </div>
 
             {error ? (
@@ -652,7 +654,7 @@ export function FullPlayer() {
                 />
                 {t('player.autoplay')}
               </label>
-              <label className="flex min-h-11 items-center gap-2 text-xs text-muted">
+              {!podcast && <label className="flex min-h-11 items-center gap-2 text-xs text-muted">
                 <span>{rtl ? 'التداخل بين الأغاني' : 'Crossfade'}</span>
                 <select
                   aria-label={rtl ? 'مدة تداخل الأغاني' : 'Crossfade duration'}
@@ -665,18 +667,14 @@ export function FullPlayer() {
                   <option value={5}>5s</option>
                   <option value={8}>8s</option>
                 </select>
-              </label>
+              </label>}
               <ShareButton title={track.title} label={t('common.share')} />
             </div>
-            <p className="mt-4 text-center text-[11px] text-muted">
-              {t('player.qualifiedHint')}
-            </p>
-            <div className="mt-5">
-              <TimedComments key={track.id} trackId={track.id} />
-            </div>
+            {!podcast && <><p className="mt-4 text-center text-[11px] text-muted">{t('player.qualifiedHint')}</p>
+            <div className="mt-5"><TimedComments key={track.id} trackId={track.id} /></div></>}
           </div>
 
-          <aside
+          {!podcast && <aside
             className="card flex min-h-[350px] max-h-[75vh] flex-col p-4"
             aria-label={sideTab === 'lyrics' ? 'Lyrics' : t('player.queue')}
           >
@@ -866,7 +864,7 @@ export function FullPlayer() {
                 )}
               </div>
             )}
-          </aside>
+          </aside>}
         </div>
       </div>
     </div>
