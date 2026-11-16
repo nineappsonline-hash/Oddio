@@ -72,26 +72,26 @@ export function SimilarPlayerPanel({ trackId, podcast, rtl, active }: {
         </p>
       ) : items.length === 0 ? (
         <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/10 p-4 text-center text-sm text-muted">
-          {podcast ? <Headphones className="h-7 w-7 text-primary" /> : <Music2 className="h-7 w-7 text-primary" />}
+          {podcast ? <Headphones className="h-7 w-7 text-neutral-200" /> : <Music2 className="h-7 w-7 text-neutral-200" />}
           {rtl ? 'مفيش اقتراحات مشابهة متاحة حاليًا.' : 'No similar items available yet.'}
         </div>
       ) : (
         <ul className="space-y-2">
           {items.map(item => (
-            <li key={item.id} className="group flex min-w-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[.035] p-2 transition-colors hover:border-primary/40 hover:bg-white/[.07]">
+            <li key={item.id} className="group flex min-w-0 items-center gap-2 rounded-xl border border-white/10 bg-white/[.045] backdrop-blur-md p-2 transition-colors hover:border-white/25 hover:bg-white/[.10]">
               <button type="button" onClick={() => { const selected = asTrack(item); if (selected) play(selected); }}
                 className="flex min-w-0 flex-1 items-center gap-3 text-start"
                 aria-label={(rtl ? 'تشغيل ' : 'Play ') + item.title}>
-                <Artwork title={item.title} url={item.artworkUrl ?? ''} accent="#9e6ac9"
+                <Artwork title={item.title} url={item.artworkUrl ?? ''} accent="#8e8e8e"
                   className="h-12 w-12 shrink-0" rounded="rounded-lg" />
                 <span className="min-w-0 flex-1">
-                  <span dir="auto" className="block line-clamp-2 text-sm font-semibold leading-5 text-white group-hover:text-primary">{item.title}</span>
+                  <span dir="auto" className="block line-clamp-2 text-sm font-semibold leading-5 text-white group-hover:text-neutral-200">{item.title}</span>
                   <span className="mt-1 block truncate text-xs text-muted">{item.subtitle}</span>
                 </span>
-                <Play className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                <Play className="h-4 w-4 shrink-0 text-neutral-200" aria-hidden="true" />
               </button>
               <button type="button" onClick={() => { const selected = asTrack(item); if (selected) addToQueue(selected); }}
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted hover:bg-primary/15 hover:text-primary"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted hover:bg-white/10 hover:text-neutral-200"
                 aria-label={(rtl ? 'إضافة إلى قائمة التشغيل: ' : 'Add to queue: ') + item.title}
                 title={rtl ? 'أضف لقائمة التشغيل' : 'Add to queue'}>
                 <Plus className="h-4 w-4" />
