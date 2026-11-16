@@ -10,7 +10,8 @@ import { Avatar } from '@/components/ui/Artwork';
 
 /** Consistent desktop workspace header, separate from page content. */
 export function DesktopTopBar() {
-  const { locale } = useLocalePath();
+  const { locale, pathname } = useLocalePath();
+  const podcastMode = pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   const { user } = useSession();
   const router = useRouter();
   const ar = locale === 'ar';
@@ -37,7 +38,7 @@ export function DesktopTopBar() {
       </div>
       <form
         className="oddio-topbar-search"
-        action={`/${locale}/search`}
+        action={podcastMode ? `/${locale}/podcasts` : `/${locale}/search`}
         method="GET"
         role="search"
       >
@@ -47,20 +48,20 @@ export function DesktopTopBar() {
           type="search"
           autoComplete="off"
           placeholder={
-            ar ? 'دور على أغنية، فنان، أو مود...' : 'Search songs, artists, moods...'
+            podcastMode ? (ar ? 'دور على بودكاست أو حلقة...' : 'Search podcasts and episodes...') : ar ? 'دور على أغنية، فنان، أو مود...' : 'Search songs, artists, moods...'
           }
-          aria-label={ar ? 'ابحث في الموسيقى' : 'Search music'}
+          aria-label={podcastMode ? (ar ? 'ابحث في البودكاست' : 'Search podcasts') : (ar ? 'ابحث في الموسيقى' : 'Search music')}
         />
         <kbd aria-hidden="true">↵</kbd>
       </form>
       <div className="oddio-topbar-actions">
         <Link
           prefetch={false}
-          href={`/${locale}/soundspace`}
+          href={podcastMode ? `/${locale}/podcasts/categories` : `/${locale}/soundspace`}
           className="oddio-topbar-discover"
         >
           <OddioGlyph name="soundspace" size={19} className="oddio-glyph" />
-          <span>{ar ? 'مساحتك' : 'My soundspace'}</span>
+          <span>{podcastMode ? (ar ? 'تصنيفات' : 'Categories') : (ar ? 'مساحتك' : 'My soundspace')}</span>
         </Link>
         {user ? (
           <>
