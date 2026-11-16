@@ -46,8 +46,8 @@ export default async function PodcastsHome({
   const showById = new Map(catalog.shows.map((show) => [show.id, show]));
 
   return (
-    <div className="space-y-10 pb-6">
-      <section className="relative isolate overflow-hidden rounded-3xl border border-[#555555]/35 bg-gradient-to-br from-[#292929] via-[#191919] to-[#101010] p-6 sm:p-10">
+    <div className="relative space-y-10 bg-[#0a0b0d] pb-8 text-white">
+      <section className="relative isolate overflow-hidden rounded-3xl border border-white/[0.13] bg-gradient-to-br from-[#242527]/90 via-[#161719]/90 to-[#101113]/90 p-6 shadow-[0_24px_80px_rgba(0,0,0,.24),inset_0_1px_0_rgba(255,255,255,.08)] backdrop-blur-2xl sm:p-10">
         <div className="pointer-events-none absolute -right-12 -top-14 grid h-64 w-64 place-items-center rounded-full border-[32px] border-[#e9e9e9]/10 text-[#e9e9e9]/20" aria-hidden="true">
           <Mic2 className="h-32 w-32" />
         </div>
@@ -63,31 +63,31 @@ export default async function PodcastsHome({
             <Link href={`/${locale}/podcasts/categories`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#e9e9e9] px-5 text-sm font-bold text-[#100d13] hover:brightness-110">
               {ar ? 'استكشف التصنيفات' : 'Browse categories'} <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
             </Link>
-            <Link href={`/${locale}/podcasts/creators`} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#70588b] bg-[#30253b] px-5 text-sm font-semibold text-white transition hover:border-[#b19bcb] hover:bg-[#43324e]">
+            <Link href={`/${locale}/podcasts/creators`} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 bg-white/[0.07] backdrop-blur-xl px-5 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/[0.13]">
               {ar ? 'فنانو البودكاست' : 'Podcast creators'} <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
             </Link>
             <Link href={canPublish ? `/${locale}/podcasts/manage#create-series` : user ? `/${locale}/apply/artist` : `/${locale}/signup`}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#9876c4]/60 bg-[#423052] px-5 text-sm font-bold text-[#f4eaff] transition hover:bg-[#543a69] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ae8be9]">
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/[0.10] backdrop-blur-xl px-5 text-sm font-bold text-white transition hover:bg-white/[0.17] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60">
               <Mic2 className="h-4 w-4" /> {canPublish ? (ar ? '+ أنشئ سلسلة بودكاست' : '+ Create podcast series') : (ar ? 'ابدأ بودكاست كفنان' : 'Create your own podcast')}
             </Link>
           </div>
         </div>
       </section>
 
-      <form action={`/${locale}/podcasts`} role="search" className="flex max-w-2xl items-center gap-3 rounded-2xl border border-white/15 bg-[#202020] px-4 py-3 focus-within:border-[#e9e9e9]">
+      <form action={`/${locale}/podcasts`} role="search" className="flex max-w-2xl items-center gap-3 rounded-2xl border border-white/[0.14] bg-white/[0.055] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl focus-within:border-white/40">
         <Search aria-hidden="true" className="h-5 w-5 shrink-0 text-[#e9e9e9]" />
         <input name="q" defaultValue={rawQuery ?? ''} aria-label={ar ? 'البحث في البرامج والحلقات' : 'Search podcast shows and episodes'} placeholder={ar ? 'ابحث عن بودكاست أو حلقة...' : 'Search shows and episodes...'} className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-[#a3a3a3]" />
-        <button className="min-h-10 shrink-0 rounded-lg bg-[#343434] px-4 text-xs font-semibold text-white hover:bg-[#484848]">{ar ? 'بحث' : 'Search'}</button>
+        <button className="min-h-10 shrink-0 rounded-lg bg-white/[0.13] px-4 text-xs font-semibold text-white hover:bg-white/20">{ar ? 'بحث' : 'Search'}</button>
       </form>
 
       {q ? (
         <>
           <h2 className="text-2xl font-bold text-white">{ar ? 'نتائج البحث' : 'Search results'}</h2>
           {matchingShows.length ? (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">{matchingShows.map((show) => <PodcastShowCard key={show.id} show={show} locale={locale} />)}</div>
+            <div className="grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">{matchingShows.map((show) => <PodcastShowCard key={show.id} show={show} locale={locale} />)}</div>
           ) : null}
           {matchingEpisodes.length ? (
-            <div className="grid gap-3 sm:grid-cols-2">{matchingEpisodes.slice(0, 30).map((episode) => <PodcastEpisodeCard key={episode.id} episode={episode} show={showById.get(episode.showId)} locale={locale} />)}</div>
+            <div className="grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">{matchingEpisodes.slice(0, 30).map((episode) => <PodcastEpisodeCard key={episode.id} episode={episode} show={showById.get(episode.showId)} locale={locale} />)}</div>
           ) : null}
           {!matchingShows.length && !matchingEpisodes.length ? <PodcastEmpty locale={locale} what="search" /> : null}
         </>
@@ -95,7 +95,7 @@ export default async function PodcastsHome({
         <>
           <PodcastSeriesShelf locale={locale} count={catalog.shows.length}>
             {catalog.shows.map((show) => (
-              <div key={show.id} data-podcast-series-card className="w-[186px] shrink-0 snap-start sm:w-[224px] lg:w-[244px]">
+              <div key={show.id} data-podcast-series-card className="w-[180px] shrink-0 snap-start sm:w-[210px] lg:w-[230px]">
                 <PodcastShowCard show={show} locale={locale} />
               </div>
             ))}
@@ -105,12 +105,12 @@ export default async function PodcastsHome({
               <h2 className="text-2xl font-bold text-white">{ar ? 'تصفح التصنيفات' : 'Browse by category'}</h2>
               <Link href={`/${locale}/podcasts/categories`} className="text-sm font-semibold text-[#e9e9e9] hover:underline">{ar ? 'كل التصنيفات' : 'All categories'} →</Link>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{catalog.categories.slice(0, 10).map((category) => <PodcastCategoryCard key={category.id} category={category} locale={locale} />)}</div>
+            <div className="grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{catalog.categories.slice(0, 10).map((category) => <PodcastCategoryCard key={category.id} category={category} locale={locale} />)}</div>
           </section>
 
           <section id="episodes" className="scroll-mt-24 space-y-5">
             <h2 className="text-2xl font-bold text-white">{ar ? 'أحدث الحلقات' : 'Latest episodes'}</h2>
-            {catalog.episodes.length ? <div className="grid gap-3 sm:grid-cols-2">{catalog.episodes.slice(0, 12).map((episode) => <PodcastEpisodeCard key={episode.id} episode={episode} show={showById.get(episode.showId)} locale={locale} />)}</div> : <PodcastEmpty locale={locale} />}
+            {catalog.episodes.length ? <div className="grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">{catalog.episodes.slice(0, 12).map((episode) => <PodcastEpisodeCard key={episode.id} episode={episode} show={showById.get(episode.showId)} locale={locale} />)}</div> : <PodcastEmpty locale={locale} />}
           </section>
         </>
       )}
