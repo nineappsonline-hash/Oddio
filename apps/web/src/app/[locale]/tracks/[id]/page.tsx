@@ -1,3 +1,4 @@
+import { getContentLanguagePreference, matchesContentLanguage } from '@/lib/content-language';
 import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -69,7 +70,9 @@ export default async function TrackPage({
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getTrackPage(db, viewer, idFromSegment(id));
   if (!page) notFound();
-  const { track, comments, related } = page;
+  const { track, comments } = page;
+  const preference = await getContentLanguagePreference();
+  const related = page.related.filter((item) => matchesContentLanguage(item.languageCode, preference));
   const artist = track.artist;
   const genreLabel = track.genre
     ? locale === 'ar'
