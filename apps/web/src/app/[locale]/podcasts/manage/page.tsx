@@ -33,7 +33,10 @@ export default async function PodcastManagement({params}:{params:Promise<{locale
       <p className="text-xs font-black uppercase tracking-widest text-[#e9e9e9]">{ar?'استوديو البودكاست':'PODCAST STUDIO'}</p>
       <h1 className="text-3xl font-black text-white sm:text-4xl">{ar?'أنشئ سلاسل بودكاست وحلقات':'Create podcast series and episodes'}</h1>
       <p className="max-w-3xl text-sm leading-7 text-[#a3a3a3]">{ar?'أنشئ برنامج بودكاست ثم ارفع حلقات MP3 إلى Cloudflare R2. الحلقات لا تظهر للجمهور إلا بعد نجاح رفع الملف والتحقق منه.':'Create a podcast show, then upload MP3 episodes directly to Cloudflare R2. Episodes become public only after audio upload verification.'}</p>
-      <Link href={`/${locale}/podcasts`} className="inline-block text-sm font-semibold text-[#e9e9e9] hover:underline">{ar?'عرض قسم البودكاست':'View podcast experience'} →</Link>
+      <div className="flex flex-wrap items-center gap-4">
+        <Link href={`/${locale}/podcasts`} className="inline-flex min-h-10 items-center text-sm font-semibold text-[#bda3e1] hover:underline">{ar?'عرض قسم البودكاست':'View podcasts'} →</Link>
+        {artistProfiles.length ? <Link href={`/${locale}/podcasts/me`} className="inline-flex min-h-10 items-center text-sm font-semibold text-[#bda3e1] hover:underline">{ar?'صفحتي كفنان بودكاست':'My podcast creator profile'} →</Link> : null}
+      </div>
     </header>
     {ready && !artistProfiles.length ? (
       <div className="space-y-3 rounded-2xl border border-[#725797] bg-[#2a1e39] p-6">
