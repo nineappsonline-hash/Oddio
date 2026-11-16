@@ -29,6 +29,8 @@ import { LikeButton } from '@/components/community/LikeButton';
 import { DislikeButton } from '@/components/community/DislikeButton';
 import { TimedComments } from '@/components/community/TimedComments';
 import { ShareButton } from '@/components/community/ShareButton';
+import { SimilarPlayerPanel } from '@/components/player/SimilarPlayerPanel';
+import { Sparkles } from 'lucide-react';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { cn, formatDuration, formatNumber } from '@/lib/utils';
 
@@ -85,7 +87,7 @@ export function FullPlayer() {
     const timer = window.setTimeout(() => setControlNotice(''), 2000);
     return () => window.clearTimeout(timer);
   }, [controlNotice]);
-  const [sideTab, setSideTab] = useState<'lyrics' | 'queue'>('lyrics');
+  const [sideTab, setSideTab] = useState<'lyrics' | 'queue' | 'similar'>('similar');
   useEffect(() => {
     const showQueue = () => setSideTab('queue');
     window.addEventListener('oddio:open-queue', showQueue);
@@ -95,6 +97,7 @@ export function FullPlayer() {
   const expanded = usePlayer((state) => state.expanded);
   const track = usePlayer((state) => state.track);
   const podcast = isPodcastPlayback(track);
+  useEffect(() => { if (track?.id) setSideTab('similar'); }, [track?.id]);
   const hasTrack = Boolean(track);
   const queue = usePlayer((state) => state.queue);
   const isPlaying = usePlayer((state) => state.isPlaying);
@@ -674,16 +677,16 @@ export function FullPlayer() {
             <div className="mt-5"><TimedComments key={track.id} trackId={track.id} /></div></>}
           </div>
 
-          {!podcast && <aside
-            className="card flex min-h-[350px] max-h-[75vh] flex-col p-4"
-            aria-label={sideTab === 'lyrics' ? 'Lyrics' : t('player.queue')}
+          <aside
+            className="card hidden min-h-[350px] max-h-[75vh] flex-col p-4 lg:flex"
+            aria-label={sideTab === 'lyrics' ? 'Lyrics' : sideTab === 'queue' ? t('player.queue') : (rtl ? 'اقتراحات مشابهة' : 'Similar content')}
           >
             <div
-              className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-black/25 p-1"
+              className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-black/25 p-1 sm:grid-cols-3"
               role="tablist"
               aria-label="Player panels"
             >
-              <button
+              {!podcast && <button
                 type="button"
                 role="tab"
                 aria-selected={sideTab === 'lyrics'}
@@ -696,7 +699,7 @@ export function FullPlayer() {
                 )}
               >
                 <Mic2 className="h-4 w-4" /> {rtl ? 'الكلمات' : 'Lyrics'}
-              </button>
+              </button>}
               <button
                 type="button"
                 role="tab"
@@ -711,8 +714,25 @@ export function FullPlayer() {
               >
                 <ListMusic className="h-4 w-4" /> {t('player.queue')}
               </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={sideTab === 'similar'}
+                onClick={() => setSideTab('similar')}
+                className={cn(
+                  'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
+                  sideTab === 'similar'
+                    ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
+                    : 'text-muted hover:bg-white/5 hover:text-ink',
+                )}
+              >
+                <Sparkles className="h-4 w-4" />
+                {rtl ? 'مشابهة' : 'Similar'}
+              </button>
             </div>
-            {sideTab === 'lyrics' ? (
+            {sideTab === 'similar' ? (
+              <SimilarPlayerPanel trackId={track.id} podcast={podcast} rtl={rtl} active={expanded && sideTab === 'similar'} />
+            ) : sideTab === 'lyrics' && !podcast ? (
               <div
                 role="tabpanel"
                 aria-label={rtl ? 'كلمات الأغنية' : 'Synchronized lyrics'}
@@ -864,7 +884,7 @@ export function FullPlayer() {
                 )}
               </div>
             )}
-          </aside>}
+          </aside>
         </div>
       </div>
     </div>
