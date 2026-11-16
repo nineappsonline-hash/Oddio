@@ -127,10 +127,10 @@ export async function POST(request:Request) {
     } finally {clearTimeout(timeout);}
     if(!valid) return NextResponse.json({error:'Cloudflare MP3 verification failed: check upload size, file type or R2 readiness.'},{status:409});
     const {error}=await db.from('podcast_episodes')
-      .update({status:'published',published_at:new Date().toISOString(),updated_at:new Date().toISOString()})
+      .update({status:'pending_review',published_at:null,updated_at:new Date().toISOString()})
       .eq('id',episode.id).eq('status','draft');
     if(error) return NextResponse.json({error:error.message},{status:422});
-    return NextResponse.json({published:true,episodeId:episode.id});
+    return NextResponse.json({submittedForReview:true,episodeId:episode.id});
   } catch (error) {
     // Avoid exposing storage credentials, signed URLs, or internal details in the response.
     console.error('[podcasts/manage] publishing failed', error instanceof Error ? {name:error.name,message:error.message} : 'Unknown error');
