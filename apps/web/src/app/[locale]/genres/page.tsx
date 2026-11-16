@@ -88,7 +88,10 @@ export default async function GenresPage({
   const contentLanguage = await getContentLanguagePreference();
   const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
   const genres = db.genres
-    .filter((genre) => genre.active)
+    .filter((genre) => genre.active && (contentLanguage === 'all' || db.tracks.some((track) =>
+      track.publishStatus === 'published' && track.visibility === 'public' &&
+      (track.genreIds?.includes(genre.id) ?? track.genreId === genre.id)
+    )))
     .sort((a, b) =>
       (ar ? a.labelAr : a.labelEn).localeCompare(ar ? b.labelAr : b.labelEn),
     );
