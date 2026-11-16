@@ -108,7 +108,7 @@ export default async function PodcastsHome({
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{catalog.categories.slice(0, 10).map((category) => <PodcastCategoryCard key={category.id} category={category} locale={locale} />)}</div>
           </section>
 
-          <section className="space-y-5">
+          <section id="episodes" className="scroll-mt-24 space-y-5">
             <h2 className="text-2xl font-bold text-white">{ar ? 'أحدث الحلقات' : 'Latest episodes'}</h2>
             {catalog.episodes.length ? <div className="grid gap-3 sm:grid-cols-2">{catalog.episodes.slice(0, 12).map((episode) => <PodcastEpisodeCard key={episode.id} episode={episode} show={showById.get(episode.showId)} locale={locale} />)}</div> : <PodcastEmpty locale={locale} />}
           </section>
