@@ -247,8 +247,15 @@ export function MobileNav() {
             <div className="grid gap-2">
               {[
                 ...(podcastMode ? [
-                  { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'البودكاست' : 'Podcasts home', icon: 'home' },
+                  { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'الرئيسية' : 'Podcasts home', icon: 'home' },
                   { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'تصنيفات البودكاست' : 'Podcast categories', icon: 'discover' },
+                  { href: `/${locale}/podcasts/creators`, label: locale === 'ar' ? 'فنانو البودكاست' : 'Podcast creators', icon: 'studio' },
+                  ...((user?.isArtistManager || user?.roles.some(role => role === 'super_admin' || role === 'admin')) ? [
+                    { href: `/${locale}/podcasts/me`, label: locale === 'ar' ? 'صفحتي كفنان' : 'My podcast profile', icon: 'studio' },
+                    { href: `/${locale}/podcasts/manage`, label: locale === 'ar' ? 'استوديو البودكاست' : 'Podcast Studio', icon: 'studio' },
+                    { href: `/${locale}/podcasts/manage#create-series`, label: locale === 'ar' ? '+ إنشاء سلسلة بودكاست' : '+ Create podcast series', icon: 'studio' },
+                    { href: `/${locale}/podcasts/manage#add-episode`, label: locale === 'ar' ? 'إضافة حلقة' : 'Add episode', icon: 'library' },
+                  ] : [{ href: user ? `/${locale}/apply/artist` : `/${locale}/signup`, label: locale === 'ar' ? 'ابدأ بودكاست كفنان' : 'Become a podcast creator', icon: 'studio' }]),
                 ] : []),
                 { href: `/${locale}`, label: t('nav.home'), icon: 'home' },
                 {
@@ -320,11 +327,7 @@ export function MobileNav() {
                       },
                     ]
                   : []),
-                ...(podcastMode && user?.roles.some(role => role === 'super_admin' || role === 'admin')
-                  ? [{ href: `/${locale}/podcasts/manage`,
-                       label: locale === 'ar' ? 'إدارة البودكاست' : 'Podcast Studio',
-                       icon: Mic2 }]
-                  : []),
+
                 ...(user && user.roles.length > 0
                   ? [
                       {
