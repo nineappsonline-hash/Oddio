@@ -2402,7 +2402,7 @@ body {
     appearance: none;
     background: transparent;
     cursor: pointer;
-    touch-action: none;
+    touch-action: none !important;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
