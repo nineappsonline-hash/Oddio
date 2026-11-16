@@ -11,15 +11,38 @@
 - UI artwork and category labels are real project design assets / taxonomy; **no fabricated show or episode content is inserted**.
 
 ## Database migration — BLOCKING FOR PUBLISHING
-Apply `supabase/migrations/20261116010000_podcast_catalog.sql` to the production Supabase project (project-ai-music).
+Apply these **two migrations in order** to the production Supabase project `project-ai-music`:
+1. `supabase/migrations/20261116010000_podcast_catalog.sql` — tables, policies, real categories.
+2. `supabase/migrations/20261116020000_podcast_audio_integrity.sql` — expected MP3 byte count validation.
 The file creates `podcast_categories`, `podcast_shows`, `podcast_episodes`, foreign keys and indexes. It enables RLS and public-read policies only for published entities. The migration seeds category names/translations, but no fake podcast programs.
 Before application, the web app displays the category directory from built-in fallback; show/episode lists are empty. The management page explicitly reports the missing migration.
-A denied API permission prevented us from running this migration from the connected Supabase account; **do not claim it has run**.
+The Supabase plugin is currently connected to a different organization. Its project list does **not** include the Oddio project. The access-denied result for Oddio is therefore a genuine account/organization mismatch; **do not apply the migrations to another project or claim they have run**.
+
+To unblock: switch/connect Supabase with a member of the organization containing `project-ai-music`, then apply both migrations to the correct project after checking the project's ID. Alternatively use the correct project's Supabase SQL Editor (two files in order).
 
 ## Cloudflare R2
 The current streaming bucket is `ai-music-streaming`, with the signed-upload key prefix `podcasts/{uuid}.mp3`. The existing `presignR2StreamingPut` and `presignR2Get` sign this bucket. No database is used to store raw audio bytes.
-Enable CORS on the streaming R2 bucket for `https://oddio.online` (and the testing domain if used), allowing PUT, GET and HEAD with Content-Type and Range request headers. Validate a test MP3 upload, metadata reading and seek/range playback on Safari and Chrome.
-For an episode, the admin tool creates a draft, uploads audio directly to R2, verifies that a 1-byte Range request succeeds (206), then marks the episode published. If upload fails, draft remains unpublished.
+Set CORS on the `ai-music-streaming` bucket. A versioned exact config is at `infra/cloudflare/r2-podcast-cors.json`. It permits PUT, GET and HEAD from the production domains and allows Content-Type/Range request headers. **Do not apply this CORS policy to a different R2 bucket.**
+
+Use Cloudflare R2 Dashboard → `ai-music-streaming` → Settings → CORS policy and adapt the JSON to Cloudflare's dashboard expected shape (the committed file uses the AWS S3 `CORSRules` wrapper), **or** use AWS CLI with account-scoped R2 keys:
+
+```bash
+# Execute locally with account-owned credentials; never commit or paste secrets.
+export AWS_ACCESS_KEY_ID='<your-r2-access-key-id>'
+export AWS_SECRET_ACCESS_KEY='<your-r2-secret-access-key>'
+export AWS_DEFAULT_REGION='auto'
+export R2_ACCOUNT_ID='<your-r2-account-id>'
+aws s3api put-bucket-cors \\
+  --bucket ai-music-streaming \\
+  --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" \\
+  --cors-configuration file://infra/cloudflare/r2-podcast-cors.json
+aws s3api get-bucket-cors \\
+  --bucket ai-music-streaming \\
+  --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+```
+
+The production Vercel environment already includes the required R2 credential variable **names**; their values were not accessed or exposed. Validate a test MP3 upload, metadata reading and seek/range playback on Safari and Chrome.
+For an episode, the admin tool creates a draft, uploads audio directly to R2, verifies a 3-byte Range request succeeds (206), checks the MP3 file signature **and** verifies its actual R2 object length matches the recorded upload length (between 1 KB and 300 MB), then marks the episode published. If upload fails, draft remains unpublished.
 
 ## Launch QA
 1. Verify the Music/Podcasts switcher in EN and AR, keyboard tab navigation and mobile widths 320–430 px.
@@ -31,7 +54,8 @@ For an episode, the admin tool creates a draft, uploads audio directly to R2, ve
 7. Verify public visitors cannot fetch draft, unpublished or future episodes, including direct media endpoints.
 8. Review schema.org PodcastSeries and PodcastEpisode, localized metadata, sitemap entries only for public items.
 9. Confirm no duplicate audio plays when changing between Music and Podcasts.
-10. Run deployment health check and monitor cloud storage/bandwidth.
+10. Run `node scripts/podcast-smoke-test.mjs https://oddio.online` to check bilingual public routes, sitemap, unauthorized publisher access and invalid episode requests.
+11. Trigger the `Oddio podcast smoke tests` GitHub workflow and monitor cloud storage/bandwidth. The workflow also runs weekly.
 
 ## Known deferrals
 - Listener subscriptions, progress sync, queues, downloads and recommendations are later phases, not v1.
