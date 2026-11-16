@@ -813,8 +813,8 @@ body {
   height: 83px;
   display: none;
   align-items: center;
-  gap: 20px;
-  padding: 12px 28px;
+  gap: 12px;
+  padding: 12px 18px;
   background: rgba(14, 14, 14, 0.94);
   border-bottom: 1px solid var(--oddio-border);
   backdrop-filter: blur(24px);
@@ -845,7 +845,7 @@ body {
   display: flex;
   align-items: center;
   gap: 13px;
-  min-width: 150px;
+  min-width: 105px;
   flex: 1;
   max-width: 580px;
   height: 46px;
@@ -884,7 +884,7 @@ body {
   align-items: center;
   justify-content: flex-end;
   margin-inline-start: auto;
-  gap: 12px;
+  gap: 8px;
 }
 .oddio-topbar-discover,
 .oddio-topbar-account {
@@ -2362,4 +2362,9 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .oddio-track-title-scroll,
   .oddio-track-title-scroll-rtl { animation: none; }
+}
+
+/* Compact controls belong inside the existing top bar, not a second toolbar. */
+@media (min-width: 1024px) and (max-width: 1399px) {
+  .oddio-topbar-discover { display: none; }
 }
