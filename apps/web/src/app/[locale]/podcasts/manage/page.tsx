@@ -23,7 +23,9 @@ export default async function PodcastManagement({params}:{params:Promise<{locale
   const catalog=await getPodcastCatalog();
   const ready=catalog.categories.every(c=>isPodcastId(c.id));
   const db=ready?serviceClient():null;
-  const artistResult=db ? await db.from('artists').select('id,name,owner_user_id').in('id',user.artistIds.length?user.artistIds:['00000000-0000-0000-0000-000000000000']) : null;
+  const artistResult=db ? await (staff
+    ? db.from('artists').select('id,name,owner_user_id').limit(250)
+    : db.from('artists').select('id,name,owner_user_id').in('id',user.artistIds.length?user.artistIds:['00000000-0000-0000-0000-000000000000'])) : null;
   const artistProfiles=(artistResult?.data??[]).filter(a=>staff || a.owner_user_id===user.id).map(a=>({id:a.id,name:a.name}));
   const ownedShows=catalog.shows.filter(show=>staff || (show.artistId!==null && user.artistIds.includes(show.artistId)));
   return <div className="space-y-8 pb-9">
