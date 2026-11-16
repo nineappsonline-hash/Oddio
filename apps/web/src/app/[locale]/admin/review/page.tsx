@@ -114,6 +114,9 @@ export default async function AdminReviewPage({
           {locale === 'ar' ? 'أغنية' : 'tracks'}
         </p>
       </header>
+      <Link href={`/${locale}/admin/podcasts`} className="inline-flex rounded-xl border border-[#8755b3] bg-[#362444] px-5 py-3 text-sm font-bold text-[#e6d2ff] hover:bg-[#493257]">
+        {locale==='ar'?'مراجعة حلقات البودكاست ←':'Review podcast episodes →'}
+      </Link>
       {tracks.length === 0 ? (
         <EmptyState title={t('admin.noTracks')} />
       ) : (
