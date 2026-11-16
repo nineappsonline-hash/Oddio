@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Pause, Play, RotateCcw, RotateCw, Gauge, Volume2 } from 'lucide-react';
+import { Pause, RotateCcw, RotateCw, Gauge, Volume2 } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
+import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 
 function displayTime(value: number) {
   if (!Number.isFinite(value) || value < 0) return '0:00';
@@ -80,8 +81,8 @@ export function PodcastEpisodePlayer({
       />
       <div className="mt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-7">
         <button type="button" onClick={() => skip(-15)} aria-label={ar ? 'ارجع 15 ثانية' : 'Back 15 seconds'} className="grid h-12 w-12 place-items-center rounded-full bg-[#392d43] text-white hover:bg-[#493854] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#eab997]"><RotateCcw className="h-6 w-6" /><span className="sr-only">15</span></button>
-        <button type="button" onClick={toggle} aria-label={playing ? (ar ? 'إيقاف مؤقت' : 'Pause episode') : (ar ? 'تشغيل' : 'Play episode')} className="grid h-16 w-16 place-items-center rounded-full bg-[#eab997] text-[#100d13] shadow-lg hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eab997]">
-          {playing ? <Pause className="h-7 w-7" fill="currentColor" /> : <Play className="h-7 w-7" fill="currentColor" />}
+        <button type="button" onClick={toggle} aria-label={playing ? (ar ? 'إيقاف مؤقت' : 'Pause episode') : (ar ? 'تشغيل' : 'Play episode')} className="grid h-16 w-16 place-items-center rounded-full text-[#eab997] transition hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eab997]">
+          {playing ? <Pause className="h-7 w-7" fill="currentColor" /> : <OddioPlayIcon size={66} />}
         </button>
         <button type="button" onClick={() => skip(30)} aria-label={ar ? 'قدم 30 ثانية' : 'Forward 30 seconds'} className="grid h-12 w-12 place-items-center rounded-full bg-[#392d43] text-white hover:bg-[#493854] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#eab997]"><RotateCw className="h-6 w-6" /><span className="sr-only">30</span></button>
       </div>

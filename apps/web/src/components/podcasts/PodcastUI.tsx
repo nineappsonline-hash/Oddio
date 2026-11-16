@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Mic2, Headphones, ArrowUpRight, Play, Radio, Clock3 } from 'lucide-react';
+import { Mic2, Headphones, ArrowUpRight, Radio, Clock3 } from 'lucide-react';
+import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import type { PodcastCategory, PodcastShow, PodcastEpisode } from '@/lib/podcasts/catalog';
 import { formatPodcastTime, podcastCategoryLabel } from '@/lib/podcasts/catalog';
 
@@ -61,7 +62,7 @@ export function PodcastEpisodeCard({ episode, show, locale }: {
         <p className="mt-1 truncate text-xs text-[#b8adbf]">{show?.title ?? (locale === 'ar' ? 'بودكاست' : 'Podcast')}</p>
         <span className="mt-2 inline-flex items-center gap-1 text-xs text-[#eab997]"><Clock3 className="h-3 w-3" /> {episode.durationSeconds > 0 ? formatPodcastTime(episode.durationSeconds) : (locale === 'ar' ? 'حلقة صوتية' : 'Audio episode')}</span>
       </div>
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#eab997] text-[#100d13]" aria-hidden="true"><Play className="h-5 w-5" fill="currentColor" /></span>
+      <span className="grid h-12 w-12 shrink-0 place-items-center" aria-hidden="true"><OddioPlayIcon size={46} /></span>
     </Link>
   );
 }
