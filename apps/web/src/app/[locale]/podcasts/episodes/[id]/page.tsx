@@ -55,7 +55,7 @@ export default async function PodcastEpisodePage({ params }: { params: Promise<{
           </p>
         </div>
       </header>
-      <PodcastEpisodePlayer episodeId={episode.id} initialDuration={episode.durationSeconds} locale={locale}/>
+      <PodcastEpisodePlayer episode={episode} show={show} locale={locale}/>
       {episode.description?<section className="space-y-3 rounded-2xl border border-white/10 bg-[#202020] p-5">
         <h2 className="text-xl font-bold text-white">{ar?'عن الحلقة':'About this episode'}</h2>
         <p className="whitespace-pre-line text-sm leading-8 text-[#d0c4d6]">{episode.description}</p>
