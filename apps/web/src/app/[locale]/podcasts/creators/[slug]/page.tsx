@@ -38,7 +38,7 @@ export default async function PodcastCreatorProfile({params}:{params:Promise<{lo
   const [catalog,viewer]=await Promise.all([getPodcastCatalog(),getSessionUser()]);
   const published = filterPodcastCatalog(catalog,await getContentLanguagePreference())
     .shows.filter(show=>show.artistId===artist.id);
-  const owner=viewer?.id===artist.owner_user_id && viewer.artistIds.includes(artist.id);
+  const owner=Boolean(viewer && viewer.id===artist.owner_user_id && viewer.artistIds.includes(artist.id));
   if(!published.length && !owner)notFound();
 
   return <div className="mx-auto max-w-6xl space-y-8 pb-10">
