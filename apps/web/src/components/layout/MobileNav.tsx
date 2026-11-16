@@ -25,10 +25,12 @@ import { useT } from '@/i18n/use-translator';
 import { useLocalePath } from '@/lib/use-locale-path';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { LocaleSwitcher } from '@/components/layout/LocaleSwitcher';
+import { ExperienceSwitcher } from '@/components/layout/ExperienceSwitcher';
+import type { ContentLanguagePreference } from '@/lib/content-language';
 import { cn } from '@/lib/utils';
 import { OddioGlyph, type OddioGlyphName } from '@/components/ui/OddioGlyph';
 
-export function MobileHeader({ user }: { user: SessionUser | null }) {
+export function MobileHeader({ user, contentLanguage }: { user: SessionUser | null; contentLanguage: ContentLanguagePreference }) {
   const t = useT();
   const { locale } = useLocalePath();
   const session = useSession();
@@ -39,19 +41,19 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
   return (
     <header
       dir="ltr"
-      className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-background/70 px-4 py-3 backdrop-blur-2xl lg:hidden"
+      className="sticky top-0 z-30 flex min-w-0 items-center justify-between gap-2 border-b border-white/10 bg-background/90 px-2.5 py-2.5 backdrop-blur-2xl lg:hidden"
     >
-      <div className="flex min-w-0 items-center gap-2.5">
+      <div className="flex min-w-0 shrink items-center gap-1.5">
         <button
           type="button"
           aria-label={locale === 'ar' ? 'افتح القائمة' : 'Open menu'}
           onClick={() => document.getElementById('oddio-mobile-menu-trigger')?.click()}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#eab99750] bg-[#262626] text-[#eaeaea] transition hover:bg-[#383838] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#eab997]"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#4c395f] bg-[#1e1925] text-[#eeeaf5] transition hover:border-[#a88ae7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7]"
         >
           <Menu className="h-5 w-5" />
         </button>
         <Logo locale={locale} compact />
-        <div>
+        <div className="hidden sm:block">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-ink">Oddio</p>
           <div className="flex items-center gap-1.5">
             <Equalizer bars={3} className="h-2.5 text-primary" />
@@ -61,11 +63,12 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex min-w-0 shrink-0 items-center gap-1">
+        <ExperienceSwitcher contentLanguage={contentLanguage} variant="mobile" />
         <Link
           prefetch={false}
           href={podcastMode ? `/${locale}/podcasts` : `/${locale}/search`}
-          className="rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink"
+          className="hidden rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink sm:inline-flex"
           aria-label={t('nav.search')}
         >
           <OddioGlyph name="search" size={21} className="oddio-glyph" />
@@ -95,7 +98,7 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
             className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#eab99770] bg-[#f1f1f1] px-4 py-2 text-xs font-bold text-[#101010] transition hover:bg-[#dedede] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eab997]"
           >
             <LogIn className="h-4 w-4" />
-            {t('nav.login')}
+            <span className="hidden sm:inline">{t('nav.login')}</span>
           </Link>
         )}
       </div>
