@@ -29,14 +29,10 @@ export default async function PodcastManagement({params}:{params:Promise<{locale
   const artistProfiles=(artistResult?.data??[]).filter(a=>staff || a.owner_user_id===user.id).map(a=>({id:a.id,name:a.name}));
   const ownedShows=catalog.shows.filter(show=>staff || (show.artistId!==null && user.artistIds.includes(show.artistId)));
   return <div className="space-y-8 pb-9">
-    <header className="space-y-3">
-      <p className="text-xs font-black uppercase tracking-widest text-[#e9e9e9]">{ar?'استوديو البودكاست':'PODCAST STUDIO'}</p>
-      <h1 className="text-3xl font-black text-white sm:text-4xl">{ar?'أنشئ سلاسل بودكاست وحلقات':'Create podcast series and episodes'}</h1>
-      <p className="max-w-3xl text-sm leading-7 text-[#a3a3a3]">{ar?'أنشئ برنامج بودكاست ثم ارفع حلقات MP3 إلى Cloudflare R2. الحلقات لا تظهر للجمهور إلا بعد نجاح رفع الملف والتحقق منه.':'Create a podcast show, then upload MP3 episodes directly to Cloudflare R2. Episodes become public only after audio upload verification.'}</p>
-      <div className="flex flex-wrap items-center gap-4">
-        <Link href={`/${locale}/podcasts`} className="inline-flex min-h-10 items-center text-sm font-semibold text-[#bda3e1] hover:underline">{ar?'عرض قسم البودكاست':'View podcasts'} →</Link>
-        {user.artistIds.length ? <Link href={`/${locale}/podcasts/me`} className="inline-flex min-h-10 items-center text-sm font-semibold text-[#bda3e1] hover:underline">{ar?'صفحتي كفنان بودكاست':'My podcast creator profile'} →</Link> : null}
-      </div>
+    <header className="space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c49cef]">{ar?'ODDIO FOR CREATORS':'ODDIO FOR CREATORS'}</p>
+      <h1 className="text-3xl font-bold text-white">{ar?'انشر بودكاستك بسهولة':'Make your podcast heard'}</h1>
+      <p className="max-w-2xl text-sm leading-6 text-[#a8a0b0]">{ar?'كل اللي محتاجه اسم السلسلة وملف صوت. والباقي علينا.':'Just give your series a name, then upload your audio. We handle the rest.'}</p>
     </header>
     {ready && !artistProfiles.length ? (
       <div className="space-y-3 rounded-2xl border border-[#725797] bg-[#2a1e39] p-6">
