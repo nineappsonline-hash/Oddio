@@ -2427,9 +2427,29 @@ body {
     background: white;
   }
 }
-@media (max-width: 639px) and (max-height: 680px) {
-  .oddio-full-player .oddio-mobile-artwork {
-    max-width: min(58vw, 28dvh, 210px);
+/* Keep the glass card edge-to-edge vertically; size its content rather
+   than positioning a short card in the middle of a tall phone screen. */
+@media (max-width: 639px) {
+  .oddio-full-player .oddio-mobile-player-card {
+    min-height: 0;
+    height: 100%;
   }
-  .oddio-full-player .oddio-mobile-artwork + div { margin-top: 6px; }
+  .oddio-full-player .oddio-mobile-playback-controls > button {
+    min-width: 0;
+    touch-action: manipulation;
+  }
+}
+@media (max-width: 639px) and (max-height: 700px) {
+  .oddio-full-player .oddio-mobile-artwork {
+    max-width: min(67vw, 30dvh, 235px);
+  }
+}
+@media (max-width: 639px) and (max-height: 590px) {
+  .oddio-full-player .oddio-mobile-artwork {
+    max-width: min(52vw, 25dvh, 190px);
+  }
+  .oddio-full-player .oddio-mobile-player-card {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
 }
