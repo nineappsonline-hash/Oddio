@@ -32,13 +32,16 @@ function getAudioDuration(file: File): Promise<number> {
   });
 }
 
-export function PodcastPublisher({locale,categories,shows,artists}:{
+export function PodcastPublisher({locale,categories,shows,artists,drafts=[]}:{
   locale:'en'|'ar';categories:PodcastCategory[];shows:PodcastShow[];
   artists:Array<{id:string;name:string}>;
+  drafts?:Array<{id:string;title:string;showTitle:string}>;
 }) {
   const router=useRouter(),ar=locale==='ar';
   const [mode,setMode]=useState<'series'|'episode'>(shows.length?'episode':'series');
   const [showBusy,setShowBusy]=useState(false),[episodeBusy,setEpisodeBusy]=useState(false);
+  const [retryingId,setRetryingId]=useState<string|null>(null);
+  const [pendingDrafts,setPendingDrafts]=useState(drafts);
   const [notice,setNotice]=useState(''),[error,setError]=useState('');
   const [file,setFile]=useState<File|null>(null);
   const [audioDragging,setAudioDragging]=useState(false);
@@ -112,6 +115,18 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
     } catch(err) {setError(err instanceof Error?err.message:String(err));} finally {setShowBusy(false);}
   }
 
+  async function retryDraft(episodeId:string) {
+    setRetryingId(episodeId);setError('');setNotice('');
+    try {
+      await post({action:'publish',episodeId});
+      setPendingDrafts(current=>current.filter(d=>d.id!==episodeId));
+      setNotice(ar?'تم نشر الحلقة المعلقة بنجاح.':'Your pending episode is now published.');
+      router.refresh();
+    } catch(err) {
+      setError(err instanceof Error?err.message:String(err));
+    } finally {setRetryingId(null);}
+  }
+
   async function publishEpisode(e:React.FormEvent<HTMLFormElement>) {
     e.preventDefault();setError('');setNotice('');
     if(!file || !showId){setError(ar?'اختار سلسلة وملف MP3.':'Choose a series and an MP3 file.');return;}
@@ -147,6 +162,17 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
 
     {notice?<div role="status" className="rounded-2xl border border-emerald-400/25 bg-emerald-500/10 p-4 text-sm text-emerald-100">{notice}</div>:null}
     {error?<div role="alert" className="rounded-2xl border border-rose-400/30 bg-rose-500/10 p-4 text-sm text-rose-100">{error}</div>:null}
+
+    {pendingDrafts.length>0?<section className="space-y-3 rounded-2xl border border-amber-300/20 bg-[#30271f] p-4 sm:p-5" aria-label={ar?'حلقات بانتظار النشر':'Pending episodes'}>
+      <div><h3 className="text-sm font-bold text-[#ffdeb0]">{ar?'حلقات محتاجة إكمال النشر':'Episodes waiting to publish'}</h3>
+      <p className="mt-1 text-xs text-[#d6bca0]">{ar?'لو رفعت الملف قبل كده، جرّب إكمال النشر من غير ما ترفعه تاني.':'Already uploaded your MP3? Finish publishing without uploading it again.'}</p></div>
+      {pendingDrafts.map(d=><div key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-black/20 p-3">
+        <div className="min-w-0"><p className="break-words text-sm font-medium text-white">{d.title}</p><p className="text-xs text-[#beafa4]">{d.showTitle}</p></div>
+        <button type="button" disabled={retryingId!==null} onClick={()=>retryDraft(d.id)} className="rounded-lg bg-[#7451a4] px-4 py-2 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50">
+          {retryingId===d.id?(ar?'جارٍ التحقق...':'Checking...'):(ar?'إكمال النشر':'Finish publishing')}
+        </button>
+      </div>)}
+    </section>:null}
 
     <div role="tablist" aria-label={ar?'اختيار المهمة':'Publishing task'} className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-[#151318] p-1.5">
       <button type="button" role="tab" aria-selected={mode==='series'} onClick={()=>{setMode('series');setError('');}} className={'rounded-xl px-3 py-3 text-sm font-semibold transition '+(mode==='series'?'bg-[#403052] text-white shadow-sm':'text-[#a9a0ae] hover:bg-white/5 hover:text-white')}>
