@@ -184,7 +184,26 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   setVolume: (volume) =>
     set({ volume: Math.min(1, Math.max(0, volume)), muted: volume === 0 }),
   toggleMute: () => set((state) => ({ muted: !state.muted })),
-  setExpanded: (expanded) => set({ expanded }),
+  setExpanded: (expanded) => {
+    if (get().expanded === expanded) return;
+    if (typeof window !== 'undefined') {
+      if (expanded) {
+        // The full player is an overlay, not a new page. Add one same-URL
+        // history entry so the browser Back button minimizes it first.
+        if (!window.history.state?.__oddioFullPlayer) {
+          window.history.pushState(
+            { ...(window.history.state ?? {}), __oddioFullPlayer: true },
+            '',
+            window.location.href,
+          );
+        }
+      } else if (window.history.state?.__oddioFullPlayer) {
+        // Closing via the chevron or Escape consumes the same history entry.
+        window.history.back();
+      }
+    }
+    set({ expanded });
+  },
   setError: (error) => set({ error, isPlaying: error ? false : get().isPlaying }),
   setBuffering: (buffering) => set({ buffering }),
 
