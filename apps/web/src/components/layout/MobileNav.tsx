@@ -52,7 +52,7 @@ export function MobileHeader({ user, contentLanguage }: { user: SessionUser | nu
         >
           <Menu className="h-5 w-5" />
         </button>
-        <Logo locale={locale} compact />
+        <div className="shrink-0 max-[359px]:hidden [&_img]:!w-[82px]"><Logo locale={locale} compact /></div>
         <div className="hidden sm:block">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-ink">Oddio</p>
           <div className="flex items-center gap-1.5">
