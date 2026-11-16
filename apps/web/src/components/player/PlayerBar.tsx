@@ -121,10 +121,19 @@ export function PlayerBar() {
         </div>
       ) : null}
       <div className="relative flex min-h-[60px] min-w-0 items-center gap-3 lg:hidden">
+        {/* The whole mobile mini-player opens Full Player, including the gaps
+            around its artwork and metadata. Dedicated transport controls stay
+            above this background button and keep their own actions. */}
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="shrink-0"
+          className="absolute inset-0 z-0 cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          aria-label={t('player.expand')}
+        />
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="relative z-10 shrink-0"
           aria-label={t('player.expand')}
         >
           <Artwork
@@ -135,28 +144,27 @@ export function PlayerBar() {
             rounded="rounded-lg"
           />
         </button>
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <Link
-            href={`/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
-            className="block w-full truncate text-sm font-bold leading-5 text-white"
-          >
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="relative z-10 flex min-w-0 flex-1 flex-col gap-0.5 text-start focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          aria-label={`${t('player.expand')}: ${track.title}`}
+        >
+          <span className="block w-full truncate text-sm font-bold leading-5 text-white">
             {track.title}
-          </Link>
+          </span>
           {track.artist ? (
-            <Link
-              href={`/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
-              className="block w-full truncate text-xs leading-4 text-muted"
-            >
+            <span className="block w-full truncate text-xs leading-4 text-muted">
               {track.artist.name}
-            </Link>
+            </span>
           ) : null}
-        </div>
+        </button>
         <button
           type="button"
           onClick={toggle}
           aria-label={isPlaying ? t('common.pause') : t('common.play')}
           title={isPlaying ? t('common.pause') : t('common.play')}
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 transition hover:bg-primary/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 transition hover:bg-primary/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
         >
           {isPlaying ? (
             <OddioGlyph name="pause" size={24} className="oddio-glyph text-primary" />
@@ -167,7 +175,7 @@ export function PlayerBar() {
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-muted transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-muted transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           aria-label={t('player.expand')}
           title={t('player.expand')}
         >
