@@ -153,7 +153,9 @@ export default async function SearchPage({
           >
             <option value="">{locale === 'ar' ? 'كل اللغات' : 'All languages'}</option>
             <option value="ar">{locale === 'ar' ? 'العربية' : 'Arabic'}</option>
-            <option value="en">{locale === 'ar' ? 'الإنجليزية' : 'English'}</option>
+            {contentLanguage === 'all' ? (
+              <option value="en">{locale === 'ar' ? 'الإنجليزية' : 'English'}</option>
+            ) : null}
           </select>
         </label>
         <label className="flex min-w-[120px] flex-1 flex-col gap-1.5 text-xs font-semibold text-muted">
