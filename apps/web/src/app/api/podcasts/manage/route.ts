@@ -57,8 +57,9 @@ export async function POST(request:Request) {
         return NextResponse.json({error:'You do not own this artist profile'}, {status:403});
       }
       const {data:show,error}=await db.from('podcast_shows').insert({
-        title:data.title,slug:data.slug,author_name:data.author,category_id:data.categoryId,
+        title:data.title,slug:data.slug,category_id:data.categoryId,
         description:data.description,language_code:data.language,cover_url:data.coverUrl||null,
+        author_name:artist.name,
         status:'published',owner_id:artist.owner_user_id ?? user.id,artist_id:artist.id,
       }).select('id,slug').single();
       if(error || !show) return NextResponse.json({error:error?.message||'Unable to create show'},{status:422});
