@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ShareButton } from '@/components/community/ShareButton';
 import { notFound } from 'next/navigation';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
@@ -31,6 +32,7 @@ export default async function PodcastShowPage({params}:{params:Promise<{locale:s
         {creator?.slug
           ? <Link href={`/${locale}/podcasts/creators/${creator.slug}`} className="inline-flex min-h-9 items-center text-sm font-semibold text-[#ae8be9] hover:underline" aria-label={locale==='ar'?`افتح ملف بودكاست ${show.author}`:`View ${show.author}'s podcast profile`}>{show.author} ↗</Link>
           : <p className="text-sm text-[#a3a3a3]">{show.author}</p>}
+        <ShareButton title={show.title} label={locale==='ar'?'مشاركة':'Share'} url={`/${locale}/podcasts/shows/${show.slug}`} />
         {show.description?<p className="whitespace-pre-line text-sm leading-8 text-[#d9cede]">{show.description}</p>:null}
         {category?<Link href={`/${locale}/podcasts/categories/${category.slug}`} className="inline-flex rounded-full border border-[#e9e9e9]/40 px-4 py-2 text-xs font-semibold text-[#e9e9e9]">{podcastCategoryLabel(category,locale)}</Link>:null}
       </div>
