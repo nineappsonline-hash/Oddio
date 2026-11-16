@@ -275,7 +275,7 @@ export function FullPlayer() {
     <div
       ref={dialogRef}
       tabIndex={-1}
-      className="oddio-full-player fixed inset-0 z-[60] h-[100dvh] w-screen max-w-full overflow-x-hidden overflow-y-auto overscroll-x-none bg-[#090a0c] text-white scroll-thin"
+      className="oddio-full-player fixed inset-0 z-[60] h-[100dvh] w-full max-w-full overflow-x-hidden overflow-y-auto overscroll-x-none bg-[#090a0c] text-white scroll-thin"
       role="dialog"
       aria-modal="true"
       aria-label={t('player.fullPlayer')}
@@ -296,7 +296,7 @@ export function FullPlayer() {
           {controlNotice}
         </div>
       ) : null}
-      <div className="relative mx-auto flex min-h-[100dvh] w-full min-w-0 max-w-[1380px] flex-col justify-center overflow-x-clip px-3 py-2 pb-[max(10px,env(safe-area-inset-bottom))] sm:px-8 sm:py-8 lg:block lg:min-h-0 lg:px-8 lg:py-5">
+      <div className="relative mx-auto flex min-h-[100dvh] w-full min-w-0 max-w-[1380px] flex-col px-2 py-2 pb-[max(8px,env(safe-area-inset-bottom))] sm:px-8 sm:py-8 lg:block lg:min-h-0 lg:px-8 lg:py-5">
         <div className="mb-6 hidden items-center justify-between rounded-2xl lg:flex border border-white/[0.13] bg-white/[0.055] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] px-4 py-3 lg:mb-5 lg:px-5 lg:py-2">
           <div className="flex items-center gap-2 text-sm text-muted">
             <OddioPlayIcon size={36} />
@@ -319,10 +319,10 @@ export function FullPlayer() {
           <h2 className="mt-1 text-2xl font-black tracking-tight text-white">{rtl ? 'مساحتك للاستماع' : 'Your listening space'}</h2>
           <p className="mt-1 text-sm text-[#999999]">{rtl ? 'استمتع بالموسيقى والبودكاست في مكان واحد' : 'Immersive audio. Seamless control.'}</p>
         </div>
-        <div className="grid w-full min-w-0 grid-cols-1 items-center gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(290px,0.9fr)] lg:items-start">
-          <div className="min-w-0 rounded-[24px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.20),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[28px] sm:rounded-[28px] sm:p-6 lg:p-5">
-            <div className="lg:grid lg:min-w-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:items-center lg:gap-5">
-            <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(76vw,34dvh,290px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
+        <div className="grid w-full min-w-0 flex-1 grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(290px,0.9fr)] lg:items-start">
+          <div className="oddio-mobile-player-card flex min-h-0 min-w-0 flex-col justify-between rounded-[24px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.20),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[28px] sm:rounded-[28px] sm:p-6 lg:block lg:p-5">
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-evenly gap-3 sm:gap-5 lg:grid lg:flex-none lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:items-center lg:gap-5">
+            <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(78vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
               <div
                 aria-hidden="true"
                 className="absolute -inset-2 rounded-[2.5rem] opacity-25 blur-2xl sm:-inset-4 sm:opacity-30 sm:blur-3xl"
@@ -460,7 +460,7 @@ export function FullPlayer() {
                 />
               </div>
             </div>
-            <div className="mt-3 flex min-w-0 flex-col justify-center gap-2 sm:mt-6 sm:gap-5 lg:mt-0">
+            <div className="flex min-w-0 flex-col justify-center gap-2 sm:mt-6 sm:gap-5 lg:mt-0">
               <div className="min-w-0">
                 <span className="mb-1 block text-[10px] font-bold uppercase tracking-[.17em] text-[#bdbdbd] sm:mb-3 sm:text-[11px]">{podcast ? (rtl ? 'حلقة بودكاست' : 'PODCAST EPISODE') : (rtl ? 'أغنية' : 'MUSIC / TRACK')}</span>
                 <h1 dir="auto" className="line-clamp-2 text-[clamp(19px,5.3vw,27px)] font-black leading-tight tracking-tight text-white sm:line-clamp-3 sm:text-3xl lg:text-[clamp(22px,1.9vw,32px)]">
@@ -524,7 +524,7 @@ export function FullPlayer() {
                 </button>
               </div>
             ) : null}
-            <div className="mt-3 rounded-[20px] border border-white/[0.13] bg-white/[0.045] px-3 py-2.5 backdrop-blur-xl sm:mt-4 sm:rounded-[22px] sm:px-6 sm:py-4 lg:px-4 lg:py-2.5">
+            <div className="mt-2 shrink-0 rounded-[20px] border border-white/[0.13] bg-white/[0.045] px-3 py-2.5 backdrop-blur-xl sm:mt-4 sm:rounded-[22px] sm:px-6 sm:py-4 lg:px-4 lg:py-2.5">
               <input
                 type="range"
                 min={0}
@@ -544,7 +544,7 @@ export function FullPlayer() {
                 <span>{formatDuration(duration * 1000)}</span>
               </div>
 
-            <div className="mt-1 flex min-w-0 flex-nowrap items-center justify-center gap-x-0.5 sm:mt-2 sm:flex-wrap sm:gap-x-4">
+            <div className="oddio-mobile-playback-controls mt-2 grid min-w-0 grid-cols-5 items-center justify-items-center gap-1 sm:mt-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-4">
               <button
                 type="button"
                 onClick={() => {
@@ -569,7 +569,7 @@ export function FullPlayer() {
                 }
                 aria-pressed={shuffle}
                 className={cn(
-                  'rounded-full p-1.5 transition hover:bg-white/10 sm:p-2.5',
+                  'grid h-11 w-11 place-items-center rounded-full transition hover:bg-white/10 sm:block sm:h-auto sm:w-auto sm:p-2.5',
                   shuffle ? 'text-neutral-200' : 'text-muted',
                 )}
               >
@@ -580,7 +580,7 @@ export function FullPlayer() {
                 onClick={previous}
                 aria-label={t('common.previous')}
                 title={t('common.previous')}
-                className="rounded-full p-1.5 text-muted transition hover:bg-white/10 hover:text-ink sm:p-2.5"
+                className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink sm:block sm:h-auto sm:w-auto sm:p-2.5"
               >
                 <SkipBack className="h-6 w-6" />
               </button>
@@ -589,16 +589,18 @@ export function FullPlayer() {
                 onClick={toggle}
                 aria-label={isPlaying ? t('common.pause') : t('common.play')}
                 title={isPlaying ? t('common.pause') : t('common.play')}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-20 sm:w-20 lg:h-16 lg:w-16"
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-20 sm:w-20 lg:h-16 lg:w-16"
               >
                 {isPlaying ? (
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-[#111111] shadow-[0_0_28px_rgba(255,255,255,.10)] sm:h-[70px] sm:w-[70px] lg:h-[56px] lg:w-[56px]">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#111111] shadow-[0_0_28px_rgba(255,255,255,.10)] sm:h-[70px] sm:w-[70px] lg:h-[56px] lg:w-[56px]">
                     <Pause className="h-7 w-7 text-[#111111]" fill="currentColor" />
                   </span>
                 ) : (
-                  <span className="scale-[0.43] sm:scale-[0.72]">
-                    <OddioPlayIcon size={112} />
-                  </span>
+                  <>
+                    <OddioPlayIcon size={54} className="block sm:hidden" />
+                    <OddioPlayIcon size={78} className="hidden sm:block lg:hidden" />
+                    <OddioPlayIcon size={62} className="hidden lg:block" />
+                  </>
                 )}
               </button>
               <button
@@ -681,7 +683,7 @@ export function FullPlayer() {
             </div>
 
             </div>
-            <div className="mt-2 flex w-full min-w-0 items-center gap-2 border-t border-white/10 pt-2 sm:hidden">
+            <div className="mt-2 grid w-full min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-white/10 pt-2 sm:hidden">
               <div className="flex min-w-0 flex-1 items-center gap-1.5" role="group" aria-label={t('player.volume')}>
                 <button type="button" onClick={toggleMute} className="grid h-10 w-9 shrink-0 place-items-center text-[#c7c7c7]"
                   aria-label={muted || volume === 0 ? (rtl ? 'تشغيل الصوت' : 'Unmute') : (rtl ? 'كتم الصوت' : 'Mute')}>
@@ -692,7 +694,7 @@ export function FullPlayer() {
                   className="oddio-mobile-volume min-w-0 w-full flex-1"
                   aria-label={t('player.volume')} title={t('player.volume')} />
               </div>
-              <label className="flex max-w-[46%] shrink-0 cursor-pointer items-center gap-1.5 text-[10px] leading-tight text-[#bdbdbd]">
+              <label className="flex w-[118px] shrink-0 cursor-pointer items-center gap-1.5 text-[10px] leading-tight text-[#bdbdbd]">
                 <input type="checkbox" checked={autoplay} onChange={toggleAutoplay}
                   className="h-4 w-4 shrink-0 rounded border-white/20 bg-black/30 accent-white" />
                 <span>{podcast ? (rtl ? 'تشغيل التالي تلقائيًا' : 'Autoplay next') : (rtl ? 'تشغيل مشابه تلقائيًا' : 'Autoplay similar')}</span>
