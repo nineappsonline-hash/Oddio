@@ -94,6 +94,22 @@ export function FullPlayer() {
     return () => window.removeEventListener('oddio:open-queue', showQueue);
   }, []);
   const rtl = useLocale() === 'ar';
+  // A browser Back from the overlay's same-URL history entry should only
+  // minimize the full player, leaving playback and the underlying page intact.
+  // Forward can reopen the overlay if the audio item is still available.
+  useEffect(() => {
+    const onPopState = () => {
+      const state = usePlayer.getState();
+      const isOverlayEntry = Boolean(window.history.state?.__oddioFullPlayer);
+      if (state.expanded && !isOverlayEntry) {
+        usePlayer.setState({ expanded: false });
+      } else if (!state.expanded && isOverlayEntry && state.track) {
+        usePlayer.setState({ expanded: true });
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
   const expanded = usePlayer((state) => state.expanded);
   const track = usePlayer((state) => state.track);
   const podcast = isPodcastPlayback(track);
