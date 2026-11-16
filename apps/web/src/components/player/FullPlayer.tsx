@@ -646,23 +646,15 @@ export function FullPlayer() {
                   <Repeat className="h-5 w-5" />
                 )}
               </button>
-            </div>
-
-            </div>
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
+              <div className="ms-1 flex shrink-0 items-center gap-1 border-s border-white/15 ps-2 sm:ms-3 sm:gap-2 sm:ps-4" role="group" aria-label={t('player.volume')}>
                 <button
                   type="button"
                   onClick={toggleMute}
-                  aria-label={t('player.volume')}
+                  aria-label={muted || volume === 0 ? (rtl ? 'تشغيل الصوت' : 'Unmute') : (rtl ? 'كتم الصوت' : 'Mute')}
                   title={t('player.volume')}
-                  className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
+                  className="rounded-full p-1.5 text-muted transition hover:bg-white/10 hover:text-white"
                 >
-                  {muted || volume === 0 ? (
-                    <VolumeX className="h-4 w-4" />
-                  ) : (
-                    <Volume2 className="h-4 w-4" />
-                  )}
+                  {muted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </button>
                 <input
                   type="range"
@@ -671,11 +663,16 @@ export function FullPlayer() {
                   step={0.01}
                   value={muted ? 0 : volume}
                   onChange={(event) => setVolume(Number(event.target.value))}
-                  className="w-28"
+                  className="w-12 sm:w-20 xl:w-24"
                   aria-label={t('player.volume')}
                   title={t('player.volume')}
                 />
               </div>
+            </div>
+
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-4">
+
               <label className="flex cursor-pointer items-center gap-2 text-xs text-muted">
                 <input
                   type="checkbox"
@@ -710,7 +707,10 @@ export function FullPlayer() {
             aria-label={sideTab === 'lyrics' ? 'Lyrics' : sideTab === 'queue' ? t('player.queue') : (rtl ? 'اقتراحات مشابهة' : 'Similar content')}
           >
             <div
-              className="mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-white/[0.06] p-1.5 sm:grid-cols-3"
+              className={cn(
+                  'mb-5 grid gap-1 rounded-2xl bg-white/[0.06] p-1.5',
+                  podcast ? 'grid-cols-2' : 'grid-cols-3',
+                )}
               role="tablist"
               aria-label="Player panels"
             >
