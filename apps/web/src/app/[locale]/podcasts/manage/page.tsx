@@ -30,10 +30,10 @@ export default async function PodcastManagement({params}:{params:Promise<{locale
   const ownedShows=catalog.shows.filter(show=>staff || (show.artistId!==null && user.artistIds.includes(show.artistId)));
   return <div className="space-y-8 pb-9">
     <header className="space-y-3">
-      <p className="text-xs font-black uppercase tracking-widest text-[#eab997]">{ar?'استوديو البودكاست':'PODCAST STUDIO'}</p>
+      <p className="text-xs font-black uppercase tracking-widest text-[#e9e9e9]">{ar?'استوديو البودكاست':'PODCAST STUDIO'}</p>
       <h1 className="text-3xl font-black text-white sm:text-4xl">{ar?'أنشئ برامج وحلقات جديدة':'Publish original conversations'}</h1>
-      <p className="max-w-3xl text-sm leading-7 text-[#b8adbf]">{ar?'أنشئ برنامج بودكاست ثم ارفع حلقات MP3 إلى Cloudflare R2. الحلقات لا تظهر للجمهور إلا بعد نجاح رفع الملف والتحقق منه.':'Create a podcast show, then upload MP3 episodes directly to Cloudflare R2. Episodes become public only after audio upload verification.'}</p>
-      <Link href={`/${locale}/podcasts`} className="inline-block text-sm font-semibold text-[#eab997] hover:underline">{ar?'عرض قسم البودكاست':'View podcast experience'} →</Link>
+      <p className="max-w-3xl text-sm leading-7 text-[#a3a3a3]">{ar?'أنشئ برنامج بودكاست ثم ارفع حلقات MP3 إلى Cloudflare R2. الحلقات لا تظهر للجمهور إلا بعد نجاح رفع الملف والتحقق منه.':'Create a podcast show, then upload MP3 episodes directly to Cloudflare R2. Episodes become public only after audio upload verification.'}</p>
+      <Link href={`/${locale}/podcasts`} className="inline-block text-sm font-semibold text-[#e9e9e9] hover:underline">{ar?'عرض قسم البودكاست':'View podcast experience'} →</Link>
     </header>
     {ready ? <PodcastPublisher locale={locale} categories={catalog.categories} shows={ownedShows} artists={artistProfiles} /> :
       <div role="alert" className="rounded-2xl border border-amber-500/30 bg-amber-950/30 p-6 text-sm leading-8 text-amber-100">
