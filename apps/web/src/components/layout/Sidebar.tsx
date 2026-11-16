@@ -54,6 +54,8 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
   const items = podcastMode ? [
     { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'الرئيسية' : 'Podcast home', icon: 'home', exact: true },
     { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'تصنيفات البودكاست' : 'Categories', icon: 'discover' },
+    { href: `/${locale}/podcasts#series`, label: locale === 'ar' ? 'سلاسل البودكاست' : 'Podcast series', icon: 'library', exact: true },
+    { href: `/${locale}/podcasts#episodes`, label: locale === 'ar' ? 'أحدث الحلقات' : 'Latest episodes', icon: 'releases', exact: true },
     { href: `/${locale}/podcasts/creators`, label: locale === 'ar' ? 'فنانو البودكاست' : 'Podcast creators', icon: 'studio' },
     { href: `/${locale}/podcasts?q=`, label: locale === 'ar' ? 'ابحث عن بودكاست' : 'Find podcasts', icon: 'search' },
     { href: `/${locale}`, label: locale === 'ar' ? 'قسم الموسيقى' : 'Music', icon: 'soundspace', exact: true },
