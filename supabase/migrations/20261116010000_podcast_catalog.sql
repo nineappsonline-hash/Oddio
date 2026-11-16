@@ -35,7 +35,7 @@ create table if not exists public.podcast_episodes (
   slug text not null check (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
   title text not null check (char_length(title) between 2 and 200),
   description text not null default '',
-  audio_object_key text check (audio_object_key is null or audio_object_key ~ '^podcasts/[a-f0-9-]+\\.(mp3|m4a|aac)$'),
+  audio_object_key text check (audio_object_key is null or audio_object_key ~ '^podcasts/[a-f0-9-]+\.(mp3|m4a|aac)$'),
   duration_seconds int not null default 0 check (duration_seconds >= 0),
   episode_number int check (episode_number is null or episode_number > 0),
   season_number int check (season_number is null or season_number > 0),
