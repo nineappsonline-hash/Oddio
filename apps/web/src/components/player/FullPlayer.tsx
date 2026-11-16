@@ -322,7 +322,7 @@ export function FullPlayer() {
         <div className="grid w-full min-w-0 grid-cols-1 items-center gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(290px,0.9fr)] lg:items-start">
           <div className="min-w-0 rounded-[24px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.20),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[28px] sm:rounded-[28px] sm:p-6 lg:p-5">
             <div className="lg:grid lg:min-w-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:items-center lg:gap-5">
-            <div className="relative mx-auto w-full max-w-[min(76vw,34dvh,290px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
+            <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(76vw,34dvh,290px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
               <div
                 aria-hidden="true"
                 className="absolute -inset-2 rounded-[2.5rem] opacity-25 blur-2xl sm:-inset-4 sm:opacity-30 sm:blur-3xl"
