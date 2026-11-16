@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
 import { ArrowUpRight, Compass, SlidersHorizontal } from 'lucide-react';
 import { notFound } from 'next/navigation';
@@ -54,7 +55,8 @@ export default async function DiscoverPage({
   const t = createTranslator(locale);
   const sp = await searchParams;
   const viewer = await getViewer();
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const contentLanguage = await getContentLanguagePreference();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
   const home = getHomeData(db, viewer);
   const flow = recommendTracks(db, viewer, 20);
   const recommendations = flow;
