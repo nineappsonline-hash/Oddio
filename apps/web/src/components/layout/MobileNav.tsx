@@ -250,57 +250,22 @@ export function MobileNav() {
                   { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'الرئيسية' : 'Podcasts home', icon: 'home' },
                   { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'تصنيفات البودكاست' : 'Podcast categories', icon: 'discover' },
                   { href: `/${locale}/podcasts#series`, label: locale === 'ar' ? 'سلاسل البودكاست' : 'Podcast series', icon: 'library' },
-                  { href: `/${locale}/podcasts#episodes`, label: locale === 'ar' ? 'أحدث الحلقات' : 'Latest episodes', icon: 'discover' },
                   { href: `/${locale}/podcasts/creators`, label: locale === 'ar' ? 'فنانو البودكاست' : 'Podcast creators', icon: 'studio' },
                   ...((user?.isArtistManager || user?.roles.some(role => role === 'super_admin' || role === 'admin')) ? [
                     { href: `/${locale}/podcasts/me`, label: locale === 'ar' ? 'صفحتي كفنان' : 'My podcast profile', icon: 'studio' },
                     { href: `/${locale}/podcasts/manage`, label: locale === 'ar' ? 'استوديو البودكاست' : 'Podcast Studio', icon: 'studio' },
-                    { href: `/${locale}/podcasts/manage#create-series`, label: locale === 'ar' ? '+ إنشاء سلسلة بودكاست' : '+ Create podcast series', icon: 'studio' },
-                    { href: `/${locale}/podcasts/manage#add-episode`, label: locale === 'ar' ? 'إضافة حلقة' : 'Add episode', icon: 'library' },
                   ] : [{ href: user ? `/${locale}/apply/artist` : `/${locale}/signup`, label: locale === 'ar' ? 'ابدأ بودكاست كفنان' : 'Become a podcast creator', icon: 'studio' }]),
                 ] : []),
-                { href: `/${locale}`, label: t('nav.home'), icon: 'home' },
-                {
-                  href: `/${locale}/discover`,
-                  label: t('nav.discover'),
-                  icon: 'discover',
-                },
-                {
-                  href: `/${locale}/soundspace`,
-                  label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace',
-                  icon: 'soundspace',
-                },
-                {
-                  href: `/${locale}/charts`,
-                  label: t('nav.charts'),
-                  icon: 'charts',
-                },
-                {
-                  href: `/${locale}/search`,
-                  label: t('nav.search'),
-                  icon: 'search',
-                },
-                {
-                  href: `/${locale}/genres`,
-                  label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres',
-                  icon: 'discover',
-                },
-                {
-                  href: `/${locale}/install`,
-                  label: locale === 'ar' ? 'ثبّت Oddio' : 'Install Oddio',
-                  icon: 'soundspace',
-                },
-                {
-                  href: `/${locale}/rooms`,
-                  label: locale === 'ar' ? 'غرف الاستماع' : 'Listening rooms',
-                  icon: 'soundspace',
-                },
-
-                {
-                  href: `/${locale}/discover#artists`,
-                  label: locale === 'ar' ? 'الفنانون' : 'Artists',
-                  icon: Mic2,
-                },
+                ...(!podcastMode ? [
+                  { href: `/${locale}`, label: t('nav.home'), icon: 'home' },
+                  { href: `/${locale}/discover`, label: t('nav.discover'), icon: 'discover' },
+                  { href: `/${locale}/soundspace`, label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace', icon: 'soundspace' },
+                  { href: `/${locale}/charts`, label: t('nav.charts'), icon: 'charts' },
+                  { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
+                  { href: `/${locale}/genres`, label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres', icon: 'discover' },
+                ] : [
+                  { href: `/${locale}`, label: locale === 'ar' ? 'الموسيقى' : 'Music', icon: 'soundspace' },
+                ]),
                 ...(user
                   ? [
                       {
@@ -320,7 +285,7 @@ export function MobileNav() {
                       },
                     ]
                   : []),
-                ...(user?.isArtistManager
+                ...(!podcastMode && user?.isArtistManager
                   ? [
                       {
                         href: `/${locale}/studio`,
