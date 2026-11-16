@@ -44,28 +44,28 @@ export default async function PodcastsHome({
 
   return (
     <div className="space-y-10 pb-6">
-      <section className="relative isolate overflow-hidden rounded-3xl border border-[#6c4b7e]/35 bg-gradient-to-br from-[#352341] via-[#191924] to-[#17313b] p-6 sm:p-10">
-        <div className="pointer-events-none absolute -right-12 -top-14 grid h-64 w-64 place-items-center rounded-full border-[32px] border-[#eab997]/10 text-[#eab997]/20" aria-hidden="true">
+      <section className="relative isolate overflow-hidden rounded-3xl border border-[#555555]/35 bg-gradient-to-br from-[#292929] via-[#191919] to-[#101010] p-6 sm:p-10">
+        <div className="pointer-events-none absolute -right-12 -top-14 grid h-64 w-64 place-items-center rounded-full border-[32px] border-[#e9e9e9]/10 text-[#e9e9e9]/20" aria-hidden="true">
           <Mic2 className="h-32 w-32" />
         </div>
         <div className="relative z-10 max-w-2xl space-y-4">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#eab997]">{ar ? 'عالم البودكاست على Oddio' : 'THE PODCAST SIDE OF ODDIO'}</p>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#e9e9e9]">{ar ? 'عالم البودكاست على Oddio' : 'THE PODCAST SIDE OF ODDIO'}</p>
           <h1 className="text-3xl font-black leading-tight text-white sm:text-5xl">
             {ar ? 'حكايات وأفكار تستاهل تسمعها.' : 'Listen beyond the music.'}
           </h1>
-          <p className="max-w-lg text-sm leading-8 text-[#ded2e4] sm:text-base">
+          <p className="max-w-lg text-sm leading-8 text-[#d1d1d1] sm:text-base">
             {ar ? 'اكتشف برامج وحلقات بودكاست في مواضيع مختلفة، من التكنولوجيا والعلوم للأعمال والقصص والثقافة.' : 'Explore conversations, perspectives and stories, from science and technology to business, culture and much more.'}
           </p>
-          <Link href={`/${locale}/podcasts/categories`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#eab997] px-5 text-sm font-bold text-[#100d13] hover:brightness-110">
+          <Link href={`/${locale}/podcasts/categories`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#e9e9e9] px-5 text-sm font-bold text-[#100d13] hover:brightness-110">
             {ar ? 'استكشف التصنيفات' : 'Browse categories'} <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
           </Link>
         </div>
       </section>
 
-      <form action={`/${locale}/podcasts`} role="search" className="flex max-w-2xl items-center gap-3 rounded-2xl border border-white/15 bg-[#241b2d] px-4 py-3 focus-within:border-[#eab997]">
-        <Search aria-hidden="true" className="h-5 w-5 shrink-0 text-[#eab997]" />
-        <input name="q" defaultValue={rawQuery ?? ''} aria-label={ar ? 'البحث في البرامج والحلقات' : 'Search podcast shows and episodes'} placeholder={ar ? 'ابحث عن بودكاست أو حلقة...' : 'Search shows and episodes...'} className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-[#b8adbf]" />
-        <button className="min-h-10 shrink-0 rounded-lg bg-[#3b2b47] px-4 text-xs font-semibold text-white hover:bg-[#51405c]">{ar ? 'بحث' : 'Search'}</button>
+      <form action={`/${locale}/podcasts`} role="search" className="flex max-w-2xl items-center gap-3 rounded-2xl border border-white/15 bg-[#202020] px-4 py-3 focus-within:border-[#e9e9e9]">
+        <Search aria-hidden="true" className="h-5 w-5 shrink-0 text-[#e9e9e9]" />
+        <input name="q" defaultValue={rawQuery ?? ''} aria-label={ar ? 'البحث في البرامج والحلقات' : 'Search podcast shows and episodes'} placeholder={ar ? 'ابحث عن بودكاست أو حلقة...' : 'Search shows and episodes...'} className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-[#a3a3a3]" />
+        <button className="min-h-10 shrink-0 rounded-lg bg-[#343434] px-4 text-xs font-semibold text-white hover:bg-[#484848]">{ar ? 'بحث' : 'Search'}</button>
       </form>
 
       {q ? (
@@ -91,7 +91,7 @@ export default async function PodcastsHome({
           <section className="space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-2xl font-bold text-white">{ar ? 'تصفح التصنيفات' : 'Browse by category'}</h2>
-              <Link href={`/${locale}/podcasts/categories`} className="text-sm font-semibold text-[#eab997] hover:underline">{ar ? 'كل التصنيفات' : 'All categories'} →</Link>
+              <Link href={`/${locale}/podcasts/categories`} className="text-sm font-semibold text-[#e9e9e9] hover:underline">{ar ? 'كل التصنيفات' : 'All categories'} →</Link>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{catalog.categories.slice(0, 10).map((category) => <PodcastCategoryCard key={category.id} category={category} locale={locale} />)}</div>
           </section>
