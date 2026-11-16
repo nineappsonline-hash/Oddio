@@ -21,18 +21,18 @@ export default async function PodcastShowPage({params}:{params:Promise<{locale:s
     (a.seasonNumber??1)-(b.seasonNumber??1) || (a.episodeNumber??999999)-(b.episodeNumber??999999) || a.publishedAt.localeCompare(b.publishedAt)),category=catalog.categories.find(c=>c.id===show.categoryId);
   return <div className="space-y-9 pb-8">
     <JsonLd data={{'@context':'https://schema.org','@type':'PodcastSeries',name:show.title,description:show.description,url:seoAbsoluteUrl(`/${locale}/podcasts/shows/${show.slug}`),author:{'@type':'Person',name:show.author},inLanguage:show.language}}/>
-    <Link href={`/${locale}/podcasts`} className="text-sm font-semibold text-[#eab997] hover:underline">{locale==='ar'?'← بودكاست':'← Podcasts'}</Link>
-    <header className="grid items-center gap-6 rounded-3xl border border-white/10 bg-[#241b2d] p-5 sm:grid-cols-[220px_minmax(0,1fr)] sm:p-8">
+    <Link href={`/${locale}/podcasts`} className="text-sm font-semibold text-[#e9e9e9] hover:underline">{locale==='ar'?'← بودكاست':'← Podcasts'}</Link>
+    <header className="grid items-center gap-6 rounded-3xl border border-white/10 bg-[#202020] p-5 sm:grid-cols-[220px_minmax(0,1fr)] sm:p-8">
       <PodcastArtwork title={show.title} coverUrl={show.coverUrl} className="mx-auto w-full max-w-[220px]"/>
-      <div className="min-w-0 space-y-3"><p className="text-xs font-bold uppercase tracking-widest text-[#eab997]">{locale==='ar'?'سلسلة بودكاست':'PODCAST SERIES'}</p>
+      <div className="min-w-0 space-y-3"><p className="text-xs font-bold uppercase tracking-widest text-[#e9e9e9]">{locale==='ar'?'سلسلة بودكاست':'PODCAST SERIES'}</p>
         <h1 className="break-words text-3xl font-black text-white sm:text-4xl">{show.title}</h1>
-        <p className="text-sm text-[#b8adbf]">{show.author}</p>
+        <p className="text-sm text-[#a3a3a3]">{show.author}</p>
         {show.description?<p className="whitespace-pre-line text-sm leading-8 text-[#d9cede]">{show.description}</p>:null}
-        {category?<Link href={`/${locale}/podcasts/categories/${category.slug}`} className="inline-flex rounded-full border border-[#eab997]/40 px-4 py-2 text-xs font-semibold text-[#eab997]">{podcastCategoryLabel(category,locale)}</Link>:null}
+        {category?<Link href={`/${locale}/podcasts/categories/${category.slug}`} className="inline-flex rounded-full border border-[#e9e9e9]/40 px-4 py-2 text-xs font-semibold text-[#e9e9e9]">{podcastCategoryLabel(category,locale)}</Link>:null}
       </div>
     </header>
     <section className="space-y-4"><h2 className="text-2xl font-bold text-white">{locale==='ar'?`الحلقات (${episodes.length})`:`Episodes (${episodes.length})`}</h2>
-      {episodes.length?<div className="grid gap-3 sm:grid-cols-2">{episodes.map(episode=><div key={episode.id} className="space-y-2">{episode.episodeNumber!==null?<p className="text-xs font-semibold text-[#eab997]">{locale==='ar'?`الموسم ${episode.seasonNumber??1} · الحلقة ${episode.episodeNumber}`:`Season ${episode.seasonNumber??1} · Episode ${episode.episodeNumber}`}</p>:null}<PodcastEpisodeCard episode={episode} show={show} locale={locale}/></div>)}</div>:<PodcastEmpty locale={locale}/>}
+      {episodes.length?<div className="grid gap-3 sm:grid-cols-2">{episodes.map(episode=><div key={episode.id} className="space-y-2">{episode.episodeNumber!==null?<p className="text-xs font-semibold text-[#e9e9e9]">{locale==='ar'?`الموسم ${episode.seasonNumber??1} · الحلقة ${episode.episodeNumber}`:`Season ${episode.seasonNumber??1} · Episode ${episode.episodeNumber}`}</p>:null}<PodcastEpisodeCard episode={episode} show={show} locale={locale}/></div>)}</div>:<PodcastEmpty locale={locale}/>}
     </section>
   </div>;
 }
