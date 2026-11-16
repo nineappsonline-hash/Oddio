@@ -32,10 +32,11 @@ function getAudioDuration(file: File): Promise<number> {
   });
 }
 
-export function PodcastPublisher({locale,categories,shows,artists,drafts=[]}:{
+export function PodcastPublisher({locale,categories,shows,artists,drafts=[],pending=[]}:{
   locale:'en'|'ar';categories:PodcastCategory[];shows:PodcastShow[];
   artists:Array<{id:string;name:string}>;
   drafts?:Array<{id:string;title:string;showTitle:string}>;
+  pending?:Array<{id:string;title:string;showTitle:string;status:string;reason?:string|null}>;
 }) {
   const router=useRouter(),ar=locale==='ar';
   const [mode,setMode]=useState<'series'|'episode'>(shows.length?'episode':'series');
@@ -120,7 +121,7 @@ export function PodcastPublisher({locale,categories,shows,artists,drafts=[]}:{
     try {
       await post({action:'publish',episodeId});
       setPendingDrafts(current=>current.filter(d=>d.id!==episodeId));
-      setNotice(ar?'تم نشر الحلقة المعلقة بنجاح.':'Your pending episode is now published.');
+      setNotice(ar?'تم إرسال الحلقة لمراجعة الأدمن. هتظهر للجمهور بعد الموافقة.':'Episode submitted for admin review. It will go live after approval.');
       router.refresh();
     } catch(err) {
       setError(err instanceof Error?err.message:String(err));
@@ -140,7 +141,7 @@ export function PodcastPublisher({locale,categories,shows,artists,drafts=[]}:{
       const uploaded=await fetch(result.uploadUrl,{method:'PUT',headers:{'Content-Type':'audio/mpeg'},body:file});
       if(!uploaded.ok)throw new Error('Audio upload failed. Please try again.');
       await post({action:'publish',episodeId:result.episodeId});
-      setNotice(ar?'الحلقة اتنشرت بنجاح!':'Your episode is live!');
+      setNotice(ar?'تم رفع الحلقة وإرسالها لمراجعة الأدمن.':'Episode uploaded and sent for admin approval.');
       setEpisodeTitle('');setEpisodeDescription('');setEpisodeNumber('');setFile(null);
       const input=document.getElementById('oddio-episode-file') as HTMLInputElement|null;
       if(input)input.value='';
@@ -164,13 +165,22 @@ export function PodcastPublisher({locale,categories,shows,artists,drafts=[]}:{
     {error?<div role="alert" className="rounded-2xl border border-rose-400/30 bg-rose-500/10 p-4 text-sm text-rose-100">{error}</div>:null}
 
     {pendingDrafts.length>0?<section className="space-y-3 rounded-2xl border border-amber-300/20 bg-[#30271f] p-4 sm:p-5" aria-label={ar?'حلقات بانتظار النشر':'Pending episodes'}>
-      <div><h3 className="text-sm font-bold text-[#ffdeb0]">{ar?'حلقات محتاجة إكمال النشر':'Episodes waiting to publish'}</h3>
-      <p className="mt-1 text-xs text-[#d6bca0]">{ar?'لو رفعت الملف قبل كده، جرّب إكمال النشر من غير ما ترفعه تاني.':'Already uploaded your MP3? Finish publishing without uploading it again.'}</p></div>
+      <div><h3 className="text-sm font-bold text-[#ffdeb0]">{ar?'رفع غير مكتمل':'Incomplete uploads'}</h3>
+      <p className="mt-1 text-xs text-[#d6bca0]">{ar?'لو رفعت الملف قبل كده، ابعته لمراجعة الأدمن من غير ما تعيد رفعه.':'Already uploaded the MP3? Submit it for admin review without reuploading.'}</p></div>
       {pendingDrafts.map(d=><div key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-black/20 p-3">
         <div className="min-w-0"><p className="break-words text-sm font-medium text-white">{d.title}</p><p className="text-xs text-[#beafa4]">{d.showTitle}</p></div>
         <button type="button" disabled={retryingId!==null} onClick={()=>retryDraft(d.id)} className="rounded-lg bg-[#7451a4] px-4 py-2 text-xs font-bold text-white transition hover:brightness-110 disabled:opacity-50">
           {retryingId===d.id?(ar?'جارٍ التحقق...':'Checking...'):(ar?'إكمال النشر':'Finish publishing')}
         </button>
+      </div>)}
+    </section>:null}
+
+    {pending.length>0?<section className="space-y-3 rounded-2xl border border-white/10 bg-[#1e1926] p-4 sm:p-5">
+      <h3 className="text-sm font-bold text-white">{ar?'حالات الحلقات':'Episode review status'}</h3>
+      {pending.map(e=><div key={e.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/5 p-3">
+        <div><p className="text-sm font-semibold text-white">{e.title}</p><p className="text-xs text-[#aaa]">{e.showTitle}</p>
+        {e.status==='rejected'&&e.reason?<p className="mt-1 text-xs text-rose-200">{ar?'سبب الرفض: ':'Reason: '}{e.reason}</p>:null}</div>
+        <span className={'rounded-lg px-3 py-1 text-xs font-bold '+(e.status==='rejected'?'bg-rose-600/20 text-rose-200':'bg-amber-500/20 text-amber-200')}>{e.status==='rejected'?(ar?'مرفوضة':'Rejected'):(ar?'بانتظار موافقة الأدمن':'Pending admin review')}</span>
       </div>)}
     </section>:null}
 
