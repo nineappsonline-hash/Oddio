@@ -668,7 +668,7 @@ export function FullPlayer() {
                   <option value={8}>8s</option>
                 </select>
               </label>}
-              <ShareButton title={track.title} label={t('common.share')} />
+              <ShareButton title={track.title} label={t('common.share')} url={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}` : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`} />
             </div>
             {!podcast && <><p className="mt-4 text-center text-[11px] text-muted">{t('player.qualifiedHint')}</p>
             <div className="mt-5"><TimedComments key={track.id} trackId={track.id} /></div></>}
