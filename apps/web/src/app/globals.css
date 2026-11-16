@@ -1697,6 +1697,14 @@ body {
   .oddio-player-bar {
     inset-inline-end: 300px !important;
   }
+  /* Podcast pages have no right Listening Rail. Fill the entire remaining
+     viewport from the left sidebar through the right edge. */
+  .oddio-player-bar.oddio-podcast-player-bar {
+    inset-inline-end: 0 !important;
+  }
+  .oddio-workspace.oddio-podcast-workspace {
+    padding-inline-end: 0 !important;
+  }
 }
 @media (max-width: 1199px) {
   .oddio-home-feature-grid {
