@@ -5,6 +5,7 @@ import { ArrowUpRight, Mic2, Search } from 'lucide-react';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { getPodcastCatalog } from '@/lib/podcasts/catalog';
+import { getSessionUser } from '@/lib/auth/session';
 import { PodcastCategoryCard, PodcastEpisodeCard, PodcastShowCard, PodcastEmpty } from '@/components/podcasts/PodcastUI';
 import { PodcastSeriesShelf } from '@/components/podcasts/PodcastSeriesShelf';
 
@@ -34,6 +35,8 @@ export default async function PodcastsHome({
   const { q: rawQuery } = await searchParams;
   const q = (rawQuery ?? '').trim().slice(0, 100).toLocaleLowerCase();
   const catalog = filterPodcastCatalog(await getPodcastCatalog(), await getContentLanguagePreference());
+  const user = await getSessionUser();
+  const canPublish = Boolean(user?.isArtistManager || user?.roles.some(role => role === 'admin' || role === 'super_admin'));
   const matchingShows = catalog.shows.filter((show) =>
     !q || [show.title, show.description, show.author].some((item) => item.toLocaleLowerCase().includes(q)));
   const matchingShowIds = new Set(matchingShows.map((show) => show.id));
@@ -56,9 +59,18 @@ export default async function PodcastsHome({
           <p className="max-w-lg text-sm leading-8 text-[#d1d1d1] sm:text-base">
             {ar ? 'اكتشف برامج وحلقات بودكاست في مواضيع مختلفة، من التكنولوجيا والعلوم للأعمال والقصص والثقافة.' : 'Explore conversations, perspectives and stories, from science and technology to business, culture and much more.'}
           </p>
-          <Link href={`/${locale}/podcasts/categories`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#e9e9e9] px-5 text-sm font-bold text-[#100d13] hover:brightness-110">
-            {ar ? 'استكشف التصنيفات' : 'Browse categories'} <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href={`/${locale}/podcasts/categories`} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#e9e9e9] px-5 text-sm font-bold text-[#100d13] hover:brightness-110">
+              {ar ? 'استكشف التصنيفات' : 'Browse categories'} <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
+            </Link>
+            <Link href={`/${locale}/podcasts/creators`} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#70588b] bg-[#30253b] px-5 text-sm font-semibold text-white transition hover:border-[#b19bcb] hover:bg-[#43324e]">
+              {ar ? 'فنانو البودكاست' : 'Podcast creators'} <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
+            </Link>
+            <Link href={canPublish ? `/${locale}/podcasts/manage#create-series` : user ? `/${locale}/apply/artist` : `/${locale}/signup`}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#9876c4]/60 bg-[#423052] px-5 text-sm font-bold text-[#f4eaff] transition hover:bg-[#543a69] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ae8be9]">
+              <Mic2 className="h-4 w-4" /> {canPublish ? (ar ? '+ أنشئ سلسلة بودكاست' : '+ Create podcast series') : (ar ? 'ابدأ بودكاست كفنان' : 'Create your own podcast')}
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -96,7 +108,7 @@ export default async function PodcastsHome({
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{catalog.categories.slice(0, 10).map((category) => <PodcastCategoryCard key={category.id} category={category} locale={locale} />)}</div>
           </section>
 
-          <section className="space-y-5">
+          <section id="episodes" className="scroll-mt-24 space-y-5">
             <h2 className="text-2xl font-bold text-white">{ar ? 'أحدث الحلقات' : 'Latest episodes'}</h2>
             {catalog.episodes.length ? <div className="grid gap-3 sm:grid-cols-2">{catalog.episodes.slice(0, 12).map((episode) => <PodcastEpisodeCard key={episode.id} episode={episode} show={showById.get(episode.showId)} locale={locale} />)}</div> : <PodcastEmpty locale={locale} />}
           </section>

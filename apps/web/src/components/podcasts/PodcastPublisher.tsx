@@ -6,7 +6,7 @@ import Link from 'next/link';
 import type { PodcastCategory, PodcastShow } from '@/lib/podcasts/catalog';
 
 const field = 'w-full min-h-11 rounded-xl border border-white/15 bg-[#36283f] px-3 py-2 text-sm text-white outline-none focus:border-[#e9e9e9]';
-const actionButton = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-[#e9e9e9] px-5 text-sm font-bold text-[#100d13] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50';
+const actionButton = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-[#e9e9e9] px-5 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50';
 
 async function post(body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const response = await fetch('/api/podcasts/manage', {
@@ -50,7 +50,9 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
   async function createShow(e:React.FormEvent<HTMLFormElement>) {
     e.preventDefault();setShowBusy(true);setError('');setNotice('');
     try {
-      await post({action:'show',artistId,title:showTitle,slug:showSlug,categoryId,language,description:showDescription,coverUrl});
+      const result=await post({action:'show',artistId,title:showTitle,slug:showSlug,categoryId,language,description:showDescription,coverUrl});
+      const created=result.show as {id?:string} | undefined;
+      if(created?.id) setShowId(created.id);
       setNotice(ar?'تم إنشاء البرنامج. تقدر تضيف الحلقات دلوقتي.':'Show published. You can now add episodes.');
       setShowTitle('');setShowSlug('');setShowDescription('');setCoverUrl('');
       router.refresh();
@@ -90,8 +92,13 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
         </Link>)}
       </div>
     </section> : null}
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#554269] bg-[#291f35] px-4 py-3 text-sm leading-6 text-[#e6d9f0]">
+      <span className="font-bold">{ar?'ابدأ من هنا:':'Start here:'}</span>
+      <a href="#create-series" className="rounded-lg border border-[#745893] px-3 py-1.5 font-semibold text-[#d7b7fa] hover:bg-[#423052]">{ar?'1. أنشئ سلسلة':'1. Create a series'}</a>
+      <a href="#add-episode" className="rounded-lg border border-[#745893] px-3 py-1.5 font-semibold text-[#d7b7fa] hover:bg-[#423052]">{ar?'2. ارفع أول حلقة MP3':'2. Upload your first MP3 episode'}</a>
+    </div>
     <div className="grid items-start gap-6 xl:grid-cols-2">
-      <form onSubmit={createShow} className="space-y-4 rounded-2xl border border-white/10 bg-[#202020] p-5">
+      <form id="create-series" onSubmit={createShow} className="scroll-mt-28 space-y-4 rounded-2xl border border-white/10 bg-[#202020] p-5">
         <h2 className="text-xl font-bold text-white">{ar?'أنشئ سلسلة بودكاست':'Create a podcast series'}</h2>
         <p className="text-sm leading-6 text-[#a3a3a3]">{ar?'كل سلسلة لها اسم وموضوع، وتقدر تضيف لها حلقات مختلفة بترتيب واضح.':'Give one topic its own series, then publish related episodes in order.'}</p>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'حساب الفنان':'Artist profile'}<select required className={field} value={artistId} onChange={e=>setArtistId(e.target.value)}><option value="">{ar?'اختار الفنان':'Choose an artist'}</option>{artists.map(artist=><option key={artist.id} value={artist.id}>{artist.name}</option>)}</select></label>
@@ -104,7 +111,7 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رابط صورة البرنامج (اختياري)':'Cover image URL (optional)'}<input type="url" className={field} value={coverUrl} onChange={e=>setCoverUrl(e.target.value)} placeholder="https://..."/></label>
         <button disabled={showBusy||!artistId} className={actionButton}>{showBusy?(ar?'جارٍ الحفظ...':'Saving...'):(ar?'أنشئ السلسلة':'Create series')}</button>
       </form>
-      <form onSubmit={publishEpisode} className="space-y-4 rounded-2xl border border-white/10 bg-[#202020] p-5">
+      <form id="add-episode" onSubmit={publishEpisode} className="scroll-mt-28 space-y-4 rounded-2xl border border-white/10 bg-[#202020] p-5">
         <h2 className="text-xl font-bold text-white">{ar?'أضف حلقة إلى سلسلة':'Add an episode to a series'}</h2>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'اختار السلسلة':'Podcast series'}<select required className={field} value={showId} onChange={e=>setShowId(e.target.value)}><option value="">{ar?'اختار السلسلة':'Choose a series'}</option>{shows.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'عنوان الحلقة':'Episode title'}<input required minLength={2} className={field} value={episodeTitle} onChange={e=>setEpisodeTitle(e.target.value)}/></label>
