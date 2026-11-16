@@ -5,6 +5,7 @@ import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { getPodcastCatalog } from '@/lib/podcasts/catalog';
 import { PodcastCategoryCard, PodcastEpisodeCard, PodcastShowCard, PodcastEmpty } from '@/components/podcasts/PodcastUI';
+import { PodcastSeriesShelf } from '@/components/podcasts/PodcastSeriesShelf';
 
 export const dynamic = 'force-dynamic';
 
@@ -79,6 +80,13 @@ export default async function PodcastsHome({
         </>
       ) : (
         <>
+          <PodcastSeriesShelf locale={locale} count={catalog.shows.length}>
+            {catalog.shows.map((show) => (
+              <div key={show.id} data-podcast-series-card className="w-[186px] shrink-0 snap-start sm:w-[224px] lg:w-[244px]">
+                <PodcastShowCard show={show} locale={locale} />
+              </div>
+            ))}
+          </PodcastSeriesShelf>
           <section className="space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-2xl font-bold text-white">{ar ? 'تصفح التصنيفات' : 'Browse by category'}</h2>
@@ -86,10 +94,7 @@ export default async function PodcastsHome({
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{catalog.categories.slice(0, 10).map((category) => <PodcastCategoryCard key={category.id} category={category} locale={locale} />)}</div>
           </section>
-          <section className="space-y-5">
-            <h2 className="text-2xl font-bold text-white">{ar ? 'برامج البودكاست' : 'Explore shows'}</h2>
-            {catalog.shows.length ? <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">{catalog.shows.slice(0, 15).map((show) => <PodcastShowCard key={show.id} show={show} locale={locale} />)}</div> : <PodcastEmpty locale={locale} what="shows" />}
-          </section>
+
           <section className="space-y-5">
             <h2 className="text-2xl font-bold text-white">{ar ? 'أحدث الحلقات' : 'Latest episodes'}</h2>
             {catalog.episodes.length ? <div className="grid gap-3 sm:grid-cols-2">{catalog.episodes.slice(0, 12).map((episode) => <PodcastEpisodeCard key={episode.id} episode={episode} show={showById.get(episode.showId)} locale={locale} />)}</div> : <PodcastEmpty locale={locale} />}
