@@ -7,9 +7,11 @@ import { OddioGlyph } from '@/components/ui/OddioGlyph';
 import { useLocalePath } from '@/lib/use-locale-path';
 import { useSession } from '@/components/providers/SessionProvider';
 import { Avatar } from '@/components/ui/Artwork';
+import { ExperienceSwitcher } from '@/components/layout/ExperienceSwitcher';
+import type { ContentLanguagePreference } from '@/lib/content-language';
 
 /** Consistent desktop workspace header, separate from page content. */
-export function DesktopTopBar() {
+export function DesktopTopBar({ contentLanguage }: { contentLanguage: ContentLanguagePreference }) {
   const { locale, pathname } = useLocalePath();
   const podcastMode = pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   const { user } = useSession();
@@ -54,6 +56,7 @@ export function DesktopTopBar() {
         />
         <kbd aria-hidden="true">↵</kbd>
       </form>
+      <ExperienceSwitcher contentLanguage={contentLanguage} />
       <div className="oddio-topbar-actions">
         <Link
           prefetch={false}
