@@ -35,6 +35,14 @@ export default async function PodcastManagement({params}:{params:Promise<{locale
   const drafts=(draftResult?.data??[]).map(d=>({
     id:d.id,title:d.title,showTitle:ownedShows.find(s=>s.id===d.show_id)?.title??'',
   }));
+  const statusResult=db && ownedShows.length ? await db.from('podcast_episodes')
+    .select('id,show_id,title,status,rejection_reason')
+    .in('show_id',ownedShows.map(show=>show.id))
+    .in('status',['pending_review','rejected']).order('created_at',{ascending:false}).limit(30) : null;
+  const pending=(statusResult?.data??[]).map(e=>({
+    id:e.id,title:e.title,showTitle:ownedShows.find(s=>s.id===e.show_id)?.title??'',
+    status:e.status,reason:e.rejection_reason,
+  }));
   return <div className="space-y-8 pb-9">
     <header className="space-y-2">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c49cef]">{ar?'ODDIO FOR CREATORS':'ODDIO FOR CREATORS'}</p>
@@ -48,7 +56,7 @@ export default async function PodcastManagement({params}:{params:Promise<{locale
         <Link href={`/${locale}/studio/artists/new`} className="inline-flex min-h-11 items-center rounded-xl bg-[#76549d] px-5 text-sm font-bold text-white hover:brightness-110">{ar?'إنشاء ملف فنان':'Create artist profile'} →</Link>
       </div>
     ) : null}
-    {ready && artistProfiles.length ? <PodcastPublisher locale={locale} categories={catalog.categories} shows={ownedShows} artists={artistProfiles} drafts={drafts} /> :
+    {ready && artistProfiles.length ? <PodcastPublisher locale={locale} categories={catalog.categories} shows={ownedShows} artists={artistProfiles} drafts={drafts} pending={pending} /> :
       <div role="alert" className="rounded-2xl border border-amber-500/30 bg-amber-950/30 p-6 text-sm leading-8 text-amber-100">
         {ar?'قاعدة بيانات البودكاست لسه محتاجة Migration: supabase/migrations/20261116010000_podcast_catalog.sql. التصنيفات ظاهرة للزوار، لكن النشر مش متاح قبل تنفيذها.':'The podcast database migration has not been applied yet. Public categories are visible, but publishing is disabled until supabase/migrations/20261116010000_podcast_catalog.sql is applied.'}
       </div>}
