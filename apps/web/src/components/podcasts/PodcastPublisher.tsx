@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { PodcastCategory, PodcastShow } from '@/lib/podcasts/catalog';
@@ -44,7 +44,27 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
   const [localShows,setLocalShows]=useState<PodcastShow[]>(shows);
   const [showTitle,setShowTitle]=useState('');
   const [categoryId,setCategoryId]=useState(categories[0]?.id??'');
-  const [language,setLanguage]=useState<'en'|'ar'>(locale),[showDescription,setShowDescription]=useState(''),[coverUrl,setCoverUrl]=useState('');
+  const [language,setLanguage]=useState<'en'|'ar'>(locale),[showDescription,setShowDescription]=useState('');
+  const [coverFile,setCoverFile]=useState<File|null>(null);
+  const [coverPreview,setCoverPreview]=useState('');
+  const [coverDragging,setCoverDragging]=useState(false);
+  const coverInput=useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!coverFile) { setCoverPreview(''); return; }
+    const preview=URL.createObjectURL(coverFile);
+    setCoverPreview(preview);
+    return () => URL.revokeObjectURL(preview);
+  }, [coverFile]);
+
+  function chooseCover(image:File|undefined) {
+    if(!image)return;
+    if(!['image/jpeg','image/png','image/webp'].includes(image.type) || image.size>3*1024*1024 || image.size<100) {
+      setError(ar?'اختار صورة JPG أو PNG أو WebP بحجم أقل من 3 ميجابايت.':'Choose a JPG, PNG, or WebP image under 3MB.');
+      return;
+    }
+    setError('');
+    setCoverFile(image);
+  }
   const [artistId,setArtistId]=useState(artists[0]?.id??'');
   const [showId,setShowId]=useState(shows[0]?.id??''),[episodeTitle,setEpisodeTitle]=useState(''),[episodeDescription,setEpisodeDescription]=useState('');
   const [episodeNumber,setEpisodeNumber]=useState(''),[seasonNumber,setSeasonNumber]=useState('1');
@@ -58,6 +78,15 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
   async function createShow(e:React.FormEvent<HTMLFormElement>) {
     e.preventDefault();setShowBusy(true);setError('');setNotice('');
     try {
+      let coverUrl='';
+      if(coverFile) {
+        const body=new FormData();
+        body.append('file',coverFile);
+        const response=await fetch('/api/podcasts/cover',{method:'POST',body});
+        const payload=(await response.json().catch(()=>({}))) as {coverUrl?:string;error?:string};
+        if(!response.ok || !payload.coverUrl)throw new Error(payload.error??(ar?'فشل رفع صورة الغلاف.':'Cover upload failed.'));
+        coverUrl=payload.coverUrl;
+      }
       const result=await post({action:'show',artistId,title:showTitle,slug:slugFor(showTitle,'show'),categoryId,language,description:showDescription,coverUrl});
       const created=result.show as {id?:string;slug?:string}|undefined;
       if(created?.id){
@@ -65,7 +94,7 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
         setLocalShows(current=>[...current.filter(s=>s.id!==created.id),{...((current[0]??{}) as PodcastShow),id:created.id!,slug:created.slug??'',title:showTitle,author:artists.find(a=>a.id===artistId)?.name??''}]);
       }
       setNotice(ar?'سلسلتك اتعملت! دلوقتي تقدر ترفع أول حلقة.':'Your series is ready! Add your first episode.');
-      setShowTitle('');setShowDescription('');setCoverUrl('');setMode('episode');
+      setShowTitle('');setShowDescription('');setCoverFile(null);setMode('episode');
       router.refresh();
     } catch(err) {setError(err instanceof Error?err.message:String(err));} finally {setShowBusy(false);}
   }
@@ -127,7 +156,31 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
             <label className={label}>{ar?'لغة السلسلة':'Language'}<select className={field} value={language} onChange={e=>setLanguage(e.target.value as 'en'|'ar')}><option value="ar">العربية</option><option value="en">English</option></select></label>
           </div>
           <label className={label}>{ar?'وصف بسيط (اختياري)':'Short description (optional)'}<textarea rows={3} placeholder={ar?'هتتكلم عن إيه في السلسلة؟':'What is your series about?'} className={field} value={showDescription} onChange={e=>setShowDescription(e.target.value)}/></label>
-          <details className="rounded-xl border border-white/10 bg-white/[.025] px-4 py-3"><summary className="cursor-pointer text-sm text-[#bda3e1]">{ar?'خيارات إضافية':'More options'}</summary><label className={label+' mt-4'}>{ar?'رابط صورة الغلاف (اختياري)':'Cover image link (optional)'}<input type="url" className={field} value={coverUrl} onChange={e=>setCoverUrl(e.target.value)} placeholder="https://..."/></label></details>
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-[#e5ddeb]">{ar?'صورة غلاف البودكاست (اختياري)':'Podcast cover image (optional)'}</p>
+            <input ref={coverInput} id="oddio-podcast-cover" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only"
+              onChange={e=>{chooseCover(e.target.files?.[0]);e.currentTarget.value='';}} />
+            <div role="button" tabIndex={0} aria-label={ar?'اسحب صورة الغلاف هنا أو اضغط لاختيار صورة':'Drop a cover image here or click to choose'}
+              onClick={()=>coverInput.current?.click()}
+              onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();coverInput.current?.click();}}}
+              onDragEnter={e=>{e.preventDefault();setCoverDragging(true);}}
+              onDragOver={e=>{e.preventDefault();setCoverDragging(true);}}
+              onDragLeave={e=>{e.preventDefault();if(!e.currentTarget.contains(e.relatedTarget as Node))setCoverDragging(false);}}
+              onDrop={e=>{e.preventDefault();setCoverDragging(false);chooseCover(e.dataTransfer.files[0]);}}
+              className={'group flex cursor-pointer items-center gap-4 rounded-2xl border-2 border-dashed p-4 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c79af2] sm:p-5 '+(coverDragging?'border-[#c794ff] bg-[#513465]/45':'border-[#725582] bg-[#282130] hover:border-[#b88be5] hover:bg-[#35283e]')}>
+              <div className="relative flex aspect-square h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#18141d] sm:h-32 sm:w-32">
+                {coverPreview?<img src={coverPreview} alt={ar?'معاينة غلاف البودكاست':'Podcast cover preview'} className="h-full w-full object-cover" />:
+                  <span aria-hidden="true" className="text-4xl text-[#b89ad3]">＋</span>}
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className="text-sm font-semibold text-white">{coverPreview?(ar?'تغيير صورة الغلاف':'Change cover image'):(ar?'اسحب الصورة هنا أو اضغط للاختيار':'Drag & drop or browse files')}</p>
+                <p className="text-xs leading-5 text-[#b6aabd]">{ar?'JPG أو PNG أو WebP · أقل من 3 ميجابايت':'JPG, PNG or WebP · max 3MB'}</p>
+                <p className="text-xs text-[#a799b0]">{ar?'يُفضّل صورة مربعة 1400 × 1400':'Square image recommended · 1400 × 1400'}</p>
+                {coverFile?<p className="truncate text-xs text-[#d9b4fa]">{coverFile.name}</p>:null}
+              </div>
+            </div>
+            {coverFile?<button type="button" onClick={()=>setCoverFile(null)} className="text-xs font-semibold text-[#d8b6fb] hover:underline">{ar?'حذف الصورة':'Remove image'}</button>:null}
+          </div>
           <button disabled={showBusy||!artistId} className={actionButton+' w-full sm:w-auto'}>{showBusy?(ar?'بننشئ السلسلة...':'Creating series...'):(ar?'إنشاء السلسلة والمتابعة':'Create series & continue')} <span aria-hidden>→</span></button>
         </div>
       </form> :
