@@ -198,8 +198,12 @@ export default async function DiscoverPage({
           >
             <option value="">{t('common.all')}</option>
             <option value="ar">العربية</option>
-            <option value="en">English</option>
-            <option value="fr">Français</option>
+            {contentLanguage === 'all' ? (
+              <>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+              </>
+            ) : null}
           </select>
         </label>
         <label className="block text-xs font-semibold uppercase tracking-wide text-muted">
