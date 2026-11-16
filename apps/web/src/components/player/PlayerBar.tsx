@@ -83,7 +83,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
 
   return (
     <div
-      className={`oddio-player-bar fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-40 overflow-visible border-t border-white/10 bg-[#231b2b]/95 px-3 py-2 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6 ${podcastMode ? "oddio-podcast-player-bar" : ""}`}
+      className={`oddio-player-bar fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-40 overflow-visible border-t border-white/10 bg-[#231b2b]/95 px-3 py-2 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-4 lg:py-1 ${podcastMode ? "oddio-podcast-player-bar" : ""}`}
       role="region"
       aria-label={t('player.miniPlayer')}
       title={t('player.miniPlayer')}
@@ -184,7 +184,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           <Maximize2 className="h-4 w-4" />
         </button>
       </div>
-      <div className="hidden min-w-0 items-center justify-center gap-1 lg:flex lg:gap-3">
+      <div className="hidden min-w-0 items-center justify-center gap-1 lg:flex lg:gap-2">
         <button
           type="button"
           onClick={() => setExpanded(true)}
@@ -199,15 +199,15 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
             title={track.title}
             url={track.artwork.url}
             accent={track.artwork.accent}
-            className="h-12 w-12 transition duration-500 group-hover/art:scale-105"
+            className="h-12 w-12 transition duration-500 group-hover/art:scale-105 lg:h-10 lg:w-10"
             rounded="rounded-lg"
           />
         </button>
-        <div className={podcast ? "hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-80 lg:flex-col" : "hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-56 lg:flex-col"}>
+        <div className={podcast ? "hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-64 lg:flex-col" : "hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-48 lg:flex-col"}>
           <div className="flex items-center gap-1.5">
             <Link
               href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}` : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
-              className={podcast ? "block min-w-0 line-clamp-2 text-lg font-extrabold leading-6 text-white hover:text-[#e8c6ff] xl:text-xl" : "block truncate text-sm font-semibold text-ink hover:underline"}
+              className={podcast ? "block min-w-0 line-clamp-2 text-lg font-extrabold leading-6 text-white hover:text-[#e8c6ff] xl:text-lg" : "block truncate text-sm font-semibold text-ink hover:underline"}
             >
               {track.title}
             </Link>
@@ -273,15 +273,15 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
               onClick={toggle}
               aria-label={isPlaying ? t('common.pause') : t('common.play')}
               title={isPlaying ? t('common.pause') : t('common.play')}
-              className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-[88px] sm:w-[88px]"
+              className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-[88px] sm:w-[88px] lg:h-[58px] lg:w-[58px]"
             >
               {isPlaying ? (
-                <span className="flex h-[56px] w-[56px] items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] sm:h-[72px] sm:w-[72px]">
+                <span className="flex h-[56px] w-[56px] items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] sm:h-[72px] sm:w-[72px] lg:h-[50px] lg:w-[50px]">
                   <OddioGlyph name="pause" size={21} className="oddio-glyph" />
                 </span>
               ) : (
-                <span className="scale-[0.72] sm:scale-100">
-                  <OddioPlayIcon size={88} />
+                <span className="scale-[0.72] sm:scale-100 lg:scale-[0.67]">
+                  <OddioPlayIcon size={78} />
                 </span>
               )}
             </button>
@@ -340,7 +340,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
               )}
             </button>
           </div>
-          <div className="hidden w-full max-w-xl items-center gap-2 sm:flex">
+          <div className="hidden w-full max-w-lg items-center gap-2 sm:flex">
             <span className="w-10 text-end text-[10px] tabular-nums text-muted">
               {formatDuration(currentTime * 1000)}
             </span>
@@ -391,7 +391,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
             step={0.01}
             value={muted ? 0 : volume}
             onChange={(event) => setVolume(Number(event.target.value))}
-            className="w-24"
+            className="w-20"
             aria-label={t('player.volume')}
             title={t('player.volume')}
             style={{
