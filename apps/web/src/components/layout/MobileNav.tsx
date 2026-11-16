@@ -317,6 +317,11 @@ export function MobileNav() {
                       },
                     ]
                   : []),
+                ...(podcastMode && user?.roles.some(role => role === 'super_admin' || role === 'admin')
+                  ? [{ href: `/${locale}/podcasts/manage`,
+                       label: locale === 'ar' ? 'إدارة البودكاست' : 'Podcast Studio',
+                       icon: Mic2 }]
+                  : []),
                 ...(user && user.roles.length > 0
                   ? [
                       {
