@@ -18,7 +18,6 @@ export function ShareButton({
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const root = useRef<HTMLDivElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
 
   // Prefer a content-specific address over the current page, especially
   // when the full-screen player is open on an unrelated route.
@@ -34,7 +33,7 @@ export function ShareButton({
     function escape(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setOpen(false);
-        trigger.current?.focus();
+        root.current?.querySelector('button')?.focus();
       }
     }
     document.addEventListener('pointerdown', outside);
@@ -89,7 +88,7 @@ export function ShareButton({
       <Button type="button" variant="outline" size="sm"
         onClick={() => setOpen(value => !value)}
         aria-haspopup="menu" aria-expanded={open}
-        ref={trigger}>
+        >
         <Share2 className="h-4 w-4" />
         {label}
       </Button>
