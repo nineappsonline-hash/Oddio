@@ -78,7 +78,7 @@ export function MobileHeader({ user, contentLanguage }: { user: SessionUser | nu
             <Link
               prefetch={false}
               href={`/${locale}/notifications`}
-              className="rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink"
+              className="hidden rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink sm:inline-flex"
               aria-label={t('nav.notifications')}
             >
               <OddioGlyph name="notifications" size={21} className="oddio-glyph" />
@@ -95,7 +95,7 @@ export function MobileHeader({ user, contentLanguage }: { user: SessionUser | nu
           <Link
             prefetch={false}
             href={`/${locale}/login`}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#eab99770] bg-[#f1f1f1] px-4 py-2 text-xs font-bold text-[#101010] transition hover:bg-[#dedede] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#eab997]"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#4c395f] bg-[#1e1925] text-[#ddd4e8] transition hover:border-[#a88ae7] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7] sm:w-auto sm:gap-2 sm:px-3"
           >
             <LogIn className="h-4 w-4" />
             <span className="hidden sm:inline">{t('nav.login')}</span>
