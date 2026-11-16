@@ -21,11 +21,11 @@ export default async function PodcastCategoryPage({params}:{params:Promise<{loca
   const name=podcastCategoryLabel(category,locale),shows=cat.shows.filter(s=>s.categoryId===category.id),ids=new Set(shows.map(s=>s.id));
   const episodes=cat.episodes.filter(e=>ids.has(e.showId)),byId=new Map(shows.map(s=>[s.id,s]));
   return <div className="space-y-9 pb-8">
-    <Link href={`/${locale}/podcasts/categories`} className="text-sm font-semibold text-[#eab997] hover:underline">{locale==='ar'?'← كل التصنيفات':'← All podcast categories'}</Link>
+    <Link href={`/${locale}/podcasts/categories`} className="text-sm font-semibold text-[#e9e9e9] hover:underline">{locale==='ar'?'← كل التصنيفات':'← All podcast categories'}</Link>
     <header className="space-y-3 rounded-3xl border border-white/10 bg-gradient-to-br from-[#382444] to-[#18303c] p-7">
-      <p className="text-xs font-bold uppercase tracking-widest text-[#eab997]">{locale==='ar'?'بودكاست حسب التصنيف':'PODCAST CATEGORY'}</p>
+      <p className="text-xs font-bold uppercase tracking-widest text-[#e9e9e9]">{locale==='ar'?'بودكاست حسب التصنيف':'PODCAST CATEGORY'}</p>
       <h1 className="text-3xl font-black text-white sm:text-5xl">{name}</h1>
-      <p className="text-sm leading-7 text-[#ded2e4]">{locale==='ar'?category.descriptionAr:category.descriptionEn}</p>
+      <p className="text-sm leading-7 text-[#d1d1d1]">{locale==='ar'?category.descriptionAr:category.descriptionEn}</p>
     </header>
     <section className="space-y-4"><h2 className="text-2xl font-bold text-white">{locale==='ar'?'البرامج':'Shows'}</h2>
       {shows.length?<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">{shows.map(s=><PodcastShowCard key={s.id} show={s} locale={locale}/>)}</div>:<PodcastEmpty locale={locale} what="shows"/>}
