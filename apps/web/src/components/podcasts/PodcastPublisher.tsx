@@ -40,7 +40,7 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
   const [notice,setNotice]=useState(''),[error,setError]=useState('');
   const [file,setFile]=useState<File|null>(null);
   const [showTitle,setShowTitle]=useState(''),[showSlug,setShowSlug]=useState('');
-  const [author,setAuthor]=useState(''),[categoryId,setCategoryId]=useState(categories[0]?.id??'');
+  const [categoryId,setCategoryId]=useState(categories[0]?.id??'');
   const [language,setLanguage]=useState<'en'|'ar'>('en'),[showDescription,setShowDescription]=useState(''),[coverUrl,setCoverUrl]=useState('');
   const [artistId,setArtistId]=useState(artists[0]?.id??'');
   const [showId,setShowId]=useState(shows[0]?.id??''),[episodeTitle,setEpisodeTitle]=useState(''),[episodeSlug,setEpisodeSlug]=useState(''),[episodeDescription,setEpisodeDescription]=useState('');
@@ -49,9 +49,9 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
   async function createShow(e:React.FormEvent<HTMLFormElement>) {
     e.preventDefault();setShowBusy(true);setError('');setNotice('');
     try {
-      await post({action:'show',artistId,title:showTitle,slug:showSlug,author,categoryId,language,description:showDescription,coverUrl});
+      await post({action:'show',artistId,title:showTitle,slug:showSlug,categoryId,language,description:showDescription,coverUrl});
       setNotice(ar?'تم إنشاء البرنامج. تقدر تضيف الحلقات دلوقتي.':'Show published. You can now add episodes.');
-      setShowTitle('');setShowSlug('');setAuthor('');setShowDescription('');setCoverUrl('');
+      setShowTitle('');setShowSlug('');setShowDescription('');setCoverUrl('');
       router.refresh();
     } catch(err) {setError(err instanceof Error?err.message:String(err));} finally {setShowBusy(false);}
   }
@@ -85,7 +85,7 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'حساب الفنان':'Artist profile'}<select required className={field} value={artistId} onChange={e=>setArtistId(e.target.value)}><option value="">{ar?'اختار الفنان':'Choose an artist'}</option>{artists.map(artist=><option key={artist.id} value={artist.id}>{artist.name}</option>)}</select></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'اسم البرنامج':'Show title'}<input required minLength={2} maxLength={160} className={field} value={showTitle} onChange={e=>setShowTitle(e.target.value)}/></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رابط البرنامج (حروف إنجليزية وأرقام وشرطات)':'Show slug (lowercase letters and dashes)'}<input required pattern="[a-z0-9]+(-[a-z0-9]+)*" className={field} value={showSlug} onChange={e=>setShowSlug(e.target.value)}/></label>
-        <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'المقدم أو المؤلف':'Host / author'}<input required minLength={2} className={field} value={author} onChange={e=>setAuthor(e.target.value)}/></label>
+        
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'التصنيف':'Category'}<select required className={field} value={categoryId} onChange={e=>setCategoryId(e.target.value)}>{categories.map(c=><option key={c.id} value={c.id}>{ar?c.nameAr:c.nameEn}</option>)}</select></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'اللغة':'Language'}<select className={field} value={language} onChange={e=>setLanguage(e.target.value as 'en'|'ar')}><option value="en">English</option><option value="ar">العربية</option></select></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'وصف البرنامج':'Show description'}<textarea rows={4} className={field} value={showDescription} onChange={e=>setShowDescription(e.target.value)}/></label>
