@@ -31,8 +31,9 @@ function getAudioDuration(file: File): Promise<number> {
   });
 }
 
-export function PodcastPublisher({locale,categories,shows}:{
+export function PodcastPublisher({locale,categories,shows,artists}:{
   locale:'en'|'ar';categories:PodcastCategory[];shows:PodcastShow[];
+  artists:Array<{id:string;name:string}>;
 }) {
   const router=useRouter(),ar=locale==='ar';
   const [showBusy,setShowBusy]=useState(false),[episodeBusy,setEpisodeBusy]=useState(false);
@@ -41,12 +42,14 @@ export function PodcastPublisher({locale,categories,shows}:{
   const [showTitle,setShowTitle]=useState(''),[showSlug,setShowSlug]=useState('');
   const [author,setAuthor]=useState(''),[categoryId,setCategoryId]=useState(categories[0]?.id??'');
   const [language,setLanguage]=useState<'en'|'ar'>('en'),[showDescription,setShowDescription]=useState(''),[coverUrl,setCoverUrl]=useState('');
+  const [artistId,setArtistId]=useState(artists[0]?.id??'');
   const [showId,setShowId]=useState(shows[0]?.id??''),[episodeTitle,setEpisodeTitle]=useState(''),[episodeSlug,setEpisodeSlug]=useState(''),[episodeDescription,setEpisodeDescription]=useState('');
+  const [episodeNumber,setEpisodeNumber]=useState(''),[seasonNumber,setSeasonNumber]=useState('1');
 
   async function createShow(e:React.FormEvent<HTMLFormElement>) {
     e.preventDefault();setShowBusy(true);setError('');setNotice('');
     try {
-      await post({action:'show',title:showTitle,slug:showSlug,author,categoryId,language,description:showDescription,coverUrl});
+      await post({action:'show',artistId,title:showTitle,slug:showSlug,author,categoryId,language,description:showDescription,coverUrl});
       setNotice(ar?'تم إنشاء البرنامج. تقدر تضيف الحلقات دلوقتي.':'Show published. You can now add episodes.');
       setShowTitle('');setShowSlug('');setAuthor('');setShowDescription('');setCoverUrl('');
       router.refresh();
@@ -60,13 +63,14 @@ export function PodcastPublisher({locale,categories,shows}:{
     setEpisodeBusy(true);
     try {
       const durationSeconds=await getAudioDuration(file);
-      const result=await post({action:'episode',showId,title:episodeTitle,slug:episodeSlug,description:episodeDescription,durationSeconds,fileBytes:file.size});
+      const result=await post({action:'episode',showId,title:episodeTitle,slug:episodeSlug,description:episodeDescription,durationSeconds,fileBytes:file.size,
+        ...(episodeNumber ? {episodeNumber:Number(episodeNumber)} : {}),seasonNumber:Number(seasonNumber)});
       if(typeof result.uploadUrl!=='string' || typeof result.episodeId!=='string')throw new Error('Upload authorization is missing');
       const uploaded=await fetch(result.uploadUrl,{method:'PUT',headers:{'Content-Type':'audio/mpeg'},body:file});
       if(!uploaded.ok)throw new Error(`Cloudflare upload failed (HTTP ${uploaded.status}). Check R2 bucket CORS settings.`);
       await post({action:'publish',episodeId:result.episodeId});
       setNotice(ar?'تم رفع الحلقة ونشرها بنجاح.':'Episode uploaded and published successfully.');
-      setEpisodeTitle('');setEpisodeSlug('');setEpisodeDescription('');setFile(null);
+      setEpisodeTitle('');setEpisodeSlug('');setEpisodeDescription('');setEpisodeNumber('');setFile(null);
       router.refresh();
     } catch(err) {setError(err instanceof Error?err.message:String(err));} finally {setEpisodeBusy(false);}
   }
@@ -76,7 +80,9 @@ export function PodcastPublisher({locale,categories,shows}:{
     {error?<div role="alert" className="rounded-xl border border-red-400/30 bg-red-900/20 p-4 text-sm text-red-200">{error}</div>:null}
     <div className="grid items-start gap-6 xl:grid-cols-2">
       <form onSubmit={createShow} className="space-y-4 rounded-2xl border border-white/10 bg-[#241b2d] p-5">
-        <h2 className="text-xl font-bold text-white">{ar?'أنشئ برنامج بودكاست':'Create a podcast show'}</h2>
+        <h2 className="text-xl font-bold text-white">{ar?'أنشئ سلسلة بودكاست':'Create a podcast series'}</h2>
+        <p className="text-sm leading-6 text-[#b8adbf]">{ar?'كل سلسلة لها اسم وموضوع، وتقدر تضيف لها حلقات مختلفة بترتيب واضح.':'Give one topic its own series, then publish related episodes in order.'}</p>
+        <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'حساب الفنان':'Artist profile'}<select required className={field} value={artistId} onChange={e=>setArtistId(e.target.value)}><option value="">{ar?'اختار الفنان':'Choose an artist'}</option>{artists.map(artist=><option key={artist.id} value={artist.id}>{artist.name}</option>)}</select></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'اسم البرنامج':'Show title'}<input required minLength={2} maxLength={160} className={field} value={showTitle} onChange={e=>setShowTitle(e.target.value)}/></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رابط البرنامج (حروف إنجليزية وأرقام وشرطات)':'Show slug (lowercase letters and dashes)'}<input required pattern="[a-z0-9]+(-[a-z0-9]+)*" className={field} value={showSlug} onChange={e=>setShowSlug(e.target.value)}/></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'المقدم أو المؤلف':'Host / author'}<input required minLength={2} className={field} value={author} onChange={e=>setAuthor(e.target.value)}/></label>
@@ -84,18 +90,19 @@ export function PodcastPublisher({locale,categories,shows}:{
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'اللغة':'Language'}<select className={field} value={language} onChange={e=>setLanguage(e.target.value as 'en'|'ar')}><option value="en">English</option><option value="ar">العربية</option></select></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'وصف البرنامج':'Show description'}<textarea rows={4} className={field} value={showDescription} onChange={e=>setShowDescription(e.target.value)}/></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رابط صورة البرنامج (اختياري)':'Cover image URL (optional)'}<input type="url" className={field} value={coverUrl} onChange={e=>setCoverUrl(e.target.value)} placeholder="https://..."/></label>
-        <button disabled={showBusy} className={actionButton}>{showBusy?(ar?'جارٍ الحفظ...':'Saving...'):(ar?'انشر البرنامج':'Publish show')}</button>
+        <button disabled={showBusy||!artistId} className={actionButton}>{showBusy?(ar?'جارٍ الحفظ...':'Saving...'):(ar?'أنشئ السلسلة':'Create series')}</button>
       </form>
       <form onSubmit={publishEpisode} className="space-y-4 rounded-2xl border border-white/10 bg-[#241b2d] p-5">
-        <h2 className="text-xl font-bold text-white">{ar?'ارفع حلقة جديدة':'Upload an episode'}</h2>
-        <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'اختار البرنامج':'Podcast show'}<select required className={field} value={showId} onChange={e=>setShowId(e.target.value)}><option value="">{ar?'اختار البرنامج':'Choose a show'}</option>{shows.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select></label>
+        <h2 className="text-xl font-bold text-white">{ar?'أضف حلقة إلى سلسلة':'Add an episode to a series'}</h2>
+        <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'اختار السلسلة':'Podcast series'}<select required className={field} value={showId} onChange={e=>setShowId(e.target.value)}><option value="">{ar?'اختار السلسلة':'Choose a series'}</option>{shows.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'عنوان الحلقة':'Episode title'}<input required minLength={2} className={field} value={episodeTitle} onChange={e=>setEpisodeTitle(e.target.value)}/></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رابط الحلقة':'Episode slug'}<input required pattern="[a-z0-9]+(-[a-z0-9]+)*" className={field} value={episodeSlug} onChange={e=>setEpisodeSlug(e.target.value)}/></label>
+        <div className="grid grid-cols-2 gap-3"><label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رقم الموسم':'Season number'}<input type="number" min="1" max="1000" required className={field} value={seasonNumber} onChange={e=>setSeasonNumber(e.target.value)}/></label><label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رقم الحلقة (اختياري)':'Episode number (optional)'}<input type="number" min="1" max="100000" className={field} value={episodeNumber} onChange={e=>setEpisodeNumber(e.target.value)}/></label></div>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'وصف الحلقة':'Episode description'}<textarea rows={4} className={field} value={episodeDescription} onChange={e=>setEpisodeDescription(e.target.value)}/></label>
         <label className="block space-y-2 text-xs text-[#d8cbdc]">{ar?'ملف صوت MP3 بحد أقصى 300 ميجابايت':'Audio MP3 file (max 300MB)'}<input type="file" accept=".mp3,audio/mpeg" required onChange={e=>setFile(e.target.files?.[0]??null)} className="block w-full rounded-xl border border-dashed border-white/20 bg-[#36283f] p-5 text-sm text-white file:me-3 file:rounded-lg file:border-0 file:bg-[#eab997] file:px-4 file:py-2 file:font-bold file:text-[#100d13]"/></label>
         <p className="text-xs leading-6 text-[#b8adbf]">{ar?'الملف بيروح مباشرة إلى Cloudflare R2، وبيتم التأكد من رفعه قبل نشر الحلقة.':'Audio uploads directly to Cloudflare R2. Publishing is completed only after the file is verified.'}</p>
         <button disabled={episodeBusy||!shows.length} className={actionButton}>{episodeBusy?(ar?'جارٍ الرفع والتحقق...':'Uploading and verifying...'):(ar?'ارفع وانشر الحلقة':'Upload & publish episode')}</button>
-        {!shows.length?<p className="text-xs text-[#eab997]">{ar?'أنشئ برنامج الأول علشان ترفع حلقاته.':'Create a show first to upload an episode.'}</p>:null}
+        {!shows.length?<p className="text-xs text-[#eab997]">{ar?'أنشئ سلسلة الأول علشان ترفع حلقاتها.':'Create a series first to upload an episode.'}</p>:null}
       </form>
     </div>
   </div>;
