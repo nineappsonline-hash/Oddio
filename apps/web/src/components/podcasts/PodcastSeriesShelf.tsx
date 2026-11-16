@@ -24,7 +24,7 @@ export function PodcastSeriesShelf({ locale, count, children }: Props) {
     const travel = (card?.offsetWidth ?? 232) + 16;
     element.scrollBy({
       left: (ar ? -1 : 1) * direction * travel * 2,
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
   }
 
