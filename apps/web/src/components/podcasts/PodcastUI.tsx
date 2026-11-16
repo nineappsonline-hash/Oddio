@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Mic2, Headphones, ArrowUpRight, Radio, Clock3 } from 'lucide-react';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
-import { PodcastInlinePlayButton } from '@/components/podcasts/PodcastInlinePlayButton';
+import { PodcastPlaySurface } from '@/components/podcasts/PodcastPlaySurface';
 import type { PodcastCategory, PodcastShow, PodcastEpisode } from '@/lib/podcasts/catalog';
 import { formatPodcastTime, podcastCategoryLabel } from '@/lib/podcasts/catalog';
 
@@ -54,17 +54,20 @@ export function PodcastShowCard({ show, locale }: { show: PodcastShow; locale: '
 export function PodcastEpisodeCard({ episode, show, locale }: {
   episode: PodcastEpisode; show: PodcastShow | undefined; locale: 'ar' | 'en';
 }) {
+  if (!show) return null;
   return (
-    <Link prefetch={false} href={`/${locale}/podcasts/episodes/${episode.id}`}
-      className="group flex min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-[#241b2d] p-3 transition hover:border-[#eab997]/60 hover:bg-[#30233a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#eab997]">
-      <PodcastArtwork title={episode.title} coverUrl={show?.coverUrl ?? null} className="h-16 w-16 sm:h-20 sm:w-20" />
-      <div className="min-w-0 flex-1">
-        <h3 className="line-clamp-2 text-sm font-bold text-white group-hover:text-[#eab997] sm:text-base">{episode.title}</h3>
-        <p className="mt-1 truncate text-xs text-[#b8adbf]">{show?.title ?? (locale === 'ar' ? 'بودكاست' : 'Podcast')}</p>
-        <span className="mt-2 inline-flex items-center gap-1 text-xs text-[#eab997]"><Clock3 className="h-3 w-3" /> {episode.durationSeconds > 0 ? formatPodcastTime(episode.durationSeconds) : (locale === 'ar' ? 'حلقة صوتية' : 'Audio episode')}</span>
-      </div>
+    <PodcastPlaySurface episode={episode} show={show} locale={locale}
+      className="group flex min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-[#241b2d] p-3 transition hover:border-[#b88be5]/60 hover:bg-[#30233a]">
+      <PodcastArtwork title={episode.title} coverUrl={show.coverUrl} className="h-16 w-16 sm:h-20 sm:w-20" />
+      <span className="min-w-0 flex-1">
+        <span dir="auto" className="line-clamp-2 text-sm font-bold text-white group-hover:text-[#e4c4ff] sm:text-base">{episode.title}</span>
+        <span className="mt-1 block truncate text-xs text-[#b8adbf]">{show.title}</span>
+        <span className="mt-2 inline-flex items-center gap-1 text-xs text-[#eab997]">
+          <Clock3 className="h-3 w-3" /> {episode.durationSeconds > 0 ? formatPodcastTime(episode.durationSeconds) : (locale === 'ar' ? 'حلقة صوتية' : 'Audio episode')}
+        </span>
+      </span>
       <span className="grid h-12 w-12 shrink-0 place-items-center" aria-hidden="true"><OddioPlayIcon size={46} /></span>
-    </Link>
+    </PodcastPlaySurface>
   );
 }
 
@@ -83,8 +86,8 @@ export function PodcastEpisodeRow({ episode, show, locale, index, upcoming = [] 
   const number = episode.episodeNumber ?? index + 1;
   const duration = episode.durationSeconds > 0 ? formatPodcastTime(episode.durationSeconds) : null;
   return (
-    <div
-      className="group flex w-full min-w-0 items-center gap-3 rounded-2xl border border-white/[0.09] bg-[#1d1922] px-3 py-3 transition-all duration-200 hover:border-[#a06cc5]/55 hover:bg-[#292131] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b88be5] sm:gap-5 sm:px-5 sm:py-4"
+    <PodcastPlaySurface episode={episode} show={show} locale={locale} upcoming={upcoming}
+      className="group flex min-w-0 items-center gap-3 rounded-2xl border border-white/[0.09] bg-[#1d1922] px-3 py-3 transition-all duration-200 hover:border-[#a06cc5]/55 hover:bg-[#292131] sm:gap-5 sm:px-5 sm:py-4"
     >
       <span className="hidden w-7 shrink-0 text-center text-sm font-semibold tabular-nums text-[#8e829b] sm:block" aria-hidden="true">
         {String(index + 1).padStart(2, '0')}
@@ -101,11 +104,9 @@ export function PodcastEpisodeRow({ episode, show, locale, index, upcoming = [] 
             <span className="text-[#82758d]">· {ar ? `الموسم ${episode.seasonNumber}` : `Season ${episode.seasonNumber}`}</span>
           ) : null}
         </span>
-        <Link prefetch={false} href={`/${locale}/podcasts/episodes/${episode.id}`} className="block min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c49bea]">
-          <h3 dir="auto" className="line-clamp-2 min-w-0 break-words text-sm font-bold leading-6 text-white transition-colors group-hover:text-[#e4c4ff] sm:text-[17px] sm:leading-7">
-            {episode.title}
-          </h3>
-        </Link>
+        <span dir="auto" className="line-clamp-2 min-w-0 break-words text-sm font-bold leading-6 text-white transition-colors group-hover:text-[#e4c4ff] sm:text-[17px] sm:leading-7">
+          {episode.title}
+        </span>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#aaa0b2]">
           {duration ? (
             <span className="inline-flex items-center gap-1.5" dir="ltr">
@@ -115,8 +116,8 @@ export function PodcastEpisodeRow({ episode, show, locale, index, upcoming = [] 
           {episode.description ? <span dir="auto" className="hidden max-w-[36rem] truncate text-[#8f849a] md:inline">{episode.description}</span> : null}
         </div>
       </div>
-      <PodcastInlinePlayButton episode={episode} show={show} locale={locale} upcoming={upcoming} />
-    </div>
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#32253e] transition-all group-hover:bg-[#483159]" aria-hidden="true"><OddioPlayIcon size={38} /></span>
+    </PodcastPlaySurface>
   );
 }
 
