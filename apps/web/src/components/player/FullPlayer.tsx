@@ -275,7 +275,7 @@ export function FullPlayer() {
     <div
       ref={dialogRef}
       tabIndex={-1}
-      className="fixed inset-0 z-[60] w-full max-w-full overflow-x-clip overflow-y-auto overscroll-x-none bg-background scroll-thin"
+      className="fixed inset-0 z-[60] w-full max-w-full overflow-x-clip overflow-y-auto overscroll-x-none bg-[#110c19] text-white scroll-thin"
       role="dialog"
       aria-modal="true"
       aria-label={t('player.fullPlayer')}
@@ -284,7 +284,7 @@ export function FullPlayer() {
       <div
         className="pointer-events-none fixed inset-0 opacity-70"
         style={{
-          background: `radial-gradient(900px 600px at 15% 0%, ${accent}55, transparent 60%), radial-gradient(800px 600px at 90% 100%, rgba(65,217,255,0.15), transparent 60%)`,
+          background: `radial-gradient(820px 600px at 24% 38%, ${accent}22, transparent 70%), radial-gradient(640px 540px at 90% 10%, rgba(117,65,180,0.13), transparent 75%)`,
         }}
       />
       {controlNotice ? (
@@ -296,11 +296,12 @@ export function FullPlayer() {
           {controlNotice}
         </div>
       ) : null}
-      <div className="relative mx-auto w-full min-w-0 max-w-6xl overflow-x-clip px-4 py-5 sm:px-8 sm:py-8">
-        <div className="mb-6 flex items-center justify-between">
+      <div className="relative mx-auto w-full min-w-0 max-w-[1600px] overflow-x-clip px-4 py-5 sm:px-8 sm:py-8 lg:px-10 lg:py-9">
+        <div className="mb-6 flex items-center justify-between rounded-2xl border border-[#614474]/40 bg-[#21192b]/75 px-4 py-3 lg:mb-8 lg:px-6">
           <div className="flex items-center gap-2 text-sm text-muted">
-            <ListMusic className="h-4 w-4" />
-            {t('player.nowPlaying')}
+            <OddioPlayIcon size={36} />
+            <span className="text-base font-black tracking-tight text-white lg:text-xl">Oddio</span>
+            <span className="ms-3 hidden text-[11px] font-bold uppercase tracking-[.2em] text-[#bfa7d1] sm:inline">{t('player.nowPlaying')}</span>
           </div>
           <button
             type="button"
@@ -313,17 +314,23 @@ export function FullPlayer() {
           </button>
         </div>
 
-        <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-          <div className="min-w-0">
-            <div className="relative mx-auto max-w-[min(100%,44vh)] sm:max-w-md lg:max-w-md">
+        <div className="mb-6 hidden lg:block">
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#bd91da]">{rtl ? 'قيد التشغيل' : 'NOW PLAYING'}</span>
+          <h2 className="mt-2 text-3xl font-black tracking-tight text-white">{rtl ? 'مساحتك للاستماع' : 'Your listening space'}</h2>
+          <p className="mt-1 text-sm text-[#a79bb1]">{rtl ? 'استمتع بالموسيقى والبودكاست في مكان واحد' : 'Immersive audio. Seamless control.'}</p>
+        </div>
+        <div className="grid min-w-0 grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,2.05fr)_minmax(320px,0.95fr)]">
+          <div className="min-w-0 rounded-[28px] border border-[#705383]/45 bg-[#201829]/85 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.20)] sm:p-6 lg:p-7">
+            <div className="lg:grid lg:min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.87fr)] lg:items-center lg:gap-7">
+            <div className="relative mx-auto w-full max-w-[min(100%,44vh)] sm:max-w-md lg:max-w-none">
               <div
                 aria-hidden="true"
-                className="absolute -inset-6 rounded-[2.5rem] opacity-50 blur-3xl"
+                className="absolute -inset-4 rounded-[2.5rem] opacity-30 blur-3xl"
                 style={{
                   background: `radial-gradient(circle, ${accent}, transparent 70%)`,
                 }}
               />
-              <div className="relative overflow-hidden rounded-3xl border border-white/10 p-1.5">
+              <div className="relative overflow-hidden rounded-[26px] border border-[#9b74b6]/25 bg-[#352340] p-1.5 shadow-[0_15px_45px_rgba(14,7,25,.35)]">
                 <Artwork
                   title={track.title}
                   animated={isPlaying && !track.artwork.url}
@@ -436,7 +443,7 @@ export function FullPlayer() {
                   />
                 </button>
               </div>}
-              <div className="mt-3 hidden h-8 items-end justify-center gap-1 sm:flex">
+              <div className="mt-3 hidden h-8 items-end justify-center gap-1 sm:flex lg:hidden">
                 <Equalizer
                   bars={28}
                   paused={!isPlaying}
@@ -444,15 +451,16 @@ export function FullPlayer() {
                 />
               </div>
             </div>
-            <div className="mt-6 flex min-w-0 items-start justify-between gap-2 sm:gap-4">
+            <div className="mt-6 flex min-w-0 flex-col justify-center gap-5 lg:mt-0">
               <div className="min-w-0">
-                <h1 className="truncate text-2xl font-black tracking-tight text-ink sm:text-3xl">
+                <span className="mb-3 block text-[11px] font-bold uppercase tracking-[.19em] text-[#c5a6db]">{podcast ? (rtl ? 'حلقة بودكاست' : 'PODCAST EPISODE') : (rtl ? 'أغنية' : 'MUSIC / TRACK')}</span>
+                <h1 dir="auto" className="line-clamp-3 text-2xl font-black leading-tight tracking-tight text-white sm:text-3xl lg:text-[clamp(24px,2.3vw,40px)]">
                   {track.title}
                 </h1>
                 {track.artist ? (
                   <Link
                     href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}` : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
-                    className="text-sm text-muted transition hover:text-ink"
+                    className="mt-3 inline-block text-base font-semibold text-[#c2a8d5] transition hover:text-white"
                   >
                     {track.artist.name}
                   </Link>
@@ -467,7 +475,7 @@ export function FullPlayer() {
                   {track.genre ? <Badge tone="neutral">{track.genre.slug}</Badge> : null}
                 </div>
               </div>
-              {!podcast && <div className="flex shrink-0 flex-col items-end gap-2">
+              {!podcast && <div className="flex flex-wrap items-center gap-3">
                 <AddToPlaylistButton
                   trackId={track.id}
                   label={t('track.addToPlaylist')}
@@ -485,6 +493,10 @@ export function FullPlayer() {
                   {formatNumber(track.qualifiedPlays)} {t('common.plays')}
                 </span>
               </div>}
+              <div className="flex flex-wrap items-center gap-2 lg:mt-2">
+                <ShareButton title={track.title} label={t('common.share')} url={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}` : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`} />
+              </div>
+            </div>
             </div>
 
             {error ? (
@@ -502,7 +514,7 @@ export function FullPlayer() {
                 </button>
               </div>
             ) : null}
-            <div className="mt-4">
+            <div className="mt-6 rounded-[22px] border border-[#76558b]/45 bg-[#30213d]/75 px-4 py-4 sm:px-6">
               <input
                 type="range"
                 min={0}
@@ -514,7 +526,7 @@ export function FullPlayer() {
                 aria-label={t('player.seek')}
                 title={t('player.seek')}
                 style={{
-                  background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #fff ${progress}%, rgba(255,255,255,0.2) ${progress}%)`,
+                  background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #b26af1 ${progress}%, rgba(216,194,231,0.28) ${progress}%)`,
                 }}
               />
               <div className="mt-1.5 flex justify-between text-[11px] tabular-nums text-muted">
@@ -523,7 +535,7 @@ export function FullPlayer() {
               </div>
             </div>
 
-            <div className="mt-4 flex min-w-0 items-center justify-center gap-1 sm:gap-5">
+            <div className="mt-3 flex min-w-0 items-center justify-center gap-1 sm:gap-5">
               <button
                 type="button"
                 onClick={() => {
@@ -568,14 +580,14 @@ export function FullPlayer() {
                 onClick={toggle}
                 aria-label={isPlaying ? t('common.pause') : t('common.play')}
                 title={isPlaying ? t('common.pause') : t('common.play')}
-                className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-28 sm:w-28"
+                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-20 sm:w-20"
               >
                 {isPlaying ? (
-                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-background sm:h-24 sm:w-24">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#a650ee] text-white shadow-[0_0_28px_rgba(166,80,238,.3)] sm:h-[70px] sm:w-[70px]">
                     <Pause className="h-7 w-7" fill="currentColor" />
                   </span>
                 ) : (
-                  <span className="scale-[0.7] sm:scale-100">
+                  <span className="scale-[0.65] sm:scale-[0.72]">
                     <OddioPlayIcon size={112} />
                   </span>
                 )}
@@ -637,7 +649,8 @@ export function FullPlayer() {
               </button>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -687,18 +700,18 @@ export function FullPlayer() {
                   <option value={8}>8s</option>
                 </select>
               </label>}
-              <ShareButton title={track.title} label={t('common.share')} url={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}` : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`} />
+              
             </div>
             {!podcast && <><p className="mt-4 text-center text-[11px] text-muted">{t('player.qualifiedHint')}</p>
             <div className="mt-5"><TimedComments key={track.id} trackId={track.id} /></div></>}
           </div>
 
           <aside
-            className="card hidden min-h-[350px] max-h-[75vh] flex-col p-4 lg:flex"
+            className="hidden min-h-[580px] max-h-[calc(100vh-240px)] flex-col rounded-[28px] border border-[#705383]/45 bg-[#201829]/85 p-5 shadow-[0_24px_70px_rgba(0,0,0,.2)] lg:flex"
             aria-label={sideTab === 'lyrics' ? 'Lyrics' : sideTab === 'queue' ? t('player.queue') : (rtl ? 'اقتراحات مشابهة' : 'Similar content')}
           >
             <div
-              className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-black/25 p-1 sm:grid-cols-3"
+              className="mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-[#3a294a] p-1.5 sm:grid-cols-3"
               role="tablist"
               aria-label="Player panels"
             >
@@ -746,6 +759,7 @@ export function FullPlayer() {
                 {rtl ? 'مشابهة' : 'Similar'}
               </button>
             </div>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[.15em] text-[#c0a5d2]">{sideTab === 'similar' ? (rtl ? 'محتوى يشبه اللي بتسمعه' : 'MORE LIKE THIS') : sideTab === 'queue' ? t('player.queue') : (rtl ? 'كلمات الأغنية' : 'LYRICS')}</p>
             {sideTab === 'similar' ? (
               <SimilarPlayerPanel trackId={track.id} podcast={podcast} rtl={rtl} active={expanded && sideTab === 'similar'} />
             ) : sideTab === 'lyrics' && !podcast ? (
