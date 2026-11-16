@@ -317,7 +317,7 @@ export function FullPlayer() {
                   aria-hidden="true"
                   className="pointer-events-none absolute -inset-24 animate-spin-slow opacity-40 [background:conic-gradient(from_0deg,transparent_0deg,rgba(157,92,255,0.5)_70deg,transparent_140deg,rgba(65,217,255,0.4)_240deg,transparent_300deg)]"
                 />
-                {mobileLyricsOpen ? (
+                {!podcast && mobileLyricsOpen ? (
                   <div
                     id="oddio-mobile-lyrics"
                     className="absolute inset-1.5 z-40 flex flex-col rounded-[1.35rem] bg-[#130e20]/95 p-4 backdrop-blur-xl lg:hidden"
@@ -382,7 +382,7 @@ export function FullPlayer() {
                   </div>
                 ) : null}
               </div>
-              <div className="relative z-30 mt-3 flex items-center justify-center lg:hidden">
+              {!podcast && <div className="relative z-30 mt-3 flex items-center justify-center lg:hidden">
                 <button
                   type="button"
                   aria-expanded={mobileLyricsOpen}
@@ -416,7 +416,7 @@ export function FullPlayer() {
                     )}
                   />
                 </button>
-              </div>
+              </div>}
               <div className="mt-3 hidden h-8 items-end justify-center gap-1 sm:flex">
                 <Equalizer
                   bars={28}
