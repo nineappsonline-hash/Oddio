@@ -35,7 +35,7 @@ export default async function PodcastManagement({params}:{params:Promise<{locale
       <p className="max-w-3xl text-sm leading-7 text-[#a3a3a3]">{ar?'أنشئ برنامج بودكاست ثم ارفع حلقات MP3 إلى Cloudflare R2. الحلقات لا تظهر للجمهور إلا بعد نجاح رفع الملف والتحقق منه.':'Create a podcast show, then upload MP3 episodes directly to Cloudflare R2. Episodes become public only after audio upload verification.'}</p>
       <div className="flex flex-wrap items-center gap-4">
         <Link href={`/${locale}/podcasts`} className="inline-flex min-h-10 items-center text-sm font-semibold text-[#bda3e1] hover:underline">{ar?'عرض قسم البودكاست':'View podcasts'} →</Link>
-        {artistProfiles.length ? <Link href={`/${locale}/podcasts/me`} className="inline-flex min-h-10 items-center text-sm font-semibold text-[#bda3e1] hover:underline">{ar?'صفحتي كفنان بودكاست':'My podcast creator profile'} →</Link> : null}
+        {user.artistIds.length ? <Link href={`/${locale}/podcasts/me`} className="inline-flex min-h-10 items-center text-sm font-semibold text-[#bda3e1] hover:underline">{ar?'صفحتي كفنان بودكاست':'My podcast creator profile'} →</Link> : null}
       </div>
     </header>
     {ready && !artistProfiles.length ? (
