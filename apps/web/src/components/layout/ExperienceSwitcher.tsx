@@ -85,7 +85,7 @@ export function ExperienceSwitcher({ contentLanguage, variant = 'desktop' }: Pro
             className="flex h-9 cursor-pointer list-none items-center gap-1 rounded-lg border border-[#373042] bg-[#1e1925] px-2 text-[11px] font-semibold text-[#eeeaf5] transition hover:border-[#6c568d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7] [&::-webkit-details-marker]:hidden"
           >
             {podcasts ? <Mic2 className="h-3.5 w-3.5 text-[#a88ae7]" /> : <Headphones className="h-3.5 w-3.5 text-[#a88ae7]" />}
-            <span>{podcasts ? (ar ? 'بودكاست' : 'Podcast') : (ar ? 'موسيقى' : 'Music')}</span>
+            <span className="hidden min-[420px]:inline">{podcasts ? (ar ? 'بودكاست' : 'Podcast') : (ar ? 'موسيقى' : 'Music')}</span>
             <ChevronDown className="h-3 w-3 text-[#a88ae7] transition group-open:rotate-180" />
           </summary>
           <div className="absolute end-0 top-[calc(100%+8px)] z-[80] w-[190px] rounded-xl border border-[#443653] bg-[#1e1925] p-1.5 shadow-[0_16px_36px_rgba(0,0,0,0.65)]">
