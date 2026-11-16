@@ -533,7 +533,6 @@ export function FullPlayer() {
                 <span>{formatDuration(currentTime * 1000)}</span>
                 <span>{formatDuration(duration * 1000)}</span>
               </div>
-            </div>
 
             <div className="mt-3 flex min-w-0 items-center justify-center gap-1 sm:gap-5">
               <button
