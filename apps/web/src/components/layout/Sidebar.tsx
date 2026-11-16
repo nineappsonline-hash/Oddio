@@ -104,6 +104,14 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
       exact: false,
     });
   }
+  if (podcastMode && currentUser?.roles.some(role => role === 'super_admin' || role === 'admin')) {
+    items.push({
+      href: `/${locale}/podcasts/manage`,
+      label: locale === 'ar' ? 'استوديو البودكاست' : 'Podcast studio',
+      icon: 'studio',
+      exact: false,
+    });
+  }
   if (currentUser && currentUser.roles.length > 0) {
     items.push({
       href: `/${locale}/admin`,
