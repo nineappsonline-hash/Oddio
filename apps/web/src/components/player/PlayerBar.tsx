@@ -152,7 +152,7 @@ export function PlayerBar() {
           className="relative z-10 flex min-w-0 flex-1 flex-col gap-0.5 text-start focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           aria-label={`${t('player.expand')}: ${track.title}`}
         >
-          <span className="block w-full truncate text-sm font-bold leading-5 text-white">
+          <span className={podcast ? "block w-full truncate text-base font-extrabold leading-6 text-white" : "block w-full truncate text-sm font-bold leading-5 text-white"}>
             {track.title}
           </span>
           {track.artist ? (
@@ -203,11 +203,11 @@ export function PlayerBar() {
             rounded="rounded-lg"
           />
         </button>
-        <div className="hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-56 lg:flex-col">
+        <div className={podcast ? "hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-80 lg:flex-col" : "hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-56 lg:flex-col"}>
           <div className="flex items-center gap-1.5">
             <Link
               href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}` : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
-              className="block truncate text-sm font-semibold text-ink hover:underline"
+              className={podcast ? "block min-w-0 line-clamp-2 text-lg font-extrabold leading-6 text-white hover:text-[#e8c6ff] xl:text-xl" : "block truncate text-sm font-semibold text-ink hover:underline"}
             >
               {track.title}
             </Link>
