@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Check, Copy, Facebook, Instagram, Share2, X } from 'lucide-react';
+import { Check, Copy, Facebook, Instagram, MessageCircle, Share2, X } from 'lucide-react';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 
@@ -56,11 +56,13 @@ export function ShareButton({
     }
   }
 
-  function openShare(target: 'facebook' | 'x') {
+  function openShare(target: 'facebook' | 'x' | 'whatsapp') {
     const link = encodeURIComponent(shareUrl());
     const destination = target === 'facebook'
       ? `https://www.facebook.com/sharer/sharer.php?u=${link}`
-      : `https://twitter.com/intent/tweet?url=${link}&text=${encodeURIComponent(title)}`;
+      : target === 'whatsapp'
+        ? `https://api.whatsapp.com/send?text=${encodeURIComponent(`${title}\n${shareUrl()}`)}`
+        : `https://twitter.com/intent/tweet?url=${link}&text=${encodeURIComponent(title)}`;
     window.open(destination, '_blank', 'noopener,noreferrer');
     setOpen(false);
   }
@@ -103,6 +105,10 @@ export function ShareButton({
           <button type="button" role="menuitem" onClick={() => openShare('facebook')}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start hover:bg-white/10">
             <Facebook size={18} className="text-[#88b5ff]" /> Facebook
+          </button>
+          <button type="button" role="menuitem" onClick={() => openShare('whatsapp')}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start hover:bg-white/10">
+            <MessageCircle size={18} className="text-[#25D366]" /> WhatsApp
           </button>
           <button type="button" role="menuitem" onClick={instagram}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start hover:bg-white/10">
