@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
 import { ArrowRight, ArrowUpRight, Disc3 } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
@@ -51,7 +52,8 @@ export default async function HomePage({
   const ar = locale === 'ar';
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const contentLanguage = await getContentLanguagePreference();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
   const data = getHomeData(db, viewer);
   const recommended = recommendTracks(db, viewer, 20);
   const discoveryArtists = getDiscoveryArtists(db, viewer);
