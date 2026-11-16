@@ -537,7 +537,7 @@ export function PlayerProvider({
       audible.lastTime = time;
       state.setCurrentTime(time);
       const threshold = Math.min(30_000, state.track?.durationMs ?? 30_000);
-      if (!audible.qualified && threshold > 0 && audible.accumulated >= threshold) {
+      if (!isPodcastPlayback(state.track) && !audible.qualified && threshold > 0 && audible.accumulated >= threshold) {
         audible.qualified = true;
         sendEvent('qualified', audible.accumulated);
         toast('Play counted after 30 seconds of listening.', 'success');
@@ -608,6 +608,13 @@ export function PlayerProvider({
     const onError = () => {
       const state = usePlayer.getState();
       const currentTrackId = state.track?.id;
+      if (isPodcastPlayback(state.track)) {
+        // Podcast playback uses a published-episode endpoint, not the track
+        // authorization/recovery API. Never retry it as a music track.
+        state.setBuffering(false);
+        state.setError('Unable to play this podcast episode. Please try again.');
+        return;
+      }
       // Ignore errors caused by clearing the old source during a track change.
       if (!currentTrackId || !streamRef.current || recoveryPendingRef.current) return;
       const attempt = ++recoveryAttemptsRef.current;
@@ -733,7 +740,7 @@ export function PlayerProvider({
           .catch(() => undefined);
         return;
       }
-      if (!advanced && state.autoplay) {
+      if (!advanced && state.autoplay && !isPodcastPlayback(state.track)) {
         void apiRequest<HomeData>('/api/home')
           .then((home) => {
             const currentId = usePlayer.getState().track?.id;
