@@ -22,9 +22,13 @@ To unblock: switch/connect Supabase with a member of the organization containing
 
 ## Cloudflare R2
 The current streaming bucket is `ai-music-streaming`, with the signed-upload key prefix `podcasts/{uuid}.mp3`. The existing `presignR2StreamingPut` and `presignR2Get` sign this bucket. No database is used to store raw audio bytes.
-Set CORS on the `ai-music-streaming` bucket. A versioned exact config is at `infra/cloudflare/r2-podcast-cors.json`. It permits PUT, GET and HEAD from the production domains and allows Content-Type/Range request headers. **Do not apply this CORS policy to a different R2 bucket.**
+Set CORS on the `ai-music-streaming` bucket. Ready-made rules are in **two formats**:
+- `infra/cloudflare/r2-podcast-cors-dashboard.json`: a JSON **array**, ready for the Cloudflare R2 dashboard CORS editor.
+- `infra/cloudflare/r2-podcast-cors.json`: the AWS S3 CLI `CORSRules` wrapper.
 
-Use Cloudflare R2 Dashboard → `ai-music-streaming` → Settings → CORS policy and adapt the JSON to Cloudflare's dashboard expected shape (the committed file uses the AWS S3 `CORSRules` wrapper), **or** use AWS CLI with account-scoped R2 keys:
+Both permit GET, HEAD and PUT from Oddio production domains with Content-Type and Range headers. **Do not apply this CORS policy to a different R2 bucket.**
+
+Use **Cloudflare R2 Dashboard → `ai-music-streaming` → Settings → CORS policy**, paste the entire contents of `infra/cloudflare/r2-podcast-cors-dashboard.json`, and save. Cloudflare documents this array shape for presigned upload requests. Alternatively use AWS CLI with account-scoped R2 keys:
 
 ```bash
 # Execute locally with account-owned credentials; never commit or paste secrets.
