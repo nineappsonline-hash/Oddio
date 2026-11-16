@@ -59,10 +59,10 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
     e.preventDefault();setShowBusy(true);setError('');setNotice('');
     try {
       const result=await post({action:'show',artistId,title:showTitle,slug:slugFor(showTitle,'show'),categoryId,language,description:showDescription,coverUrl});
-      const created=result.show as PodcastShow|undefined;
+      const created=result.show as {id?:string;slug?:string}|undefined;
       if(created?.id){
         setShowId(created.id);
-        setLocalShows(current=>[...current.filter(s=>s.id!==created.id),created]);
+        setLocalShows(current=>[...current.filter(s=>s.id!==created.id),{...((current[0]??{}) as PodcastShow),id:created.id!,slug:created.slug??'',title:showTitle,author:artists.find(a=>a.id===artistId)?.name??''}]);
       }
       setNotice(ar?'سلسلتك اتعملت! دلوقتي تقدر ترفع أول حلقة.':'Your series is ready! Add your first episode.');
       setShowTitle('');setShowDescription('');setCoverUrl('');setMode('episode');
