@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { PodcastCategory, PodcastShow } from '@/lib/podcasts/catalog';
 
 const field = 'w-full min-h-11 rounded-xl border border-white/15 bg-[#36283f] px-3 py-2 text-sm text-white outline-none focus:border-[#eab997]';
@@ -78,6 +79,17 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
   return <div className="space-y-5">
     {notice?<div role="status" className="rounded-xl border border-green-400/30 bg-green-900/20 p-4 text-sm text-green-100">{notice}</div>:null}
     {error?<div role="alert" className="rounded-xl border border-red-400/30 bg-red-900/20 p-4 text-sm text-red-200">{error}</div>:null}
+    {shows.length > 0 ? <section className="space-y-3" aria-label={ar?'سلاسل البودكاست الخاصة بك':'Your podcast series'}>
+      <h2 className="text-xl font-bold text-white">{ar?'سلاسلي الحالية':'My podcast series'}</h2>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {shows.map(show=><Link key={show.id} href={`/${locale}/podcasts/shows/${show.slug}`} className="rounded-2xl border border-white/10 bg-[#241b2d] p-4 transition hover:border-[#eab997]/70">
+          <span className="text-xs font-bold uppercase tracking-wide text-[#eab997]">{ar?'سلسلة بودكاست':'PODCAST SERIES'}</span>
+          <h3 className="mt-2 line-clamp-2 font-bold text-white">{show.title}</h3>
+          <p className="mt-1 truncate text-xs text-[#b8adbf]">{show.author}</p>
+          <p className="mt-2 text-xs font-semibold text-[#eab997]">{ar?'عرض الحلقات ←':'View episodes →'}</p>
+        </Link>)}
+      </div>
+    </section> : null}
     <div className="grid items-start gap-6 xl:grid-cols-2">
       <form onSubmit={createShow} className="space-y-4 rounded-2xl border border-white/10 bg-[#241b2d] p-5">
         <h2 className="text-xl font-bold text-white">{ar?'أنشئ سلسلة بودكاست':'Create a podcast series'}</h2>
