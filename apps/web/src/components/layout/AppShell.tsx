@@ -43,7 +43,7 @@ export function AppShell({
           </a>
           <AmbientBackground />
           <Sidebar user={user} />
-          <div className={`oddio-workspace relative z-10 lg:ps-[244px] ${podcastMode ? "2xl:pe-0" : "2xl:pe-[300px]"}`}>
+          <div className={`oddio-workspace relative z-10 lg:ps-[244px] ${podcastMode ? "oddio-podcast-workspace 2xl:pe-0" : "2xl:pe-[300px]"}`}>
             <MobileHeader user={user} contentLanguage={contentLanguage} />
             <DesktopTopBar contentLanguage={contentLanguage} />
             <main
@@ -55,7 +55,7 @@ export function AppShell({
             <Footer locale={locale} />
           </div>
           {!podcastMode ? <ListeningRail /> : null}
-          <PlayerBar />
+          <PlayerBar podcastMode={podcastMode} />
           <FullPlayer />
           <MobileNav />
         </PlayerProvider>
