@@ -18,13 +18,16 @@ import { useEffect } from 'react';
 import { AmbientBackground } from '@/components/visuals/AmbientBackground';
 import { useT } from '@/i18n/use-translator';
 import type { Locale } from '@ai-music/contracts';
+import type { ContentLanguagePreference } from '@/lib/content-language';
 
 export function AppShell({
   locale,
   user,
   children,
+  contentLanguage,
 }: {
   locale: Locale;
+  contentLanguage: ContentLanguagePreference;
   user: SessionUser | null;
   children: React.ReactNode;
 }) {
@@ -48,7 +51,7 @@ export function AppShell({
           <div className={`oddio-workspace relative z-10 lg:ps-[244px] ${podcastMode ? "2xl:pe-0" : "2xl:pe-[300px]"}`}>
             <MobileHeader user={user} />
             <DesktopTopBar />
-            <ExperienceSwitcher />
+            <ExperienceSwitcher contentLanguage={contentLanguage} />
             <main
               id="main"
               className={`oddio-main-content mx-auto w-full max-w-[1720px] px-4 pt-6 sm:px-6 lg:px-7 2xl:px-8 ${podcastMode ? "pb-32 lg:pb-12" : "pb-48 lg:pb-36"}`}
