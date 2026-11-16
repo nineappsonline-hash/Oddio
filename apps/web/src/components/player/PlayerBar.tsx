@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
+import { isPodcastPlayback } from '@/lib/podcast-playback';
 import { useEffect, useState } from 'react';
 import { Maximize2, Repeat, Repeat1, Shuffle, VolumeX } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
@@ -23,6 +24,7 @@ export function PlayerBar() {
 
   const rtl = useLocale() === 'ar';
   const track = usePlayer((state) => state.track);
+  const podcast = isPodcastPlayback(track);
   const isPlaying = usePlayer((state) => state.isPlaying);
   const currentTime = usePlayer((state) => state.currentTime);
   const duration = usePlayer((state) => state.duration);
@@ -204,7 +206,7 @@ export function PlayerBar() {
         <div className="hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-56 lg:flex-col">
           <div className="flex items-center gap-1.5">
             <Link
-              href={`/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
+              href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}` : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
               className="block truncate text-sm font-semibold text-ink hover:underline"
             >
               {track.title}
@@ -217,7 +219,7 @@ export function PlayerBar() {
           </div>
           {track.artist ? (
             <Link
-              href={`/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
+              href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}` : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
               className="block truncate text-xs text-muted hover:text-ink"
             >
               {track.artist.name}
@@ -363,7 +365,7 @@ export function PlayerBar() {
         </div>
 
         <div className="hidden items-center gap-2 lg:flex">
-          <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />
+          {!podcast && <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />}
           {buffering ? (
             <span className="text-[10px] uppercase tracking-wide text-muted">
               {t('player.buffering')}
