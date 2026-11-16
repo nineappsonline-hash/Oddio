@@ -2389,42 +2389,70 @@ body {
   .oddio-full-player * { min-width: 0; }
   .oddio-full-player button,
   .oddio-full-player input[type="range"] { touch-action: manipulation; }
-  .oddio-full-player .oddio-mobile-volume {
-    height: 36px;
+  /* The slider itself has a 48px interaction area, while the visible rail
+     is 8px tall. The thumb is sized for accurate one-finger dragging. */
+  .oddio-full-player .oddio-glass-volume-slider {
+    display: block;
     width: 100%;
     min-width: 0;
-    appearance: none;
+    height: 48px;
+    margin: 0;
+    padding: 0;
     -webkit-appearance: none;
+    appearance: none;
     background: transparent;
     cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
-  .oddio-mobile-volume::-webkit-slider-runnable-track {
-    height: 5px;
+  .oddio-full-player .oddio-glass-volume-slider::-webkit-slider-runnable-track {
+    height: 8px;
     border-radius: 999px;
-    background: rgba(220,220,220,.45);
+    border: 1px solid rgba(255,255,255,.08);
+    background: linear-gradient(
+      to right,
+      #f0f0f0 0%,
+      #f0f0f0 var(--oddio-volume-progress),
+      rgba(255,255,255,.20) var(--oddio-volume-progress),
+      rgba(255,255,255,.20) 100%
+    );
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.28);
   }
-  .oddio-mobile-volume::-webkit-slider-thumb {
+  .oddio-full-player .oddio-glass-volume-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 22px;
-    height: 22px;
-    margin-top: -8.5px;
-    border: 3px solid #c9c9c9;
+    width: 26px;
+    height: 26px;
+    margin-top: -10px;
+    border: 3px solid #e5e5e5;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 0 0 5px rgba(255,255,255,.10);
+    box-shadow: 0 2px 10px rgba(0,0,0,.40), 0 0 0 5px rgba(255,255,255,.09);
   }
-  .oddio-mobile-volume::-moz-range-track {
-    height: 5px;
+  .oddio-full-player .oddio-glass-volume-slider::-moz-range-track {
+    height: 8px;
     border-radius: 999px;
-    background: rgba(220,220,220,.45);
+    background: rgba(255,255,255,.20);
   }
-  .oddio-mobile-volume::-moz-range-thumb {
-    height: 17px;
-    width: 17px;
-    border: 3px solid #c9c9c9;
+  .oddio-full-player .oddio-glass-volume-slider::-moz-range-progress {
+    height: 8px;
+    border-radius: 999px;
+    background: #f0f0f0;
+  }
+  .oddio-full-player .oddio-glass-volume-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #e5e5e5;
     border-radius: 50%;
-    background: white;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,.40), 0 0 0 5px rgba(255,255,255,.09);
+  }
+  .oddio-full-player .oddio-glass-volume-slider:focus-visible {
+    outline: 2px solid rgba(255,255,255,.85);
+    outline-offset: -2px;
+    border-radius: 10px;
   }
 }
 /* Keep the glass card edge-to-edge vertically; size its content rather
