@@ -16,6 +16,7 @@ export interface PodcastShow {
   title: string;
   description: string;
   author: string;
+  artistId: string | null;
   language: string;
   categoryId: string;
   coverUrl: string | null;
@@ -94,7 +95,7 @@ export async function getPodcastCatalog(): Promise<PodcastCatalog> {
     }));
     const shows = ((showQuery.data ?? []) as Row[]).map((r) => ({
       id: str(r.id), slug: str(r.slug), title: str(r.title), description: str(r.description),
-      author: str(r.author_name), language: str(r.language_code), categoryId: str(r.category_id),
+      author: str(r.author_name), artistId: str(r.artist_id) || null, language: str(r.language_code), categoryId: str(r.category_id),
       coverUrl: str(r.cover_url) || null, explicit: r.explicit === true,
     }));
     const visible = new Set(shows.map((show) => show.id));
