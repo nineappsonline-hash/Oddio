@@ -49,8 +49,14 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
   const { locale, pathname } = useLocalePath();
   const session = useSession();
   const currentUser = session.user ?? user;
+  const podcastMode = pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
 
-  const items = [
+  const items = podcastMode ? [
+    { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'الرئيسية' : 'Podcast home', icon: 'home', exact: true },
+    { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'تصنيفات البودكاست' : 'Categories', icon: 'discover' },
+    { href: `/${locale}/podcasts?q=`, label: locale === 'ar' ? 'ابحث عن بودكاست' : 'Find podcasts', icon: 'search' },
+    { href: `/${locale}`, label: locale === 'ar' ? 'قسم الموسيقى' : 'Music', icon: 'soundspace', exact: true },
+  ] : [
     { href: `/${locale}`, label: t('nav.home'), icon: 'home', exact: true },
     { href: `/${locale}/discover`, label: t('nav.discover'), icon: 'discover' },
     {
@@ -82,7 +88,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
     },
   ];
 
-  if (currentUser) {
+  if (currentUser && !podcastMode) {
     items.push({
       href: `/${locale}/library`,
       label: t('nav.library'),
@@ -90,7 +96,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
       exact: false,
     });
   }
-  if (currentUser?.isArtistManager) {
+  if (currentUser?.isArtistManager && !podcastMode) {
     items.push({
       href: `/${locale}/studio`,
       label: t('nav.studio'),
@@ -148,7 +154,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         })}
       </nav>
 
-      <section
+      {!podcastMode ? <section
         className="mt-4 shrink-0 border-t border-white/10 pt-4"
         aria-label={locale === 'ar' ? 'مجموعة الموسيقى' : 'Your collection'}
       >
@@ -197,9 +203,9 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
             <span>{item.label}</span>
           </Link>
         ))}
-      </section>
+      </section> : null}
 
-      {!currentUser?.isArtistManager ? (
+      {!podcastMode && !currentUser?.isArtistManager ? (
         <Link
           prefetch={false}
           href={`/${locale}/apply/artist`}
