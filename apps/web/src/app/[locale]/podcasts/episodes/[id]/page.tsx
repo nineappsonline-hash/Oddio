@@ -48,6 +48,7 @@ export default async function PodcastEpisodePage({ params }: { params: Promise<{
           <p className="text-xs font-bold uppercase tracking-widest text-[#eab997]">{ar?'حلقة بودكاست':'PODCAST EPISODE'}</p>
           <h1 className="break-words text-2xl font-black text-white sm:text-4xl">{episode.title}</h1>
           <Link href={`/${locale}/podcasts/shows/${show.slug}`} className="block text-sm font-semibold text-[#eab997] hover:underline">{show.title}</Link>
+          {episode.episodeNumber !== null ? <p className="text-xs font-semibold text-[#eab997]">{ar ? `الموسم ${episode.seasonNumber??1} · الحلقة ${episode.episodeNumber}` : `Season ${episode.seasonNumber??1} · Episode ${episode.episodeNumber}`}</p> : null}
           <p className="text-xs text-[#b8adbf]" dir="auto">
             {episode.publishedAt?new Date(episode.publishedAt).toLocaleDateString(ar?'ar-EG':'en-US',{dateStyle:'medium'}):''}
             {episode.durationSeconds>0?` · ${formatPodcastTime(episode.durationSeconds)}`:''}
