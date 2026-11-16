@@ -275,7 +275,7 @@ export function FullPlayer() {
     <div
       ref={dialogRef}
       tabIndex={-1}
-      className="fixed inset-0 z-[60] w-full max-w-full overflow-x-clip overflow-y-auto overscroll-x-none bg-[#110c19] text-white scroll-thin"
+      className="fixed inset-0 z-[60] w-full max-w-full overflow-x-clip overflow-y-auto overscroll-x-none bg-[#090a0c] text-white scroll-thin"
       role="dialog"
       aria-modal="true"
       aria-label={t('player.fullPlayer')}
@@ -284,24 +284,24 @@ export function FullPlayer() {
       <div
         className="pointer-events-none fixed inset-0 opacity-70"
         style={{
-          background: `radial-gradient(820px 600px at 24% 38%, ${accent}22, transparent 70%), radial-gradient(640px 540px at 90% 10%, rgba(117,65,180,0.13), transparent 75%)`,
+          background: 'radial-gradient(850px 620px at 22% 28%, rgba(255,255,255,0.075), transparent 72%), radial-gradient(700px 540px at 88% 85%, rgba(160,160,160,0.045), transparent 74%)',
         }}
       />
       {controlNotice ? (
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-24 left-1/2 z-[90] -translate-x-1/2 whitespace-nowrap rounded-full border border-primary/40 bg-[#242027] px-4 py-2 text-sm font-bold text-white shadow-xl"
+          className="fixed bottom-24 left-1/2 z-[90] -translate-x-1/2 whitespace-nowrap rounded-full border border-white/20 bg-[#171819]/95 backdrop-blur-xl px-4 py-2 text-sm font-bold text-white shadow-xl"
         >
           {controlNotice}
         </div>
       ) : null}
       <div className="relative mx-auto w-full min-w-0 max-w-[1600px] overflow-x-clip px-4 py-5 sm:px-8 sm:py-8 lg:px-10 lg:py-9">
-        <div className="mb-6 flex items-center justify-between rounded-2xl border border-[#614474]/40 bg-[#21192b]/75 px-4 py-3 lg:mb-8 lg:px-6">
+        <div className="mb-6 flex items-center justify-between rounded-2xl border border-white/[0.13] bg-white/[0.055] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] px-4 py-3 lg:mb-8 lg:px-6">
           <div className="flex items-center gap-2 text-sm text-muted">
             <OddioPlayIcon size={36} />
             <span className="text-base font-black tracking-tight text-white lg:text-xl">Oddio</span>
-            <span className="ms-3 hidden text-[11px] font-bold uppercase tracking-[.2em] text-[#bfa7d1] sm:inline">{t('player.nowPlaying')}</span>
+            <span className="ms-3 hidden text-[11px] font-bold uppercase tracking-[.2em] text-[#bcbcbc] sm:inline">{t('player.nowPlaying')}</span>
           </div>
           <button
             type="button"
@@ -315,22 +315,22 @@ export function FullPlayer() {
         </div>
 
         <div className="mb-6 hidden lg:block">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#bd91da]">{rtl ? 'قيد التشغيل' : 'NOW PLAYING'}</span>
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#cacaca]">{rtl ? 'قيد التشغيل' : 'NOW PLAYING'}</span>
           <h2 className="mt-2 text-3xl font-black tracking-tight text-white">{rtl ? 'مساحتك للاستماع' : 'Your listening space'}</h2>
-          <p className="mt-1 text-sm text-[#a79bb1]">{rtl ? 'استمتع بالموسيقى والبودكاست في مكان واحد' : 'Immersive audio. Seamless control.'}</p>
+          <p className="mt-1 text-sm text-[#999999]">{rtl ? 'استمتع بالموسيقى والبودكاست في مكان واحد' : 'Immersive audio. Seamless control.'}</p>
         </div>
         <div className="grid min-w-0 grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,2.05fr)_minmax(320px,0.95fr)]">
-          <div className="min-w-0 rounded-[28px] border border-[#705383]/45 bg-[#201829]/85 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.20)] sm:p-6 lg:p-7">
+          <div className="min-w-0 rounded-[28px] border border-white/[0.13] bg-white/[0.055] backdrop-blur-[28px] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.20)] sm:p-6 lg:p-7">
             <div className="lg:grid lg:min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.87fr)] lg:items-center lg:gap-7">
             <div className="relative mx-auto w-full max-w-[min(100%,44vh)] sm:max-w-md lg:max-w-none">
               <div
                 aria-hidden="true"
                 className="absolute -inset-4 rounded-[2.5rem] opacity-30 blur-3xl"
                 style={{
-                  background: `radial-gradient(circle, ${accent}, transparent 70%)`,
+                  background: 'radial-gradient(circle, rgba(210,210,210,0.24), transparent 70%)',
                 }}
               />
-              <div className="relative overflow-hidden rounded-[26px] border border-[#9b74b6]/25 bg-[#352340] p-1.5 shadow-[0_15px_45px_rgba(14,7,25,.35)]">
+              <div className="relative overflow-hidden rounded-[26px] border border-white/[0.16] bg-white/[0.055] backdrop-blur-xl p-1.5 shadow-[0_15px_45px_rgba(0,0,0,.35)]">
                 <Artwork
                   title={track.title}
                   animated={isPlaying && !track.artwork.url}
@@ -341,12 +341,12 @@ export function FullPlayer() {
                 />
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute -inset-24 animate-spin-slow opacity-40 [background:conic-gradient(from_0deg,transparent_0deg,rgba(157,92,255,0.5)_70deg,transparent_140deg,rgba(65,217,255,0.4)_240deg,transparent_300deg)]"
+                  className="pointer-events-none absolute -inset-24 animate-spin-slow opacity-15 [background:conic-gradient(from_0deg,transparent_0deg,rgba(220,220,220,0.22)_70deg,transparent_140deg,rgba(255,255,255,0.16)_240deg,transparent_300deg)]"
                 />
                 {!podcast && mobileLyricsOpen ? (
                   <div
                     id="oddio-mobile-lyrics"
-                    className="absolute inset-1.5 z-40 flex flex-col rounded-[1.35rem] bg-[#130e20]/95 p-4 backdrop-blur-xl lg:hidden"
+                    className="absolute inset-1.5 z-40 flex flex-col rounded-[1.35rem] bg-[#121314]/95 p-4 backdrop-blur-xl lg:hidden"
                   >
                     <div className="mb-2 flex items-center justify-between text-sm font-bold text-white">
                       <span>🎤 {rtl ? 'كلمات الأغنية' : 'Lyrics'}</span>
@@ -368,7 +368,7 @@ export function FullPlayer() {
                           aria-live="off"
                           className="flex w-full flex-col items-center justify-center px-2 text-center"
                         >
-                          <div className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-fuchsia-300/70">
+                          <div className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-neutral-300/70">
                             <Mic2 className="h-3.5 w-3.5" />{' '}
                             {rtl ? 'كلمات متزامنة' : 'LIVE LYRICS'}
                           </div>
@@ -389,7 +389,7 @@ export function FullPlayer() {
                             type="button"
                             disabled={generatingLyrics}
                             onClick={generateLyrics}
-                            className="rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white disabled:opacity-50"
+                            className="rounded-xl bg-white/20 px-3 py-2 text-sm font-bold text-white disabled:opacity-50"
                           >
                             {generatingLyrics
                               ? rtl
@@ -421,11 +421,11 @@ export function FullPlayer() {
                   className={cn(
                     'relative z-30 inline-flex min-h-11 touch-manipulation cursor-pointer items-center justify-center gap-2.5 rounded-full border px-5 py-2.5 text-sm font-semibold shadow-lg backdrop-blur-md transition-all duration-200 active:scale-95',
                     mobileLyricsOpen
-                      ? 'border-fuchsia-400/50 bg-gradient-to-r from-violet-600/80 to-fuchsia-600/80 text-white shadow-fuchsia-500/20'
-                      : 'border-white/15 bg-white/[0.08] text-white/90 hover:border-fuchsia-400/40 hover:bg-white/[0.14]',
+                      ? 'border-white/35 bg-white/20 text-white shadow-black/20'
+                      : 'border-white/15 bg-white/[0.08] text-white/90 hover:border-white/35 hover:bg-white/[0.14]',
                   )}
                 >
-                  <Mic2 className="h-4 w-4 text-fuchsia-200" />
+                  <Mic2 className="h-4 w-4 text-neutral-200" />
                   <span>
                     {mobileLyricsOpen
                       ? rtl
@@ -438,7 +438,7 @@ export function FullPlayer() {
                   <span
                     className={cn(
                       'h-1.5 w-1.5 rounded-full',
-                      mobileLyricsOpen ? 'bg-cyan-300' : 'bg-fuchsia-400/70',
+                      mobileLyricsOpen ? 'bg-neutral-300' : 'bg-neutral-400/70',
                     )}
                   />
                 </button>
@@ -447,20 +447,20 @@ export function FullPlayer() {
                 <Equalizer
                   bars={28}
                   paused={!isPlaying}
-                  className="h-full w-full max-w-xs text-primary/70"
+                  className="h-full w-full max-w-xs text-neutral-300/70"
                 />
               </div>
             </div>
             <div className="mt-6 flex min-w-0 flex-col justify-center gap-5 lg:mt-0">
               <div className="min-w-0">
-                <span className="mb-3 block text-[11px] font-bold uppercase tracking-[.19em] text-[#c5a6db]">{podcast ? (rtl ? 'حلقة بودكاست' : 'PODCAST EPISODE') : (rtl ? 'أغنية' : 'MUSIC / TRACK')}</span>
+                <span className="mb-3 block text-[11px] font-bold uppercase tracking-[.19em] text-[#bdbdbd]">{podcast ? (rtl ? 'حلقة بودكاست' : 'PODCAST EPISODE') : (rtl ? 'أغنية' : 'MUSIC / TRACK')}</span>
                 <h1 dir="auto" className="line-clamp-3 text-2xl font-black leading-tight tracking-tight text-white sm:text-3xl lg:text-[clamp(24px,2.3vw,40px)]">
                   {track.title}
                 </h1>
                 {track.artist ? (
                   <Link
                     href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}` : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
-                    className="mt-3 inline-block text-base font-semibold text-[#c2a8d5] transition hover:text-white"
+                    className="mt-3 inline-block text-base font-semibold text-[#c9c9c9] transition hover:text-white"
                   >
                     {track.artist.name}
                   </Link>
@@ -508,13 +508,13 @@ export function FullPlayer() {
                 <button
                   type="button"
                   onClick={retryPlayback}
-                  className="rounded-full border border-primary/50 px-4 py-2 font-bold text-primary hover:bg-primary/10"
+                  className="rounded-full border border-white/30 px-4 py-2 font-bold text-neutral-200 hover:bg-white/10"
                 >
                   {t('common.retry')}
                 </button>
               </div>
             ) : null}
-            <div className="mt-6 rounded-[22px] border border-[#76558b]/45 bg-[#30213d]/75 px-4 py-4 sm:px-6">
+            <div className="mt-6 rounded-[22px] border border-white/[0.13] bg-white/[0.045] backdrop-blur-xl px-4 py-4 sm:px-6">
               <input
                 type="range"
                 min={0}
@@ -526,7 +526,7 @@ export function FullPlayer() {
                 aria-label={t('player.seek')}
                 title={t('player.seek')}
                 style={{
-                  background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #b26af1 ${progress}%, rgba(216,194,231,0.28) ${progress}%)`,
+                  background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #dedede ${progress}%, rgba(216,194,231,0.28) ${progress}%)`,
                 }}
               />
               <div className="mt-1.5 flex justify-between text-[11px] tabular-nums text-muted">
@@ -560,7 +560,7 @@ export function FullPlayer() {
                 aria-pressed={shuffle}
                 className={cn(
                   'rounded-full p-2.5 transition hover:bg-white/10',
-                  shuffle ? 'text-primary' : 'text-muted',
+                  shuffle ? 'text-neutral-200' : 'text-muted',
                 )}
               >
                 <Shuffle className="h-5 w-5" />
@@ -582,8 +582,8 @@ export function FullPlayer() {
                 className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-20 sm:w-20"
               >
                 {isPlaying ? (
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#a650ee] text-white shadow-[0_0_28px_rgba(166,80,238,.3)] sm:h-[70px] sm:w-[70px]">
-                    <Pause className="h-7 w-7" fill="currentColor" />
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-[#111111] shadow-[0_0_28px_rgba(255,255,255,.10)] sm:h-[70px] sm:w-[70px]">
+                    <Pause className="h-7 w-7 text-[#111111]" fill="currentColor" />
                   </span>
                 ) : (
                   <span className="scale-[0.65] sm:scale-[0.72]">
@@ -637,7 +637,7 @@ export function FullPlayer() {
                 }
                 className={cn(
                   'rounded-full p-2.5 transition hover:bg-white/10',
-                  repeat !== 'off' ? 'text-primary' : 'text-muted',
+                  repeat !== 'off' ? 'text-neutral-200' : 'text-muted',
                 )}
               >
                 {repeat === 'one' ? (
@@ -689,7 +689,7 @@ export function FullPlayer() {
                 <span>{rtl ? 'التداخل بين الأغاني' : 'Crossfade'}</span>
                 <select
                   aria-label={rtl ? 'مدة تداخل الأغاني' : 'Crossfade duration'}
-                  className="rounded-lg border border-white/20 bg-[#211d27] px-2 py-2 text-white"
+                  className="rounded-lg border border-white/20 bg-[#18191b] px-2 py-2 text-white"
                   value={crossfadeSeconds}
                   onChange={(event) => setCrossfadeSeconds(Number(event.target.value))}
                 >
@@ -706,11 +706,11 @@ export function FullPlayer() {
           </div>
 
           <aside
-            className="hidden min-h-[580px] max-h-[calc(100vh-240px)] flex-col rounded-[28px] border border-[#705383]/45 bg-[#201829]/85 p-5 shadow-[0_24px_70px_rgba(0,0,0,.2)] lg:flex"
+            className="hidden min-h-[580px] max-h-[calc(100vh-240px)] flex-col rounded-[28px] border border-white/[0.13] bg-white/[0.055] backdrop-blur-[28px] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] p-5 shadow-[0_24px_70px_rgba(0,0,0,.2)] lg:flex"
             aria-label={sideTab === 'lyrics' ? 'Lyrics' : sideTab === 'queue' ? t('player.queue') : (rtl ? 'اقتراحات مشابهة' : 'Similar content')}
           >
             <div
-              className="mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-[#3a294a] p-1.5 sm:grid-cols-3"
+              className="mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-white/[0.06] p-1.5 sm:grid-cols-3"
               role="tablist"
               aria-label="Player panels"
             >
@@ -722,7 +722,7 @@ export function FullPlayer() {
                 className={cn(
                   'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
                   sideTab === 'lyrics'
-                    ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
+                    ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
                     : 'text-muted hover:bg-white/5 hover:text-ink',
                 )}
               >
@@ -736,7 +736,7 @@ export function FullPlayer() {
                 className={cn(
                   'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
                   sideTab === 'queue'
-                    ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
+                    ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
                     : 'text-muted hover:bg-white/5 hover:text-ink',
                 )}
               >
@@ -750,7 +750,7 @@ export function FullPlayer() {
                 className={cn(
                   'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
                   sideTab === 'similar'
-                    ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
+                    ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
                     : 'text-muted hover:bg-white/5 hover:text-ink',
                 )}
               >
@@ -758,7 +758,7 @@ export function FullPlayer() {
                 {rtl ? 'مشابهة' : 'Similar'}
               </button>
             </div>
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[.15em] text-[#c0a5d2]">{sideTab === 'similar' ? (rtl ? 'محتوى يشبه اللي بتسمعه' : 'MORE LIKE THIS') : sideTab === 'queue' ? t('player.queue') : (rtl ? 'كلمات الأغنية' : 'LYRICS')}</p>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[.15em] text-[#c7c7c7]">{sideTab === 'similar' ? (rtl ? 'محتوى يشبه اللي بتسمعه' : 'MORE LIKE THIS') : sideTab === 'queue' ? t('player.queue') : (rtl ? 'كلمات الأغنية' : 'LYRICS')}</p>
             {sideTab === 'similar' ? (
               <SimilarPlayerPanel trackId={track.id} podcast={podcast} rtl={rtl} active={expanded && sideTab === 'similar'} />
             ) : sideTab === 'lyrics' && !podcast ? (
@@ -773,7 +773,7 @@ export function FullPlayer() {
                   </p>
                 ) : cues.length > 0 ? (
                   <div className="flex min-h-64 flex-col items-center justify-center px-4 text-center">
-                    <span className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-primary/70">
+                    <span className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-neutral-300/70">
                       {rtl ? 'كلمات متزامنة' : 'LIVE LYRICS'}
                     </span>
                     <p
@@ -786,7 +786,7 @@ export function FullPlayer() {
                   </div>
                 ) : (
                   <div className="flex min-h-56 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/15 px-6 text-center">
-                    <Mic2 className="h-8 w-8 text-primary/70" />
+                    <Mic2 className="h-8 w-8 text-neutral-300/70" />
                     <p className="text-sm font-bold text-ink">
                       {rtl ? 'الكلمات غير متاحة حاليًا' : 'Lyrics aren’t available yet'}
                     </p>
@@ -799,7 +799,7 @@ export function FullPlayer() {
                       type="button"
                       onClick={generateLyrics}
                       disabled={generatingLyrics}
-                      className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                      className="rounded-xl bg-white/20 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
                     >
                       {generatingLyrics
                         ? rtl
@@ -808,7 +808,7 @@ export function FullPlayer() {
                         : '✨ Generate Lyrics'}
                     </button>
                     {lyricsMessage ? (
-                      <p role="status" className="text-xs text-primary">
+                      <p role="status" className="text-xs text-neutral-200">
                         {lyricsMessage}
                       </p>
                     ) : null}
@@ -841,11 +841,11 @@ export function FullPlayer() {
                     </button>
                   ) : null}
                 </div>
-                <div className="mb-3 flex items-center gap-3 rounded-xl border border-primary/50 bg-primary/15 p-3">
+                <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/30 bg-white/15 p-3">
                   <Equalizer
                     bars={3}
                     paused={!isPlaying}
-                    className="h-5 shrink-0 text-primary"
+                    className="h-5 shrink-0 text-neutral-200"
                   />
                   <Artwork
                     title={track.title}
@@ -855,7 +855,7 @@ export function FullPlayer() {
                     rounded="rounded-lg"
                   />
                   <div className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-bold uppercase text-primary">
+                    <span className="block text-[10px] font-bold uppercase text-neutral-200">
                       {rtl ? 'بتشتغل دلوقتي' : 'Now playing'}
                     </span>
                     <span className="block truncate text-sm font-bold text-white">
