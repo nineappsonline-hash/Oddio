@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { getPodcastCatalog,podcastCategoryLabel } from '@/lib/podcasts/catalog';
-import { PodcastArtwork,PodcastEpisodeCard,PodcastEmpty } from '@/components/podcasts/PodcastUI';
+import { PodcastArtwork,PodcastEpisodeRow,PodcastEmpty } from '@/components/podcasts/PodcastUI';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { seoAbsoluteUrl } from '@/lib/seo-origin';
 import { serviceClient } from '@/lib/data/supabase-store';
@@ -35,8 +35,23 @@ export default async function PodcastShowPage({params}:{params:Promise<{locale:s
         {category?<Link href={`/${locale}/podcasts/categories/${category.slug}`} className="inline-flex rounded-full border border-[#e9e9e9]/40 px-4 py-2 text-xs font-semibold text-[#e9e9e9]">{podcastCategoryLabel(category,locale)}</Link>:null}
       </div>
     </header>
-    <section className="space-y-4"><h2 className="text-2xl font-bold text-white">{locale==='ar'?`الحلقات (${episodes.length})`:`Episodes (${episodes.length})`}</h2>
-      {episodes.length?<div className="grid gap-3 sm:grid-cols-2">{episodes.map(episode=><div key={episode.id} className="space-y-2">{episode.episodeNumber!==null?<p className="text-xs font-semibold text-[#e9e9e9]">{locale==='ar'?`الموسم ${episode.seasonNumber??1} · الحلقة ${episode.episodeNumber}`:`Season ${episode.seasonNumber??1} · Episode ${episode.episodeNumber}`}</p>:null}<PodcastEpisodeCard episode={episode} show={show} locale={locale}/></div>)}</div>:<PodcastEmpty locale={locale}/>}
+    <section className="space-y-5" aria-label={locale==='ar'?'حلقات البودكاست':'Podcast episodes'}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b797d2]">{locale==='ar'?'استمع الآن':'NOW LISTENING'}</p>
+          <h2 className="mt-1 text-2xl font-bold text-white">{locale==='ar'?'كل الحلقات':'All episodes'}</h2>
+        </div>
+        <span className="rounded-full border border-[#64516e] bg-[#271e2e] px-3 py-1.5 text-xs font-bold text-[#d2b9e6]">
+          {locale==='ar'?`${episodes.length} حلقات`:`${episodes.length} episodes`}
+        </span>
+      </div>
+      {episodes.length ? (
+        <div className="flex flex-col gap-2.5">
+          {episodes.map((episode,index)=>(
+            <PodcastEpisodeRow key={episode.id} episode={episode} show={show} locale={locale} index={index}/>
+          ))}
+        </div>
+      ) : <PodcastEmpty locale={locale}/>}
     </section>
   </div>;
 }
