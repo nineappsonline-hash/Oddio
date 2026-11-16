@@ -1,4 +1,4 @@
-import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
+import { filterMusicDb, filterPodcastCatalog, getContentLanguagePreference } from '@/lib/content-language';
 import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import { getPodcastCatalog } from '@/lib/podcasts/catalog';
 import { PodcastShowCard } from '@/components/podcasts/PodcastUI';
@@ -75,7 +75,7 @@ export default async function ArtistPage({
   const page = getArtistPage(db, viewer, slug);
   if (!page) notFound();
   const { artist, tracks, albums, followerCount, isFollowing, featuredTrack } = page;
-  const podcastCatalog=await getPodcastCatalog();
+  const podcastCatalog=filterPodcastCatalog(await getPodcastCatalog(), await getContentLanguagePreference());
   const artistSeries=podcastCatalog.shows.filter(show=>show.artistId===artist.id);
   const queue = featuredTrack
     ? [featuredTrack, ...tracks.filter((track) => track.id !== featuredTrack.id)]
