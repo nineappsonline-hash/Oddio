@@ -249,6 +249,8 @@ export function MobileNav() {
                 ...(podcastMode ? [
                   { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'الرئيسية' : 'Podcasts home', icon: 'home' },
                   { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'تصنيفات البودكاست' : 'Podcast categories', icon: 'discover' },
+                  { href: `/${locale}/podcasts#series`, label: locale === 'ar' ? 'سلاسل البودكاست' : 'Podcast series', icon: 'library' },
+                  { href: `/${locale}/podcasts#episodes`, label: locale === 'ar' ? 'أحدث الحلقات' : 'Latest episodes', icon: 'discover' },
                   { href: `/${locale}/podcasts/creators`, label: locale === 'ar' ? 'فنانو البودكاست' : 'Podcast creators', icon: 'studio' },
                   ...((user?.isArtistManager || user?.roles.some(role => role === 'super_admin' || role === 'admin')) ? [
                     { href: `/${locale}/podcasts/me`, label: locale === 'ar' ? 'صفحتي كفنان' : 'My podcast profile', icon: 'studio' },
