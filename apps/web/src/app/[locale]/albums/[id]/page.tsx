@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -59,7 +60,7 @@ export default async function AlbumPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), await getContentLanguagePreference());
   const page = getAlbumPage(db, viewer, idFromSegment(id));
   if (!page) notFound();
   const { album, artist, tracks } = page;
