@@ -13,7 +13,7 @@ import { Equalizer } from '@/components/visuals/Equalizer';
 import { cn, formatDuration } from '@/lib/utils';
 import { OddioGlyph } from '@/components/ui/OddioGlyph';
 
-export function PlayerBar() {
+export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   const t = useT();
   const [controlNotice, setControlNotice] = useState('');
   useEffect(() => {
@@ -49,7 +49,7 @@ export function PlayerBar() {
   if (!track) {
     return (
       <div
-        className="oddio-player-bar oddio-idle-player"
+        className={`oddio-player-bar oddio-idle-player ${podcastMode ? "oddio-podcast-player-bar" : ""}`}
         role="region"
         aria-label={rtl ? 'مشغل أوديو' : 'Oddio music player'}
       >
@@ -83,7 +83,7 @@ export function PlayerBar() {
 
   return (
     <div
-      className="oddio-player-bar fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-40 overflow-visible border-t border-white/10 bg-[#231b2b]/95 px-3 py-2 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6"
+      className={`oddio-player-bar fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-40 overflow-visible border-t border-white/10 bg-[#231b2b]/95 px-3 py-2 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-6 ${podcastMode ? "oddio-podcast-player-bar" : ""}`}
       role="region"
       aria-label={t('player.miniPlayer')}
       title={t('player.miniPlayer')}
