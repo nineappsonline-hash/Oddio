@@ -6,6 +6,7 @@ import { getPodcastCatalog,podcastCategoryLabel } from '@/lib/podcasts/catalog';
 import { PodcastArtwork,PodcastEpisodeCard,PodcastEmpty } from '@/components/podcasts/PodcastUI';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { seoAbsoluteUrl } from '@/lib/seo-origin';
+import { serviceClient } from '@/lib/data/supabase-store';
 
 export const dynamic='force-dynamic';
 export async function generateMetadata({params}:{params:Promise<{locale:string;slug:string}>}) {
@@ -17,6 +18,7 @@ export async function generateMetadata({params}:{params:Promise<{locale:string;s
 export default async function PodcastShowPage({params}:{params:Promise<{locale:string;slug:string}>}) {
   const {locale,slug}=await params;if(!isLocale(locale))notFound();
   const catalog=await getPodcastCatalog(),show=catalog.shows.find(s=>s.slug===slug);if(!show)notFound();
+  const creator=show.artistId ? (await serviceClient().from('artists').select('slug').eq('id',show.artistId).maybeSingle()).data : null;
   const episodes=catalog.episodes.filter(e=>e.showId===show.id).sort((a,b)=>
     (a.seasonNumber??1)-(b.seasonNumber??1) || (a.episodeNumber??999999)-(b.episodeNumber??999999) || a.publishedAt.localeCompare(b.publishedAt)),category=catalog.categories.find(c=>c.id===show.categoryId);
   return <div className="space-y-9 pb-8">
@@ -26,7 +28,9 @@ export default async function PodcastShowPage({params}:{params:Promise<{locale:s
       <PodcastArtwork title={show.title} coverUrl={show.coverUrl} className="mx-auto w-full max-w-[220px]"/>
       <div className="min-w-0 space-y-3"><p className="text-xs font-bold uppercase tracking-widest text-[#e9e9e9]">{locale==='ar'?'سلسلة بودكاست':'PODCAST SERIES'}</p>
         <h1 className="break-words text-3xl font-black text-white sm:text-4xl">{show.title}</h1>
-        <p className="text-sm text-[#a3a3a3]">{show.author}</p>
+        {creator?.slug
+          ? <Link href={`/${locale}/podcasts/creators/${creator.slug}`} className="inline-flex min-h-9 items-center text-sm font-semibold text-[#ae8be9] hover:underline" aria-label={locale==='ar'?`افتح ملف بودكاست ${show.author}`:`View ${show.author}'s podcast profile`}>{show.author} ↗</Link>
+          : <p className="text-sm text-[#a3a3a3]">{show.author}</p>}
         {show.description?<p className="whitespace-pre-line text-sm leading-8 text-[#d9cede]">{show.description}</p>:null}
         {category?<Link href={`/${locale}/podcasts/categories/${category.slug}`} className="inline-flex rounded-full border border-[#e9e9e9]/40 px-4 py-2 text-xs font-semibold text-[#e9e9e9]">{podcastCategoryLabel(category,locale)}</Link>:null}
       </div>
