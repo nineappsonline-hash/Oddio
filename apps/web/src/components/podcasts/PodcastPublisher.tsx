@@ -120,7 +120,7 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
         <div className="mb-7"><h3 className="text-xl font-bold text-white">{ar?'ابدأ سلسلة جديدة':'Start a new podcast series'}</h3><p className="mt-2 text-sm text-[#a8a0b0]">{ar?'السلسلة بتجمع كل حلقاتك عن موضوع واحد.':'A series brings episodes about one topic together.'}</p></div>
         <div className="space-y-5">
           {artists.length>1?<label className={label}>{ar?'هتنشر باسم مين؟':'Publish as'}<select required className={field} value={artistId} onChange={e=>setArtistId(e.target.value)}>{artists.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>:null}
-          {artists.length===1?<p className="text-xs text-[#b6aebe]">{ar?'الناشر: ':'Publishing as: '}{artists[0].name}</p>:null}
+          {artists.length===1?<p className="text-xs text-[#b6aebe]">{ar?'الناشر: ':'Publishing as: '}{artists[0]?.name}</p>:null}
           <label className={label}>{ar?'اسم السلسلة':'Series name'}<input required minLength={2} maxLength={160} autoComplete="off" placeholder={ar?'مثلاً: فلسفة ببساطة':'e.g. Philosophy Made Simple'} className={field} value={showTitle} onChange={e=>setShowTitle(e.target.value)}/></label>
           <div className="grid gap-5 sm:grid-cols-2">
             <label className={label}>{ar?'التصنيف':'Category'}<select required className={field} value={categoryId} onChange={e=>setCategoryId(e.target.value)}>{categories.map(c=><option key={c.id} value={c.id}>{ar?c.nameAr:c.nameEn}</option>)}</select></label>
