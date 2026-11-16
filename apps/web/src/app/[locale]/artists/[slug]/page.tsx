@@ -1,4 +1,6 @@
 import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
+import { getPodcastCatalog } from '@/lib/podcasts/catalog';
+import { PodcastShowCard } from '@/components/podcasts/PodcastUI';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ExternalLink } from 'lucide-react';
@@ -34,6 +36,7 @@ export async function generateMetadata({
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getArtistPage(db, { userId: null, roles: [] }, slug);
+  const podcastCatalog = await getPodcastCatalog();
   if (!page)
     return buildMetadata({
       locale: safeLocale,
@@ -53,7 +56,7 @@ export async function generateMetadata({
         : `Explore ${page.artist.name}'s songs and releases on Oddio. Listen to original AI music and discover more artists.`,
     path: `/artists/${page.artist.slug}`,
     type: 'profile',
-    noindex: page.tracks.length === 0,
+    noindex: page.tracks.length === 0 && !podcastCatalog.shows.some(show => show.artistId === page.artist.id),
   });
 }
 
@@ -71,6 +74,8 @@ export default async function ArtistPage({
   const page = getArtistPage(db, viewer, slug);
   if (!page) notFound();
   const { artist, tracks, albums, followerCount, isFollowing, featuredTrack } = page;
+  const podcastCatalog=await getPodcastCatalog();
+  const artistSeries=podcastCatalog.shows.filter(show=>show.artistId===artist.id);
   const queue = featuredTrack
     ? [featuredTrack, ...tracks.filter((track) => track.id !== featuredTrack.id)]
     : tracks;
@@ -221,6 +226,20 @@ export default async function ArtistPage({
           </span>
         </div>
       </section>
+
+      {artistSeries.length > 0 ? (
+        <section className="mb-10 space-y-5 rounded-3xl border border-white/10 bg-[#241b2d]/70 p-5 sm:p-7" aria-labelledby="artist-podcast-series-heading">
+          <h2 id="artist-podcast-series-heading" className="text-2xl font-bold text-white">
+            {locale==='ar'? `سلاسل بودكاست ${artist.name}` : `Podcast series by ${artist.name}`}
+          </h2>
+          <p className="text-sm leading-7 text-[#b8adbf]">
+            {locale==='ar'?'استكشف سلاسل بتناقش مواضيع مختلفة من نفس الفنان، وكل سلسلة تجمع حلقاتها في مكان واحد.':'Explore this artist’s themed podcast series, with all related episodes together in one place.'}
+          </p>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {artistSeries.map(show=><PodcastShowCard key={show.id} show={show} locale={locale}/>)}
+          </div>
+        </section>
+      ) : null}
 
       <div className="grid gap-10 lg:grid-cols-[1.6fr_0.4fr]">
         <div>

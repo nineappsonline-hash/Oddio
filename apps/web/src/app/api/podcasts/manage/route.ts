@@ -10,8 +10,8 @@ import { presignR2Get, presignR2StreamingPut } from '@/lib/storage/r2-presign';
 export const runtime = 'nodejs';
 const slug = z.string().trim().min(2).max(90).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 const showInput = z.object({
-  action: z.literal('show'), title:z.string().trim().min(2).max(160),
-  slug, author:z.string().trim().min(2).max(140),
+  action: z.literal('show'), artistId:z.string().uuid(), title:z.string().trim().min(2).max(160),
+  slug,
   categoryId:z.string().uuid(), description:z.string().trim().max(6000).default(''),
   language:z.enum(['en','ar']).default('en'),
   coverUrl:z.union([z.string().trim().url().max(1000),z.literal('')]).optional(),
@@ -22,13 +22,15 @@ const episodeInput = z.object({
   description:z.string().trim().max(10000).default(''),
   durationSeconds:z.number().int().min(1).max(36000),
   fileBytes:z.number().int().min(1024).max(300*1024*1024),
+  episodeNumber:z.number().int().min(1).max(100000).optional(),
+  seasonNumber:z.number().int().min(1).max(1000).default(1),
 });
 const publishInput = z.object({action:z.literal('publish'),episodeId:z.string().uuid()});
 const inputSchema = z.discriminatedUnion('action',[showInput,episodeInput,publishInput]);
 
 export async function POST(request:Request) {
   const user=await getSessionUser();
-  if(!user || !user.roles.some(r=>r==='admin'||r==='super_admin')) {
+  if(!user || !(user.isArtistManager || user.roles.some(r=>r==='admin'||r==='super_admin'))) {
     return NextResponse.json({error:'Not authorized'}, {status:403});
   }
   if(demoMode) return NextResponse.json({error:'Database not configured'}, {status:503});
@@ -41,15 +43,24 @@ export async function POST(request:Request) {
   const parsed=inputSchema.safeParse(json);
   if(!parsed.success) return NextResponse.json({error:'Invalid podcast details',fields:parsed.error.flatten()}, {status:422});
   const data=parsed.data;
+  const staff=user.roles.some(r=>r==='admin'||r==='super_admin');
   try {
     const db=serviceClient();
     if(data.action==='show') {
       const {data:category}=await db.from('podcast_categories').select('id').eq('id',data.categoryId).eq('active',true).maybeSingle();
       if(!category) return NextResponse.json({error:'Select a valid podcast category'}, {status:422});
+      // A staff role alone doesn't bypass ownership: the series must reference
+      // a real artist profile owned by this user (unless staff are creating
+      // for an artist explicitly on the artist's behalf).
+      const {data:artist}=await db.from('artists').select('id,name,owner_user_id').eq('id',data.artistId).maybeSingle();
+      if(!artist || (!staff && (!user.isArtistManager || artist.owner_user_id!==user.id || !user.artistIds.includes(data.artistId)))) {
+        return NextResponse.json({error:'You do not own this artist profile'}, {status:403});
+      }
       const {data:show,error}=await db.from('podcast_shows').insert({
-        title:data.title,slug:data.slug,author_name:data.author,category_id:data.categoryId,
+        title:data.title,slug:data.slug,category_id:data.categoryId,
         description:data.description,language_code:data.language,cover_url:data.coverUrl||null,
-        status:'published',owner_id:user.id,
+        author_name:artist.name,
+        status:'published',owner_id:artist.owner_user_id ?? user.id,artist_id:artist.id,
       }).select('id,slug').single();
       if(error || !show) return NextResponse.json({error:error?.message||'Unable to create show'},{status:422});
       return NextResponse.json({show});
@@ -58,12 +69,20 @@ export async function POST(request:Request) {
       // Check the storage connection before leaving an orphan draft.
       const episodeId=randomUUID(), key=`podcasts/${episodeId}.mp3`;
       const uploadUrl=presignR2StreamingPut(key);
-      const {data:show}=await db.from('podcast_shows').select('id').eq('id',data.showId).eq('status','published').maybeSingle();
-      if(!show) return NextResponse.json({error:'Podcast show is not published'}, {status:404});
+      const {data:show}=await db.from('podcast_shows').select('id,owner_id,artist_id').eq('id',data.showId).eq('status','published').maybeSingle();
+      if(!show || (!staff && (show.owner_id!==user.id || !show.artist_id || !user.artistIds.includes(show.artist_id)))) {
+        return NextResponse.json({error:'Podcast series not owned by this artist'}, {status:403});
+      }
+      if(data.episodeNumber) {
+        const {data:duplicate}=await db.from('podcast_episodes').select('id').eq('show_id',data.showId)
+          .eq('season_number',data.seasonNumber).eq('episode_number',data.episodeNumber).limit(1);
+        if(duplicate?.length) return NextResponse.json({error:'This episode number is already used in the selected season.'},{status:409});
+      }
       const {error}=await db.from('podcast_episodes').insert({
         id:episodeId,show_id:data.showId,slug:data.slug,title:data.title,
         description:data.description,duration_seconds:data.durationSeconds,
         audio_object_key:key,audio_bytes:data.fileBytes,status:'draft',
+        episode_number:data.episodeNumber??null,season_number:data.seasonNumber,
       });
       if(error) return NextResponse.json({error:error.message},{status:422});
       return NextResponse.json({episodeId,uploadUrl,key});
@@ -72,8 +91,10 @@ export async function POST(request:Request) {
     const {data:episode}=await db.from('podcast_episodes')
       .select('id,show_id,status,audio_object_key,audio_bytes').eq('id',data.episodeId).maybeSingle();
     if(!episode || episode.status!=='draft' || !episode.audio_object_key) return NextResponse.json({error:'Episode not in draft state'}, {status:404});
-    const {data:show}=await db.from('podcast_shows').select('id').eq('id',episode.show_id).eq('status','published').maybeSingle();
-    if(!show) return NextResponse.json({error:'Podcast show is not published'}, {status:404});
+    const {data:show}=await db.from('podcast_shows').select('id,owner_id,artist_id').eq('id',episode.show_id).eq('status','published').maybeSingle();
+    if(!show || (!staff && (show.owner_id!==user.id || !show.artist_id || !user.artistIds.includes(show.artist_id)))) {
+      return NextResponse.json({error:'Podcast series not owned by this artist'}, {status:403});
+    }
 
     // Verify BOTH the object size and the MP3 signature on R2.
     // A signed PUT URL permits uploading bytes different from what the user
