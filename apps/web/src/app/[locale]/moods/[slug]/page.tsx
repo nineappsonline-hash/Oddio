@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -53,7 +54,8 @@ export default async function MoodPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const contentLanguage = await getContentLanguagePreference();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
   const page = getMoodPage(db, viewer, slug);
   if (!page) notFound();
   const label = locale === 'ar' ? page.mood.labelAr : page.mood.labelEn;
