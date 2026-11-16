@@ -11,6 +11,10 @@ import { DesktopTopBar } from '@/components/layout/DesktopTopBar';
 import { ListeningRail } from '@/components/layout/ListeningRail';
 import { MobileHeader, MobileNav } from '@/components/layout/MobileNav';
 import { Footer } from '@/components/layout/Footer';
+import { ExperienceSwitcher } from '@/components/layout/ExperienceSwitcher';
+import { useLocalePath } from '@/lib/use-locale-path';
+import { usePlayer } from '@/lib/player-store';
+import { useEffect } from 'react';
 import { AmbientBackground } from '@/components/visuals/AmbientBackground';
 import { useT } from '@/i18n/use-translator';
 import type { Locale } from '@ai-music/contracts';
@@ -25,6 +29,10 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const t = useT();
+  const { pathname } = useLocalePath();
+  const podcastMode = pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
+  const setMusicPlaying = usePlayer((state) => state.setPlaying);
+  useEffect(() => { if (podcastMode) setMusicPlaying(false); }, [podcastMode, setMusicPlaying]);
   return (
     <SessionProvider user={user}>
       <ToastProvider>
@@ -37,20 +45,25 @@ export function AppShell({
           </a>
           <AmbientBackground />
           <Sidebar user={user} />
-          <div className="oddio-workspace relative z-10 lg:ps-[244px] 2xl:pe-[300px]">
+          <div className={`oddio-workspace relative z-10 lg:ps-[244px] ${podcastMode ? "2xl:pe-0" : "2xl:pe-[300px]"}`}>
             <MobileHeader user={user} />
             <DesktopTopBar />
+            <ExperienceSwitcher />
             <main
               id="main"
-              className="oddio-main-content mx-auto w-full max-w-[1720px] px-4 pb-48 pt-6 sm:px-6 lg:px-7 lg:pb-36 2xl:px-8"
+              className={`oddio-main-content mx-auto w-full max-w-[1720px] px-4 pt-6 sm:px-6 lg:px-7 2xl:px-8 ${podcastMode ? "pb-32 lg:pb-12" : "pb-48 lg:pb-36"}`}
             >
               {children}
             </main>
             <Footer locale={locale} />
           </div>
-          <ListeningRail />
-          <PlayerBar />
-          <FullPlayer />
+          {!podcastMode ? (
+            <>
+              <ListeningRail />
+              <PlayerBar />
+              <FullPlayer />
+            </>
+          ) : null}
           <MobileNav />
         </PlayerProvider>
       </ToastProvider>
