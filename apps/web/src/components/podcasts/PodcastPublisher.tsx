@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { PodcastCategory, PodcastShow } from '@/lib/podcasts/catalog';
 
-const field = 'w-full min-h-11 rounded-xl border border-white/15 bg-[#36283f] px-3 py-2 text-sm text-white outline-none focus:border-[#eab997]';
-const actionButton = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-[#eab997] px-5 text-sm font-bold text-[#100d13] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50';
+const field = 'w-full min-h-11 rounded-xl border border-white/15 bg-[#36283f] px-3 py-2 text-sm text-white outline-none focus:border-[#e9e9e9]';
+const actionButton = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-[#e9e9e9] px-5 text-sm font-bold text-[#100d13] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50';
 
 async function post(body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const response = await fetch('/api/podcasts/manage', {
@@ -82,18 +82,18 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
     {shows.length > 0 ? <section className="space-y-3" aria-label={ar?'سلاسل البودكاست الخاصة بك':'Your podcast series'}>
       <h2 className="text-xl font-bold text-white">{ar?'سلاسلي الحالية':'My podcast series'}</h2>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {shows.map(show=><Link key={show.id} href={`/${locale}/podcasts/shows/${show.slug}`} className="rounded-2xl border border-white/10 bg-[#241b2d] p-4 transition hover:border-[#eab997]/70">
-          <span className="text-xs font-bold uppercase tracking-wide text-[#eab997]">{ar?'سلسلة بودكاست':'PODCAST SERIES'}</span>
+        {shows.map(show=><Link key={show.id} href={`/${locale}/podcasts/shows/${show.slug}`} className="rounded-2xl border border-white/10 bg-[#202020] p-4 transition hover:border-[#e9e9e9]/70">
+          <span className="text-xs font-bold uppercase tracking-wide text-[#e9e9e9]">{ar?'سلسلة بودكاست':'PODCAST SERIES'}</span>
           <h3 className="mt-2 line-clamp-2 font-bold text-white">{show.title}</h3>
-          <p className="mt-1 truncate text-xs text-[#b8adbf]">{show.author}</p>
-          <p className="mt-2 text-xs font-semibold text-[#eab997]">{ar?'عرض الحلقات ←':'View episodes →'}</p>
+          <p className="mt-1 truncate text-xs text-[#a3a3a3]">{show.author}</p>
+          <p className="mt-2 text-xs font-semibold text-[#e9e9e9]">{ar?'عرض الحلقات ←':'View episodes →'}</p>
         </Link>)}
       </div>
     </section> : null}
     <div className="grid items-start gap-6 xl:grid-cols-2">
-      <form onSubmit={createShow} className="space-y-4 rounded-2xl border border-white/10 bg-[#241b2d] p-5">
+      <form onSubmit={createShow} className="space-y-4 rounded-2xl border border-white/10 bg-[#202020] p-5">
         <h2 className="text-xl font-bold text-white">{ar?'أنشئ سلسلة بودكاست':'Create a podcast series'}</h2>
-        <p className="text-sm leading-6 text-[#b8adbf]">{ar?'كل سلسلة لها اسم وموضوع، وتقدر تضيف لها حلقات مختلفة بترتيب واضح.':'Give one topic its own series, then publish related episodes in order.'}</p>
+        <p className="text-sm leading-6 text-[#a3a3a3]">{ar?'كل سلسلة لها اسم وموضوع، وتقدر تضيف لها حلقات مختلفة بترتيب واضح.':'Give one topic its own series, then publish related episodes in order.'}</p>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'حساب الفنان':'Artist profile'}<select required className={field} value={artistId} onChange={e=>setArtistId(e.target.value)}><option value="">{ar?'اختار الفنان':'Choose an artist'}</option>{artists.map(artist=><option key={artist.id} value={artist.id}>{artist.name}</option>)}</select></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'اسم البرنامج':'Show title'}<input required minLength={2} maxLength={160} className={field} value={showTitle} onChange={e=>setShowTitle(e.target.value)}/></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رابط البرنامج (حروف إنجليزية وأرقام وشرطات)':'Show slug (lowercase letters and dashes)'}<input required pattern="[a-z0-9]+(-[a-z0-9]+)*" className={field} value={showSlug} onChange={e=>setShowSlug(e.target.value)}/></label>
@@ -104,17 +104,17 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رابط صورة البرنامج (اختياري)':'Cover image URL (optional)'}<input type="url" className={field} value={coverUrl} onChange={e=>setCoverUrl(e.target.value)} placeholder="https://..."/></label>
         <button disabled={showBusy||!artistId} className={actionButton}>{showBusy?(ar?'جارٍ الحفظ...':'Saving...'):(ar?'أنشئ السلسلة':'Create series')}</button>
       </form>
-      <form onSubmit={publishEpisode} className="space-y-4 rounded-2xl border border-white/10 bg-[#241b2d] p-5">
+      <form onSubmit={publishEpisode} className="space-y-4 rounded-2xl border border-white/10 bg-[#202020] p-5">
         <h2 className="text-xl font-bold text-white">{ar?'أضف حلقة إلى سلسلة':'Add an episode to a series'}</h2>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'اختار السلسلة':'Podcast series'}<select required className={field} value={showId} onChange={e=>setShowId(e.target.value)}><option value="">{ar?'اختار السلسلة':'Choose a series'}</option>{shows.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'عنوان الحلقة':'Episode title'}<input required minLength={2} className={field} value={episodeTitle} onChange={e=>setEpisodeTitle(e.target.value)}/></label>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رابط الحلقة':'Episode slug'}<input required pattern="[a-z0-9]+(-[a-z0-9]+)*" className={field} value={episodeSlug} onChange={e=>setEpisodeSlug(e.target.value)}/></label>
         <div className="grid grid-cols-2 gap-3"><label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رقم الموسم':'Season number'}<input type="number" min="1" max="1000" required className={field} value={seasonNumber} onChange={e=>setSeasonNumber(e.target.value)}/></label><label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'رقم الحلقة (اختياري)':'Episode number (optional)'}<input type="number" min="1" max="100000" className={field} value={episodeNumber} onChange={e=>setEpisodeNumber(e.target.value)}/></label></div>
         <label className="block space-y-1 text-xs text-[#d8cbdc]">{ar?'وصف الحلقة':'Episode description'}<textarea rows={4} className={field} value={episodeDescription} onChange={e=>setEpisodeDescription(e.target.value)}/></label>
-        <label className="block space-y-2 text-xs text-[#d8cbdc]">{ar?'ملف صوت MP3 بحد أقصى 300 ميجابايت':'Audio MP3 file (max 300MB)'}<input type="file" accept=".mp3,audio/mpeg" required onChange={e=>setFile(e.target.files?.[0]??null)} className="block w-full rounded-xl border border-dashed border-white/20 bg-[#36283f] p-5 text-sm text-white file:me-3 file:rounded-lg file:border-0 file:bg-[#eab997] file:px-4 file:py-2 file:font-bold file:text-[#100d13]"/></label>
-        <p className="text-xs leading-6 text-[#b8adbf]">{ar?'الملف بيروح مباشرة إلى Cloudflare R2، وبيتم التأكد من رفعه قبل نشر الحلقة.':'Audio uploads directly to Cloudflare R2. Publishing is completed only after the file is verified.'}</p>
+        <label className="block space-y-2 text-xs text-[#d8cbdc]">{ar?'ملف صوت MP3 بحد أقصى 300 ميجابايت':'Audio MP3 file (max 300MB)'}<input type="file" accept=".mp3,audio/mpeg" required onChange={e=>setFile(e.target.files?.[0]??null)} className="block w-full rounded-xl border border-dashed border-white/20 bg-[#36283f] p-5 text-sm text-white file:me-3 file:rounded-lg file:border-0 file:bg-[#e9e9e9] file:px-4 file:py-2 file:font-bold file:text-[#100d13]"/></label>
+        <p className="text-xs leading-6 text-[#a3a3a3]">{ar?'الملف بيروح مباشرة إلى Cloudflare R2، وبيتم التأكد من رفعه قبل نشر الحلقة.':'Audio uploads directly to Cloudflare R2. Publishing is completed only after the file is verified.'}</p>
         <button disabled={episodeBusy||!shows.length} className={actionButton}>{episodeBusy?(ar?'جارٍ الرفع والتحقق...':'Uploading and verifying...'):(ar?'ارفع وانشر الحلقة':'Upload & publish episode')}</button>
-        {!shows.length?<p className="text-xs text-[#eab997]">{ar?'أنشئ سلسلة الأول علشان ترفع حلقاتها.':'Create a series first to upload an episode.'}</p>:null}
+        {!shows.length?<p className="text-xs text-[#e9e9e9]">{ar?'أنشئ سلسلة الأول علشان ترفع حلقاتها.':'Create a series first to upload an episode.'}</p>:null}
       </form>
     </div>
   </div>;
