@@ -1,3 +1,4 @@
+import { filterPodcastCatalog, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowUpRight, Mic2, Search } from 'lucide-react';
@@ -32,7 +33,7 @@ export default async function PodcastsHome({
   const locale = raw, ar = locale === 'ar';
   const { q: rawQuery } = await searchParams;
   const q = (rawQuery ?? '').trim().slice(0, 100).toLocaleLowerCase();
-  const catalog = await getPodcastCatalog();
+  const catalog = filterPodcastCatalog(await getPodcastCatalog(), await getContentLanguagePreference());
   const matchingShows = catalog.shows.filter((show) =>
     !q || [show.title, show.description, show.author].some((item) => item.toLocaleLowerCase().includes(q)));
   const matchingShowIds = new Set(matchingShows.map((show) => show.id));
