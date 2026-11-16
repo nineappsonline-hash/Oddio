@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ShareButton } from '@/components/community/ShareButton';
 import { notFound } from 'next/navigation';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
@@ -47,6 +48,7 @@ export default async function PodcastEpisodePage({ params }: { params: Promise<{
         <div className="min-w-0 space-y-3">
           <p className="text-xs font-bold uppercase tracking-widest text-[#e9e9e9]">{ar?'حلقة بودكاست':'PODCAST EPISODE'}</p>
           <h1 className="break-words text-2xl font-black text-white sm:text-4xl">{episode.title}</h1>
+          <ShareButton title={episode.title} label={ar?'مشاركة':'Share'} url={`/${locale}/podcasts/episodes/${episode.id}`} />
           <Link href={`/${locale}/podcasts/shows/${show.slug}`} className="block text-sm font-semibold text-[#e9e9e9] hover:underline">{show.title}</Link>
           {episode.episodeNumber !== null ? <p className="text-xs font-semibold text-[#e9e9e9]">{ar ? `الموسم ${episode.seasonNumber??1} · الحلقة ${episode.episodeNumber}` : `Season ${episode.seasonNumber??1} · Episode ${episode.episodeNumber}`}</p> : null}
           <p className="text-xs text-[#a3a3a3]" dir="auto">
