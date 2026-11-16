@@ -32,12 +32,17 @@ export async function POST(request:Request) {
     return NextResponse.json({error:'Not authorized'}, {status:403});
   }
   if(demoMode) return NextResponse.json({error:'Database not configured'}, {status:503});
+  // This endpoint only accepts first-party, same-origin administrative actions.
+  const origin = request.headers.get('origin');
+  if (origin && new URL(origin).origin !== new URL(request.url).origin) {
+    return NextResponse.json({ error: 'Cross-origin publishing is forbidden' }, { status: 403 });
+  }
   const json:unknown=await request.json().catch(()=>null);
   const parsed=inputSchema.safeParse(json);
   if(!parsed.success) return NextResponse.json({error:'Invalid podcast details',fields:parsed.error.flatten()}, {status:422});
   const data=parsed.data;
-  const db=serviceClient();
   try {
+    const db=serviceClient();
     if(data.action==='show') {
       const {data:category}=await db.from('podcast_categories').select('id').eq('id',data.categoryId).eq('active',true).maybeSingle();
       if(!category) return NextResponse.json({error:'Select a valid podcast category'}, {status:422});
@@ -50,37 +55,54 @@ export async function POST(request:Request) {
       return NextResponse.json({show});
     }
     if(data.action==='episode') {
+      // Check the storage connection before leaving an orphan draft.
+      const episodeId=randomUUID(), key=`podcasts/${episodeId}.mp3`;
+      const uploadUrl=presignR2StreamingPut(key);
       const {data:show}=await db.from('podcast_shows').select('id').eq('id',data.showId).eq('status','published').maybeSingle();
       if(!show) return NextResponse.json({error:'Podcast show is not published'}, {status:404});
-      const episodeId=randomUUID(), key=`podcasts/${episodeId}.mp3`;
       const {error}=await db.from('podcast_episodes').insert({
         id:episodeId,show_id:data.showId,slug:data.slug,title:data.title,
         description:data.description,duration_seconds:data.durationSeconds,
-        audio_object_key:key,status:'draft',
+        audio_object_key:key,audio_bytes:data.fileBytes,status:'draft',
       });
       if(error) return NextResponse.json({error:error.message},{status:422});
-      return NextResponse.json({episodeId,uploadUrl:presignR2StreamingPut(key),key});
+      return NextResponse.json({episodeId,uploadUrl,key});
     }
     if(!isPodcastId(data.episodeId)) return NextResponse.json({error:'Invalid episode'},{status:422});
     const {data:episode}=await db.from('podcast_episodes')
-      .select('id,show_id,status,audio_object_key').eq('id',data.episodeId).maybeSingle();
+      .select('id,show_id,status,audio_object_key,audio_bytes').eq('id',data.episodeId).maybeSingle();
     if(!episode || episode.status!=='draft' || !episode.audio_object_key) return NextResponse.json({error:'Episode not in draft state'}, {status:404});
     const {data:show}=await db.from('podcast_shows').select('id').eq('id',episode.show_id).eq('status','published').maybeSingle();
     if(!show) return NextResponse.json({error:'Podcast show is not published'}, {status:404});
 
-    // Verify that Cloudflare has the uploaded audio before making it public.
-    // Range fetch avoids pulling the entire podcast through Vercel.
+    // Verify BOTH the object size and the MP3 signature on R2.
+    // A signed PUT URL permits uploading bytes different from what the user
+    // claimed, so trusting fileBytes alone would bypass the upload limit.
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),10000);
     let valid=false;
     try {
       const response=await fetch(presignR2Get(episode.audio_object_key),{
-        headers:{Range:'bytes=0-0'},signal:controller.signal,cache:'no-store',
+        headers:{Range:'bytes=0-2'},signal:controller.signal,cache:'no-store',
       });
-      valid=response.status===206 && !!response.headers.get('content-range');
+      const range=response.headers.get('content-range') ?? '';
+      const match=/^bytes 0-2\/(\d+)$/.exec(range);
+      const actualBytes=match ? Number(match[1]) : 0;
+      const expectedBytes=Number(episode.audio_bytes);
+      // Reading only 3 bytes keeps Vercel compute and egress minimal.
+      const bytes=response.status===206 ? new Uint8Array(await response.arrayBuffer()) : new Uint8Array();
+      const mp3Header=bytes.length===3 && (
+        (bytes[0]===0x49 && bytes[1]===0x44 && bytes[2]===0x33) ||
+        (bytes[0]===0xff && (bytes[1]! & 0xe0)===0xe0)
+      );
+      valid=Boolean(
+        mp3Header &&
+        Number.isFinite(actualBytes) && actualBytes>=1024 && actualBytes<=300*1024*1024 &&
+        Number.isFinite(expectedBytes) && expectedBytes===actualBytes
+      );
       await response.body?.cancel();
     } finally {clearTimeout(timeout);}
-    if(!valid) return NextResponse.json({error:'Audio upload has not been verified on Cloudflare R2'},{status:409});
+    if(!valid) return NextResponse.json({error:'Cloudflare MP3 verification failed: check upload size, file type or R2 readiness.'},{status:409});
     const {error}=await db.from('podcast_episodes')
       .update({status:'published',published_at:new Date().toISOString(),updated_at:new Date().toISOString()})
       .eq('id',episode.id).eq('status','draft');
