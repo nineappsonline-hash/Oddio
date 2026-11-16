@@ -534,7 +534,7 @@ export function FullPlayer() {
                 <span>{formatDuration(duration * 1000)}</span>
               </div>
 
-            <div className="mt-3 flex min-w-0 items-center justify-center gap-1 sm:gap-5">
+            <div className="mt-3 flex min-w-0 flex-wrap items-center justify-center gap-x-1 gap-y-2 sm:gap-x-4">
               <button
                 type="button"
                 onClick={() => {
@@ -646,7 +646,7 @@ export function FullPlayer() {
                   <Repeat className="h-5 w-5" />
                 )}
               </button>
-              <div className="ms-1 flex shrink-0 items-center gap-1 border-s border-white/15 ps-2 sm:ms-3 sm:gap-2 sm:ps-4" role="group" aria-label={t('player.volume')}>
+              <div className="flex w-full shrink-0 items-center justify-center gap-2 border-t border-white/15 pt-2 sm:ms-2 sm:w-auto sm:border-s sm:border-t-0 sm:ps-3 sm:pt-0" role="group" aria-label={t('player.volume')}>
                 <button
                   type="button"
                   onClick={toggleMute}
