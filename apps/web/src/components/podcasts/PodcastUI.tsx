@@ -87,36 +87,32 @@ export function PodcastEpisodeRow({ episode, show, locale, index, upcoming = [] 
   const duration = episode.durationSeconds > 0 ? formatPodcastTime(episode.durationSeconds) : null;
   return (
     <PodcastPlaySurface episode={episode} show={show} locale={locale} upcoming={upcoming}
-      className="group flex min-w-0 items-center gap-3 rounded-2xl border border-white/[0.09] bg-[#1d1922] px-3 py-3 transition-all duration-200 hover:border-[#a06cc5]/55 hover:bg-[#292131] sm:gap-5 sm:px-5 sm:py-4"
+      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[20px] border border-white/10 bg-[#201926] p-3.5 text-start shadow-[0_12px_32px_rgba(0,0,0,0.15)] transition-all duration-200 hover:-translate-y-1 hover:border-[#a06cc5]/60 hover:bg-[#2a2031] hover:shadow-[0_18px_42px_rgba(0,0,0,0.25)] sm:p-4"
     >
-      <span className="hidden w-7 shrink-0 text-center text-sm font-semibold tabular-nums text-[#8e829b] sm:block" aria-hidden="true">
-        {String(index + 1).padStart(2, '0')}
+      <span className="relative block w-full overflow-hidden rounded-2xl">
+        <PodcastArtwork title={show.title} coverUrl={show.coverUrl} className="w-full !rounded-2xl" />
+        <span aria-hidden="true" className="absolute bottom-3 end-3 grid h-12 w-12 place-items-center rounded-full border border-white/20 bg-[#241a33]/85 shadow-lg backdrop-blur-sm transition-transform group-hover:scale-110">
+          <OddioPlayIcon size={43} />
+        </span>
       </span>
-      <PodcastArtwork
-        title={show.title}
-        coverUrl={show.coverUrl}
-        className="!rounded-xl h-[66px] w-[66px] sm:h-[84px] sm:w-[84px]"
-      />
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-        <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold text-[#bca0d6]">
-          <span>{ar ? `الحلقة ${number}` : `EPISODE ${number}`}</span>
+      <span className="mt-4 flex w-full min-w-0 flex-1 flex-col gap-2 px-0.5 pb-1">
+        <span className="flex items-center gap-2 text-[11px] font-semibold tracking-wide text-[#c5a5df]">
+          {ar ? `الحلقة ${number}` : `EPISODE ${number}`}
           {episode.seasonNumber && episode.seasonNumber > 1 ? (
-            <span className="text-[#82758d]">· {ar ? `الموسم ${episode.seasonNumber}` : `Season ${episode.seasonNumber}`}</span>
+            <span className="text-[#9885a5]">· {ar ? `الموسم ${episode.seasonNumber}` : `Season ${episode.seasonNumber}`}</span>
           ) : null}
         </span>
-        <span dir="auto" className="line-clamp-2 min-w-0 break-words text-sm font-bold leading-6 text-white transition-colors group-hover:text-[#e4c4ff] sm:text-[17px] sm:leading-7">
+        <span dir="auto" className="line-clamp-2 min-h-[3.25rem] w-full break-words text-base font-bold leading-[1.65rem] text-white transition-colors group-hover:text-[#e9c9ff] sm:text-lg">
           {episode.title}
         </span>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#aaa0b2]">
-          {duration ? (
-            <span className="inline-flex items-center gap-1.5" dir="ltr">
-              <Clock3 size={13} aria-hidden="true" />{duration}
-            </span>
-          ) : null}
-          {episode.description ? <span dir="auto" className="hidden max-w-[36rem] truncate text-[#8f849a] md:inline">{episode.description}</span> : null}
-        </div>
-      </div>
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#32253e] transition-all group-hover:bg-[#483159]" aria-hidden="true"><OddioPlayIcon size={38} /></span>
+        <span className="mt-auto flex items-center justify-between gap-2 pt-2 text-xs text-[#a99bb5]">
+          <span className="inline-flex items-center gap-1.5" dir="ltr">
+            <Clock3 size={14} aria-hidden="true" />
+            {duration ?? (ar ? 'حلقة صوتية' : 'Audio episode')}
+          </span>
+          <span className="text-[#c39ee4]">{ar ? 'استمع الآن' : 'Listen now'}</span>
+        </span>
+      </span>
     </PodcastPlaySurface>
   );
 }
