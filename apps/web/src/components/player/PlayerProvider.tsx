@@ -16,6 +16,7 @@ import {
   parsePlayerSession,
 } from '@/lib/player-session';
 import type { CatalogTrack, HomeData } from '@/lib/data/queries';
+import { isPodcastPlayback } from '@/lib/podcast-playback';
 import { useToast } from '@/components/providers/ToastProvider';
 
 interface PlaybackAuthorization {
@@ -243,7 +244,7 @@ export function PlayerProvider({
     const saveCloud = () => {
       if (!viewerId) return;
       const state = usePlayer.getState();
-      if (!state.track) return;
+      if (!state.track || isPodcastPlayback(state.track)) return;
       void apiRequest('/api/player/resume', {
         method: 'PUT',
         body: JSON.stringify({
@@ -284,7 +285,7 @@ export function PlayerProvider({
   const sendEvent = useCallback(
     (eventType: PlaybackEventInput['eventType'], audibleMs: number) => {
       const state = usePlayer.getState();
-      if (!state.track || !sessionRef.current) return;
+      if (!state.track || isPodcastPlayback(state.track) || !sessionRef.current) return;
       const payload: PlaybackEventInput = {
         sessionId: sessionRef.current,
         trackId: state.track.id,
@@ -360,6 +361,12 @@ export function PlayerProvider({
         audibleRef.current.lastSent = 0;
         audibleRef.current.qualified = false;
       }
+    } else if (isPodcastPlayback(state.track)) {
+      sessionRef.current = null;
+      const url=`/api/podcasts/episodes/${encodeURIComponent(trackId)}/audio`;
+      streamRef.current=url;
+      setStream(url);
+      state.setDuration(state.track.durationMs/1000);
     } else
       apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
         method: 'POST',
@@ -465,7 +472,7 @@ export function PlayerProvider({
           repeatOne: state.repeat === 'one',
           queued: Boolean(queued),
         }) &&
-        queued
+        queued && !isPodcastPlayback(state.track) && !isPodcastPlayback(queued)
       ) {
         const warmId = queued.id;
         if (warmedRef.current?.trackId !== warmId && warmingRef.current !== warmId) {
@@ -499,7 +506,7 @@ export function PlayerProvider({
         remaining <= state.crossfadeSeconds &&
         remaining > 0 &&
         state.isPlaying &&
-        state.repeat !== 'one'
+        state.repeat !== 'one' && !isPodcastPlayback(state.track) && !isPodcastPlayback(queued)
       ) {
         if (
           !crossfadingRef.current &&
