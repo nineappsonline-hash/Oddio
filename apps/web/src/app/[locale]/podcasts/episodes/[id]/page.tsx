@@ -39,24 +39,24 @@ export default async function PodcastEpisodePage({ params }: { params: Promise<{
         ...(episode.durationSeconds>0?{timeRequired:`PT${episode.durationSeconds}S`}:{}),
         partOfSeries:{'@type':'PodcastSeries',name:show.title,url:seoAbsoluteUrl(`/${locale}/podcasts/shows/${show.slug}`)},
       }}/>
-      <Link href={`/${locale}/podcasts/shows/${show.slug}`} className="inline-flex text-sm font-semibold text-[#eab997] hover:underline">
+      <Link href={`/${locale}/podcasts/shows/${show.slug}`} className="inline-flex text-sm font-semibold text-[#e9e9e9] hover:underline">
         {ar?'← رجوع للبرنامج':'← Back to show'}
       </Link>
-      <header className="grid items-center gap-6 rounded-3xl border border-white/10 bg-[#241b2d] p-5 sm:grid-cols-[210px_minmax(0,1fr)] sm:p-8">
+      <header className="grid items-center gap-6 rounded-3xl border border-white/10 bg-[#202020] p-5 sm:grid-cols-[210px_minmax(0,1fr)] sm:p-8">
         <PodcastArtwork title={show.title} coverUrl={show.coverUrl} className="mx-auto w-full max-w-[210px]"/>
         <div className="min-w-0 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#eab997]">{ar?'حلقة بودكاست':'PODCAST EPISODE'}</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-[#e9e9e9]">{ar?'حلقة بودكاست':'PODCAST EPISODE'}</p>
           <h1 className="break-words text-2xl font-black text-white sm:text-4xl">{episode.title}</h1>
-          <Link href={`/${locale}/podcasts/shows/${show.slug}`} className="block text-sm font-semibold text-[#eab997] hover:underline">{show.title}</Link>
-          {episode.episodeNumber !== null ? <p className="text-xs font-semibold text-[#eab997]">{ar ? `الموسم ${episode.seasonNumber??1} · الحلقة ${episode.episodeNumber}` : `Season ${episode.seasonNumber??1} · Episode ${episode.episodeNumber}`}</p> : null}
-          <p className="text-xs text-[#b8adbf]" dir="auto">
+          <Link href={`/${locale}/podcasts/shows/${show.slug}`} className="block text-sm font-semibold text-[#e9e9e9] hover:underline">{show.title}</Link>
+          {episode.episodeNumber !== null ? <p className="text-xs font-semibold text-[#e9e9e9]">{ar ? `الموسم ${episode.seasonNumber??1} · الحلقة ${episode.episodeNumber}` : `Season ${episode.seasonNumber??1} · Episode ${episode.episodeNumber}`}</p> : null}
+          <p className="text-xs text-[#a3a3a3]" dir="auto">
             {episode.publishedAt?new Date(episode.publishedAt).toLocaleDateString(ar?'ar-EG':'en-US',{dateStyle:'medium'}):''}
             {episode.durationSeconds>0?` · ${formatPodcastTime(episode.durationSeconds)}`:''}
           </p>
         </div>
       </header>
       <PodcastEpisodePlayer episodeId={episode.id} initialDuration={episode.durationSeconds} locale={locale}/>
-      {episode.description?<section className="space-y-3 rounded-2xl border border-white/10 bg-[#241b2d] p-5">
+      {episode.description?<section className="space-y-3 rounded-2xl border border-white/10 bg-[#202020] p-5">
         <h2 className="text-xl font-bold text-white">{ar?'عن الحلقة':'About this episode'}</h2>
         <p className="whitespace-pre-line text-sm leading-8 text-[#d0c4d6]">{episode.description}</p>
       </section>:null}
