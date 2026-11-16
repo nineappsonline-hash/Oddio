@@ -48,7 +48,7 @@ export default async function PodcastShowPage({params}:{params:Promise<{locale:s
       {episodes.length ? (
         <div className="flex flex-col gap-2.5">
           {episodes.map((episode,index)=>(
-            <PodcastEpisodeRow key={episode.id} episode={episode} show={show} locale={locale} index={index}/>
+            <PodcastEpisodeRow key={episode.id} episode={episode} show={show} locale={locale} index={index} upcoming={episodes.slice(index+1)}/>
           ))}
         </div>
       ) : <PodcastEmpty locale={locale}/>}
