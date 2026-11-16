@@ -31,11 +31,18 @@ export default async function PodcastManagement({params}:{params:Promise<{locale
   return <div className="space-y-8 pb-9">
     <header className="space-y-3">
       <p className="text-xs font-black uppercase tracking-widest text-[#e9e9e9]">{ar?'استوديو البودكاست':'PODCAST STUDIO'}</p>
-      <h1 className="text-3xl font-black text-white sm:text-4xl">{ar?'أنشئ برامج وحلقات جديدة':'Publish original conversations'}</h1>
+      <h1 className="text-3xl font-black text-white sm:text-4xl">{ar?'أنشئ سلاسل بودكاست وحلقات':'Create podcast series and episodes'}</h1>
       <p className="max-w-3xl text-sm leading-7 text-[#a3a3a3]">{ar?'أنشئ برنامج بودكاست ثم ارفع حلقات MP3 إلى Cloudflare R2. الحلقات لا تظهر للجمهور إلا بعد نجاح رفع الملف والتحقق منه.':'Create a podcast show, then upload MP3 episodes directly to Cloudflare R2. Episodes become public only after audio upload verification.'}</p>
       <Link href={`/${locale}/podcasts`} className="inline-block text-sm font-semibold text-[#e9e9e9] hover:underline">{ar?'عرض قسم البودكاست':'View podcast experience'} →</Link>
     </header>
-    {ready ? <PodcastPublisher locale={locale} categories={catalog.categories} shows={ownedShows} artists={artistProfiles} /> :
+    {ready && !artistProfiles.length ? (
+      <div className="space-y-3 rounded-2xl border border-[#725797] bg-[#2a1e39] p-6">
+        <h2 className="text-lg font-bold text-white">{ar?'أنشئ ملف فنان أولًا':'Create your artist profile first'}</h2>
+        <p className="max-w-2xl text-sm leading-7 text-[#d0c1dc]">{ar?'علشان تضيف سلسلة بودكاست، لازم يكون ليك حساب فنان معتمد. أنشئ ملف الفنان أو كمل اعتماده وبعدين ارجع هنا.':'To create podcast series, you need an approved artist profile. Create or complete your artist profile, then return here to publish your series.'}</p>
+        <Link href={`/${locale}/studio/artists/new`} className="inline-flex min-h-11 items-center rounded-xl bg-[#76549d] px-5 text-sm font-bold text-white hover:brightness-110">{ar?'إنشاء ملف فنان':'Create artist profile'} →</Link>
+      </div>
+    ) : null}
+    {ready && artistProfiles.length ? <PodcastPublisher locale={locale} categories={catalog.categories} shows={ownedShows} artists={artistProfiles} /> :
       <div role="alert" className="rounded-2xl border border-amber-500/30 bg-amber-950/30 p-6 text-sm leading-8 text-amber-100">
         {ar?'قاعدة بيانات البودكاست لسه محتاجة Migration: supabase/migrations/20261116010000_podcast_catalog.sql. التصنيفات ظاهرة للزوار، لكن النشر مش متاح قبل تنفيذها.':'The podcast database migration has not been applied yet. Public categories are visible, but publishing is disabled until supabase/migrations/20261116010000_podcast_catalog.sql is applied.'}
       </div>}
