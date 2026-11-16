@@ -121,7 +121,9 @@ export async function POST(request:Request) {
         Number.isFinite(actualBytes) && actualBytes>=1024 && actualBytes<=300*1024*1024 &&
         Number.isFinite(expectedBytes) && expectedBytes===actualBytes
       );
-      await response.body?.cancel();
+      // arrayBuffer() fully consumes and locks the response stream.
+      // Calling response.body.cancel() afterwards throws ERR_INVALID_STATE,
+      // incorrectly marking a successful upload verification as a 503.
     } finally {clearTimeout(timeout);}
     if(!valid) return NextResponse.json({error:'Cloudflare MP3 verification failed: check upload size, file type or R2 readiness.'},{status:409});
     const {error}=await db.from('podcast_episodes')
@@ -129,7 +131,9 @@ export async function POST(request:Request) {
       .eq('id',episode.id).eq('status','draft');
     if(error) return NextResponse.json({error:error.message},{status:422});
     return NextResponse.json({published:true,episodeId:episode.id});
-  } catch {
-    return NextResponse.json({error:'Podcast publishing is unavailable. Confirm migration and R2 configuration.'},{status:503});
+  } catch (error) {
+    // Avoid exposing storage credentials, signed URLs, or internal details in the response.
+    console.error('[podcasts/manage] publishing failed', error instanceof Error ? {name:error.name,message:error.message} : 'Unknown error');
+    return NextResponse.json({error:'Podcast publishing failed while checking the uploaded file. Please retry. If it continues, contact support.'},{status:503});
   }
 }
