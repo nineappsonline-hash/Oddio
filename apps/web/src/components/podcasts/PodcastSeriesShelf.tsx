@@ -29,7 +29,7 @@ export function PodcastSeriesShelf({ locale, count, children }: Props) {
   }
 
   return (
-    <section aria-labelledby="podcast-series-heading" className="min-w-0 space-y-4">
+    <section id="series" aria-labelledby="podcast-series-heading" className="min-w-0 space-y-4">
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
           <h2 id="podcast-series-heading" className="text-2xl font-bold text-white sm:text-[27px]">
