@@ -366,7 +366,7 @@ export function PlayerProvider({
       const url=`/api/podcasts/episodes/${encodeURIComponent(trackId)}/audio`;
       streamRef.current=url;
       setStream(url);
-      state.setDuration(state.track.durationMs/1000);
+      state.setDuration((state.track?.durationMs ?? 0)/1000);
     } else
       apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
         method: 'POST',
