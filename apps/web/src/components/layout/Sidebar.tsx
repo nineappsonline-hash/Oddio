@@ -53,12 +53,10 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
 
   const items = podcastMode ? [
     { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'الرئيسية' : 'Podcast home', icon: 'home', exact: true },
-    { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'تصنيفات البودكاست' : 'Categories', icon: 'discover' },
-    { href: `/${locale}/podcasts#series`, label: locale === 'ar' ? 'سلاسل البودكاست' : 'Podcast series', icon: 'library', exact: true },
-    { href: `/${locale}/podcasts#episodes`, label: locale === 'ar' ? 'أحدث الحلقات' : 'Latest episodes', icon: 'releases', exact: true },
-    { href: `/${locale}/podcasts/creators`, label: locale === 'ar' ? 'فنانو البودكاست' : 'Podcast creators', icon: 'studio' },
-    { href: `/${locale}/podcasts?q=`, label: locale === 'ar' ? 'ابحث عن بودكاست' : 'Find podcasts', icon: 'search' },
-    { href: `/${locale}`, label: locale === 'ar' ? 'قسم الموسيقى' : 'Music', icon: 'soundspace', exact: true },
+    { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'التصنيفات' : 'Categories', icon: 'discover' },
+    { href: `/${locale}/podcasts#series`, label: locale === 'ar' ? 'السلاسل' : 'Podcast series', icon: 'library', exact: true },
+    { href: `/${locale}/podcasts/creators`, label: locale === 'ar' ? 'صنّاع البودكاست' : 'Creators', icon: 'studio' },
+    { href: `/${locale}`, label: locale === 'ar' ? 'الموسيقى' : 'Music', icon: 'soundspace', exact: true },
   ] : [
     { href: `/${locale}`, label: t('nav.home'), icon: 'home', exact: true },
     { href: `/${locale}/discover`, label: t('nav.discover'), icon: 'discover' },
@@ -111,24 +109,14 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
   const canPublishPodcasts = Boolean(currentUser?.isArtistManager || staff);
   if (podcastMode && canPublishPodcasts) {
     items.push(
-      { href: `/${locale}/podcasts/me`, label: locale === 'ar' ? 'صفحتي كفنان' : 'My podcast profile', icon: 'studio', exact: true },
+      { href: `/${locale}/podcasts/me`, label: locale === 'ar' ? 'ملفي' : 'My profile', icon: 'studio', exact: true },
       { href: `/${locale}/podcasts/manage`, label: locale === 'ar' ? 'استوديو البودكاست' : 'Podcast Studio', icon: 'studio', exact: false },
-      { href: `/${locale}/podcasts/manage#create-series`, label: locale === 'ar' ? '+ إنشاء سلسلة بودكاست' : '+ Create podcast series', icon: 'releases', exact: true },
-      { href: `/${locale}/podcasts/manage#add-episode`, label: locale === 'ar' ? 'إضافة حلقة' : 'Add an episode', icon: 'library', exact: true },
     );
   }
   if (podcastMode && !canPublishPodcasts) {
     items.push({
       href: currentUser ? `/${locale}/apply/artist` : `/${locale}/signup`,
       label: locale === 'ar' ? 'ابدأ بودكاست كفنان' : 'Create podcasts as an artist',
-      icon: 'studio',
-      exact: false,
-    });
-  }
-  if (podcastMode && currentUser?.isArtistManager) {
-    items.push({
-      href: `/${locale}/studio`,
-      label: locale === 'ar' ? 'استوديو الفنان' : 'Artist Studio',
       icon: 'studio',
       exact: false,
     });
