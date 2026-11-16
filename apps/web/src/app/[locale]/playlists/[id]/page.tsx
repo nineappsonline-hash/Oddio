@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -27,7 +28,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, id } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = await readRuntimeDb();
+  const db = filterMusicDb(await readRuntimeDb(), await getContentLanguagePreference());
   const page = getPlaylistPage(db, { userId: null, roles: [] }, idFromSegment(id));
   if (!page)
     return buildMetadata({
