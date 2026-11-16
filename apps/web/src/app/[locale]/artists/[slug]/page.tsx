@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import { getPodcastCatalog } from '@/lib/podcasts/catalog';
 import { PodcastShowCard } from '@/components/podcasts/PodcastUI';
@@ -70,7 +71,7 @@ export default async function ArtistPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), await getContentLanguagePreference());
   const page = getArtistPage(db, viewer, slug);
   if (!page) notFound();
   const { artist, tracks, albums, followerCount, isFollowing, featuredTrack } = page;
