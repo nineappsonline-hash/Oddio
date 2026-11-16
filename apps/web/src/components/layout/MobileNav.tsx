@@ -33,6 +33,8 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
   const { locale } = useLocalePath();
   const session = useSession();
   const currentUser = session.user ?? user;
+  const { pathname } = useLocalePath();
+  const podcastMode = pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
 
   return (
     <header
@@ -62,7 +64,7 @@ export function MobileHeader({ user }: { user: SessionUser | null }) {
       <div className="flex items-center gap-1">
         <Link
           prefetch={false}
-          href={`/${locale}/search`}
+          href={podcastMode ? `/${locale}/podcasts` : `/${locale}/search`}
           className="rounded-full p-2.5 text-muted transition hover:bg-white/10 hover:text-ink"
           aria-label={t('nav.search')}
         >
@@ -106,6 +108,7 @@ export function MobileNav() {
   const { locale, pathname } = useLocalePath();
   const { user } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
+  const podcastMode = pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
@@ -118,7 +121,12 @@ export function MobileNav() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [menuOpen]);
 
-  const items = [
+  const items = podcastMode ? [
+    { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'بودكاست' : 'Podcasts', icon: 'home', exact: true },
+    { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'تصنيفات' : 'Categories', icon: 'discover' },
+    { href: `/${locale}/podcasts?q=`, label: locale === 'ar' ? 'بحث' : 'Search', icon: 'search' },
+    { href: `/${locale}`, label: locale === 'ar' ? 'موسيقى' : 'Music', icon: 'soundspace', exact: true },
+  ] : [
     { href: `/${locale}`, label: t('nav.home'), icon: 'home', exact: true },
     { href: `/${locale}/soundspace`, label: 'Soundspace', icon: 'soundspace' },
     { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
@@ -235,6 +243,10 @@ export function MobileNav() {
             ) : null}
             <div className="grid gap-2">
               {[
+                ...(podcastMode ? [
+                  { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'البودكاست' : 'Podcasts home', icon: 'home' },
+                  { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'تصنيفات البودكاست' : 'Podcast categories', icon: 'discover' },
+                ] : []),
                 { href: `/${locale}`, label: t('nav.home'), icon: 'home' },
                 {
                   href: `/${locale}/discover`,
@@ -304,6 +316,11 @@ export function MobileNav() {
                         icon: Mic2,
                       },
                     ]
+                  : []),
+                ...(podcastMode && user?.roles.some(role => role === 'super_admin' || role === 'admin')
+                  ? [{ href: `/${locale}/podcasts/manage`,
+                       label: locale === 'ar' ? 'إدارة البودكاست' : 'Podcast Studio',
+                       icon: Mic2 }]
                   : []),
                 ...(user && user.roles.length > 0
                   ? [

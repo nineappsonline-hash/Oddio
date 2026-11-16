@@ -1,0 +1,24 @@
+import { notFound } from 'next/navigation';
+import { isLocale } from '@/i18n/config';
+import { buildMetadata } from '@/lib/seo';
+import { getPodcastCatalog } from '@/lib/podcasts/catalog';
+import { PodcastCategoryCard } from '@/components/podcasts/PodcastUI';
+
+export const dynamic = 'force-dynamic';
+export async function generateMetadata({ params }: { params: Promise<{locale:string}> }) {
+  const {locale:raw}=await params; const locale=isLocale(raw)?raw:'en';
+  return buildMetadata({locale,path:'/podcasts/categories',title:locale==='ar'?'تصنيفات البودكاست':'Podcast Categories',
+    description:locale==='ar'?'استكشف تصنيفات بودكاست Oddio: تكنولوجيا، أعمال، علوم، تعليم، ثقافة، قصص، رياضة والمزيد.':'Browse podcast categories on Oddio: technology, business, science, education, comedy, culture, stories, sports and more.'});
+}
+export default async function PodcastCategories({params}:{params:Promise<{locale:string}>}) {
+  const {locale}=await params; if(!isLocale(locale)) notFound();
+  const catalog=await getPodcastCatalog();
+  return <div className="space-y-7 pb-8">
+    <header className="space-y-3">
+      <p className="text-xs font-black uppercase tracking-widest text-[#eab997]">{locale==='ar'?'كل المواضيع':'ALL TOPICS'}</p>
+      <h1 className="text-3xl font-black text-white sm:text-4xl">{locale==='ar'?'تصنيفات البودكاست':'Podcast categories'}</h1>
+      <p className="max-w-2xl text-sm leading-8 text-[#b8adbf]">{locale==='ar'?'اختار الموضوع اللي بتحبه، واكتشف البرامج والحلقات المتاحة في كل تصنيف.':'Pick a topic you enjoy and explore all published shows and episodes in its category.'}</p>
+    </header>
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{catalog.categories.map(category=><PodcastCategoryCard key={category.slug} category={category} locale={locale}/>)}</div>
+  </div>;
+}

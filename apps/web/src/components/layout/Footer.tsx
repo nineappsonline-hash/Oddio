@@ -43,6 +43,20 @@ export function Footer({ locale }: { locale: Locale }) {
             </Link>
             <Link
               prefetch={false}
+              href={`/${locale}/podcasts`}
+              className="block hover:text-ink"
+            >
+              {locale === 'ar' ? 'بودكاست' : 'Podcasts'}
+            </Link>
+            <Link
+              prefetch={false}
+              href={`/${locale}/podcasts/categories`}
+              className="block hover:text-ink"
+            >
+              {locale === 'ar' ? 'تصنيفات البودكاست' : 'Podcast categories'}
+            </Link>
+            <Link
+              prefetch={false}
               href={`/${locale}/genres`}
               className="block hover:text-ink"
             >
