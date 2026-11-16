@@ -7,6 +7,7 @@ import { getPodcastCatalog } from '@/lib/podcasts/catalog';
 import { getContentLanguagePreference, filterPodcastCatalog } from '@/lib/content-language';
 import { serviceClient } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
+import { getSessionUser } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,8 @@ export default async function PodcastCreators({ params }: { params: Promise<{ lo
   if (!isLocale(locale)) notFound();
   const ar = locale === 'ar';
   const catalog = filterPodcastCatalog(await getPodcastCatalog(), await getContentLanguagePreference());
+  const user = await getSessionUser();
+  const canPublish = Boolean(user?.isArtistManager || user?.roles.some(role => role === 'admin' || role === 'super_admin'));
   const ids = [...new Set(catalog.shows.map(s => s.artistId).filter((id): id is string => !!id))];
   const artists = !demoMode && ids.length
     ? (await serviceClient().from('artists').select('id,slug,name,bio,verification_status').in('id', ids)).data ?? []
@@ -58,9 +61,9 @@ export default async function PodcastCreators({ params }: { params: Promise<{ lo
     </div> : <div className="rounded-2xl border border-dashed border-[#54475c] bg-[#241b2d] px-6 py-9 text-sm leading-7 text-[#b8adbf]">
       {ar ? 'الفنانين هيظهروا هنا أول ما ينشروا أول سلسلة بودكاست. لو أنت فنان، تقدر تبدأ من استوديو البودكاست.' : 'Creators will appear here when their first podcast series goes live. Artists can get started in Podcast Studio.'}
     </div>}
-    <Link href={`/${locale}/podcasts/manage`}
+    <Link href={canPublish ? `/${locale}/podcasts/manage#create-series` : user ? `/${locale}/apply/artist` : `/${locale}/signup`}
       className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#6b508a] bg-[#352740] px-5 text-sm font-semibold text-white hover:bg-[#49365b]">
-      <Mic2 className="h-4 w-4" /> {ar ? 'ابدأ سلسلة بودكاست' : 'Create a podcast series'} <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
+      <Mic2 className="h-4 w-4" /> {canPublish ? (ar ? 'أنشئ سلسلة بودكاست' : 'Create a podcast series') : (ar ? 'كن فنان بودكاست' : 'Become a podcast creator')} <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
     </Link>
   </div>;
 }
