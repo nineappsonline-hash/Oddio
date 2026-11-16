@@ -41,6 +41,19 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
   const [showBusy,setShowBusy]=useState(false),[episodeBusy,setEpisodeBusy]=useState(false);
   const [notice,setNotice]=useState(''),[error,setError]=useState('');
   const [file,setFile]=useState<File|null>(null);
+  const [audioDragging,setAudioDragging]=useState(false);
+  const audioInput=useRef<HTMLInputElement>(null);
+  function chooseAudio(selected:File|undefined) {
+    if (!selected) return;
+    if (!/\.mp3$/i.test(selected.name) || (selected.type && !['audio/mpeg','audio/mp3','audio/x-mpeg'].includes(selected.type)) ||
+        selected.size < 1024 || selected.size > 300*1024*1024) {
+      setError(ar?'اختار ملف MP3 سليم بحجم أقل من 300 ميجابايت.':'Choose a valid MP3 file up to 300MB.');
+      return;
+    }
+    setFile(selected);
+    setError('');
+    setNotice('');
+  }
   const [localShows,setLocalShows]=useState<PodcastShow[]>(shows);
   const [showTitle,setShowTitle]=useState('');
   const [categoryId,setCategoryId]=useState(categories[0]?.id??'');
@@ -190,7 +203,35 @@ export function PodcastPublisher({locale,categories,shows,artists}:{
           <div className="space-y-5">
             <label className={label}>{ar?'السلسلة':'Series'}<select required className={field} value={showId} onChange={e=>setShowId(e.target.value)}><option value="">{ar?'اختار السلسلة':'Choose a series'}</option>{localShows.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select></label>
             <label className={label}>{ar?'عنوان الحلقة':'Episode title'}<input required minLength={2} placeholder={ar?'مثلاً: يعني إيه فلسفة؟':'e.g. What is philosophy?'} className={field} value={episodeTitle} onChange={e=>setEpisodeTitle(e.target.value)}/></label>
-            <label className={label}>{ar?'ملف الحلقة MP3':'Episode audio (MP3)'}<input id="oddio-episode-file" type="file" accept=".mp3,audio/mpeg" required onChange={e=>setFile(e.target.files?.[0]??null)} className="block w-full rounded-2xl border border-dashed border-[#775b92] bg-[#2c2235] p-5 text-sm text-white file:me-3 file:rounded-lg file:border-0 file:bg-[#8557be] file:px-4 file:py-2 file:font-semibold file:text-white"/><span className="block text-xs font-normal text-[#a8a0b0]">{file?file.name:(ar?'اختار ملف MP3 لحد 300 ميجابايت':'Choose an MP3 file up to 300MB')}</span></label>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-[#e5ddeb]">{ar?'ملف الحلقة الصوتي (MP3)':'Episode audio (MP3)'}</p>
+              <input ref={audioInput} id="oddio-episode-file" type="file" accept=".mp3,audio/mpeg" className="sr-only"
+                aria-label={ar?'اختار ملف MP3 للحلقة':'Choose an MP3 episode file'}
+                onChange={e=>{chooseAudio(e.currentTarget.files?.[0]);e.currentTarget.value='';}} />
+              <div role="button" tabIndex={episodeBusy?-1:0}
+                aria-disabled={episodeBusy}
+                aria-label={ar?'اسحب ملف MP3 أو اضغط لاختيار ملف صوتي':'Drop an MP3 file or click to browse'}
+                onClick={()=>{if(!episodeBusy)audioInput.current?.click();}}
+                onKeyDown={e=>{if(!episodeBusy&&(e.key==='Enter'||e.key===' ')){e.preventDefault();audioInput.current?.click();}}}
+                onDragEnter={e=>{e.preventDefault();if(!episodeBusy)setAudioDragging(true);}}
+                onDragOver={e=>{e.preventDefault();if(!episodeBusy)setAudioDragging(true);}}
+                onDragLeave={e=>{e.preventDefault();if(!e.currentTarget.contains(e.relatedTarget as Node))setAudioDragging(false);}}
+                onDrop={e=>{e.preventDefault();setAudioDragging(false);if(!episodeBusy)chooseAudio(e.dataTransfer.files[0]);}}
+                className={'flex min-h-40 cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c79af2] '+(audioDragging?'border-[#c794ff] bg-[#513465]/45':'border-[#725582] bg-[#282130] hover:border-[#b88be5] hover:bg-[#35283e]')+(episodeBusy?' pointer-events-none opacity-60':'')}>
+                <span aria-hidden="true" className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#483258] text-2xl text-[#e0bbff]">♫</span>
+                {file?
+                  <div className="max-w-full space-y-1">
+                    <p className="break-all text-sm font-semibold text-white">{file.name}</p>
+                    <p className="text-xs text-[#c5b1d7]">{(file.size/(1024*1024)).toFixed(1)} MB · MP3</p>
+                    <p className="text-xs text-[#bda3e1]">{ar?'اسحب ملف تاني أو اضغط للتغيير':'Drop another file or click to replace'}</p>
+                  </div>:
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-white">{ar?'اسحب ملف الحلقة هنا أو اضغط للاختيار':'Drag & drop your episode or browse files'}</p>
+                    <p className="text-xs text-[#b6aabd]">{ar?'ملفات MP3 فقط · الحد الأقصى 300 ميجابايت':'MP3 only · max 300MB'}</p>
+                  </div>}
+              </div>
+              {file?<button type="button" disabled={episodeBusy} onClick={()=>setFile(null)} className="text-xs font-semibold text-[#d8b6fb] hover:underline disabled:opacity-50">{ar?'حذف الملف':'Remove file'}</button>:null}
+            </div>
             <label className={label}>{ar?'وصف الحلقة (اختياري)':'Episode description (optional)'}<textarea rows={3} placeholder={ar?'ملخص صغير للحلقة':'A short summary of this episode'} className={field} value={episodeDescription} onChange={e=>setEpisodeDescription(e.target.value)}/></label>
             <details className="rounded-xl border border-white/10 bg-white/[.025] px-4 py-3"><summary className="cursor-pointer text-sm text-[#bda3e1]">{ar?'ترقيم الحلقات (اختياري)':'Episode numbering (optional)'}</summary><div className="mt-4 grid grid-cols-2 gap-3"><label className={label}>{ar?'الموسم':'Season'}<input type="number" min="1" max="1000" required className={field} value={seasonNumber} onChange={e=>setSeasonNumber(e.target.value)}/></label><label className={label}>{ar?'رقم الحلقة':'Episode #'}<input type="number" min="1" max="100000" className={field} value={episodeNumber} onChange={e=>setEpisodeNumber(e.target.value)}/></label></div></details>
             <button disabled={episodeBusy||!file||!episodeTitle.trim()} className={actionButton+' w-full sm:w-auto'}>{episodeBusy?(ar?'بنرفع الحلقة وننشرها...':'Uploading & publishing...'):(ar?'نشر الحلقة':'Publish episode')} <span aria-hidden>→</span></button>
