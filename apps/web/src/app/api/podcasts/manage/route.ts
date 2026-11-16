@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 const slug = z.string().trim().min(2).max(90).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 const showInput = z.object({
   action: z.literal('show'), artistId:z.string().uuid(), title:z.string().trim().min(2).max(160),
-  slug, author:z.string().trim().min(2).max(140),
+  slug,
   categoryId:z.string().uuid(), description:z.string().trim().max(6000).default(''),
   language:z.enum(['en','ar']).default('en'),
   coverUrl:z.union([z.string().trim().url().max(1000),z.literal('')]).optional(),
