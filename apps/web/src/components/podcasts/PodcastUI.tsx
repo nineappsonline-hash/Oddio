@@ -72,11 +72,12 @@ export function PodcastEpisodeCard({ episode, show, locale }: {
  * Show-detail episode row: deliberately separate from the compact episode cards
  * used across discovery, so long RTL titles get comfortable readable space.
  */
-export function PodcastEpisodeRow({ episode, show, locale, index }: {
+export function PodcastEpisodeRow({ episode, show, locale, index, upcoming = [] }: {
   episode: PodcastEpisode;
   show: PodcastShow;
   locale: 'ar' | 'en';
   index: number;
+  upcoming?: PodcastEpisode[];
 }) {
   const ar = locale === 'ar';
   const number = episode.episodeNumber ?? index + 1;
@@ -114,7 +115,7 @@ export function PodcastEpisodeRow({ episode, show, locale, index }: {
           {episode.description ? <span dir="auto" className="hidden max-w-[36rem] truncate text-[#8f849a] md:inline">{episode.description}</span> : null}
         </div>
       </div>
-      <PodcastInlinePlayButton episode={episode} show={show} locale={locale} />
+      <PodcastInlinePlayButton episode={episode} show={show} locale={locale} upcoming={upcoming} />
     </div>
   );
 }
