@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getGenrePage } from '@/lib/data/queries';
@@ -55,7 +56,8 @@ export default async function GenrePage({
   const locale = raw;
   const ar = locale === 'ar';
   const viewer = await getViewer();
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const contentLanguage = await getContentLanguagePreference();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
   const page = getGenrePage(db, viewer, slug);
   if (!page) notFound();
 

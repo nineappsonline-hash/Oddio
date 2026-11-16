@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { listableTracks } from '@/lib/data/queries';
@@ -38,7 +39,8 @@ export default async function SoundspacePage({
   const { locale: raw } = await params;
   if (!isLocale(raw)) notFound();
   const viewer = await getViewer();
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const contentLanguage = await getContentLanguagePreference();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
   // Listable-track access checks must run before any client-side personalization.
   const tracks = listableTracks(db, viewer);
   return <SoundspaceStudio tracks={tracks} />;

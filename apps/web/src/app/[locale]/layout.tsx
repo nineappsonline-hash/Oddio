@@ -9,6 +9,7 @@ import { seoAbsoluteUrl as absoluteUrl, SEO_CANONICAL_ORIGIN } from '@/lib/seo-o
 import { StaticServiceWorker } from '@/components/providers/StaticServiceWorker';
 import { dirFor, isLocale, locales } from '@/i18n/config';
 import { getSessionUser } from '@/lib/auth/session';
+import { getContentLanguagePreference } from '@/lib/content-language';
 import '../globals.css';
 
 const inter = Inter({
@@ -88,7 +89,7 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const user = await getSessionUser();
+  const [user, contentLanguage] = await Promise.all([getSessionUser(), getContentLanguagePreference()]);
   return (
     <html
       lang={locale}
@@ -120,7 +121,7 @@ export default async function LocaleLayout({
           }}
         />
         <StaticServiceWorker />
-        <AppShell locale={locale} user={user}>
+        <AppShell locale={locale} user={user} contentLanguage={contentLanguage}>
           {children}
         </AppShell>
       </body>

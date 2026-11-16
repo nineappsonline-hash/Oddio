@@ -1,3 +1,4 @@
+import { filterPodcastCatalog, getContentLanguagePreference } from '@/lib/content-language';
 import { notFound } from 'next/navigation';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
@@ -12,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{locale:str
 }
 export default async function PodcastCategories({params}:{params:Promise<{locale:string}>}) {
   const {locale}=await params; if(!isLocale(locale)) notFound();
-  const catalog=await getPodcastCatalog();
+  const catalog=filterPodcastCatalog(await getPodcastCatalog(),await getContentLanguagePreference());
   return <div className="space-y-7 pb-8">
     <header className="space-y-3">
       <p className="text-xs font-black uppercase tracking-widest text-[#eab997]">{locale==='ar'?'كل المواضيع':'ALL TOPICS'}</p>

@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
 import { Search as SearchIcon, ArrowUpRight, Headphones } from 'lucide-react';
 import { notFound } from 'next/navigation';
@@ -60,7 +61,8 @@ export default async function SearchPage({
   });
   const query = parsed.success ? parsed.data : searchQuery.parse({});
   const viewer = await getViewer();
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const contentLanguage = await getContentLanguagePreference();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
   const genres = db.genres.filter((genre) => genre.active);
   const moods = db.moods.filter((mood) => mood.active);
   const hasSearch = Boolean(query.q || query.genre || query.mood || query.language);
@@ -151,7 +153,9 @@ export default async function SearchPage({
           >
             <option value="">{locale === 'ar' ? 'كل اللغات' : 'All languages'}</option>
             <option value="ar">{locale === 'ar' ? 'العربية' : 'Arabic'}</option>
-            <option value="en">{locale === 'ar' ? 'الإنجليزية' : 'English'}</option>
+            {contentLanguage === 'all' ? (
+              <option value="en">{locale === 'ar' ? 'الإنجليزية' : 'English'}</option>
+            ) : null}
           </select>
         </label>
         <label className="flex min-w-[120px] flex-1 flex-col gap-1.5 text-xs font-semibold text-muted">

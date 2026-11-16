@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
@@ -54,7 +55,8 @@ export default async function ChartsPage({
   });
   const query = parsed.success ? parsed.data : chartQuery.parse({});
   const viewer = await getViewer();
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const contentLanguage = await getContentLanguagePreference();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
   const data = getCharts(db, viewer, query);
   const home = getHomeData(db, viewer);
   const queue = data.entries.map((entry) => entry.track);

@@ -1,3 +1,4 @@
+import { filterPodcastCatalog, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { isLocale } from '@/i18n/config';
@@ -16,7 +17,7 @@ export async function generateMetadata({params}:{params:Promise<{locale:string;s
 }
 export default async function PodcastCategoryPage({params}:{params:Promise<{locale:string;slug:string}>}) {
   const {locale,slug}=await params;if(!isLocale(locale))notFound();
-  const cat=await getPodcastCatalog();const category=cat.categories.find(c=>c.slug===slug);if(!category)notFound();
+  const cat=filterPodcastCatalog(await getPodcastCatalog(),await getContentLanguagePreference());const category=cat.categories.find(c=>c.slug===slug);if(!category)notFound();
   const name=podcastCategoryLabel(category,locale),shows=cat.shows.filter(s=>s.categoryId===category.id),ids=new Set(shows.map(s=>s.id));
   const episodes=cat.episodes.filter(e=>ids.has(e.showId)),byId=new Map(shows.map(s=>[s.id,s]));
   return <div className="space-y-9 pb-8">

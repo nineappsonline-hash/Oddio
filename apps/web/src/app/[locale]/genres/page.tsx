@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
 import { ArrowUpRight, Compass } from 'lucide-react';
 import { notFound } from 'next/navigation';
@@ -84,9 +85,13 @@ export default async function GenresPage({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const ar = locale === 'ar';
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const contentLanguage = await getContentLanguagePreference();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
   const genres = db.genres
-    .filter((genre) => genre.active)
+    .filter((genre) => genre.active && (contentLanguage === 'all' || db.tracks.some((track) =>
+      track.publishStatus === 'published' && track.visibility === 'public' &&
+      (track.genreIds?.includes(genre.id) ?? track.genreId === genre.id)
+    )))
     .sort((a, b) =>
       (ar ? a.labelAr : a.labelEn).localeCompare(ar ? b.labelAr : b.labelEn),
     );

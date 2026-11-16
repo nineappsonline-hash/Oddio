@@ -1,3 +1,4 @@
+import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
@@ -50,7 +51,7 @@ export default async function LibraryPage({
   if (!user)
     redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/library`)}`);
   const viewer = { userId: user.id, roles: user.roles };
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), await getContentLanguagePreference());
   const library = getLibraryData(db, viewer);
   const history = getHistoryData(db, viewer);
   const { likedSort: requestedSort } = await searchParams;
