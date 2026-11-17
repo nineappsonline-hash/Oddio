@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { Artwork } from '@/components/ui/Artwork';
+import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
 import { PlayButton } from '@/components/player/PlayButton';
 import { Badge } from '@/components/ui/Badge';
 import { Equalizer } from '@/components/visuals/Equalizer';
@@ -59,9 +60,9 @@ export function TrackCard({
       <div className="mt-3 space-y-0.5 px-0.5">
         <Link
           href={`/${locale}/tracks/${track.id}-${track.slug}`}
-          className="block truncate text-sm font-semibold text-ink transition group-hover:text-primary"
+          className="block min-w-0 text-sm font-semibold text-ink transition group-hover:text-primary"
         >
-          {track.title}
+          <AutoScrollTitle text={track.title} lines={1} />
         </Link>
         {track.artist ? (
           <Link
