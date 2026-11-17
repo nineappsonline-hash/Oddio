@@ -27,15 +27,43 @@ export function PodcastArtwork({
   );
 }
 
+/** Fixed, topic-specific editorial covers; image-only decoration with text below. */
+const PODCAST_CATEGORY_COVERS: Record<string, string> = {
+  technology: 'photo-1518770660439-4636190af475',
+  business: 'photo-1460925895917-afdab827c52f',
+  education: 'photo-1503676260728-1c00da094a0b',
+  science: 'photo-1532094349884-543bc11b234d',
+  culture: 'photo-1514525253161-7a46d19cd819',
+  comedy: 'photo-1503095396549-807759245b35',
+  stories: 'photo-1497633762265-9d179a990aa6',
+  health: 'photo-1506126613408-eca07ce68773',
+  news: 'photo-1495020689067-958852a7765e',
+  sports: 'photo-1461896836934-ffe607ba8211',
+  music: 'photo-1516280440614-37939bbacd81',
+};
+function categoryCover(slug: string) {
+  const imageId = PODCAST_CATEGORY_COVERS[slug] ?? 'photo-1478737270239-2f02b77fc618';
+  return `https://images.unsplash.com/${imageId}?auto=format&fit=crop&w=580&h=720&q=75`;
+}
+
 export function PodcastCategoryCard({ category, locale }: { category: PodcastCategory; locale: 'ar' | 'en' }) {
   const name = podcastCategoryLabel(category, locale);
   return (
     <Link prefetch={false} href={`/${locale}/podcasts/categories/${category.slug}`}
       className="group relative flex h-full min-h-[224px] min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-3.5 shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-all duration-200 hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 sm:min-h-[260px] sm:p-4">
-      <span className="relative flex aspect-[5/4] w-full items-center justify-center overflow-hidden rounded-2xl border border-white/[0.09] bg-gradient-to-br from-[#343638] via-[#202123] to-[#111214]" aria-hidden="true">
-        <span className="pointer-events-none absolute -top-1/2 left-0 h-full w-full rounded-full bg-white/[0.06] blur-2xl" />
-        <Radio className="relative h-10 w-10 text-[#d4d4d4] opacity-90 transition-transform duration-200 group-hover:scale-110 sm:h-12 sm:w-12" />
-        <span className="absolute bottom-2 start-2 text-[10px] font-bold uppercase tracking-widest text-white/45">ODDIO</span>
+      <span className="relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl border border-white/[0.12] bg-gradient-to-br from-[#343638] via-[#202123] to-[#111214]" aria-hidden="true">
+        <Radio className="absolute h-11 w-11 text-white/40" />
+        {/* Category images are editorial illustrations of topics, not creator covers. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={categoryCover(category.slug)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover brightness-[0.73] saturate-[0.70] transition-transform duration-500 group-hover:scale-[1.065]"
+        />
+        <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/20" />
+        <span className="absolute bottom-3 start-3 rounded-full border border-white/20 bg-black/30 px-2.5 py-1 text-[10px] font-bold tracking-widest text-white/85 backdrop-blur-lg">ODDIO</span>
       </span>
       <AutoScrollTitle text={name} lines={2} className="mt-4 text-base font-bold text-white sm:text-lg" />
       <span className="mt-auto flex w-full items-center justify-between gap-2 pt-3 text-xs font-semibold text-[#a8a8a8]">
