@@ -2481,3 +2481,40 @@ body {
     padding-bottom: 8px;
   }
 }
+
+
+/* Overflow-aware names: short titles never animate. Pauses on interaction. */
+@keyframes oddio-title-pan-left {
+  0%, 13%, 100% { transform: translateX(0); }
+  58%, 83% { transform: translateX(calc(-1 * var(--oddio-auto-scroll-distance))); }
+}
+@keyframes oddio-title-pan-right {
+  0%, 13%, 100% { transform: translateX(0); }
+  58%, 83% { transform: translateX(var(--oddio-auto-scroll-distance)); }
+}
+@keyframes oddio-title-pan-up {
+  0%, 13%, 100% { transform: translateY(0); }
+  58%, 83% { transform: translateY(calc(-1 * var(--oddio-auto-scroll-distance))); }
+}
+.oddio-title-content.oddio-auto-scroll-ltr,
+.oddio-title-content.oddio-auto-scroll-rtl,
+.oddio-title-content.oddio-auto-scroll-vertical {
+  animation-duration: var(--oddio-auto-scroll-duration, 12s);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+.oddio-auto-scroll-ltr { animation-name: oddio-title-pan-left; }
+.oddio-auto-scroll-rtl { animation-name: oddio-title-pan-right; }
+.oddio-auto-scroll-vertical { animation-name: oddio-title-pan-up; }
+.oddio-title-viewport:hover .oddio-title-content,
+.oddio-title-viewport:focus-within .oddio-title-content {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .oddio-title-content.oddio-auto-scroll-ltr,
+  .oddio-title-content.oddio-auto-scroll-rtl,
+  .oddio-title-content.oddio-auto-scroll-vertical {
+    animation: none !important;
+  }
+}
