@@ -8,6 +8,7 @@ import { Maximize2, Repeat, Repeat1, Shuffle, VolumeX } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
+import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { cn, formatDuration } from '@/lib/utils';
@@ -152,9 +153,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           className="relative z-10 flex min-w-0 flex-1 flex-col gap-0.5 text-start focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           aria-label={`${t('player.expand')}: ${track.title}`}
         >
-          <span className={podcast ? "block w-full truncate text-base font-extrabold leading-6 text-white" : "block w-full truncate text-sm font-bold leading-5 text-white"}>
-            {track.title}
-          </span>
+          <AutoScrollTitle text={track.title} lines={1} className={podcast ? "text-base font-extrabold text-white" : "text-sm font-bold text-white"} />
           {track.artist ? (
             <span className="block w-full truncate text-xs leading-4 text-muted">
               {track.artist.name}
@@ -207,9 +206,9 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           <div className="flex items-center gap-1.5">
             <Link
               href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}` : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
-              className={podcast ? "block min-w-0 line-clamp-2 text-lg font-extrabold leading-6 text-white hover:text-[#e8c6ff] xl:text-lg" : "block truncate text-sm font-semibold text-ink hover:underline"}
+              className={podcast ? "block min-w-0 text-lg font-extrabold text-white hover:underline" : "block min-w-0 text-sm font-semibold text-ink hover:underline"}
             >
-              {track.title}
+              <AutoScrollTitle text={track.title} lines={1} />
             </Link>
             <Equalizer
               bars={3}
