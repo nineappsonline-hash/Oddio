@@ -105,7 +105,7 @@ export default async function PodcastsHome({
               <h2 className="text-2xl font-bold text-white">{ar ? 'تصفح التصنيفات' : 'Browse by category'}</h2>
               <Link href={`/${locale}/podcasts/categories`} className="text-sm font-semibold text-[#e9e9e9] hover:underline">{ar ? 'كل التصنيفات' : 'All categories'} →</Link>
             </div>
-            <div className="grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{catalog.categories.slice(0, 10).map((category) => <PodcastCategoryCard key={category.id} category={category} locale={locale} />)}</div>
+            <div className="grid grid-cols-2 items-stretch gap-2.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">{catalog.categories.slice(0, 10).map((category) => <PodcastCategoryCard key={category.id} category={category} locale={locale} />)}</div>
           </section>
 
           <section id="episodes" className="scroll-mt-24 space-y-5">
