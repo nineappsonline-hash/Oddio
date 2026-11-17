@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Mic2, Headphones, ArrowUpRight, Radio, Clock3 } from 'lucide-react';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import { PodcastPlaySurface } from '@/components/podcasts/PodcastPlaySurface';
+import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
 import type { PodcastCategory, PodcastShow, PodcastEpisode } from '@/lib/podcasts/catalog';
 import { formatPodcastTime, podcastCategoryLabel } from '@/lib/podcasts/catalog';
 
@@ -36,7 +37,7 @@ export function PodcastCategoryCard({ category, locale }: { category: PodcastCat
         <Radio className="relative h-10 w-10 text-[#d4d4d4] opacity-90 transition-transform duration-200 group-hover:scale-110 sm:h-12 sm:w-12" />
         <span className="absolute bottom-2 start-2 text-[10px] font-bold uppercase tracking-widest text-white/45">ODDIO</span>
       </span>
-      <span dir="auto" className="mt-4 line-clamp-2 min-w-0 text-base font-bold leading-6 text-white sm:text-lg">{name}</span>
+      <AutoScrollTitle text={name} lines={2} className="mt-4 text-base font-bold text-white sm:text-lg" />
       <span className="mt-auto flex w-full items-center justify-between gap-2 pt-3 text-xs font-semibold text-[#a8a8a8]">
         <span>{locale === 'ar' ? 'استكشف التصنيف' : 'Explore category'}</span>
         <ArrowUpRight className="h-4 w-4 shrink-0 text-[#dddddd] rtl:-scale-x-100" aria-hidden="true" />
@@ -50,7 +51,7 @@ export function PodcastShowCard({ show, locale }: { show: PodcastShow; locale: '
     <Link prefetch={false} href={`/${locale}/podcasts/shows/${show.slug}`}
       className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-all duration-200 hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 sm:p-3.5">
       <PodcastArtwork title={show.title} coverUrl={show.coverUrl} className="w-full !rounded-2xl" />
-      <h3 dir="auto" className="mt-3 line-clamp-2 min-h-[3rem] text-sm font-bold leading-6 text-white sm:text-base">{show.title}</h3>
+      <h3 className="mt-3 min-w-0"><AutoScrollTitle text={show.title} lines={2} className="text-sm font-bold text-white sm:text-base" /></h3>
       <p dir="auto" className="mt-auto truncate pt-2 text-xs text-[#aaaaaa]">{show.author}</p>
     </Link>
   );
@@ -69,7 +70,7 @@ export function PodcastEpisodeCard({ episode, show, locale }: {
           <OddioPlayIcon size={39} />
         </span>
       </span>
-      <span dir="auto" className="mt-3 line-clamp-2 min-h-[3rem] w-full text-sm font-bold leading-6 text-white sm:text-base">{episode.title}</span>
+      <AutoScrollTitle text={episode.title} lines={2} className="mt-3 text-sm font-bold text-white sm:text-base" />
       <span dir="auto" className="mt-1 block w-full truncate text-xs text-[#b5b5b5]">{show.title}</span>
       <span className="mt-auto flex w-full items-center gap-1.5 pt-3 text-xs text-[#aaaaaa]" dir="ltr">
         <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -110,9 +111,7 @@ export function PodcastEpisodeRow({ episode, show, locale, index, upcoming = [] 
             <span className="text-[#999999]">· {ar ? `الموسم ${episode.seasonNumber}` : `Season ${episode.seasonNumber}`}</span>
           ) : null}
         </span>
-        <span dir="auto" className="line-clamp-2 min-h-[3.25rem] w-full break-words text-base font-bold leading-[1.65rem] text-white transition-colors group-hover:text-white sm:text-lg">
-          {episode.title}
-        </span>
+        <AutoScrollTitle text={episode.title} lines={2} className="text-base font-bold text-white sm:text-lg" />
         <span className="mt-auto flex items-center justify-between gap-2 pt-2 text-xs text-[#aaaaaa]">
           <span className="inline-flex items-center gap-1.5" dir="ltr">
             <Clock3 size={14} aria-hidden="true" />
