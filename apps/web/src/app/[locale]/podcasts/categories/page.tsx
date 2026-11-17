@@ -20,6 +20,6 @@ export default async function PodcastCategories({params}:{params:Promise<{locale
       <h1 className="text-3xl font-black text-white sm:text-4xl">{locale==='ar'?'تصنيفات البودكاست':'Podcast categories'}</h1>
       <p className="max-w-2xl text-sm leading-8 text-[#a3a3a3]">{locale==='ar'?'اختار الموضوع اللي بتحبه، واكتشف البرامج والحلقات المتاحة في كل تصنيف.':'Pick a topic you enjoy and explore all published shows and episodes in its category.'}</p>
     </header>
-    <div className="grid grid-cols-2 items-stretch gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{catalog.categories.map(category=><PodcastCategoryCard key={category.slug} category={category} locale={locale}/>)}</div>
+    <div className="grid grid-cols-2 items-stretch gap-2.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">{catalog.categories.map(category=><PodcastCategoryCard key={category.slug} category={category} locale={locale}/>)}</div>
   </div>;
 }
