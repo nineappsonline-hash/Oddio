@@ -23,6 +23,7 @@ import {
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
+import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Badge } from '@/components/ui/Badge';
 import { LikeButton } from '@/components/community/LikeButton';
@@ -463,8 +464,8 @@ export function FullPlayer() {
             <div className="flex min-w-0 flex-col justify-center gap-2 sm:mt-6 sm:gap-5 lg:mt-0">
               <div className="min-w-0">
                 <span className="mb-1 block text-[10px] font-bold uppercase tracking-[.17em] text-[#bdbdbd] sm:mb-3 sm:text-[11px]">{podcast ? (rtl ? 'حلقة بودكاست' : 'PODCAST EPISODE') : (rtl ? 'أغنية' : 'MUSIC / TRACK')}</span>
-                <h1 dir="auto" className="line-clamp-2 text-[clamp(19px,5.3vw,27px)] font-black leading-tight tracking-tight text-white sm:line-clamp-3 sm:text-3xl lg:text-[clamp(22px,1.9vw,32px)]">
-                  {track.title}
+                <h1 className="min-w-0 text-[clamp(19px,5.3vw,27px)] font-black tracking-tight text-white sm:text-3xl lg:text-[clamp(22px,1.9vw,32px)]">
+                  <AutoScrollTitle text={track.title} lines={2} />
                 </h1>
                 {track.artist ? (
                   <Link
