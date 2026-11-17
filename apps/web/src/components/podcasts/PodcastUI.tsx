@@ -51,7 +51,7 @@ export function PodcastCategoryCard({ category, locale }: { category: PodcastCat
   return (
     <Link prefetch={false} href={`/${locale}/podcasts/categories/${category.slug}`}
       className="group relative flex h-full min-h-[185px] min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-2.5 shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-all duration-200 hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 sm:min-h-[215px] sm:p-3">
-      <span className="relative flex aspect-[5/6] w-full items-center justify-center overflow-hidden rounded-2xl border border-white/[0.12] bg-gradient-to-br from-[#343638] via-[#202123] to-[#111214]" aria-hidden="true">
+      <span className="relative flex aspect-[5/6] w-full items-center justify-center overflow-hidden rounded-2xl border border-white/[0.12] bg-gradient-to-br from-[#343638] via-[#202123] to-[#111214]">
         <Radio className="absolute h-11 w-11 text-white/40" />
         {/* Category images are editorial illustrations of topics, not creator covers. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -62,10 +62,11 @@ export function PodcastCategoryCard({ category, locale }: { category: PodcastCat
           decoding="async"
           className="absolute inset-0 h-full w-full object-cover brightness-[0.73] saturate-[0.70] transition-transform duration-500 group-hover:scale-[1.065]"
         />
-        <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/20" />
-        <span className="absolute bottom-3 start-3 rounded-full border border-white/20 bg-black/30 px-2.5 py-1 text-[10px] font-bold tracking-widest text-white/85 backdrop-blur-lg">ODDIO</span>
+        <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
+        <span className="absolute inset-x-3 bottom-3 z-10 block min-w-0 rounded-lg bg-black/20 px-1 py-1.5 text-start drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] backdrop-blur-[2px] sm:inset-x-4 sm:bottom-4">
+          <AutoScrollTitle text={name} lines={2} className="text-lg font-black tracking-tight text-white sm:text-xl" />
+        </span>
       </span>
-      <AutoScrollTitle text={name} lines={2} className="mt-2.5 text-sm font-bold text-white sm:text-base" />
       <span className="mt-auto flex w-full items-center justify-between gap-2 pt-1.5 text-[11px] font-semibold text-[#a8a8a8]">
         <span>{locale === 'ar' ? 'استكشف التصنيف' : 'Explore category'}</span>
         <ArrowUpRight className="h-4 w-4 shrink-0 text-[#dddddd] rtl:-scale-x-100" aria-hidden="true" />
