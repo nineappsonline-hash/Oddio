@@ -41,9 +41,11 @@ const PODCAST_CATEGORY_COVERS: Record<string, string> = {
   sports: 'photo-1461896836934-ffe607ba8211',
   music: 'photo-1516280440614-37939bbacd81',
 };
-function categoryCover(slug: string) {
+function categoryCover(slug: string, width = 400) {
   const imageId = PODCAST_CATEGORY_COVERS[slug] ?? 'photo-1478737270239-2f02b77fc618';
-  return `https://images.unsplash.com/${imageId}?auto=format&fit=crop&w=580&h=720&q=75`;
+  // Responsive editorial covers preserve the exact photo/crop while avoiding
+  // transferring a 580px asset to a narrow category tile.
+  return `https://images.unsplash.com/${imageId}?auto=format&fit=crop&w=${width}&h=${Math.round(width * 1.25)}&q=70`;
 }
 
 export function PodcastCategoryCard({ category, locale }: { category: PodcastCategory; locale: 'ar' | 'en' }) {
@@ -57,6 +59,8 @@ export function PodcastCategoryCard({ category, locale }: { category: PodcastCat
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={categoryCover(category.slug)}
+          srcSet={`${categoryCover(category.slug, 240)} 240w, ${categoryCover(category.slug, 400)} 400w, ${categoryCover(category.slug, 580)} 580w`}
+          sizes="(max-width: 640px) 42vw, (max-width: 1024px) 23vw, (max-width: 1536px) 18vw, 14vw"
           alt=""
           loading="lazy"
           decoding="async"
