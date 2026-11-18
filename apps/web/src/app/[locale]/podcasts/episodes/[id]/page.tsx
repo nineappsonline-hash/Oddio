@@ -16,13 +16,20 @@ export async function generateMetadata({ params }: { params: Promise<{locale:str
   const catalog=await getPodcastCatalog();
   const episode=isPodcastId(id)?catalog.episodes.find(e=>e.id===id):undefined;
   const show=catalog.shows.find(s=>s.id===episode?.showId);
+  const arabic = episode ? /[\u0600-\u06FF]/.test(episode.title) : locale === 'ar';
+  const author = show?.title ?? (arabic ? 'بودكاست' : 'Podcast');
   return buildMetadata({
     locale, path:`/podcasts/episodes/${id}`,
-    title:episode ? `${episode.title} — ${show?.title ?? 'Podcast'}` : 'Podcast episode',
-    description:episode ? (episode.description || (locale==='ar'?`اسمع حلقة ${episode.title} من بودكاست ${show?.title ?? 'Oddio'} على Oddio.`:`Listen to ${episode.title} from ${show?.title ?? 'Oddio Podcasts'} on Oddio.`)) : '',
-    noindex:!episode || !show,
+    title: episode ? episode.title : 'Podcast episode',
+    socialTitle: episode?.title,
+    description: episode
+      ? (arabic
+        ? `🎙️ بودكاست: ${author}\n🎧 استمع للحلقة على Oddio.${episode.description ? `\n${episode.description.slice(0, 110)}` : ''}`
+        : `🎙️ Podcast: ${author}\n🎧 Listen to this episode on Oddio.${episode.description ? `\n${episode.description.slice(0, 110)}` : ''}`)
+      : '',
+    noindex: !episode || !show,
     image: show?.coverUrl,
-    imageAlt: episode ? `${episode.title} — ${show?.title ?? 'Oddio Podcasts'}` : undefined,
+    imageAlt: episode ? `${episode.title} — ${author}` : undefined,
   });
 }
 
