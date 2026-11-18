@@ -21,6 +21,8 @@ export async function generateMetadata({ params }: { params: Promise<{locale:str
     title:episode ? `${episode.title} — ${show?.title ?? 'Podcast'}` : 'Podcast episode',
     description:episode ? (episode.description || (locale==='ar'?`اسمع حلقة ${episode.title} من بودكاست ${show?.title ?? 'Oddio'} على Oddio.`:`Listen to ${episode.title} from ${show?.title ?? 'Oddio Podcasts'} on Oddio.`)) : '',
     noindex:!episode || !show,
+    image: show?.coverUrl,
+    imageAlt: episode ? `${episode.title} — ${show?.title ?? 'Oddio Podcasts'}` : undefined,
   });
 }
 
