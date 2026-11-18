@@ -35,8 +35,15 @@ export async function generateMetadata({
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getTrackPage(db, { userId: null, roles: [] }, idFromSegment(id));
-  if (!page)
-    const arabic = /[\u0600-\u06FF]/.test(page.track.title);
+  if (!page) {
+    return buildMetadata({
+      locale: safeLocale,
+      title: id,
+      description: '',
+      noindex: true,
+    });
+  }
+  const arabic = /[\u0600-\u06FF]/.test(page.track.title);
   const artist = page.track.artist?.name ?? 'Oddio';
   return buildMetadata({
     locale: safeLocale,
