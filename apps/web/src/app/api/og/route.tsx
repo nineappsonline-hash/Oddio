@@ -22,6 +22,7 @@ async function loadPublicCover(input: string | null): Promise<string | null> {
       headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8' },
       signal: AbortSignal.timeout(6000),
       cache: 'force-cache',
+      redirect: 'error',
     });
     if (!response.ok) return null;
     const mime = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() ?? '';
