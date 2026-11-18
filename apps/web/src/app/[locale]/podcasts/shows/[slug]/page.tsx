@@ -14,7 +14,9 @@ export async function generateMetadata({params}:{params:Promise<{locale:string;s
   const {locale:raw,slug}=await params;const locale=isLocale(raw)?raw:'en';const catalog=await getPodcastCatalog(),show=catalog.shows.find(s=>s.slug===slug);
   return buildMetadata({locale,path:`/podcasts/shows/${slug}`,title:show? `${show.title} — Podcast` : 'Podcast show',
     description:show?(show.description || (locale==='ar'?`اسمع حلقات بودكاست ${show.title} على Oddio.`:`Listen to episodes of ${show.title} on Oddio.`)):'',
-    noindex:!show});
+    noindex:!show,
+    image:show?.coverUrl,
+    imageAlt:show ? `${show.title} — ${show.author}` : undefined});
 }
 export default async function PodcastShowPage({params}:{params:Promise<{locale:string;slug:string}>}) {
   const {locale,slug}=await params;if(!isLocale(locale))notFound();
