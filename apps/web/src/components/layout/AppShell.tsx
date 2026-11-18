@@ -5,7 +5,7 @@ import { SessionProvider } from '@/components/providers/SessionProvider';
 import { ToastProvider } from '@/components/providers/ToastProvider';
 import { PlayerProvider } from '@/components/player/PlayerProvider';
 import { PlayerBar } from '@/components/player/PlayerBar';
-import { FullPlayer } from '@/components/player/FullPlayer';
+import { DeferredFullPlayer } from '@/components/player/DeferredFullPlayer';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { DesktopTopBar } from '@/components/layout/DesktopTopBar';
 import { ListeningRail } from '@/components/layout/ListeningRail';
@@ -56,7 +56,7 @@ export function AppShell({
           </div>
           {!podcastMode ? <ListeningRail /> : null}
           <PlayerBar podcastMode={podcastMode} />
-          <FullPlayer />
+          <DeferredFullPlayer />
           <MobileNav />
         </PlayerProvider>
       </ToastProvider>
