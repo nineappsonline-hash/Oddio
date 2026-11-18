@@ -4,9 +4,9 @@ export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const title = (url.searchParams.get('title') ?? 'Project AI Music').slice(0, 120);
+  const title = (url.searchParams.get('title') ?? 'Oddio').slice(0, 120);
   const subtitle = (
-    url.searchParams.get('subtitle') ?? 'AI music, curated by humans.'
+    url.searchParams.get('subtitle') ?? 'Music and podcasts on Oddio.'
   ).slice(0, 160);
 
   return new ImageResponse(
@@ -18,9 +18,9 @@ export async function GET(request: Request) {
         flexDirection: 'column',
         justifyContent: 'space-between',
         padding: '64px',
-        backgroundColor: '#090912',
+        backgroundColor: '#0a0b0d',
         backgroundImage:
-          'radial-gradient(900px 600px at 10% 0%, rgba(157,92,255,0.5), transparent 60%), radial-gradient(700px 500px at 100% 100%, rgba(65,217,255,0.28), transparent 60%)',
+          'radial-gradient(900px 600px at 10% 0%, rgba(95,95,95,0.35), transparent 60%), radial-gradient(700px 500px at 100% 100%, rgba(80,80,80,0.22), transparent 60%)',
         color: '#F5F5FA',
         fontFamily: 'sans-serif',
       }}
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
             width: 56,
             height: 56,
             borderRadius: 16,
-            background: 'linear-gradient(135deg,#9D5CFF,#41D9FF)',
+            background: 'linear-gradient(135deg,#bcbcbc,#343434)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
           ♪
         </div>
         <div style={{ fontSize: 22, letterSpacing: 6, textTransform: 'uppercase' }}>
-          AI Music
+          ODDIO
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -59,8 +59,8 @@ export async function GET(request: Request) {
           fontSize: 20,
         }}
       >
-        <span>AI-generated · Human-reviewed</span>
-        <span>projectaimusic.example</span>
+        <span>Music · Podcasts</span>
+        <span>oddio.online</span>
       </div>
     </div>,
     { width: 1200, height: 630 },
