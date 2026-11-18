@@ -54,6 +54,8 @@ export async function generateMetadata({
         : `Listen to ${page.track.title} by ${page.track.artist?.name ?? 'Oddio'} on Oddio. Discover original AI-generated music and related songs.`,
     path: `/tracks/${page.track.id}-${page.track.slug}`,
     type: 'music.song',
+    image: page.track.artwork.url,
+    imageAlt: `${page.track.title} — ${page.track.artist?.name ?? 'Oddio'}`,
   });
 }
 
