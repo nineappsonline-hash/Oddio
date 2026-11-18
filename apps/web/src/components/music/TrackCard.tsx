@@ -20,7 +20,9 @@ export function TrackCard({
   const t = useT();
   const locale = useLocale();
   const isCurrent = usePlayer((state) => state.track?.id === track.id);
-  const isPlaying = usePlayer((state) => state.isPlaying);
+  // Only the currently selected card needs play/pause updates.
+  // Other cards should not re-render every time player state changes.
+  const isPlaying = usePlayer((state) => state.track?.id === track.id && state.isPlaying);
 
   return (
     <article className="group card card-hover relative overflow-hidden p-3">
