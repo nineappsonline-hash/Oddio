@@ -12,11 +12,20 @@ import { serviceClient } from '@/lib/data/supabase-store';
 export const dynamic='force-dynamic';
 export async function generateMetadata({params}:{params:Promise<{locale:string;slug:string}>}) {
   const {locale:raw,slug}=await params;const locale=isLocale(raw)?raw:'en';const catalog=await getPodcastCatalog(),show=catalog.shows.find(s=>s.slug===slug);
-  return buildMetadata({locale,path:`/podcasts/shows/${slug}`,title:show? `${show.title} — Podcast` : 'Podcast show',
-    description:show?(show.description || (locale==='ar'?`اسمع حلقات بودكاست ${show.title} على Oddio.`:`Listen to episodes of ${show.title} on Oddio.`)):'',
-    noindex:!show,
-    image:show?.coverUrl,
-    imageAlt:show ? `${show.title} — ${show.author}` : undefined});
+  const arabic = show ? /[\u0600-\u06FF]/.test(show.title) : locale === 'ar';
+  return buildMetadata({
+    locale, path:`/podcasts/shows/${slug}`,
+    title: show?.title ?? 'Podcast show',
+    socialTitle: show?.title,
+    description: show
+      ? (arabic
+        ? `🎙️ بودكاست: ${show.title}\n🎤 تقديم: ${show.author}\n🎧 استمع للحلقات على Oddio.`
+        : `🎙️ Podcast: ${show.title}\n🎤 By: ${show.author}\n🎧 Listen on Oddio.`)
+      : '',
+    noindex: !show,
+    image: show?.coverUrl,
+    imageAlt: show ? `${show.title} — ${show.author}` : undefined,
+  });
 }
 export default async function PodcastShowPage({params}:{params:Promise<{locale:string;slug:string}>}) {
   const {locale,slug}=await params;if(!isLocale(locale))notFound();
