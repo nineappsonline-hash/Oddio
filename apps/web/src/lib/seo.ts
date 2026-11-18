@@ -10,6 +10,8 @@ export function buildMetadata({
   path = '',
   noindex = false,
   type = 'website',
+  image,
+  imageAlt,
 }: {
   locale: Locale;
   title: string;
@@ -17,6 +19,9 @@ export function buildMetadata({
   path?: string;
   noindex?: boolean;
   type?: 'website' | 'music.song' | 'music.album' | 'profile' | 'article';
+  /** Public cover URL for link previews; when unavailable use branded Oddio art. */
+  image?: string | null;
+  imageAlt?: string;
 }): Metadata {
   const copy = seoPage(locale, path);
   const pageTitle = copy?.title ?? title;
@@ -24,9 +29,24 @@ export function buildMetadata({
   const fullTitle = pageTitle.includes('Oddio') ? pageTitle : `${pageTitle} | Oddio`;
   const localizedPath = `/${locale}${path}`;
   const canonical = absoluteUrl(localizedPath);
-  const ogImage = absoluteUrl(
+  const defaultImage = absoluteUrl(
     `/api/og?title=${encodeURIComponent(pageTitle)}&subtitle=${encodeURIComponent(pageDescription.slice(0, 120))}`,
   );
+  // Open Graph consumers require an absolute, publicly accessible image URL.
+  // A content cover may already be an R2/public CDN URL or a local asset.
+  const ogImage = image?.trim()
+    ? (() => {
+        try {
+          const resolved = new URL(image, absoluteUrl('/'));
+          return ['https:', 'http:'].includes(resolved.protocol) ? resolved.toString() : defaultImage;
+        } catch {
+          return defaultImage;
+        }
+      })()
+    : defaultImage;
+  const imageInfo = image?.trim()
+    ? { url: ogImage, alt: imageAlt || pageTitle }
+    : { url: defaultImage, width: 1200, height: 630, alt: pageTitle };
   return {
     title: { absolute: fullTitle },
     description: pageDescription,
@@ -50,7 +70,7 @@ export function buildMetadata({
       siteName: 'Oddio',
       locale: locale === 'ar' ? 'ar_EG' : 'en_US',
       type: type as 'website',
-      images: [{ url: ogImage, width: 1200, height: 630, alt: pageTitle }],
+      images: [imageInfo],
     },
     twitter: {
       card: 'summary_large_image',
