@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { demoMode } from '@/lib/env';
 import { serviceClient } from '@/lib/data/supabase-store';
 
@@ -73,14 +74,14 @@ export function isPodcastId(value: string): boolean { return uuidPattern.test(va
  * on both show and episode. No draft or scheduled audio leaks into HTML.
  * Before the migration is applied, the curated category directory still renders.
  */
-export async function getPodcastCatalog(): Promise<PodcastCatalog> {
+export const getPodcastCatalog = cache(async (): Promise<PodcastCatalog> => {
   const fallback = { categories: DEFAULT_PODCAST_CATEGORIES, shows: [], episodes: [] };
   if (demoMode) return fallback;
   try {
     const client = serviceClient();
     const [categoryQuery, showQuery, episodeQuery] = await Promise.all([
-      client.from('podcast_categories').select('*').eq('active', true).order('sort_order'),
-      client.from('podcast_shows').select('*').eq('status', 'published').order('created_at', { ascending: false }).limit(200),
+      client.from('podcast_categories').select('id,slug,name_en,name_ar,description_en,description_ar').eq('active', true).order('sort_order'),
+      client.from('podcast_shows').select('id,slug,title,description,author_name,artist_id,language_code,category_id,cover_url,explicit').eq('status', 'published').order('created_at', { ascending: false }).limit(200),
       client.from('podcast_episodes').select('id,show_id,slug,title,description,duration_seconds,published_at,episode_number,season_number,explicit')
         .eq('status', 'published').lte('published_at', new Date().toISOString()).order('published_at', { ascending: false }).limit(500),
     ]);
@@ -112,7 +113,7 @@ export async function getPodcastCatalog(): Promise<PodcastCatalog> {
     console.error('Podcast catalog could not be loaded', error);
     return fallback;
   }
-}
+});
 
 export function podcastCategoryLabel(category: PodcastCategory, locale: 'ar' | 'en') {
   return locale === 'ar' ? category.nameAr : category.nameEn;
