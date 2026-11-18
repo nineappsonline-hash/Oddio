@@ -43,6 +43,10 @@ export async function GET(request: Request) {
     url.searchParams.get('subtitle') ?? 'Music and podcasts on Oddio.'
   ).slice(0, 160);
   const cover = await loadPublicCover(url.searchParams.get('cover'));
+  // ImageResponse's default Latin font cannot reliably shape Arabic script.
+  // The original artwork already carries the Arabic cover design; the textual
+  // OG title/description stay in Arabic outside the image.
+  const graphicTitle = /[\u0600-\u06FF]/.test(title) ? 'ODDIO PODCASTS' : title;
 
 
   return new ImageResponse(
@@ -88,12 +92,12 @@ export async function GET(request: Request) {
           <img src={cover} width={438} height={438} alt="" style={{ width: 438, height: 438, borderRadius: 28, objectFit: 'cover', border: '2px solid rgba(255,255,255,.2)' }} />
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1, overflow: 'hidden' }}>
             <div style={{ fontSize: 26, letterSpacing: 3, color: '#cbcbcb', marginBottom: 18 }}>LISTEN ON ODDIO</div>
-            <div style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.25, wordBreak: 'break-word' }}>{title.slice(0, 80)}</div>
+            <div style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.25, wordBreak: 'break-word' }}>{graphicTitle.slice(0, 80)}</div>
           </div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 64, fontWeight: 900, lineHeight: 1.05 }}>{title}</div>
+          <div style={{ fontSize: 64, fontWeight: 900, lineHeight: 1.05 }}>{graphicTitle}</div>
           <div style={{ marginTop: 20, fontSize: 28, color: '#A8A8BA', maxWidth: 900 }}>
             {subtitle}
           </div>
