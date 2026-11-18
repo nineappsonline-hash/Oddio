@@ -12,6 +12,7 @@ export function buildMetadata({
   type = 'website',
   image,
   imageAlt,
+  socialTitle,
 }: {
   locale: Locale;
   title: string;
@@ -22,6 +23,8 @@ export function buildMetadata({
   /** Public cover URL for link previews; when unavailable use branded Oddio art. */
   image?: string | null;
   imageAlt?: string;
+  /** Keep the share-card headline clean even when the browser title contains branding. */
+  socialTitle?: string;
 }): Metadata {
   const copy = seoPage(locale, path);
   const pageTitle = copy?.title ?? title;
@@ -29,24 +32,24 @@ export function buildMetadata({
   const fullTitle = pageTitle.includes('Oddio') ? pageTitle : `${pageTitle} | Oddio`;
   const localizedPath = `/${locale}${path}`;
   const canonical = absoluteUrl(localizedPath);
-  const defaultImage = absoluteUrl(
-    `/api/og?title=${encodeURIComponent(pageTitle)}&subtitle=${encodeURIComponent(pageDescription.slice(0, 120))}`,
-  );
-  // Open Graph consumers require an absolute, publicly accessible image URL.
-  // A content cover may already be an R2/public CDN URL or a local asset.
-  const ogImage = image?.trim()
-    ? (() => {
-        try {
-          const resolved = new URL(image, absoluteUrl('/'));
-          return ['https:', 'http:'].includes(resolved.protocol) ? resolved.toString() : defaultImage;
-        } catch {
-          return defaultImage;
-        }
-      })()
-    : defaultImage;
-  const imageInfo = image?.trim()
-    ? { url: ogImage, alt: imageAlt || pageTitle }
-    : { url: defaultImage, width: 1200, height: 630, alt: pageTitle };
+  // Serve all social previews as a predictable 1200x630 PNG from Oddio,
+  // not a third-party image whose headers or hotlink protection may reject bots.
+  const imageParams = new URLSearchParams({
+    title: socialTitle ?? pageTitle,
+    subtitle: pageDescription.slice(0, 140),
+  });
+  if (image?.trim()) {
+    try {
+      const source = new URL(image, absoluteUrl('/'));
+      if (['https:', 'http:'].includes(source.protocol)) {
+        imageParams.set('cover', source.toString());
+      }
+    } catch {
+      // The branded image is still usable when cover information is missing.
+    }
+  }
+  const ogImage = absoluteUrl(`/api/og?${imageParams.toString()}`);
+  const imageInfo = { url: ogImage, width: 1200, height: 630, type: 'image/png', alt: imageAlt || socialTitle || pageTitle };
   return {
     title: { absolute: fullTitle },
     description: pageDescription,
@@ -64,7 +67,7 @@ export function buildMetadata({
       ? { index: false, follow: false, nocache: true }
       : { index: true, follow: true },
     openGraph: {
-      title: fullTitle,
+      title: socialTitle ?? fullTitle,
       description: pageDescription,
       url: canonical,
       siteName: 'Oddio',
@@ -74,7 +77,7 @@ export function buildMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: fullTitle,
+      title: socialTitle ?? fullTitle,
       description: pageDescription,
       images: [ogImage],
     },
