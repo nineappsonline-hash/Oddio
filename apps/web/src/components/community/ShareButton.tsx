@@ -21,9 +21,15 @@ export function ShareButton({
 
   // Prefer a content-specific address over the current page, especially
   // when the full-screen player is open on an unrelated route.
-  const shareUrl = () => url
-    ? new URL(url, window.location.origin).toString()
-    : window.location.href;
+  const shareUrl = () => {
+    const link = new URL(url || window.location.href, window.location.origin);
+    // Social apps aggressively cache previews for a URL. Keep the canonical
+    // destination unchanged while forcing a fresh fetch for revised share cards.
+    if (/\/(tracks\/|podcasts\/(episodes|shows)\/)/.test(link.pathname)) {
+      link.searchParams.set('preview', 'v2');
+    }
+    return link.toString();
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -61,7 +67,7 @@ export function ShareButton({
     const destination = target === 'facebook'
       ? `https://www.facebook.com/sharer/sharer.php?u=${link}`
       : target === 'whatsapp'
-        ? `https://api.whatsapp.com/send?text=${encodeURIComponent(`${title}\n${shareUrl()}`)}`
+        ? `https://api.whatsapp.com/send?text=${encodeURIComponent(`🎧 ${title}\n\n${shareUrl()}`)}`
         : `https://twitter.com/intent/tweet?url=${link}&text=${encodeURIComponent(title)}`;
     window.open(destination, '_blank', 'noopener,noreferrer');
     setOpen(false);
