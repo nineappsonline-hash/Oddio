@@ -95,6 +95,40 @@ export function PlayerProvider({
     return unsubscribe;
   }, []);
 
+  // A new selection must silence the outgoing media element synchronously.
+  // Waiting for the trackId/stream React effects leaves the previous source
+  // audible during the new track's playback authorization request.
+  useEffect(() => {
+    const unsubscribe = usePlayer.subscribe((state, previous) => {
+      if (state.track?.id === previous.track?.id) return;
+      const outgoing = audioRef.current;
+      if (outgoing) {
+        outgoing.pause();
+        outgoing.removeAttribute('src');
+        outgoing.load(); // Abort any pending play/buffered frames from the old source.
+      }
+
+      // During an intentional crossfade the standby element already contains
+      // the incoming track. Let it finish its handoff to the primary player.
+      const incomingCrossfade =
+        crossfadingRef.current &&
+        crossfadeTargetRef.current === state.track?.id;
+      if (!incomingCrossfade) {
+        const standby = standbyRef.current;
+        if (standby) {
+          standby.pause();
+          standby.removeAttribute('src');
+          standby.load();
+        }
+        crossfadingRef.current = false;
+        crossfadeTargetRef.current = null;
+        incomingTimeRef.current = 0;
+        handoffTargetRef.current = null;
+      }
+    });
+    return unsubscribe;
+  }, []);
+
   // A track change invalidates all in-flight stream refresh attempts.
   useEffect(() => {
     recoveryGenerationRef.current += 1;
