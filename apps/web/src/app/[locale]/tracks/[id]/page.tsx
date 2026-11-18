@@ -36,26 +36,19 @@ export async function generateMetadata({
   const db = demoMode ? readDb() : await loadDbFromSupabase();
   const page = getTrackPage(db, { userId: null, roles: [] }, idFromSegment(id));
   if (!page)
-    return buildMetadata({
-      locale: safeLocale,
-      title: id,
-      description: '',
-      noindex: true,
-    });
+    const arabic = /[\u0600-\u06FF]/.test(page.track.title);
+  const artist = page.track.artist?.name ?? 'Oddio';
   return buildMetadata({
     locale: safeLocale,
-    title: safeLocale === 'ar'
-      ? `اسمع ${page.track.title} — ${page.track.artist?.name ?? 'Oddio'}`
-      : `${page.track.title} by ${page.track.artist?.name ?? 'Oddio'} — AI Song`,
-    description: page.track.description
-      ? `${page.track.description.slice(0, 135)} — Listen on Oddio.`
-      : safeLocale === 'ar'
-        ? `اسمع أغنية ${page.track.title} للفنان ${page.track.artist?.name ?? 'Oddio'} على Oddio. اكتشف موسيقى بالذكاء الاصطناعي وأغاني مشابهة.`
-        : `Listen to ${page.track.title} by ${page.track.artist?.name ?? 'Oddio'} on Oddio. Discover original AI-generated music and related songs.`,
+    title: page.track.title,
+    socialTitle: page.track.title,
+    description: arabic
+      ? `🎵 الأغنية: ${page.track.title}\n🎤 الفنان: ${artist}\n🎧 اسمعها على Oddio.`
+      : `🎵 Song: ${page.track.title}\n🎤 Artist: ${artist}\n🎧 Listen on Oddio.`,
     path: `/tracks/${page.track.id}-${page.track.slug}`,
     type: 'music.song',
     image: page.track.artwork.url,
-    imageAlt: `${page.track.title} — ${page.track.artist?.name ?? 'Oddio'}`,
+    imageAlt: `${page.track.title} — ${artist}`,
   });
 }
 
