@@ -25,7 +25,7 @@ async function loadPublicCover(input: string | null): Promise<string | null> {
       redirect: 'error',
     });
     if (!response.ok) return null;
-    const mime = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() ?? '';
+    const mime = (response.headers.get('content-type') ?? '').split(';')[0]?.trim().toLowerCase() ?? '';
     if (!['image/png', 'image/jpeg', 'image/webp', 'image/avif'].includes(mime)) return null;
     if (Number(response.headers.get('content-length') ?? 0) > 5_000_000) return null;
     const bytes = Buffer.from(await response.arrayBuffer());
