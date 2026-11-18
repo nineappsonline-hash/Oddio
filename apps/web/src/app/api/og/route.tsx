@@ -46,7 +46,7 @@ export async function GET(request: Request) {
   // ImageResponse's default Latin font cannot reliably shape Arabic script.
   // The original artwork already carries the Arabic cover design; the textual
   // OG title/description stay in Arabic outside the image.
-  const graphicTitle = /[\u0600-\u06FF]/.test(title) ? 'ODDIO PODCASTS' : title;
+  const graphicTitle = /[\u0600-\u06FF]/.test(title) ? 'LISTEN ON ODDIO' : title;
 
 
   return new ImageResponse(
