@@ -35,6 +35,7 @@ export function PlayerProvider({
 }) {
   const storageKey = `${PLAYER_SESSION_KEY}:${viewerId ?? 'guest'}`;
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playbackEpochRef = useRef(0);
   const standbyRef = useRef<HTMLAudioElement | null>(null);
   const warmedRef = useRef<{ trackId: string; result: PlaybackAuthorization } | null>(
     null,
@@ -101,6 +102,8 @@ export function PlayerProvider({
   useEffect(() => {
     const unsubscribe = usePlayer.subscribe((state, previous) => {
       if (state.track?.id === previous.track?.id) return;
+      // Ignore asynchronous play() rejections from the previous selection.
+      playbackEpochRef.current += 1;
       const outgoing = audioRef.current;
       if (outgoing) {
         outgoing.pause();
@@ -435,7 +438,10 @@ export function PlayerProvider({
     audio.src = stream;
     audio.load();
     if (usePlayer.getState().isPlaying) {
-      void audio.play().catch(() => {
+      const epoch = playbackEpochRef.current;
+      void audio.play().catch((error: unknown) => {
+        if (playbackEpochRef.current !== epoch) return;
+        if (error instanceof DOMException && error.name === 'AbortError') return;
         usePlayer.getState().setPlaying(false);
       });
     }
@@ -445,7 +451,10 @@ export function PlayerProvider({
     const audio = audioRef.current;
     if (!audio || !stream) return;
     if (isPlaying) {
-      void audio.play().catch(() => {
+      const epoch = playbackEpochRef.current;
+      void audio.play().catch((error: unknown) => {
+        if (playbackEpochRef.current !== epoch) return;
+        if (error instanceof DOMException && error.name === 'AbortError') return;
         usePlayer.getState().setPlaying(false);
       });
       if (crossfadingRef.current) void standbyRef.current?.play().catch(() => undefined);
