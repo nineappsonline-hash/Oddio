@@ -157,7 +157,7 @@ export default async function GenrePage({
           </div>
           <div className="pt-3">
             <div className="flex flex-wrap items-center gap-2">
-              <GenrePlayAllButton tracks={byPlays} ar={ar} />
+              {all.length > 0 ? <GenrePlayAllButton tracks={byPlays} ar={ar} /> : null}
               {all.length > 0 ? (
                 <FlowButton
                   kind="genre"
@@ -193,7 +193,7 @@ export default async function GenrePage({
         </section>
       ) : null}
 
-      <nav
+      {all.length > 0 ? <nav
         aria-label={ar ? 'أقسام النوع الموسيقي' : 'Genre sections'}
         className="flex flex-wrap gap-2"
       >
@@ -212,16 +212,25 @@ export default async function GenrePage({
             {title}
           </a>
         ))}
-      </nav>
+      </nav> : null}
 
       {all.length === 0 ? (
-        <EmptyState
-          title={
-            ar
-              ? 'مفيش أغاني متاحة في النوع ده لسه.'
-              : 'No tracks available in this genre yet.'
-          }
-        />
+        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+          <EmptyState
+            title={ar ? 'مفيش أغاني متاحة في النوع ده لسه.' : 'No tracks available in this genre yet.'}
+          />
+          <p className="mt-3 text-center text-sm text-muted">
+            {ar ? 'فيه موسيقى تانية تقدر تكتشفها دلوقتي.' : 'There is more music to discover right now.'}
+          </p>
+          <div className="mt-5 flex justify-center gap-3">
+            <Link href={`/${locale}/discover`} className="rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black hover:opacity-90">
+              {ar ? 'اكتشف الأغاني' : 'Discover tracks'}
+            </Link>
+            <Link href={`/${locale}/genres`} className="rounded-xl border border-white/20 px-5 py-3 text-sm font-bold text-ink hover:bg-white/10">
+              {ar ? 'كل الأنواع' : 'All genres'}
+            </Link>
+          </div>
+        </section>
       ) : (
         <>
           {section(
