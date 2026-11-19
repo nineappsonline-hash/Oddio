@@ -16,14 +16,13 @@ import {
   SkipBack,
   SkipForward,
   Trash2,
-  Volume2,
-  VolumeX,
   X,
 } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
 import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
+import { PlayerVolumeControl } from '@/components/player/PlayerVolumeControl';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Badge } from '@/components/ui/Badge';
 import { LikeButton } from '@/components/community/LikeButton';
@@ -122,8 +121,6 @@ export function FullPlayer() {
   const retryPlayback = usePlayer((state) => state.retryPlayback);
   const currentTime = usePlayer((state) => state.currentTime);
   const duration = usePlayer((state) => state.duration);
-  const volume = usePlayer((state) => state.volume);
-  const muted = usePlayer((state) => state.muted);
   const repeat = usePlayer((state) => state.repeat);
   const shuffle = usePlayer((state) => state.shuffle);
   const autoplay = usePlayer((state) => state.autoplay);
@@ -134,8 +131,6 @@ export function FullPlayer() {
   const next = usePlayer((state) => state.next);
   const previous = usePlayer((state) => state.previous);
   const seek = usePlayer((state) => state.seek);
-  const setVolume = usePlayer((state) => state.setVolume);
-  const toggleMute = usePlayer((state) => state.toggleMute);
   const cycleRepeat = usePlayer((state) => state.cycleRepeat);
   const toggleShuffle = usePlayer((state) => state.toggleShuffle);
   const toggleAutoplay = usePlayer((state) => state.toggleAutoplay);
@@ -659,61 +654,14 @@ export function FullPlayer() {
                   <Repeat className="h-5 w-5" />
                 )}
               </button>
-              <div className="hidden shrink-0 items-center justify-center gap-2 sm:ms-2 sm:flex sm:w-auto sm:border-s sm:border-white/15 sm:ps-3" role="group" aria-label={t('player.volume')}>
-                <button
-                  type="button"
-                  onClick={toggleMute}
-                  aria-label={muted || volume === 0 ? (rtl ? 'تشغيل الصوت' : 'Unmute') : (rtl ? 'كتم الصوت' : 'Mute')}
-                  title={t('player.volume')}
-                  className="rounded-full p-1.5 text-muted transition hover:bg-white/10 hover:text-white"
-                >
-                  {muted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                </button>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={muted ? 0 : volume}
-                  onChange={(event) => setVolume(Number(event.target.value))}
-                  className="w-12 sm:w-20 xl:w-24"
-                  aria-label={t('player.volume')}
-                  title={t('player.volume')}
-                />
+              <div className="hidden shrink-0 items-center justify-center gap-2 sm:ms-2 sm:flex sm:w-auto sm:border-s sm:border-white/15 sm:ps-3">
+                <PlayerVolumeControl rtl={rtl} label={t('player.volume')} />
               </div>
             </div>
 
             </div>
             <div className="mt-2 grid w-full min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 border-t border-white/10 pt-2.5 sm:hidden">
-              <div className="oddio-glass-volume flex min-w-0 items-center gap-1 rounded-2xl border border-white/[0.13] bg-white/[0.065] px-2 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.09)] backdrop-blur-xl" role="group" aria-label={t('player.volume')}>
-                <button
-                  type="button"
-                  onClick={toggleMute}
-                  className="grid h-11 w-10 shrink-0 place-items-center rounded-xl text-[#eeeeee] transition active:bg-white/15"
-                  aria-label={muted || volume === 0 ? (rtl ? 'تشغيل الصوت' : 'Unmute') : (rtl ? 'كتم الصوت' : 'Mute')}
-                  title={muted || volume === 0 ? (rtl ? 'تشغيل الصوت' : 'Unmute') : (rtl ? 'كتم الصوت' : 'Mute')}
-                >
-                  {muted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-                </button>
-                <div className="relative flex h-12 min-w-0 flex-1 items-center">
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={muted ? 0 : Math.round(volume * 100)}
-                    onInput={(event) => setVolume(Number(event.currentTarget.value) / 100)}
-                    onChange={(event) => setVolume(Number(event.currentTarget.value) / 100)}
-                    className="oddio-glass-volume-slider w-full"
-                    style={{ '--oddio-volume-progress': `${muted ? 0 : Math.round(volume * 100)}%` } as React.CSSProperties}
-                    aria-label={rtl ? 'مستوى الصوت' : 'Volume level'}
-                    aria-valuetext={`${muted ? 0 : Math.round(volume * 100)}%`}
-                  />
-                </div>
-                <output className="w-7 shrink-0 text-center text-[11px] font-semibold tabular-nums text-[#d6d6d6]" aria-live="off">
-                  {muted ? 0 : Math.round(volume * 100)}
-                </output>
-              </div>
+              <PlayerVolumeControl rtl={rtl} mobile label={t('player.volume')} />
               <label className="flex w-[110px] shrink-0 cursor-pointer items-center gap-1.5 text-[10px] leading-tight text-[#bdbdbd]">
                 <input type="checkbox" checked={autoplay} onChange={toggleAutoplay}
                   className="h-4 w-4 shrink-0 rounded border-white/20 bg-black/30 accent-white" />
