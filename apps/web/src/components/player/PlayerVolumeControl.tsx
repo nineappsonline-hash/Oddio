@@ -69,10 +69,18 @@ export function PlayerVolumeControl({ rtl, mobile = false, label }: {
       <div className={mobile
         ? 'flex h-[54px] min-w-0 items-center gap-2 rounded-2xl border border-white/[0.13] bg-white/[0.065] px-3 backdrop-blur-xl'
         : 'flex items-center gap-2 text-xs text-[#bbbbbb]'
-      } role="status">
-        <Volume2 className="h-5 w-5 shrink-0 text-white/80" />
+      } role="group" aria-label={label}>
+        <button
+          type="button"
+          onClick={toggleMute}
+          className="grid h-11 w-10 shrink-0 place-items-center rounded-xl text-white/90 active:bg-white/15"
+          aria-label={muted ? (rtl ? 'تشغيل الصوت' : 'Unmute') : (rtl ? 'كتم الصوت' : 'Mute')}
+          aria-pressed={muted}
+        >
+          {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+        </button>
         <span className="min-w-0 text-[11px] leading-tight text-[#d5d5d5]">
-          {rtl ? 'الصوت من أزرار التليفون' : 'Use phone volume buttons'}
+          {rtl ? 'علّي ووطّي من أزرار التليفون' : 'Adjust using phone volume buttons'}
         </span>
       </div>
     );
