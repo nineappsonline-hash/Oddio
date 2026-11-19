@@ -474,9 +474,14 @@ export function PlayerProvider({
           state.crossfadeSeconds,
         )
       : { outgoing: 1, incoming: 0 };
+    // iOS does not honor HTMLMediaElement.volume, but does support the
+    // dedicated muted flag. Keep it in sync for both media elements.
+    audio.muted = muted || volume === 0;
     audio.volume = (muted ? 0 : volume) * gains.outgoing;
-    if (standbyRef.current)
+    if (standbyRef.current) {
+      standbyRef.current.muted = muted || volume === 0;
       standbyRef.current.volume = (muted ? 0 : volume) * gains.incoming;
+    }
   }, [volume, muted]);
 
   useEffect(() => {
