@@ -75,11 +75,16 @@ export function DragReorderList<T>({
     const droppedElement = document.elementFromPoint(event.clientX, event.clientY);
     const droppedRow = droppedElement?.closest('[data-reorder-index]') as HTMLElement | null;
     const droppedInside = Boolean(droppedRow && ref.current?.contains(droppedRow));
-    if (drag.moved && droppedInside && drag.from !== drag.target && !disabled) {
-      onMove(drag.from, drag.target);
+    // Always resolve the final drop position from the pointer-up coordinates.
+    // The most recent pointer-move target can lag by one frame on touch and
+    // mouse devices, especially when the list reflows while dragging.
+    const target = droppedInside ? Number(droppedRow?.dataset.reorderIndex) : -1;
+    if (drag.moved && Number.isInteger(target) && target >= 0 &&
+        target < items.length && drag.from !== target && !disabled) {
+      onMove(drag.from, target);
       setAnnouncement(ar
-        ? `تم نقل العنصر من رقم ${drag.from + 1} إلى رقم ${drag.target + 1}`
-        : `Moved item from position ${drag.from + 1} to ${drag.target + 1}`);
+        ? `تم نقل العنصر من رقم ${drag.from + 1} إلى رقم ${target + 1}`
+        : `Moved item from position ${drag.from + 1} to ${target + 1}`);
     }
     stop();
   }
