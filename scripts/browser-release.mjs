@@ -647,13 +647,14 @@ try {
           // WebKit cancels pending player/podcast bootstrap fetches when the
           // signed-in page navigates to Rewind. The route checks above validate
           // actual rendering; only these aborted requests are benign.
-          const unexpectedRewindErrors = pageErrors.filter((message) =>
-            !(
-              engine === 'webkit' &&
-              message.includes('due to access control checks') &&
-              (message.includes('/api/podcasts/progress') ||
-                message.includes('/api/player/resume'))
-            ),
+          const unexpectedRewindErrors = pageErrors.filter(
+            (message) =>
+              !(
+                engine === 'webkit' &&
+                message.includes('due to access control checks') &&
+                (message.includes('/api/podcasts/progress') ||
+                  message.includes('/api/player/resume'))
+              ),
           );
           assert.equal(
             unexpectedRewindErrors.length,
