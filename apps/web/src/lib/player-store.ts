@@ -20,6 +20,10 @@ interface PlayerState {
   shuffle: boolean;
   autoplay: boolean;
   crossfadeSeconds: number;
+  playbackRate: number;
+  setPlaybackRate: (rate: number) => void;
+  sleepUntil: number | null;
+  setSleepTimer: (minutes: number) => void;
   setCrossfadeSeconds: (seconds: number) => void;
   station: { kind: StationMode; seedId?: string } | null;
   expanded: boolean;
@@ -81,6 +85,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   shuffle: false,
   autoplay: true,
   crossfadeSeconds: 0,
+  playbackRate: 1,
+  setPlaybackRate: (rate) => set({ playbackRate: [0.75, 1, 1.25, 1.5, 2].includes(rate) ? rate : 1 }),
+  sleepUntil: null,
+  setSleepTimer: (minutes) => set({ sleepUntil: minutes > 0 ? Date.now() + minutes * 60_000 : null }),
   setCrossfadeSeconds: (seconds) =>
     set({ crossfadeSeconds: [0, 3, 5, 8].includes(seconds) ? seconds : 0 }),
   station: null,
