@@ -28,31 +28,34 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Format files changed by UX roadmap
+      - name: Format latest feature head with bounded non-force retries
         shell: bash
         run: |
           set -euo pipefail
-          git diff --name-only -z --diff-filter=ACM origin/main...HEAD |
-            xargs -0 -r -n 1 sh -c '
-              case "$0" in
-                *.ts|*.tsx|*.js|*.mjs|*.cjs|*.json|*.md|*.yml|*.yaml|*.css)
-                  if test -f "$0"; then npx prettier --write "$0"; fi ;;
-              esac
-            '
-      - name: Commit formatting only to the feature branch
-        shell: bash
-        run: |
-          set -euo pipefail
-          if git diff --quiet; then
-            echo 'Already formatted'
-            exit 0
-          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --update
-          git commit -m 'style: apply Prettier to UX roadmap files'
-          # Other commits may have landed while npm ci / Prettier were running.
-          # Rebase against the latest remote head; never force-push.
-          git fetch origin feature/ux-roadmap-2026
-          git rebase origin/feature/ux-roadmap-2026
-          git push origin HEAD:feature/ux-roadmap-2026
+          for attempt in 1 2 3; do
+            # Always start from the remote head, so formatter results cannot
+            # conflict with newer feature work pushed during npm install.
+            git fetch origin feature/ux-roadmap-2026
+            git reset --hard origin/feature/ux-roadmap-2026
+            git diff --name-only -z --diff-filter=ACM origin/main...HEAD |
+              xargs -0 -r -n 1 sh -c '
+                case "$0" in
+                  *.ts|*.tsx|*.js|*.mjs|*.cjs|*.json|*.md|*.yml|*.yaml|*.css)
+                    if test -f "$0"; then npx prettier --write "$0"; fi ;;
+                esac
+              '
+            if git diff --quiet; then
+              echo 'Already formatted'
+              exit 0
+            fi
+            git add --update
+            git commit -m 'style: apply Prettier to UX roadmap files'
+            if git push origin HEAD:feature/ux-roadmap-2026; then
+              exit 0
+            fi
+            echo "Remote advanced while formatting; retry $attempt" >&2
+          done
+          echo 'Formatting commit could not be safely pushed' >&2
+          exit 1
