@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Check, Copy, Facebook, Instagram, MessageCircle, Share2, X } from 'lucide-react';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
@@ -30,7 +30,7 @@ export function ShareButton({
     }
   }, [open]);
 
-  function handleMenuKeys(event: React.KeyboardEvent<HTMLDivElement>) {
+  function handleMenuKeys(event: ReactKeyboardEvent<HTMLDivElement>) {
     if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
     const items = Array.from(
       event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'),
