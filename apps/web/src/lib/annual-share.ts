@@ -1,5 +1,8 @@
 import type { ListeningDNA } from './data/annual-listening-dna';
 
+/** Avoid sharing an apparently meaningful annual pattern from a single accidental play. */
+export const MIN_QUALIFIED_LISTENS_TO_SHARE = 5;
+
 export interface WrappedShareChoices {
   includeTopArtist: boolean;
   includeTopGenre: boolean;
@@ -12,7 +15,7 @@ export function annualShareText(
 ): string {
   if (!Number.isInteger(report.year) || report.year < 2020 || report.year > 2100)
     return '';
-  if (report.qualifiedListens <= 0) return '';
+  if (report.qualifiedListens < MIN_QUALIFIED_LISTENS_TO_SHARE) return '';
   const ar = locale === 'ar';
   const number = (value: number) =>
     new Intl.NumberFormat(ar ? 'ar-EG' : 'en-US').format(Math.max(0, value));
