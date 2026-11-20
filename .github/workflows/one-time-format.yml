@@ -1,0 +1,31 @@
+name: One-time repository Prettier baseline
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: write
+jobs:
+  format-repo:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/podcast-sync-and-browser-ci'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Apply project Prettier configuration
+        run: npm run format
+      - name: Commit formatting to this exact pull-request branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          if ! git diff --cached --quiet; then
+            git commit -m "style: normalize repository Prettier formatting"
+            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          fi
