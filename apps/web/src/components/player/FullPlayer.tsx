@@ -541,6 +541,15 @@ export function FullPlayer() {
               </div>
 
             <div className="oddio-mobile-playback-controls mt-2 grid min-w-0 grid-cols-5 items-center justify-items-center gap-1 sm:mt-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-4">
+              {podcast ? (
+                <button type="button" onClick={() => seek(Math.max(0, currentTime - 15))}
+                  aria-label={rtl ? 'ارجع 15 ثانية' : 'Rewind 15 seconds'}
+                  title={rtl ? 'ارجع 15 ثانية' : 'Rewind 15 seconds'}
+                  className="relative grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                  <SkipBack className="h-5 w-5" aria-hidden="true" />
+                  <span className="absolute -bottom-0.5 text-[9px] font-bold tabular-nums">15</span>
+                </button>
+              ) : (
               <button
                 type="button"
                 onClick={() => {
@@ -571,12 +580,13 @@ export function FullPlayer() {
               >
                 <Shuffle className="h-5 w-5" />
               </button>
+              )}
               <button
                 type="button"
                 onClick={previous}
                 aria-label={t('common.previous')}
                 title={t('common.previous')}
-                className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink sm:block sm:h-auto sm:w-auto sm:p-2.5"
+                className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
               >
                 <SkipBack className="h-6 w-6" />
               </button>
@@ -604,10 +614,19 @@ export function FullPlayer() {
                 onClick={() => next()}
                 aria-label={t('common.next')}
                 title={t('common.next')}
-                className="rounded-full p-1.5 text-muted transition hover:bg-white/10 hover:text-ink sm:p-2.5"
+                className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
               >
                 <SkipForward className="h-6 w-6" />
               </button>
+              {podcast ? (
+                <button type="button" onClick={() => seek(Math.min(duration || currentTime + 30, currentTime + 30))}
+                  aria-label={rtl ? 'قدّم 30 ثانية' : 'Forward 30 seconds'}
+                  title={rtl ? 'قدّم 30 ثانية' : 'Forward 30 seconds'}
+                  className="relative grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                  <SkipForward className="h-5 w-5" aria-hidden="true" />
+                  <span className="absolute -bottom-0.5 text-[9px] font-bold tabular-nums">30</span>
+                </button>
+              ) : (
               <button
                 type="button"
                 onClick={() => {
@@ -654,6 +673,7 @@ export function FullPlayer() {
                   <Repeat className="h-5 w-5" />
                 )}
               </button>
+              )}
               <div className="hidden shrink-0 items-center justify-center gap-2 sm:ms-2 sm:flex sm:w-auto sm:border-s sm:border-white/15 sm:ps-3">
                 <PlayerVolumeControl rtl={rtl} label={t('player.volume')} />
               </div>
