@@ -254,11 +254,14 @@ try {
         assert.equal(search?.status(), 200);
         const input = page.locator('main input[type="search"][name="q"]');
         await input.fill('zzzzunlikelyreleasequery123');
-        await input.press('Enter');
+        // The SSR fallback works even if React hydration is delayed on mobile.
+        // Submit by the visible button rather than racing an Enter keypress
+        // against hydration and a potentially focused suggestion.
+        await page.locator('main form[role="search"] button[type="submit"]').click();
         await page.waitForURL((url) =>
           url.pathname === `/${locale}/search` &&
           url.searchParams.get('q') === 'zzzzunlikelyreleasequery123',
-          { timeout: 15_000 },
+          { timeout: 30_000 },
         );
         // Next.js may stream the route after the URL changes; wait for the
         // actual no-results state rather than racing the navigation shell.
