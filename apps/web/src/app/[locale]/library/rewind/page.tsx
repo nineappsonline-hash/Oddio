@@ -7,6 +7,7 @@ import { getHistoryData } from '@/lib/data/queries';
 import { qualifiedRecapEvents } from '@/lib/data/monthly-recap';
 import { annualListeningDNA } from '@/lib/data/annual-listening-dna';
 import { ShareAnnualRewind } from '@/components/library/ShareAnnualRewind';
+import { MIN_QUALIFIED_LISTENS_TO_SHARE } from '@/lib/annual-share';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 
@@ -253,8 +254,14 @@ export default async function RewindPage({
           </section>
         </>
       )}
-      {report.qualifiedListens > 0 ? (
+      {report.qualifiedListens >= MIN_QUALIFIED_LISTENS_TO_SHARE ? (
         <ShareAnnualRewind report={report} locale={locale} />
+      ) : report.qualifiedListens > 0 ? (
+        <p className="rounded-2xl border border-white/10 p-4 text-sm text-muted">
+          {ar
+            ? `حصادك يفضل خاص لحد ما تسجل ${MIN_QUALIFIED_LISTENS_TO_SHARE} استماعات مؤهلة على الأقل. تقدر تشوف أرقامك هنا من غير مشاركة.`
+            : `You can view your private stats here. Sharing unlocks after at least ${MIN_QUALIFIED_LISTENS_TO_SHARE} recorded qualified listens.`}
+        </p>
       ) : null}
       <Link
         href={`/${locale}/library/recap`}
