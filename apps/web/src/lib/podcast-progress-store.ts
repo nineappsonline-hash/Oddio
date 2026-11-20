@@ -188,8 +188,14 @@ export function setPodcastEpisodePlayed(
   played: boolean,
 ): boolean {
   const storage = storageFor(viewerId);
-  if (!storage || !episodeId || !Number.isFinite(durationSeconds) ||
-      durationSeconds <= 0 || durationSeconds > MAX_SECONDS) return false;
+  if (
+    !storage ||
+    !episodeId ||
+    !Number.isFinite(durationSeconds) ||
+    durationSeconds <= 0 ||
+    durationSeconds > MAX_SECONDS
+  )
+    return false;
   const existing = readPodcastSyncRecords(viewerId);
   const old = existing.find((entry) => entry.episodeId === episodeId);
   // Use a strictly newer timestamp so a same-device action always wins
@@ -203,10 +209,15 @@ export function setPodcastEpisodePlayed(
     updatedAt,
   };
   try {
-    storage.setItem(keyFor(viewerId), JSON.stringify([
-      next,
-      ...existing.filter((entry) => entry.episodeId !== episodeId),
-    ].slice(0, LIMIT)));
+    storage.setItem(
+      keyFor(viewerId),
+      JSON.stringify(
+        [next, ...existing.filter((entry) => entry.episodeId !== episodeId)].slice(
+          0,
+          LIMIT,
+        ),
+      ),
+    );
     window.dispatchEvent(new Event(PODCAST_PROGRESS_EVENT));
     return true;
   } catch {

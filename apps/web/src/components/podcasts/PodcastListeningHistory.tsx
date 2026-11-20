@@ -80,45 +80,68 @@ export function PodcastListeningHistory({
     if (filter === 'finished' && !record.completed) return false;
     if (filter === 'unfinished' && record.completed) return false;
     const term = query.trim().toLocaleLowerCase();
-    return !term || [episode.title, show.title].some((value) =>
-      value.toLocaleLowerCase().includes(term),
+    return (
+      !term ||
+      [episode.title, show.title].some((value) =>
+        value.toLocaleLowerCase().includes(term),
+      )
     );
   });
 
-  function updateStatus(
-    episode: PodcastEpisode,
-    finished: boolean,
-  ) {
+  function updateStatus(episode: PodcastEpisode, finished: boolean) {
     const active = isPodcastPlayback(currentTrack) && currentTrack?.id === episode.id;
     if (active) {
       setPlaying(false);
       seek(finished ? episode.durationSeconds : 0);
     }
-    const ok = setPodcastEpisodePlayed(viewerId, episode.id, episode.durationSeconds, finished);
-    setNotice(ok
-      ? finished
-        ? ar ? 'اتعلمت الحلقة كمسموعة' : 'Episode marked as played'
-        : ar ? 'اتعلمت الحلقة كغير مسموعة' : 'Episode marked as unplayed'
-      : ar ? 'المتصفح رفض حفظ التغيير' : 'Unable to save this change in your browser',
+    const ok = setPodcastEpisodePlayed(
+      viewerId,
+      episode.id,
+      episode.durationSeconds,
+      finished,
+    );
+    setNotice(
+      ok
+        ? finished
+          ? ar
+            ? 'اتعلمت الحلقة كمسموعة'
+            : 'Episode marked as played'
+          : ar
+            ? 'اتعلمت الحلقة كغير مسموعة'
+            : 'Episode marked as unplayed'
+        : ar
+          ? 'المتصفح رفض حفظ التغيير'
+          : 'Unable to save this change in your browser',
     );
   }
 
   return (
-    <section className="space-y-5" aria-label={ar ? 'سجل استماع البودكاست' : 'Podcast listening history'}>
-      <div className="flex flex-wrap gap-2" role="group" aria-label={ar ? 'فلترة السجل' : 'History filters'}>
-        {([
-          ['all', ar ? 'الكل' : 'All', entries.length],
-          ['unfinished', ar ? 'لسه مكملتهاش' : 'In progress', unfinishedCount],
-          ['finished', ar ? 'اتسمعت' : 'Completed', finishedCount],
-        ] as const).map(([value, label, count]) => (
+    <section
+      className="space-y-5"
+      aria-label={ar ? 'سجل استماع البودكاست' : 'Podcast listening history'}
+    >
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label={ar ? 'فلترة السجل' : 'History filters'}
+      >
+        {(
+          [
+            ['all', ar ? 'الكل' : 'All', entries.length],
+            ['unfinished', ar ? 'لسه مكملتهاش' : 'In progress', unfinishedCount],
+            ['finished', ar ? 'اتسمعت' : 'Completed', finishedCount],
+          ] as const
+        ).map(([value, label, count]) => (
           <button
             key={value}
             type="button"
             onClick={() => setFilter(value)}
             aria-pressed={filter === value}
-            className={`min-h-11 rounded-xl border px-4 text-sm font-semibold transition ${filter === value
-              ? 'border-white/60 bg-white text-[#15121b]'
-              : 'border-white/15 bg-white/[0.06] text-white hover:bg-white/15'}`}
+            className={`min-h-11 rounded-xl border px-4 text-sm font-semibold transition ${
+              filter === value
+                ? 'border-white/60 bg-white text-[#15121b]'
+                : 'border-white/15 bg-white/[0.06] text-white hover:bg-white/15'
+            }`}
           >
             {label} <span className="ms-1 opacity-70">{count}</span>
           </button>
@@ -126,7 +149,9 @@ export function PodcastListeningHistory({
       </div>
       <label className="flex min-h-12 max-w-lg items-center gap-3 rounded-xl border border-white/20 bg-white/[0.06] px-4 focus-within:border-white/50">
         <Search className="h-4 w-4 shrink-0 text-white/60" aria-hidden="true" />
-        <span className="sr-only">{ar ? 'ابحث في سجل الاستماع' : 'Search listening history'}</span>
+        <span className="sr-only">
+          {ar ? 'ابحث في سجل الاستماع' : 'Search listening history'}
+        </span>
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -134,7 +159,9 @@ export function PodcastListeningHistory({
           className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/45"
         />
       </label>
-      <p className="min-h-4 text-xs text-white/70" role="status" aria-live="polite">{notice}</p>
+      <p className="min-h-4 text-xs text-white/70" role="status" aria-live="polite">
+        {notice}
+      </p>
       {!viewerId ? (
         <p className="rounded-xl border border-white/10 bg-white/[0.05] p-3 text-sm text-white/70">
           {ar
@@ -145,17 +172,31 @@ export function PodcastListeningHistory({
       {visible.length ? (
         <div className="grid gap-3 lg:grid-cols-2">
           {visible.map(({ record, episode, show }) => {
-            const active = isPodcastPlayback(currentTrack) && currentTrack?.id === episode.id;
-            const percent = record.completed ? 100 :
-              Math.max(0, Math.min(100, Math.round((record.seconds / episode.durationSeconds) * 100)));
+            const active =
+              isPodcastPlayback(currentTrack) && currentTrack?.id === episode.id;
+            const percent = record.completed
+              ? 100
+              : Math.max(
+                  0,
+                  Math.min(
+                    100,
+                    Math.round((record.seconds / episode.durationSeconds) * 100),
+                  ),
+                );
             return (
-              <article key={episode.id}
-                className="min-w-0 space-y-3 rounded-2xl border border-white/15 bg-white/[0.055] p-4">
+              <article
+                key={episode.id}
+                className="min-w-0 space-y-3 rounded-2xl border border-white/15 bg-white/[0.055] p-4"
+              >
                 <div className="flex gap-3">
                   {show.coverUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={show.coverUrl} alt="" loading="lazy"
-                      className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+                    <img
+                      src={show.coverUrl}
+                      alt=""
+                      loading="lazy"
+                      className="h-16 w-16 shrink-0 rounded-xl object-cover"
+                    />
                   ) : (
                     <div className="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-white/10">
                       <Headphones className="h-6 w-6 text-white/70" />
@@ -163,42 +204,79 @@ export function PodcastListeningHistory({
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs text-white/60">{show.title}</p>
-                    <Link href={`/${locale}/podcasts/episodes/${episode.id}`}
-                      className="mt-1 line-clamp-2 font-bold leading-snug text-white hover:underline">
+                    <Link
+                      href={`/${locale}/podcasts/episodes/${episode.id}`}
+                      className="mt-1 line-clamp-2 font-bold leading-snug text-white hover:underline"
+                    >
                       {episode.title}
                     </Link>
                     <span className="mt-1 flex items-center gap-1 text-xs text-white/70">
-                      {record.completed ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
+                      {record.completed ? (
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                      ) : (
+                        <Circle className="h-3.5 w-3.5" />
+                      )}
                       {record.completed
-                        ? ar ? 'مكتملة' : 'Completed'
+                        ? ar
+                          ? 'مكتملة'
+                          : 'Completed'
                         : `${percent}% · ${ar ? 'فاضل' : 'Remaining'} ${formatTime(episode.durationSeconds - record.seconds)}`}
                     </span>
                   </div>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-white/15"
-                  role="progressbar" aria-label={ar ? `تقدم ${episode.title}` : `Progress for ${episode.title}`}
-                  aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
-                  <div className="h-full rounded-full bg-[#d4b0f4]" style={{ width: `${percent}%` }} />
+                <div
+                  className="h-1.5 overflow-hidden rounded-full bg-white/15"
+                  role="progressbar"
+                  aria-label={
+                    ar ? `تقدم ${episode.title}` : `Progress for ${episode.title}`
+                  }
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={percent}
+                >
+                  <div
+                    className="h-full rounded-full bg-[#d4b0f4]"
+                    style={{ width: `${percent}%` }}
+                  />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button type="button"
+                  <button
+                    type="button"
                     onClick={() => {
                       if (active) setPlaying(!isPlaying);
                       else play(podcastAsTrack(episode, show));
                     }}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#1a1421] hover:bg-[#e9ddf7]">
-                    {active && isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-[#1a1421] hover:bg-[#e9ddf7]"
+                  >
+                    {active && isPlaying ? (
+                      <Pause className="h-4 w-4" />
+                    ) : (
+                      <Play className="h-4 w-4" />
+                    )}
                     {active && isPlaying
-                      ? ar ? 'إيقاف' : 'Pause'
+                      ? ar
+                        ? 'إيقاف'
+                        : 'Pause'
                       : record.completed
-                        ? ar ? 'اسمع تاني' : 'Listen again'
-                        : ar ? 'كمّل استماع' : 'Resume'}
+                        ? ar
+                          ? 'اسمع تاني'
+                          : 'Listen again'
+                        : ar
+                          ? 'كمّل استماع'
+                          : 'Resume'}
                   </button>
-                  <button type="button" onClick={() => updateStatus(episode, !record.completed)}
-                    className="inline-flex min-h-11 items-center rounded-xl border border-white/25 px-3 text-sm font-semibold text-white hover:bg-white/10">
+                  <button
+                    type="button"
+                    onClick={() => updateStatus(episode, !record.completed)}
+                    className="inline-flex min-h-11 items-center rounded-xl border border-white/25 px-3 text-sm font-semibold text-white hover:bg-white/10"
+                  >
                     {record.completed
-                      ? ar ? 'علّم كغير مسموعة' : 'Mark unplayed'
-                      : ar ? 'علّم كمسموعة' : 'Mark played'}
+                      ? ar
+                        ? 'علّم كغير مسموعة'
+                        : 'Mark unplayed'
+                      : ar
+                        ? 'علّم كمسموعة'
+                        : 'Mark played'}
                   </button>
                 </div>
               </article>
@@ -210,14 +288,22 @@ export function PodcastListeningHistory({
           <Headphones className="mx-auto h-9 w-9 text-white/50" aria-hidden="true" />
           <h2 className="mt-3 text-lg font-bold text-white">
             {entries.length
-              ? ar ? 'مفيش حلقات مطابقة' : 'No matching episodes'
-              : ar ? 'سجل الاستماع فاضي لسه' : 'Nothing in your history yet'}
+              ? ar
+                ? 'مفيش حلقات مطابقة'
+                : 'No matching episodes'
+              : ar
+                ? 'سجل الاستماع فاضي لسه'
+                : 'Nothing in your history yet'}
           </h2>
           <p className="mt-2 text-sm text-white/65">
-            {ar ? 'جرب فلتر تاني أو اختار حلقة جديدة تسمعها.' : 'Try another filter or explore a podcast episode.'}
+            {ar
+              ? 'جرب فلتر تاني أو اختار حلقة جديدة تسمعها.'
+              : 'Try another filter or explore a podcast episode.'}
           </p>
-          <Link href={`/${locale}/podcasts`}
-            className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-white px-5 text-sm font-bold text-[#1a1421]">
+          <Link
+            href={`/${locale}/podcasts`}
+            className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-white px-5 text-sm font-bold text-[#1a1421]"
+          >
             {ar ? 'استكشف البودكاست' : 'Explore podcasts'}
           </Link>
         </div>
