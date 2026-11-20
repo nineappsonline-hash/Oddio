@@ -6,6 +6,7 @@ import { isPodcastPlayback } from '@/lib/podcast-playback';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronDown,
+  ChevronUp,
   ListMusic,
   Mic2,
   Pause,
@@ -140,6 +141,7 @@ export function FullPlayer() {
   const toggleAutoplay = usePlayer((state) => state.toggleAutoplay);
   const jumpTo = usePlayer((state) => state.jumpTo);
   const removeFromQueue = usePlayer((state) => state.removeFromQueue);
+  const moveInQueue = usePlayer((state) => state.moveInQueue);
   const clearQueue = usePlayer((state) => state.clearQueue);
 
   // The full player is a modal: lock background scrolling and keep keyboard
@@ -884,7 +886,7 @@ export function FullPlayer() {
                     <button
                       type="button"
                       onClick={clearQueue}
-                      className="rounded-full p-1.5 text-muted transition hover:bg-white/10 hover:text-ink"
+                      className="grid h-10 w-10 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                       aria-label={t('player.clearQueue')}
                       title={t('player.clearQueue')}
                     >
@@ -931,7 +933,7 @@ export function FullPlayer() {
                         <button
                           type="button"
                           onClick={() => jumpTo(item.id)}
-                          className="flex min-w-0 flex-1 items-center gap-3 text-start"
+                          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         >
                           <Artwork
                             title={item.title}
@@ -949,15 +951,27 @@ export function FullPlayer() {
                             </span>
                           </span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => removeFromQueue(item.id)}
-                          className="rounded-full p-1.5 text-muted opacity-0 transition hover:bg-white/10 hover:text-ink group-hover:opacity-100"
-                          aria-label={t('player.removeFromQueue')}
-                          title={t('player.removeFromQueue')}
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <button type="button" disabled={index === 0}
+                            onClick={() => moveInQueue(item.id, 'up')}
+                            aria-label={rtl ? `حرّك ${item.title} لفوق` : `Move ${item.title} up`}
+                            title={rtl ? 'لأعلى' : 'Move up'}
+                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-25">
+                            <ChevronUp className="h-4 w-4" />
+                          </button>
+                          <button type="button" disabled={index === queue.length - 1}
+                            onClick={() => moveInQueue(item.id, 'down')}
+                            aria-label={rtl ? `حرّك ${item.title} لتحت` : `Move ${item.title} down`}
+                            title={rtl ? 'لأسفل' : 'Move down'}
+                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-25">
+                            <ChevronDown className="h-4 w-4" />
+                          </button>
+                          <button type="button" onClick={() => removeFromQueue(item.id)}
+                            aria-label={t('player.removeFromQueue')} title={t('player.removeFromQueue')}
+                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
                       </li>
                     ))}
                   </ul>
