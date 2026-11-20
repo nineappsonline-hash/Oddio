@@ -5,6 +5,8 @@
 **Production:** unchanged by the UX roadmap.
 **Evidence window:** 2026-11-21. These are engineering checks, not claims of a completed real-device or production test.
 
+**Latest QA note (2026-11-21):** Chromium and Firefox passed all 57 browser checks on `d0e191ad`. WebKit passed 56/57; a narrowly scoped test correction for aborted bootstrap requests is committed. The format workflow subsequently completed successfully. Complete same-commit CI is still required.
+
 ## Required release evidence
 
 | Gate                     | Minimum acceptance                                                                                                                                                            | Current evidence                                                                                     |
