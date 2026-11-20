@@ -374,6 +374,7 @@
 - New Vercel/CI jobs for these commits were still in progress at documentation time. No migration or production deploy; formatter and full browser acceptance remain required.
 
 ### Phase 9 verification improvements & Phase 10 social sharing start (2026-11-20)
+
 - Vercel preview `95ca3a7d` was READY, but GitHub Actions were not green: previous browser reached **55/56** due to one mobile Arabic search-transition race; verify also timed out installing FFmpeg through a throttled Ubuntu apt mirror. Replaced the flaky keyboard-only browser search interaction with an explicit visible submit button and 30s navigation timeout. Added normal HTML GET form fallback. CI's FFmpeg apt timeouts increased from 180s to 600s, with no-recommends to reduce package download. Actual acceptance still requires green CI.
 - Created a one-shot Prettier autoformatter scoped to files changed from `main` on the UX branch. The format run `44744424535` succeeded and committed formatted files at `a2f1c2d8`; the second pass `44744760738` also succeeded and committed at `b6e9fe7b`. This is feature-branch-only; no production changes.
 - Phase 10 initial audit found playlist collaborations already support owner-managed invite codes, editor removal and invite revocation for **public** lists; no need to rebuild them. Enhanced the UI with a confirmation before removing editors/revoking invites, a Hide Code button, clipboard feedback, and clear one-time invitation code warning.
@@ -382,6 +383,7 @@
 - Remaining gates: newest CI TypeScript, Vitest, SQL, browser and Prettier results; cross-account collaborator invitation E2E with disposable test users; no production merge.
 
 ### Phase 10 continuation — CI stabilization and privacy, 2026-11-20
+
 - Diagnosed GitHub CI failures: malformed SQL delimiter (`do $` / `end $;`) introduced in collaboration revocation test, and Firefox search submit button remaining disabled after filling the input before hydration. Changed the SQL block to a named `$oddio_revocation$` delimiter (confirmed on GitHub), and the browser test now retries filling until the hydrated, controlled input and submit button agree.
 - **Latest checked database job `44747253683` passed**, confirming collaboration revocation/RLS test path. Prior job `44745028974` failed SQL syntax; do not confuse earlier failures with latest result.
 - Hide public ShareButton for private playlists; for public/unlisted lists pass the canonical `/{locale}/playlists/{id}` link instead of incidental current URL. Added `Cache-Control: private, no-store` to the authenticated collaboration management response and one-time invitation response.

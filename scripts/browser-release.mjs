@@ -266,13 +266,20 @@ try {
           await input.fill(query);
           try {
             await submit.waitFor({ state: 'visible', timeout: 3000 });
-            await page.waitForFunction(() => {
-              const form = document.querySelector('main form[role="search"]');
-              const field = form?.querySelector('input[name="q"]');
-              const button = form?.querySelector('button[type="submit"]');
-              return field?.value === 'zzzzunlikelyreleasequery123' &&
-                button && !button.disabled;
-            }, null, { timeout: 3000 });
+            await page.waitForFunction(
+              () => {
+                const form = document.querySelector('main form[role="search"]');
+                const field = form?.querySelector('input[name="q"]');
+                const button = form?.querySelector('button[type="submit"]');
+                return (
+                  field?.value === 'zzzzunlikelyreleasequery123' &&
+                  button &&
+                  !button.disabled
+                );
+              },
+              null,
+              { timeout: 3000 },
+            );
             break;
           } catch (error) {
             if (attempt === 4) throw error;
