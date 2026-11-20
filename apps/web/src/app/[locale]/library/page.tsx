@@ -139,7 +139,7 @@ export default async function LibraryPage({
           />
         ) : (
           <SearchableLikedTracks tracks={likedTracks} locale={locale} />
-        )
+        )}
       </section>
 
       <section id="playlists" className="scroll-mt-24">
