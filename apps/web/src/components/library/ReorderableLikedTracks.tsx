@@ -105,7 +105,7 @@ export function ReorderableLikedTracks({
         disabled={!ready || Boolean(query.trim())}
         className="card divide-y divide-white/5 p-2"
         renderItem={(track, index) => (
-          <TrackRow track={track} queue={tracks} index={index} locale={locale} />
+          <TrackRow track={track} queue={filtered} index={index} locale={locale} />
         )}
       />}
     </div>
