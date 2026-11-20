@@ -49,7 +49,32 @@ export function promptDiscoveryTracks(
   const intents = Object.entries(synonyms)
     .filter(([, terms]) => terms.some((term) => containsTerm(text, term)))
     .map(([name]) => name);
-  const ranked = catalog
+  // Only apply hard facets when a user phrase explicitly matches known
+  // catalog labels. Never invent BPM, vocals or language from a genre name.
+  const requestedGenres = db.genres
+    .filter((genre) => genre.active)
+    .filter((genre) => [genre.labelEn, genre.labelAr, genre.slug]
+      .some((label) => containsTerm(text, label)))
+    .map((genre) => genre.id);
+  const requestedMoods = db.moods
+    .filter((mood) => mood.active)
+    .filter((mood) => [mood.labelEn, mood.labelAr, mood.slug]
+      .some((label) => containsTerm(text, label)))
+    .map((mood) => mood.id);
+  const requestedLanguage = intents.includes('arabic') && !intents.includes('english')
+    ? 'ar'
+    : intents.includes('english') && !intents.includes('arabic')
+      ? 'en'
+      : null;
+  const constrained = catalog.filter((track) =>
+    (!requestedGenres.length ||
+      (track.genreIds?.length ? track.genreIds : [track.genreId])
+        .some((genreId) => requestedGenres.includes(genreId))) &&
+    (!requestedMoods.length ||
+      track.moodIds.some((moodId) => requestedMoods.includes(moodId))) &&
+    (!requestedLanguage || track.languageCode === requestedLanguage)
+  );
+  const ranked = constrained
     .map((track) => {
       const genres = db.genres.filter((genre) =>
         (track.genreIds?.length ? track.genreIds : [track.genreId]).includes(genre.id),
