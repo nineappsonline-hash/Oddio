@@ -200,3 +200,9 @@
 - Added explicit RTL direction to the self-contained search interaction; restrained the suggestion list to 55dvh / 400px maximum, enabled contained scrolling and touch-sized controls, and tightened the small-screen search button to prevent horizontal overflow.
 - Updated blur handling to defer dismissal for 180ms when a touch/mouse focus transition has no reliable `relatedTarget`; this is a best-effort fix to allow suggestion taps to activate, and still needs live mobile browser testing (including VoiceOver/TalkBack and soft keyboard).
 - No production merge or publication. New commits require current preview READY and hands-on QA before release.
+
+### Phase 3 build unblock & Phase 4 first accessibility pass — 2026-11-20
+- Detected **Vercel ERROR** on Phase 3 mobile/RTL builds `7efecb80`, `ad958bdb`, and `c28f253e`. Build logs identify a TypeScript collision between imported React `KeyboardEvent` and native `document.addEventListener` event types in `SearchExperience`. Fixed via `type KeyboardEvent as ReactKeyboardEvent` for the component callback, preserving the native DOM event type for the global listener (commit `c5c9af1a`). A successful newer preview build is still required before release.
+- Began Phase 4 mobile & accessibility work: the mobile drawer now focuses its first control when opened, cycles keyboard Tab/Shift+Tab inside the drawer, closes on Escape, restores prior keyboard focus on close, and prevents background scrolling while open. Drawer placement uses CSS logical `start-0` and `border-e` to support RTL. This requires actual mobile and keyboard browser QA.
+- The main-content skip link now has meaningful Arabic/English action text instead of a marketing tagline.
+- No merge, production rollout, or verified end-to-end tests. New commits remain on `feature/ux-roadmap-2026`.
