@@ -4,6 +4,7 @@ import { annualShareText } from './annual-share';
 
 const report: ListeningDNA = {
   year: 2026, qualifiedListens: 45, tracks: 12, artists: 6, activeMonths: 5,
+  monthlyQualifiedListens: Array.from({ length: 12 }, (_, index) => ({ month: index + 1, plays: index < 5 ? 9 : 0 })),
   genres: [{ id: 'pop', name: 'Pop', plays: 20 }],
   topTracks: [{ id: 'song', title: 'Private song', artist: 'Private artist', plays: 8 }],
   topArtists: [{ id: 'artist', name: 'Chosen artist', plays: 28 }],
