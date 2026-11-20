@@ -619,6 +619,12 @@ try {
           await page.setViewportSize({ width: 390, height: 844 });
           const layout = await page.evaluate(() => ({
             overflow: document.documentElement.scrollWidth - window.innerWidth,
+            widths: {
+              viewport: window.innerWidth,
+              html: document.documentElement.clientWidth,
+              body: document.body.getBoundingClientRect().width,
+              workspace: document.querySelector('.oddio-workspace')?.getBoundingClientRect().width,
+            },
             offenders: Array.from(document.querySelectorAll('body *'))
               .filter((element) => {
                 const rect = element.getBoundingClientRect();
@@ -641,7 +647,7 @@ try {
           }));
           assert.ok(
             layout.overflow <= 2,
-            `Arabic Rewind overflow: ${layout.overflow}px; offenders: ${JSON.stringify(layout.offenders)}`,
+            `Arabic Rewind overflow: ${layout.overflow}px; widths: ${JSON.stringify(layout.widths)}; offenders: ${JSON.stringify(layout.offenders)}`,
           );
           await page.setViewportSize({ width: 1366, height: 900 });
           // WebKit cancels pending player/podcast bootstrap fetches when the
