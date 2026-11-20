@@ -170,6 +170,33 @@ export function buildDiscoveryMix(
     }
     return { tracks: selected, personalized: base.personalized };
   }
+  // Preserve a recognizable sound before widening a station to unrelated
+  // fallback tracks. This matters on smaller catalogs where artist variety
+  // must not push unrelated songs above matching genres or moods.
+  if ((options.kind === 'song' || options.kind === 'artist') && seed) {
+    const familiar = candidates.filter((track) => affinity(track) > 0);
+    const exploration = candidates.filter((track) => affinity(track) === 0);
+    const selected: CatalogTrack[] = [];
+    if (options.kind === 'song' && familiar.some((track) => track.id === seed.id)) {
+      selected.push(seed);
+    }
+    const seenArtists = new Set(selected.map((track) => track.artistId));
+    for (const group of [familiar, exploration]) {
+      for (const track of group) {
+        if (selected.length >= limit) break;
+        if (selected.some((item) => item.id === track.id) || seenArtists.has(track.artistId))
+          continue;
+        selected.push(track);
+        seenArtists.add(track.artistId);
+      }
+      for (const track of group) {
+        if (selected.length >= limit) break;
+        if (!selected.some((item) => item.id === track.id)) selected.push(track);
+      }
+      if (selected.length >= limit) break;
+    }
+    return { tracks: selected, personalized: false };
+  }
   // Keep song-radio's seed first; otherwise use the ranking's strongest track.
   const first =
     options.kind === 'song' &&
