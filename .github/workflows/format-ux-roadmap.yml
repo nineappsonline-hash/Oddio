@@ -1,5 +1,5 @@
 name: Format UX roadmap branch
-# Phase 12 final scoped formatting pass for Rewind, artwork and protected media.
+# Phase 12 acceptance formatting pass: responsive Rewind and drag regression fixes.
 
 on:
   push:
