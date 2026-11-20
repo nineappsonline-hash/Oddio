@@ -220,7 +220,7 @@ export function PromptPlaylist({
                     {ar ? 'سبب الاختيار: ' : 'Matched: '}
                     {(reasons[track.id] ?? []).map(describeReason).join(' · ')}
                   </span>
-                ) : null
+                ) : null}
               </li>
             ))}
           </ul>
