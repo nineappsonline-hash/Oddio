@@ -135,6 +135,19 @@ describe('Oddio discovery stations', () => {
     expect(buildDiscoveryMix(db, guest, { kind: 'artist', seedId: 'artist-a', now: date }).tracks).toEqual([]);
   });
 
+  it('prioritizes matching Song Radio songs before unrelated fallback', () => {
+    const db = fixture();
+    const result = buildDiscoveryMix(db, guest, { kind: 'song', seedId: 'a', limit: 4, now: date });
+    const ids = result.tracks.map((track) => track.id);
+    expect(ids[0]).toBe('a');
+    // Song a shares pop with b and d, and mood with e; unrelated rock/happy c
+    // must not displace any of those matching tracks in a four-song mix.
+    expect(ids).toContain('b');
+    expect(ids).toContain('d');
+    expect(ids).toContain('e');
+    expect(ids).not.toContain('c');
+  });
+
   it('genre radio selects only tracks in the chosen active genre', () => {
     const result = buildDiscoveryMix(fixture(), guest, {
       kind: 'genre',
