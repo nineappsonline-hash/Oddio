@@ -90,7 +90,7 @@ end $$;
 
 -- Revocation must take effect immediately, including for invitations that
 -- have not yet been used and for users removed from an editor role.
-do $
+do $oddio_revocation$
 declare
   owner_playlist uuid := '62000000-0000-4000-8000-000000000001';
   editor uuid := '72000000-0000-4000-8000-000000000002';
@@ -119,6 +119,6 @@ begin
     raise exception 'Editor could still mutate a private playlist';
   exception when sqlstate 'P0002' then null;
   end;
-end $;
+end $oddio_revocation$;
 
 rollback;
