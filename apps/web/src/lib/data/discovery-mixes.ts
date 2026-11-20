@@ -79,12 +79,12 @@ export function buildDiscoveryMix(
   const ranked = base.tracks.filter((track) => allowed.has(track.id));
   // Artist radio is keyed by artist ID, not whichever song happened to be
   // featured on their profile. Accept a legacy track-ID seed for old stations.
+  const legacyArtistId = options.kind === 'artist'
+    ? playable.find((track) => track.id === options.seedId)?.artistId
+    : undefined;
+  const artistId = legacyArtistId ?? options.seedId;
   const artistTracks = options.kind === 'artist'
-    ? playable.filter((track) =>
-        track.artistId === options.seedId ||
-        (playable.some((item) => item.id === options.seedId) &&
-          track.artistId === playable.find((item) => item.id === options.seedId)?.artistId),
-      )
+    ? playable.filter((track) => track.artistId === artistId)
     : [];
   const seed = options.kind === 'artist'
     ? [...artistTracks].sort(
