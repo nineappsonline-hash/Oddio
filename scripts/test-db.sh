@@ -35,6 +35,9 @@ echo "==> supabase/tests/history_erasure.sql"
 echo "==> supabase/tests/player_resume.sql"
 "${PSQL[@]}" -f supabase/tests/player_resume.sql
 
+echo "==> supabase/tests/podcast_progress.sql"
+"${PSQL[@]}" -f supabase/tests/podcast_progress.sql
+
 echo "==> supabase/tests/discovery_preferences.sql"
 "${PSQL[@]}" -f supabase/tests/discovery_preferences.sql
 
