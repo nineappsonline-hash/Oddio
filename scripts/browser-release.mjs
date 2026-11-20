@@ -14,6 +14,14 @@ if (!(engine in engines)) throw new Error('Unsupported browser test engine');
 const browser = await engines[engine].launch({ headless: true });
 let failures = 0;
 const tests = [];
+async function waitForAttribute(locator, attribute, expected, timeoutMs = 5000) {
+  const until = Date.now() + timeoutMs;
+  while (Date.now() < until) {
+    if ((await locator.getAttribute(attribute)) === expected) return;
+    await new Promise((resolve) => setTimeout(resolve, 60));
+  }
+  assert.equal(await locator.getAttribute(attribute), expected);
+}
 async function test(name, fn) {
   try {
     await fn();
@@ -83,13 +91,13 @@ try {
         const surpriseLabel = locale === 'ar' ? 'فاجئني' : 'Surprise me';
         const surprise = page.getByRole('button', { name: surpriseLabel, exact: true });
         await surprise.click();
-        assert.equal(await surprise.getAttribute('aria-pressed'), 'true');
+        await waitForAttribute(surprise, 'aria-pressed', 'true');
         const focusLabel =
           locale === 'ar' ? 'وضع الاستماع الهادئ' : 'Distraction-free mode';
         await page.getByRole('button', { name: focusLabel }).click();
         const restoreLabel = locale === 'ar' ? 'إظهار الاختيارات' : 'Show controls';
         await page.getByRole('button', { name: restoreLabel }).click();
-        assert.equal(await surprise.getAttribute('aria-pressed'), 'true');
+        await waitForAttribute(surprise, 'aria-pressed', 'true');
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         );
