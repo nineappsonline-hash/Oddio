@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { TrackRow } from '@/components/music/TrackRow';
 import { PlaylistCard } from '@/components/music/PlaylistCard';
+import { ReorderablePlaylistGrid } from '@/components/library/ReorderablePlaylistGrid';
 import { ArtistListRow } from '@/components/music/ArtistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ButtonLink } from '@/components/ui/Button';
@@ -160,11 +161,7 @@ export default async function LibraryPage({
             }
           />
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {library.playlists.map((playlist) => (
-              <PlaylistCard key={playlist.id} playlist={playlist} locale={locale} />
-            ))}
-          </div>
+          <ReorderablePlaylistGrid playlists={library.playlists} locale={locale} userId={user.id} />
         )}
         {library.followedPlaylists.length > 0 ? (
           <>
