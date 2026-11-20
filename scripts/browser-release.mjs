@@ -623,7 +623,9 @@ try {
               viewport: window.innerWidth,
               html: document.documentElement.clientWidth,
               body: document.body.getBoundingClientRect().width,
-              workspace: document.querySelector('.oddio-workspace')?.getBoundingClientRect().width,
+              workspace: document
+                .querySelector('.oddio-workspace')
+                ?.getBoundingClientRect().width,
             },
             offenders: Array.from(document.querySelectorAll('body *'))
               .filter((element) => {
