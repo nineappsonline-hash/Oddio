@@ -5,6 +5,7 @@ import type { Playlist } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Modal } from '@/components/ui/Modal';
+import { runSequentialPlaylistMutations } from '@/lib/sequential-playlist-mutations';
 
 type Locale = 'ar' | 'en';
 
@@ -26,6 +27,7 @@ export function BulkAddToPlaylistButton({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState<{ completed: number; total: number } | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [error, setError] = useState('');
   const [result, setResult] = useState('');
@@ -50,6 +52,7 @@ export function BulkAddToPlaylistButton({
     setSnapshot(unique);
     setError('');
     setResult('');
+    setProgress(null);
     setFailedPlaylistId(null);
     setOpen(true);
   };
@@ -65,25 +68,33 @@ export function BulkAddToPlaylistButton({
     setSaving(true);
     setError('');
     setResult('');
-    let added = 0;
+    setProgress({ completed: 0, total: remaining.length });
     try {
-      for (const trackId of remaining) {
-        await apiRequest(`/api/playlists/${encodeURIComponent(playlist.id)}/tracks`, {
-          method: 'POST',
-          body: JSON.stringify({ trackId }),
-        });
-        added += 1;
+      const outcome = await runSequentialPlaylistMutations(
+        remaining,
+        (trackId) =>
+          apiRequest(`/api/playlists/${encodeURIComponent(playlist.id)}/tracks`, {
+            method: 'POST',
+            body: JSON.stringify({ trackId }),
+          }),
+        (completed, total) => setProgress({ completed, total }),
+      );
+      if (outcome.failed) {
+        setFailedPlaylistId(playlist.id);
+        setError(ar
+          ? 'حصل انقطاع أثناء الإضافة. ممكن آخر طلب يكون اتحفظ. افتح القائمة وراجعها قبل أي محاولة تانية.'
+          : 'Addition was interrupted. The last request may have been saved. Review the playlist before retrying.');
+        setResult(ar
+          ? `اتأكدنا من إضافة ${outcome.completed} من ${outcome.total}.`
+          : `Confirmed ${outcome.completed} of ${outcome.total} additions.`);
+        return;
       }
-      toast(ar ? `تمت إضافة ${added} أغنية.` : `Added ${added} tracks to playlist.`, 'success');
+      toast(ar ? `تمت إضافة ${outcome.completed} أغنية.` : `Added ${outcome.completed} tracks to playlist.`, 'success');
       setOpen(false);
       onComplete?.();
     } catch {
       setFailedPlaylistId(playlist.id);
-      setError(ar
-        ? 'بعض الأغاني ما اتحفظتش. راجع القائمة قبل ما تحاول تضيفهم تاني.'
-        : 'Some tracks were not saved. Check the playlist before retrying.');
-      setResult(ar ? `اتضاف ${added} من ${remaining.length}.` : `Added ${added} of ${remaining.length} tracks.`);
-      // Avoid automatic retry: partially completed requests may have committed.
+      setError(ar ? 'حصل خطأ غير متوقع. افتح القائمة وراجعها.' : 'Unexpected error. Open the playlist to review.');
     } finally {
       setSaving(false);
     }
@@ -105,7 +116,7 @@ export function BulkAddToPlaylistButton({
             {ar ? `الأغاني المختارة: ${snapshot.length}` : `Selected tracks: ${snapshot.length}`}
           </p>
           {loading ? <p role="status" className="text-sm text-muted">{ar ? 'جاري التحميل…' : 'Loading…'}</p> : null}
-          {saving ? <p role="status" className="text-sm text-muted">{ar ? 'جاري إضافة الأغاني…' : 'Adding tracks…'}</p> : null}
+          {saving ? <p role="status" className="text-sm text-muted">{ar ? `جاري الإضافة: ${progress?.completed ?? 0} من ${progress?.total ?? 0}…` : `Adding: ${progress?.completed ?? 0} of ${progress?.total ?? 0}…`}</p> : null}
           {error ? <p role="alert" className="text-sm text-red-300">{error}</p> : null}
           {result ? <p role="status" className="text-sm text-muted">{result}</p> : null}
           {failedPlaylistId ? (
