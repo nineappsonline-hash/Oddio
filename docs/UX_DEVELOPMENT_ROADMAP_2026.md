@@ -221,3 +221,10 @@
 - Reduced overflow risks: live notices wrap to the viewport rather than using unbounded `whitespace-nowrap`, the overlay contains scrolling, and player-side queue layout constrains its height relative to the viewport.
 - Improved mobile queue actions to wrap instead of overflowing narrow panels. Queue clearing touch target enlarged to 44px, and panel tabs enlarged to >=44px with compact narrow-screen text. Localized the player panel tablist label for Arabic/English UI.
 - **Verification pending:** compilation of commits `803d4397` and `e145ee93`, device tests for queue/mini-player/lyrics navigation and focus, landscape/safe-area insets, RTL, screen readers. No production deployment or merge.
+
+### Phase 4 continuation — mobile Full Player lyrics and panel accessibility (2026-11-20)
+- Confirmed previous Phase 4 Full Player commit `b55bdec9` is Vercel READY; this confirms compilation, not device-level behavior.
+- Fixed a concrete mobile flow bug: selecting the Lyrics tab from the mobile Queue panel previously hid the entire side panel. Mobile now keeps the side panel visible for both Queue and Lyrics; Similar returns to the main player card as before.
+- Added RTL-aware ArrowLeft/ArrowRight and Home/End navigation among Lyrics/Queue/Similar tabs, including roving `tabIndex`, `aria-controls`, tab IDs and a labeled active tabpanel. Kept the existing mouse/touch click behavior.
+- Improved the mobile artwork lyrics overlay: a 44px accessible Close control, contained scrolling on short viewports, and a localized Arabic landmark label.
+- **QA pending:** build completion for latest patches, keyboard focus transitions in an actual browser, mobile screen reader and landscape UI, nested modal interactions and visual checks. No production merge.
