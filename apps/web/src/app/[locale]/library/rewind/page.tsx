@@ -6,6 +6,7 @@ import { readRuntimeDb } from '@/lib/data/runtime-store';
 import { getHistoryData } from '@/lib/data/queries';
 import { qualifiedRecapEvents } from '@/lib/data/monthly-recap';
 import { annualListeningDNA } from '@/lib/data/annual-listening-dna';
+import { ShareAnnualRewind } from '@/components/library/ShareAnnualRewind';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 
@@ -197,6 +198,9 @@ export default async function RewindPage({
           </section>
         </>
       )}
+      {report.qualifiedListens > 0 ? (
+        <ShareAnnualRewind report={report} locale={locale} />
+      ) : null}
       <Link
         href={`/${locale}/library/recap`}
         className="inline-block text-sm text-primary hover:underline"
