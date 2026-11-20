@@ -6,6 +6,7 @@ import type { CatalogTrack } from '@/lib/data/queries';
 import { TrackRow } from '@/components/music/TrackRow';
 import { DragReorderList } from '@/components/ui/DragReorderList';
 import { apiRequest } from '@/lib/client-api';
+import { moveItem } from '@/lib/reorder-items';
 
 export function PlaylistReorderableTracks({
   playlistId, initialTracks, locale,
@@ -17,10 +18,7 @@ export function PlaylistReorderableTracks({
 
   async function reorder(from: number, to: number) {
     if (saving || from === to || to < 0 || to >= tracks.length) return;
-    const next = [...tracks];
-    const [moved] = next.splice(from, 1);
-    if (!moved) return;
-    next.splice(to, 0, moved);
+    const next = moveItem(tracks, from, to);
     setTracks(next);
     setSaving(true);
     setMessage(ar ? 'جاري حفظ الترتيب…' : 'Saving order…');
