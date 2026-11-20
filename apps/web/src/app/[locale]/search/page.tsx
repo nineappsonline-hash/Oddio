@@ -191,14 +191,52 @@ export default async function SearchPage({
         results.artists.length === 0 &&
         results.albums.length === 0 &&
         results.playlists.length === 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-5">
           <EmptyState title={t('common.noResults')} body={q} />
-          <Link
-            href={`/${locale}/discover`}
-            className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary"
-          >
-            {locale === 'ar' ? 'استكشف الأغاني والتصنيفات' : 'Browse genres and moods'}
-          </Link>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+            <h2 className="text-base font-bold text-ink">
+              {locale === 'ar' ? 'نجرب طريقة تانية؟' : 'Try another way to discover music'}
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-muted">
+              {locale === 'ar'
+                ? 'جرب اسم الأغنية أو الفنان بكلمات أقل، أو شيل الفلاتر واختار نوع موسيقي يعجبك.'
+                : 'Try fewer words, search for a song or artist name, or remove filters and explore a genre.'}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {(query.genre || query.mood || query.language) && query.q ? (
+                <Link
+                  href={`/${locale}/search?q=${encodeURIComponent(query.q)}`}
+                  className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary hover:bg-primary/10"
+                >
+                  {locale === 'ar' ? 'ابحث من غير فلاتر' : 'Search without filters'}
+                </Link>
+              ) : null}
+              <Link
+                href={`/${locale}/discover`}
+                className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary hover:bg-primary/10"
+              >
+                {locale === 'ar' ? 'استكشف الأغاني والتصنيفات' : 'Browse genres and moods'}
+              </Link>
+            </div>
+            {genres.length > 0 ? (
+              <>
+                <p className="mt-5 text-xs font-semibold text-muted">
+                  {locale === 'ar' ? 'جرب نوع موسيقي مختلف' : 'Explore a different genre'}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {genres.slice(0, 6).map((genre) => (
+                    <Link
+                      key={genre.id}
+                      href={`/${locale}/search?genre=${encodeURIComponent(genre.slug)}`}
+                      className="inline-flex min-h-10 items-center rounded-full border border-white/15 px-3 text-xs font-semibold text-ink hover:border-primary/50 hover:bg-white/5"
+                    >
+                      {locale === 'ar' ? genre.labelAr : genre.labelEn}
+                    </Link>
+                  ))}
+                </div>
+              </>
+            ) : null}
+          </div>
         </div>
       ) : (
         <div className="space-y-10">
