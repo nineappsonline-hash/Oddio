@@ -156,11 +156,15 @@ try {
         );
         assert.ok(overflow <= 2, `full-player horizontal overflow: ${overflow}px`);
 
-        const tabs = dialog.getByRole('tab');
-        await tabs.last().click();
-        assert.equal(await tabs.last().getAttribute('aria-selected'), 'true');
-        await tabs.first().click();
-        assert.equal(await tabs.first().getAttribute('aria-selected'), 'true');
+        // Tabs live in the desktop side panel; mobile has its own lyrics
+        // disclosure and queue controls instead of those hidden tabs.
+        if (viewport.width >= 1024) {
+          const tabs = dialog.getByRole('tab');
+          await tabs.last().click();
+          assert.equal(await tabs.last().getAttribute('aria-selected'), 'true');
+          await tabs.first().click();
+          assert.equal(await tabs.first().getAttribute('aria-selected'), 'true');
+        }
 
         if (viewport.width === 390) {
           const lyricsButton = dialog.locator(
@@ -437,7 +441,7 @@ try {
             'demo listener needs at least two liked songs',
           );
           const before = await rows.evaluateAll((items) =>
-            items.map((item) => item.textContent?.trim()),
+            items.map((item) => item.getAttribute('data-reorder-id')),
           );
           const handles = list.getByRole('button', { name: /Drag item/ });
           const first = await handles.nth(0).boundingBox();
@@ -452,7 +456,7 @@ try {
           );
           await page.mouse.up();
           const after = await rows.evaluateAll((items) =>
-            items.map((item) => item.textContent?.trim()),
+            items.map((item) => item.getAttribute('data-reorder-id')),
           );
           assert.equal(
             after[0],
@@ -467,7 +471,7 @@ try {
           await page.reload({ waitUntil: 'domcontentloaded' });
           await list.waitFor({ state: 'visible' });
           const restored = await rows.evaluateAll((items) =>
-            items.map((item) => item.textContent?.trim()),
+            items.map((item) => item.getAttribute('data-reorder-id')),
           );
           assert.equal(restored[0], after[0], 'custom sort must survive reload');
           assert.equal(restored[1], after[1], 'custom sort must survive reload');
