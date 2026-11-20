@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Bell,
   Menu,
@@ -120,6 +120,8 @@ export function MobileNav() {
   const { locale, pathname } = useLocalePath();
   const { user } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const podcastMode =
     pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   useEffect(() => {
@@ -127,11 +129,46 @@ export function MobileNav() {
   }, [pathname]);
   useEffect(() => {
     if (!menuOpen) return;
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    const dialog = dialogRef.current;
+    const focusable = () => Array.from(
+      dialog?.querySelectorAll<HTMLElement>(
+        'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex="0"]',
+      ) ?? [],
+    ).filter((element) => element.getClientRects().length > 0);
+    focusable()[0]?.focus();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMenuOpen(false);
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setMenuOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = focusable();
+      if (!items.length) {
+        event.preventDefault();
+        dialog?.focus();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !dialog?.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !dialog?.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocusRef.current?.focus();
+    };
   }, [menuOpen]);
 
   const items = podcastMode
@@ -232,10 +269,12 @@ export function MobileNav() {
             onClick={() => setMenuOpen(false)}
           />
           <section
+            ref={dialogRef}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label={locale === 'ar' ? 'القائمة' : 'Menu'}
-            className="absolute inset-y-0 left-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-r border-[#604b83]/50 bg-[#101015] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
+            className="absolute inset-y-0 start-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto overscroll-contain border-e border-[#604b83]/50 bg-[#101015] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
           >
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
