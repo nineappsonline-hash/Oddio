@@ -111,6 +111,13 @@ export default async function PodcastsHome({
               <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
             </Link>
             <Link
+              href={`/${locale}/podcasts/history`}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/[0.10] px-5 text-sm font-semibold text-white transition hover:bg-white/[0.17]"
+            >
+              {ar ? 'سجل الاستماع' : 'Listening history'}
+              <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
+            </Link>
+            <Link
               href={`/${locale}/podcasts/creators`}
               className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 bg-white/[0.07] backdrop-blur-xl px-5 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/[0.13]"
             >

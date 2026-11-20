@@ -14,6 +14,14 @@ if (!(engine in engines)) throw new Error('Unsupported browser test engine');
 const browser = await engines[engine].launch({ headless: true });
 let failures = 0;
 const tests = [];
+async function waitForAttribute(locator, attribute, expected, timeoutMs = 5000) {
+  const until = Date.now() + timeoutMs;
+  while (Date.now() < until) {
+    if ((await locator.getAttribute(attribute)) === expected) return;
+    await new Promise((resolve) => setTimeout(resolve, 60));
+  }
+  assert.equal(await locator.getAttribute(attribute), expected);
+}
 async function test(name, fn) {
   try {
     await fn();
@@ -83,13 +91,13 @@ try {
         const surpriseLabel = locale === 'ar' ? 'فاجئني' : 'Surprise me';
         const surprise = page.getByRole('button', { name: surpriseLabel, exact: true });
         await surprise.click();
-        assert.equal(await surprise.getAttribute('aria-pressed'), 'true');
+        await waitForAttribute(surprise, 'aria-pressed', 'true');
         const focusLabel =
           locale === 'ar' ? 'وضع الاستماع الهادئ' : 'Distraction-free mode';
         await page.getByRole('button', { name: focusLabel }).click();
         const restoreLabel = locale === 'ar' ? 'إظهار الاختيارات' : 'Show controls';
         await page.getByRole('button', { name: restoreLabel }).click();
-        assert.equal(await surprise.getAttribute('aria-pressed'), 'true');
+        await waitForAttribute(surprise, 'aria-pressed', 'true');
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         );
@@ -352,6 +360,32 @@ try {
         await page.waitForURL((url) => url.searchParams.get('genre') === chosen);
         assert.equal(await filters.locator('select[name="genre"]').inputValue(), chosen);
         assert.equal(await filters.locator('select[name="sort"]').inputValue(), 'newest');
+      });
+
+      await test(`${label} podcast listening history navigation and controls`, async () => {
+        const response = await page.goto(`${base}/${locale}/podcasts/history`, {
+          waitUntil: 'domcontentloaded',
+        });
+        assert.equal(response?.status(), 200);
+        await page.getByRole('heading', { level: 1 }).waitFor();
+        const history = page.getByRole('region', {
+          name: locale === 'ar' ? 'سجل استماع البودكاست' : 'Podcast listening history',
+        });
+        await history.waitFor({ state: 'visible' });
+        const filter = history.getByRole('button', {
+          name: locale === 'ar' ? /لسه مكملتهاش/ : /In progress/,
+        });
+        await filter.click();
+        assert.equal(await filter.getAttribute('aria-pressed'), 'true');
+        const input = history.getByRole('textbox', {
+          name: locale === 'ar' ? 'ابحث في سجل الاستماع' : 'Search listening history',
+        });
+        await input.fill('no-such-episode');
+        assert.equal(await input.inputValue(), 'no-such-episode');
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        assert.ok(overflow <= 2, `history layout horizontal overflow: ${overflow}px`);
       });
 
       await test(`${label} anonymous discovery preference sync is protected`, async () => {
