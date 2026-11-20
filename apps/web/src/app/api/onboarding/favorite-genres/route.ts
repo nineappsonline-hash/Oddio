@@ -24,17 +24,20 @@ export async function GET() {
     const db = serviceClient();
     const [{ data: saved, error }, { data: genres, error: genreError }] =
       await Promise.all([
-        db.from('favorite_genre_onboarding')
+        db
+          .from('favorite_genre_onboarding')
           .select('genre_ids,completed')
           .eq('user_id', user.id)
           .maybeSingle(),
-        db.from('genres')
+        db
+          .from('genres')
           .select('id,label_en,label_ar')
           .eq('active', true)
           .order('label_en')
           .limit(80),
       ]);
-    if (error || genreError) throw new Error('Favorite genres are temporarily unavailable');
+    if (error || genreError)
+      throw new Error('Favorite genres are temporarily unavailable');
     const response = jsonOk({
       available: true,
       show: !saved,
@@ -45,7 +48,8 @@ export async function GET() {
         nameAr: genre.label_ar,
       })),
     });
-    for (const [key, value] of Object.entries(privateHeaders)) response.headers.set(key, value);
+    for (const [key, value] of Object.entries(privateHeaders))
+      response.headers.set(key, value);
     return response;
   } catch (error) {
     return jsonError(error);
@@ -64,7 +68,8 @@ export async function PUT(request: Request) {
 
     const db = serviceClient();
     if (genreIds.length) {
-      const { data: active, error } = await db.from('genres')
+      const { data: active, error } = await db
+        .from('genres')
         .select('id')
         .eq('active', true)
         .in('id', genreIds);
@@ -82,7 +87,8 @@ export async function PUT(request: Request) {
     );
     if (error) throw new Error('Could not save favorite genres');
     const response = jsonOk({ saved: true, genreIds });
-    for (const [key, value] of Object.entries(privateHeaders)) response.headers.set(key, value);
+    for (const [key, value] of Object.entries(privateHeaders))
+      response.headers.set(key, value);
     return response;
   } catch (error) {
     return jsonError(error);

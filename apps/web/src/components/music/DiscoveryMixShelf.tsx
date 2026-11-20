@@ -86,11 +86,15 @@ export function DiscoveryMixShelf({
     if (!viewerId) return;
     const refresh = () => {
       try {
-        setFavoriteGenreIds(normalizeFavoriteGenres(
-          JSON.parse(window.localStorage.getItem(favoriteGenresKey(viewerId)) ?? '[]'),
-          genres.map((genre) => genre.id),
-        ));
-      } catch { setFavoriteGenreIds([]); }
+        setFavoriteGenreIds(
+          normalizeFavoriteGenres(
+            JSON.parse(window.localStorage.getItem(favoriteGenresKey(viewerId)) ?? '[]'),
+            genres.map((genre) => genre.id),
+          ),
+        );
+      } catch {
+        setFavoriteGenreIds([]);
+      }
     };
     window.addEventListener('oddio-favorite-genres-changed', refresh);
     return () => window.removeEventListener('oddio-favorite-genres-changed', refresh);

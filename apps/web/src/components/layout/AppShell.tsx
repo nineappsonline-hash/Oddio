@@ -63,7 +63,11 @@ export function AppShell({
           <PlayerBar podcastMode={podcastMode} />
           <DeferredFullPlayer />
           <MobileNav />
-          <FavoriteGenresSelector mode="welcome" locale={locale} userId={user?.id ?? null} />
+          <FavoriteGenresSelector
+            mode="welcome"
+            locale={locale}
+            userId={user?.id ?? null}
+          />
         </PlayerProvider>
       </ToastProvider>
     </SessionProvider>

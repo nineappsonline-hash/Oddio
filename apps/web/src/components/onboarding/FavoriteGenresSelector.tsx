@@ -50,16 +50,22 @@ export function FavoriteGenresSelector({
               JSON.parse(window.localStorage.getItem(favoriteGenresKey(userId)) ?? '[]'),
               availableIds,
             );
-          } catch { /* Device storage is optional. */ }
+          } catch {
+            /* Device storage is optional. */
+          }
         }
         setSelected(ids);
         if (ids.length) {
           try {
             window.localStorage.setItem(favoriteGenresKey(userId), JSON.stringify(ids));
             window.dispatchEvent(new Event('oddio-favorite-genres-changed'));
-          } catch { /* Account settings remain authoritative. */ }
+          } catch {
+            /* Account settings remain authoritative. */
+          }
         }
-        setOpen(mode === 'welcome' && data.available && data.show && data.genres.length > 0);
+        setOpen(
+          mode === 'welcome' && data.available && data.show && data.genres.length > 0,
+        );
       } catch {
         // Fail closed: don't show a recurring popup when account state can't be checked.
         if (!cancelled) setAvailable(false);
@@ -67,14 +73,17 @@ export function FavoriteGenresSelector({
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [userId, mode]);
 
   useEffect(() => {
     if (!open) return;
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
     dialogRef.current?.focus();
     return () => {
       document.body.style.overflow = oldOverflow;
@@ -84,9 +93,13 @@ export function FavoriteGenresSelector({
 
   const toggle = (id: string) => {
     setError('');
-    setSelected((current) => current.includes(id)
-      ? current.filter((value) => value !== id)
-      : current.length < 3 ? [...current, id] : current);
+    setSelected((current) =>
+      current.includes(id)
+        ? current.filter((value) => value !== id)
+        : current.length < 3
+          ? [...current, id]
+          : current,
+    );
   };
 
   async function finish(ids: string[]) {
@@ -94,20 +107,29 @@ export function FavoriteGenresSelector({
     setSaving(true);
     setError('');
     try {
-      const result = await apiRequest<{ saved: boolean }>('/api/onboarding/favorite-genres', {
-        method: 'PUT',
-        body: JSON.stringify({ genreIds: ids }),
-      });
+      const result = await apiRequest<{ saved: boolean }>(
+        '/api/onboarding/favorite-genres',
+        {
+          method: 'PUT',
+          body: JSON.stringify({ genreIds: ids }),
+        },
+      );
       if (!result.saved) throw new Error('Save unavailable');
       setSelected(ids);
       try {
         window.localStorage.setItem(favoriteGenresKey(userId), JSON.stringify(ids));
         window.dispatchEvent(new Event('oddio-favorite-genres-changed'));
-      } catch { /* Cross-device account preference has been saved. */ }
+      } catch {
+        /* Cross-device account preference has been saved. */
+      }
       setOpen(false);
       setNotice(ar ? 'تم حفظ اختياراتك.' : 'Your preferences were saved.');
     } catch {
-      setError(ar ? 'مقدرناش نحفظ اختياراتك. جرّب تاني.' : 'Could not save your choices. Try again.');
+      setError(
+        ar
+          ? 'مقدرناش نحفظ اختياراتك. جرّب تاني.'
+          : 'Could not save your choices. Try again.',
+      );
     } finally {
       setSaving(false);
     }
@@ -117,7 +139,11 @@ export function FavoriteGenresSelector({
 
   const body = (
     <>
-      <div className="flex flex-wrap gap-2" role="group" aria-label={ar ? 'الأنواع الموسيقية المفضلة' : 'Favorite genres'}>
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label={ar ? 'الأنواع الموسيقية المفضلة' : 'Favorite genres'}
+      >
         {genres.map((genre) => {
           const active = selected.includes(genre.id);
           return (
@@ -137,33 +163,67 @@ export function FavoriteGenresSelector({
       <p className="text-xs text-muted" aria-live="polite">
         {selected.length}/3 {ar ? 'أنواع تم اختيارها' : 'genres selected'}
       </p>
-      {error ? <p role="alert" className="text-sm text-rose-400">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-rose-400">
+          {error}
+        </p>
+      ) : null}
     </>
   );
 
   if (mode === 'settings') {
     return (
-      <section className="card mt-6 max-w-3xl space-y-4 p-5" aria-label={ar ? 'الأنواع الموسيقية المفضلة' : 'Favorite genres'}>
-        <h2 className="text-lg font-bold text-ink">{ar ? 'الأنواع الموسيقية المفضلة' : 'Favorite music genres'}</h2>
-        <p className="text-sm text-muted">{ar ? 'ممكن تغيّر اختياراتك في أي وقت. اختار لحد 3 أنواع.' : 'Change your choices any time. Pick up to 3 genres.'}</p>
+      <section
+        className="card mt-6 max-w-3xl space-y-4 p-5"
+        aria-label={ar ? 'الأنواع الموسيقية المفضلة' : 'Favorite genres'}
+      >
+        <h2 className="text-lg font-bold text-ink">
+          {ar ? 'الأنواع الموسيقية المفضلة' : 'Favorite music genres'}
+        </h2>
+        <p className="text-sm text-muted">
+          {ar
+            ? 'ممكن تغيّر اختياراتك في أي وقت. اختار لحد 3 أنواع.'
+            : 'Change your choices any time. Pick up to 3 genres.'}
+        </p>
         {body}
         <div className="flex flex-wrap gap-3">
-          <button type="button" disabled={saving} onClick={() => void finish(selected)}
-            className="min-h-11 rounded-full bg-primary px-6 text-sm font-bold text-black disabled:opacity-50">
-            {saving ? (ar ? 'جاري الحفظ…' : 'Saving…') : (ar ? 'حفظ الاختيارات' : 'Save preferences')}
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void finish(selected)}
+            className="min-h-11 rounded-full bg-primary px-6 text-sm font-bold text-black disabled:opacity-50"
+          >
+            {saving
+              ? ar
+                ? 'جاري الحفظ…'
+                : 'Saving…'
+              : ar
+                ? 'حفظ الاختيارات'
+                : 'Save preferences'}
           </button>
-          <button type="button" disabled={saving || !selected.length} onClick={() => void finish([])}
-            className="min-h-11 rounded-full border border-white/20 px-5 text-sm text-ink disabled:opacity-50">
+          <button
+            type="button"
+            disabled={saving || !selected.length}
+            onClick={() => void finish([])}
+            className="min-h-11 rounded-full border border-white/20 px-5 text-sm text-ink disabled:opacity-50"
+          >
             {ar ? 'مسح الاختيارات' : 'Clear choices'}
           </button>
         </div>
-        {notice ? <p role="status" className="text-sm text-emerald-400">{notice}</p> : null}
+        {notice ? (
+          <p role="status" className="text-sm text-emerald-400">
+            {notice}
+          </p>
+        ) : null}
       </section>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" role="presentation">
+    <div
+      className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      role="presentation"
+    >
       <section
         ref={dialogRef}
         tabIndex={-1}
@@ -173,11 +233,19 @@ export function FavoriteGenresSelector({
             void finish([]);
           }
           if (event.key !== 'Tab') return;
-          const buttons = Array.from(dialogRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
+          const buttons = Array.from(
+            dialogRef.current?.querySelectorAll<HTMLButtonElement>(
+              'button:not(:disabled)',
+            ) ?? [],
+          );
           if (!buttons.length) return;
           const first = buttons[0];
           const last = buttons[buttons.length - 1];
-          if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
+          if (
+            event.shiftKey &&
+            (document.activeElement === first ||
+              document.activeElement === dialogRef.current)
+          ) {
             event.preventDefault();
             last?.focus();
           } else if (!event.shiftKey && document.activeElement === last) {
@@ -191,22 +259,46 @@ export function FavoriteGenresSelector({
         aria-describedby="oddio-genre-onboarding-description"
         className="max-h-[90dvh] w-full max-w-2xl space-y-5 overflow-y-auto rounded-3xl border border-white/15 bg-[#18171e] p-5 shadow-2xl sm:p-8"
       >
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">ODDIO · {ar ? 'أهلاً بيك' : 'WELCOME'}</p>
-        <h2 id="oddio-genre-onboarding-title" className="text-2xl font-black text-ink sm:text-3xl">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+          ODDIO · {ar ? 'أهلاً بيك' : 'WELCOME'}
+        </p>
+        <h2
+          id="oddio-genre-onboarding-title"
+          className="text-2xl font-black text-ink sm:text-3xl"
+        >
           {ar ? 'إيه الموسيقى اللي بتحب تسمعها؟' : 'What music do you love?'}
         </h2>
-        <p id="oddio-genre-onboarding-description" className="text-sm leading-7 text-muted">
-          {ar ? 'اختار لحد 3 أنواع عشان نبدأ نرشّحلك موسيقى تناسب ذوقك. الخطوة دي اختيارية وبتظهر مرة واحدة بس.' : 'Choose up to 3 genres to help us discover your sound. This optional step only appears once.'}
+        <p
+          id="oddio-genre-onboarding-description"
+          className="text-sm leading-7 text-muted"
+        >
+          {ar
+            ? 'اختار لحد 3 أنواع عشان نبدأ نرشّحلك موسيقى تناسب ذوقك. الخطوة دي اختيارية وبتظهر مرة واحدة بس.'
+            : 'Choose up to 3 genres to help us discover your sound. This optional step only appears once.'}
         </p>
         {body}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
-          <button type="button" disabled={saving} onClick={() => void finish([])}
-            className="min-h-11 rounded-full border border-white/20 px-5 text-sm font-semibold text-ink disabled:opacity-50">
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void finish([])}
+            className="min-h-11 rounded-full border border-white/20 px-5 text-sm font-semibold text-ink disabled:opacity-50"
+          >
             {ar ? 'تخطي دلوقتي' : 'Skip for now'}
           </button>
-          <button type="button" disabled={saving} onClick={() => void finish(selected)}
-            className="min-h-11 rounded-full bg-primary px-7 text-sm font-bold text-black disabled:opacity-50">
-            {saving ? (ar ? 'جاري الحفظ…' : 'Saving…') : (ar ? 'يلا نكتشف الموسيقى' : 'Start listening')}
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void finish(selected)}
+            className="min-h-11 rounded-full bg-primary px-7 text-sm font-bold text-black disabled:opacity-50"
+          >
+            {saving
+              ? ar
+                ? 'جاري الحفظ…'
+                : 'Saving…'
+              : ar
+                ? 'يلا نكتشف الموسيقى'
+                : 'Start listening'}
           </button>
         </div>
       </section>
