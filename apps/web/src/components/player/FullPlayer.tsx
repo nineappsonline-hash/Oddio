@@ -709,11 +709,11 @@ export function FullPlayer() {
                   <span>{rtl ? 'مؤقت النوم' : 'Sleep timer'}</span>
                   <select
                     value={sleepUntil ? 'active' : 'off'}
-                    onChange={(event) => setSleepTimer(Number(event.target.value))}
+                    onChange={(event) => setSleepTimer(event.target.value === 'off' ? 0 : Number(event.target.value))}
                     aria-label={rtl ? 'مؤقت إيقاف التشغيل' : 'Sleep timer'}
                     className="min-h-11 rounded-lg border border-white/20 bg-[#18191b] px-3 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
                     <option value="off">{rtl ? 'متوقف' : 'Off'}</option>
-                    {sleepUntil ? <option value="active">{rtl ? 'المؤقت شغال' : 'Timer active'}</option> : null}
+                    {sleepUntil ? <option value="active" disabled>{rtl ? 'المؤقت شغال' : 'Timer active'}</option> : null}
                     <option value="5">5 {rtl ? 'دقايق' : 'min'}</option>
                     <option value="15">15 {rtl ? 'دقيقة' : 'min'}</option>
                     <option value="30">30 {rtl ? 'دقيقة' : 'min'}</option>
