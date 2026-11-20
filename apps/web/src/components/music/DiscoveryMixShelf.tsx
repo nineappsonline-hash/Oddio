@@ -93,6 +93,7 @@ export function DiscoveryMixShelf({
     setPersonalizationEnabled(enabled);
     try {
       window.localStorage.setItem(homePersonalizationKey(viewerId), enabled ? 'on' : 'off');
+      window.dispatchEvent(new Event('oddio-home-personalization-changed'));
     } catch {
       // Continue with the current session setting when browser storage is unavailable.
     }
