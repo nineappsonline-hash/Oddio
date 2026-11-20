@@ -125,6 +125,10 @@ export function FullPlayer() {
   const shuffle = usePlayer((state) => state.shuffle);
   const autoplay = usePlayer((state) => state.autoplay);
   const crossfadeSeconds = usePlayer((state) => state.crossfadeSeconds);
+  const playbackRate = usePlayer((state) => state.playbackRate);
+  const setPlaybackRate = usePlayer((state) => state.setPlaybackRate);
+  const sleepUntil = usePlayer((state) => state.sleepUntil);
+  const setSleepTimer = usePlayer((state) => state.setSleepTimer);
   const setCrossfadeSeconds = usePlayer((state) => state.setCrossfadeSeconds);
   const setExpanded = usePlayer((state) => state.setExpanded);
   const toggle = usePlayer((state) => state.toggle);
@@ -688,6 +692,36 @@ export function FullPlayer() {
                 <span>{podcast ? (rtl ? 'تشغيل التالي تلقائيًا' : 'Autoplay next') : (rtl ? 'تشغيل مشابه تلقائيًا' : 'Autoplay similar')}</span>
               </label>
             </div>
+            {podcast ? (
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3 sm:justify-end">
+                <label className="flex min-h-11 items-center gap-2 text-sm text-ink">
+                  <span>{rtl ? 'السرعة' : 'Speed'}</span>
+                  <select value={playbackRate}
+                    onChange={(event) => setPlaybackRate(Number(event.target.value))}
+                    aria-label={rtl ? 'سرعة تشغيل البودكاست' : 'Podcast playback speed'}
+                    className="min-h-11 rounded-lg border border-white/20 bg-[#18191b] px-3 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                    {[0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                      <option key={rate} value={rate}>{rate}x</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex min-h-11 items-center gap-2 text-sm text-ink">
+                  <span>{rtl ? 'مؤقت النوم' : 'Sleep timer'}</span>
+                  <select
+                    value={sleepUntil ? 'active' : 'off'}
+                    onChange={(event) => setSleepTimer(Number(event.target.value))}
+                    aria-label={rtl ? 'مؤقت إيقاف التشغيل' : 'Sleep timer'}
+                    className="min-h-11 rounded-lg border border-white/20 bg-[#18191b] px-3 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                    <option value="off">{rtl ? 'متوقف' : 'Off'}</option>
+                    {sleepUntil ? <option value="active">{rtl ? 'المؤقت شغال' : 'Timer active'}</option> : null}
+                    <option value="5">5 {rtl ? 'دقايق' : 'min'}</option>
+                    <option value="15">15 {rtl ? 'دقيقة' : 'min'}</option>
+                    <option value="30">30 {rtl ? 'دقيقة' : 'min'}</option>
+                    <option value="60">60 {rtl ? 'دقيقة' : 'min'}</option>
+                  </select>
+                </label>
+              </div>
+            ) : null}
             <div className="mt-4 hidden flex-wrap items-center justify-end gap-4 sm:flex">
 
               <label className="flex cursor-pointer items-center gap-2 text-xs text-muted">
