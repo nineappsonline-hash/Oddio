@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/client-api';
+import { nextSuggestionFocusIndex } from '@/lib/suggestion-keyboard';
 import { Clock3, Search, X } from 'lucide-react';
 import { addRecentMusicSearch, sanitizeRecentMusicSearches, MAX_MUSIC_QUERY_LENGTH } from '@/lib/recent-music-searches';
 
@@ -54,9 +55,9 @@ export function SearchExperience({
     const index = links.indexOf(document.activeElement as HTMLAnchorElement);
     if (index < 0) return;
     event.preventDefault();
-    const next = index + (event.key === 'ArrowDown' ? 1 : -1);
+    const next = nextSuggestionFocusIndex(index, event.key === 'ArrowDown' ? 'down' : 'up', links.length);
     if (next < 0) inputRef.current?.focus();
-    else links[Math.min(next, links.length - 1)]?.focus();
+    else links[next]?.focus();
   };
 
   useEffect(() => { setQuery(initialQuery); }, [initialQuery]);
