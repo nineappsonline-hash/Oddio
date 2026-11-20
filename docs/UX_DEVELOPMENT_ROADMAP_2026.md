@@ -171,3 +171,11 @@
 - Wired playlist bulk removal and liked-song bulk add-to-playlist through that runner, including visible completed/total counters. When a request fails, the UI treats its server outcome as **unknown**, since a lost response may follow a committed write. It does not retry automatically.
 - The bulk-removal UI blocks editing until authoritative playlist state is reloaded after an interruption. A bulk-add interruption links to the playlist for review.
 - **Verification remaining:** new commits' Vercel build completion, execution of Vitest, real browser confirmation on mobile/desktop and audit of DB-level idempotent batch APIs. This feature branch is not merged into production.
+
+### Phase 3 start — search UX (2026-11-20)
+- Verified latest Phase 2 commit `029a8a12` is Vercel **READY**. This is a successful preview build, not a claim of passing unit or end-to-end tests.
+- Audited existing server-side catalog search: bilingual Arabic/English normalization, typo tolerance, relevance, genres/moods/language filters and pagination already existed and were retained.
+- Added `SearchExperience` to the catalog search page: recent searches (maximum 8), one-click repeat/remove/clear, accessible search field and / or Ctrl/Cmd+K focus shortcut. Searches are saved **only after an explicit user search**, not on every keystroke. Signed-in listener terms are namespaced by account ID in localStorage; guests use sessionStorage to avoid persistent guest history.
+- Added visible active-search filter chips and Clear All shortcut. Existing advanced filters remain available.
+- Added pure helper and Vitest tests for history deduplication, size limits, blank terms and corrupted storage. No online search or personalized external data sharing introduced.
+- **QA pending:** new commits' Vercel preview BUILDING at last check; run the new Vitest suite, keyboard/mobile/RTL flows, session switching, browser storage disabled and advanced-filter interactions before production merge.
