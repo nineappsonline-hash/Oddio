@@ -119,6 +119,13 @@ try {
             name: locale === 'ar' ? 'القائمة' : 'Menu',
           });
           await dialog.waitFor({ state: 'visible' });
+          // Wait for the opening transform to settle before inspecting the
+          // actual drawer geometry; visible does not imply animation finished.
+          await page.waitForFunction(() => {
+            const element = document.querySelector('[role="dialog"][aria-label]');
+            if (!element) return false;
+            return Math.abs(element.getBoundingClientRect().left) <= 2;
+          }, null, { timeout: 3000 });
           const left = await dialog.evaluate(
             (element) => element.getBoundingClientRect().left,
           );
@@ -254,7 +261,9 @@ try {
         // Next.js may stream the route after the URL changes; wait for the
         // actual no-results state rather than racing the navigation shell.
         await page
+          .locator('main')
           .getByText('zzzzunlikelyreleasequery123', { exact: true })
+          .last()
           .waitFor({ timeout: 15_000 });
         assert.equal(pageErrors.length, 0, pageErrors.join('; '));
       });
@@ -266,16 +275,12 @@ try {
         const title = locale === 'ar' ? 'شغّل Oddio Flow' : 'Start Oddio Flow';
         const start = page.getByRole('button', { name: title, exact: true });
         await start.waitFor({ state: 'visible', timeout: 15_000 });
-        const responsePromise = page.waitForResponse(
-          (response) =>
-            response.url().includes('/api/discovery/mix?kind=flow') &&
-            response.request().method() === 'GET',
-        );
+        // Guest Flow intentionally uses the public server-rendered list
+        // and does NOT make a personalized discovery API request.
         await start.click();
-        const response = await responsePromise;
-        assert.equal(response.status(), 200);
-        const body = await response.json();
-        assert.ok(body.data?.tracks?.length > 0, 'Flow must return playable tracks');
+        await page.getByRole('region', {
+          name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
+        }).waitFor({ state: 'visible', timeout: 15_000 });
         const weeklyTitle =
           locale === 'ar' ? 'شغّل Discover Weekly' : 'Play Discover Weekly';
         assert.equal(
