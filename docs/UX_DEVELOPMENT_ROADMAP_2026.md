@@ -157,3 +157,10 @@
 - Partial server failures surface a count and a link to review the playlist; automatic retries are deliberately disabled because prior writes might have succeeded.
 - **Remaining:** atomic bulk add API with idempotency/concurrency, bulk removals with explicit confirmation/undo, cross-device settings, and browser-level accessibility/RTL tests.
 - Most recent deployment for new additions was BUILDING at last check, so it has NOT been released to production.
+
+### Phase 2 continuation — bulk removal from editable playlists
+- Added checkbox selection, Select All/Clear Selection, and explicit two-step removal confirmation in `PlaylistReorderableTracks`. Only rendered for editable playlists as already controlled by the server playlist page.
+- Deletion uses the existing same-origin, authenticated and authorized `DELETE /api/playlists/:id/tracks/:trackId` endpoint sequentially; a playlist track is not deleted from the Oddio catalog.
+- A successful operation updates the local playlist and refreshes server-rendered metadata. Partial failures display exact completed/attempted counts and **block further edits until the page is reloaded**. No automatic retry or false rollback claims; bulk deletion is not atomic, and immediate server-side undo is not yet supported.
+- While confirmation is open or a deletion runs, drag-reorder is locked to avoid conflicting mutations.
+- Latest earlier previews for the previous implementation had reached READY, but these new removal changes still require current-commit build verification and manual browser QA. Production remains unchanged.
