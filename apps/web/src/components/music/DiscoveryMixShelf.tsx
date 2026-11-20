@@ -178,7 +178,7 @@ export function DiscoveryMixShelf({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <FlowButton tracks={visible} locale={locale} viewerId={viewerId} />
+          <FlowButton tracks={visible} locale={locale} viewerId={viewerId} localOnly={!personalizationLoaded || !personalizationEnabled} />
           {viewerId && personalizationLoaded && personalizationEnabled ? (
             <>
               <FlowButton kind="daily" locale={locale} viewerId={viewerId} />
