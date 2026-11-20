@@ -52,7 +52,7 @@ describe('podcast listening history actions', () => {
       duration: 600,
       completed: true,
     });
-    expect(isVisiblePodcastHistoryEntry(entry)).toBe(true);
+    expect(isVisiblePodcastHistoryEntry(entry!)).toBe(true);
     expect(readPodcastProgress('user-1')).toEqual([]);
   });
 
@@ -61,7 +61,7 @@ describe('podcast listening history actions', () => {
     expect(setPodcastEpisodePlayed('user-1', 'episode-1', 600, false)).toBe(true);
     const [entry] = readPodcastSyncRecords('user-1');
     expect(entry).toMatchObject({ episodeId: 'episode-1', seconds: 0, completed: false });
-    expect(isVisiblePodcastHistoryEntry(entry)).toBe(false);
+    expect(isVisiblePodcastHistoryEntry(entry!)).toBe(false);
     expect(readPodcastProgress('user-1')).toEqual([]);
   });
 
