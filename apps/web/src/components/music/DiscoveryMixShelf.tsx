@@ -82,19 +82,19 @@ export function DiscoveryMixShelf({
     setFavoriteGenresLoaded(true);
   }, [viewerId, genres.map((genre) => genre.id).join('|')]);
 
-  const updateFavoriteGenres = (next: string[]) => {
+  useEffect(() => {
     if (!viewerId) return;
-    const cleaned = normalizeFavoriteGenres(
-      next,
-      genres.map((genre) => genre.id),
-    );
-    setFavoriteGenreIds(cleaned);
-    try {
-      window.localStorage.setItem(favoriteGenresKey(viewerId), JSON.stringify(cleaned));
-    } catch {
-      // Browsing should still work if device storage is blocked.
-    }
-  };
+    const refresh = () => {
+      try {
+        setFavoriteGenreIds(normalizeFavoriteGenres(
+          JSON.parse(window.localStorage.getItem(favoriteGenresKey(viewerId)) ?? '[]'),
+          genres.map((genre) => genre.id),
+        ));
+      } catch { setFavoriteGenreIds([]); }
+    };
+    window.addEventListener('oddio-favorite-genres-changed', refresh);
+    return () => window.removeEventListener('oddio-favorite-genres-changed', refresh);
+  }, [viewerId, genres]);
 
   const turnPersonalization = (enabled: boolean) => {
     if (!viewerId) return;
@@ -243,67 +243,6 @@ export function DiscoveryMixShelf({
                 ? 'تشغيل التخصيص'
                 : 'Turn on'}
           </button>
-        </div>
-      ) : null}
-      {viewerId &&
-      favoriteGenresLoaded &&
-      personalizationLoaded &&
-      personalizationEnabled &&
-      !personalized &&
-      genres.length > 0 ? (
-        <div className="mb-4 space-y-3 rounded-xl border border-primary/20 bg-primary/[0.04] p-4">
-          <div>
-            <h3 className="text-sm font-bold text-ink">
-              {ar ? 'اختار لحد 3 أنواع موسيقية بتحبها' : 'Pick up to 3 favorite genres'}
-            </h3>
-            <p className="mt-1 text-xs leading-5 text-muted">
-              {ar
-                ? 'اختياري. هنقدم الأنواع اللي اخترتها في الترشيحات العامة. تقدر تغيرها أو تمسحها في أي وقت.'
-                : 'Optional. We will prioritize these genres among general picks. Change or clear them anytime.'}
-            </p>
-          </div>
-          <div
-            className="flex flex-wrap gap-2"
-            role="group"
-            aria-label={ar ? 'أنواعك المفضلة' : 'Favorite genres'}
-          >
-            {genres.slice(0, 24).map((genre) => {
-              const selected = favoriteGenreIds.includes(genre.id);
-              return (
-                <button
-                  key={genre.id}
-                  type="button"
-                  aria-pressed={selected}
-                  disabled={!selected && favoriteGenreIds.length >= 3}
-                  onClick={() =>
-                    updateFavoriteGenres(
-                      selected
-                        ? favoriteGenreIds.filter((id) => id !== genre.id)
-                        : [...favoriteGenreIds, genre.id],
-                    )
-                  }
-                  className={`min-h-11 rounded-full border px-3 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-35 ${selected ? 'border-primary/60 bg-primary/15 text-primary' : 'border-white/20 text-ink hover:bg-white/10'}`}
-                >
-                  {genre.name}
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-muted">
-              {favoriteGenreIds.length}/3 ·{' '}
-              {ar ? 'محفوظة على الجهاز ده' : 'Saved on this device'}
-            </p>
-            {favoriteGenreIds.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => updateFavoriteGenres([])}
-                className="min-h-11 rounded-lg px-3 text-xs font-semibold text-primary hover:bg-primary/10"
-              >
-                {ar ? 'مسح الاختيارات' : 'Clear choices'}
-              </button>
-            ) : null}
-          </div>
         </div>
       ) : null}
       <p className="mb-3 text-xs text-muted" role="status">
