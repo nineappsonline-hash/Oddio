@@ -98,6 +98,27 @@ export function PlayerProvider({
     return unsubscribe;
   }, []);
 
+  // Playback speed is a listener preference, not part of a signed stream URL.
+  // Restore it without changing the speed of regular music.
+  useEffect(() => {
+    const key = `oddio-podcast-speed:${viewerId ?? 'guest'}`;
+    try {
+      const saved = Number(window.localStorage.getItem(key));
+      usePlayer.getState().setPlaybackRate(saved || 1);
+    } catch {
+      usePlayer.getState().setPlaybackRate(1);
+    }
+    const unsubscribe = usePlayer.subscribe((state, previous) => {
+      if (state.playbackRate === previous.playbackRate) return;
+      try {
+        window.localStorage.setItem(key, String(state.playbackRate));
+      } catch {
+        // Playback still works when storage is blocked.
+      }
+    });
+    return unsubscribe;
+  }, [viewerId]);
+
   // A new selection must silence the outgoing media element synchronously.
   // Waiting for the trackId/stream React effects leaves the previous source
   // audible during the new track's playback authorization request.
