@@ -54,7 +54,7 @@ describe('Cloudflare R2 streaming architecture guard', () => {
   });
 
   it('marks playback errors private so expired tokens cannot be cached', () => {
-    expect(streamRoute).toContain("const AUDIO_ERROR_HEADERS = {");
+    expect(streamRoute).toContain('const AUDIO_ERROR_HEADERS = {');
     expect(streamRoute).toContain("'Cache-Control': 'private, no-store'");
     expect(streamRoute).toContain("'Referrer-Policy': 'no-referrer'");
     const protectedErrors = streamRoute.match(/headers: AUDIO_ERROR_HEADERS/g) ?? [];

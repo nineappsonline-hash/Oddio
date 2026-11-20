@@ -7,17 +7,17 @@
 
 ## Required release evidence
 
-| Gate | Minimum acceptance | Current evidence |
-| --- | --- | --- |
-| Same-SHA CI | `verify`, `database` and `browser` jobs must all be green on the exact release commit | **Pending:** older runs were mixed or action-required; a Vercel READY result does not replace them. |
+| Gate                     | Minimum acceptance                                                                                                                                                            | Current evidence                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Same-SHA CI              | `verify`, `database` and `browser` jobs must all be green on the exact release commit                                                                                         | **Pending:** older runs were mixed or action-required; a Vercel READY result does not replace them.  |
 | Production-like Supabase | Apply all pending migrations to **isolated staging**; test an authorized and unauthorized account, RLS, collaborator invite/revoke, Smart Playlist account sync and reconnect | **Blocked:** no separate validated staging project; never apply unreviewed migrations to production. |
-| Media access | Actual R2 audio plays/seeks on Chrome, Safari/iOS, Firefox, Arabic and English; expired/denied URLs cannot be reused; redirects/errors are `no-store` | Source-level guards and tests added; real R2 end-to-end and mobile QA pending. |
-| Playback reliability | Next/previous/shuffle, queue reorder, retry, expired signed URL refresh and network recovery; no duplicate qualified playback events | Demo browser smoke exists; real device/network QA pending. |
-| Rewind privacy | Signed-in only; no auto-share; at least five qualified listens before export; optional fields off by default; generated PNG uses local browser Canvas only | Code and unit tests added; actual iOS download and native sharing QA pending. |
-| Accessibility | 320px/390px/desktop, AR RTL/EN, tab/arrow/Escape, focus, contrast, zoom 200%, reduced motion, spoken labels | Selected browser checks exist; complete WCAG 2.2 AA-oriented audit pending. |
-| Performance | Measure Lighthouse mobile/desktop + Core Web Vitals on representative slow network and catalog size; check image requests, player start time and buffering | Lazy/async decoded catalog artwork added; **no defensible metrics yet**, so no success claim. |
-| Privacy & telemetry | Consent-safe time-to-first-play, buffering, failure-rate and search-to-play measurements; no sensitive queries, tokens or raw listener IDs in client analytics | Instrumentation/retention review pending. |
-| Migrations & operations | Backup/restore drill, tested rollback runbook, alerting for playback failure and auth, clear owner for deploy | Not yet evidenced. |
+| Media access             | Actual R2 audio plays/seeks on Chrome, Safari/iOS, Firefox, Arabic and English; expired/denied URLs cannot be reused; redirects/errors are `no-store`                         | Source-level guards and tests added; real R2 end-to-end and mobile QA pending.                       |
+| Playback reliability     | Next/previous/shuffle, queue reorder, retry, expired signed URL refresh and network recovery; no duplicate qualified playback events                                          | Demo browser smoke exists; real device/network QA pending.                                           |
+| Rewind privacy           | Signed-in only; no auto-share; at least five qualified listens before export; optional fields off by default; generated PNG uses local browser Canvas only                    | Code and unit tests added; actual iOS download and native sharing QA pending.                        |
+| Accessibility            | 320px/390px/desktop, AR RTL/EN, tab/arrow/Escape, focus, contrast, zoom 200%, reduced motion, spoken labels                                                                   | Selected browser checks exist; complete WCAG 2.2 AA-oriented audit pending.                          |
+| Performance              | Measure Lighthouse mobile/desktop + Core Web Vitals on representative slow network and catalog size; check image requests, player start time and buffering                    | Lazy/async decoded catalog artwork added; **no defensible metrics yet**, so no success claim.        |
+| Privacy & telemetry      | Consent-safe time-to-first-play, buffering, failure-rate and search-to-play measurements; no sensitive queries, tokens or raw listener IDs in client analytics                | Instrumentation/retention review pending.                                                            |
+| Migrations & operations  | Backup/restore drill, tested rollback runbook, alerting for playback failure and auth, clear owner for deploy                                                                 | Not yet evidenced.                                                                                   |
 
 ## Performance / reliability changes in this branch
 

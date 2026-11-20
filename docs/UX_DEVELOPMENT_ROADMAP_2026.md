@@ -398,6 +398,7 @@
 - Latest Vercel preview and PR CI remain running as of update. Phase 11 next: evaluate rendering across screen widths, privacy opt-out policy for history, maintain accessible recaps, and test clipboard/native share interaction with browser E2E before final approval.
 
 ### Phase 11 QA closeout and Phase 12 release hardening (2026-11-21)
+
 - Extended existing annual Rewind: shareable image exported as PNG using a browser-only Canvas; mobile download now appends the anchor before click and delays Blob URL revocation to accommodate Safari. Sharing uses opt-in fields; added a **minimum of five qualified recorded listens** before generating export/sharing text, while private stats remain available for smaller samples.
 - Added tests for annual share threshold, no-history empty state, and authenticated Rewind in AR/EN with narrow viewport checks. Corrected a browser smoke assertion that assumed streamed Next.js auth redirects must return HTTP 3xx; smoke now checks the browser actually reaches login and cannot see share controls.
 - Began Phase 12: switched standard catalog artwork from eager CSS image backgrounds to lazy `img` loading with async decoding (placeholder retained), plus SSR output tests for accessibility/fallback. Added `private, no-store` and `no-referrer` on denied/expired-token media errors and byte-range rejections, with architecture tests.

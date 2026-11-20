@@ -20,9 +20,7 @@ describe('catalog artwork loading', () => {
   });
 
   it('retains the decorative fallback and accessible title when art is missing', () => {
-    const html = renderToStaticMarkup(
-      createElement(Artwork, { title: 'Missing cover' }),
-    );
+    const html = renderToStaticMarkup(createElement(Artwork, { title: 'Missing cover' }));
     expect(html).toContain('aria-label="Missing cover"');
     expect(html).not.toContain('<img');
     expect(html).toContain('<svg');

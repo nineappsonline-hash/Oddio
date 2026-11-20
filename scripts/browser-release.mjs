@@ -597,10 +597,19 @@ try {
             waitUntil: 'domcontentloaded',
           });
           assert.equal(response?.status(), 200);
-          await page.getByRole('heading', { level: 1, name: /2026 Music Rewind/ }).waitFor();
-          assert.ok(await page.getByText('No recorded qualified listens for this year yet.').isVisible());
+          await page
+            .getByRole('heading', { level: 1, name: /2026 Music Rewind/ })
+            .waitFor();
+          assert.ok(
+            await page
+              .getByText('No recorded qualified listens for this year yet.')
+              .isVisible(),
+          );
           assert.equal(await page.getByRole('button', { name: 'Share card' }).count(), 0);
-          assert.equal(await page.getByRole('button', { name: 'Save PNG image' }).count(), 0);
+          assert.equal(
+            await page.getByRole('button', { name: 'Save PNG image' }).count(),
+            0,
+          );
           const arabic = await page.goto(`${base}/ar/library/rewind?year=2026`, {
             waitUntil: 'domcontentloaded',
           });
@@ -608,8 +617,9 @@ try {
           assert.equal(await page.locator('html').getAttribute('dir'), 'rtl');
           await page.getByRole('heading', { level: 1 }).waitFor();
           await page.setViewportSize({ width: 390, height: 844 });
-          const overflow = await page.evaluate(() =>
-            document.documentElement.scrollWidth - window.innerWidth);
+          const overflow = await page.evaluate(
+            () => document.documentElement.scrollWidth - window.innerWidth,
+          );
           assert.ok(overflow <= 2, `Arabic Rewind overflow: ${overflow}px`);
           await page.setViewportSize({ width: 1366, height: 900 });
           assert.equal(pageErrors.length, 0, pageErrors.join('; '));
