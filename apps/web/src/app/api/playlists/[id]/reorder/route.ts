@@ -9,6 +9,7 @@ export const runtime = 'nodejs';
 
 const schema = z.object({
   trackIds: z.array(z.string().min(1)).max(500),
+  expectedTrackIds: z.array(z.string().min(1)).max(500),
 });
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -16,8 +17,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     assertSameOrigin(request);
     const user = await requireUser();
     const { id } = await context.params;
-    const { trackIds } = await parseBody(request, schema);
-    if (new Set(trackIds).size !== trackIds.length) throw Errors.invalid('Duplicate tracks');
+    const { trackIds, expectedTrackIds } = await parseBody(request, schema);
+    if (new Set(trackIds).size !== trackIds.length ||
+        new Set(expectedTrackIds).size !== expectedTrackIds.length) {
+      throw Errors.invalid('Duplicate tracks');
+    }
 
     if (demoMode) {
       const playlist = mutateDb((db) => {
@@ -25,7 +29,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         if (!existing) throw Errors.notFound('Playlist not found');
         if (existing.ownerId !== user.id) throw Errors.forbidden();
         if (existing.trackIds.length !== trackIds.length ||
-            existing.trackIds.some((trackId) => !trackIds.includes(trackId))) {
+            existing.trackIds.some((trackId, index) => !trackIds.includes(trackId) || expectedTrackIds[index] !== trackId)) {
           throw Errors.conflict('Playlist changed. Reload and try again.');
         }
         existing.trackIds = [...trackIds];
@@ -43,10 +47,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (!playlist) throw Errors.notFound('Playlist not found');
     if (playlist.owner_id !== user.id) throw Errors.forbidden();
     const { data: existingRows, error: rowError } = await db.from('playlist_tracks')
-      .select('track_id').eq('playlist_id', id);
+      .select('track_id,position').eq('playlist_id', id).order('position', { ascending: true });
     if (rowError) throw new Error(rowError.message);
     const existing = (existingRows ?? []).map((row) => row.track_id);
-    if (existing.length !== trackIds.length || existing.some((trackId) => !trackIds.includes(trackId))) {
+    if (existing.length !== trackIds.length ||
+        existing.some((trackId, index) => !trackIds.includes(trackId) || expectedTrackIds[index] !== trackId)) {
       throw Errors.conflict('Playlist changed. Reload and try again.');
     }
     if (trackIds.length) {
