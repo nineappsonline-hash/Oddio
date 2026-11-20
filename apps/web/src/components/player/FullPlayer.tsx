@@ -899,7 +899,7 @@ export function FullPlayer() {
             )}
             aria-label={
               sideTab === 'lyrics'
-                ? 'Lyrics'
+                ? rtl ? 'كلمات الأغنية' : 'Lyrics'
                 : sideTab === 'queue'
                   ? t('player.queue')
                   : rtl
