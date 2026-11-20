@@ -32,7 +32,7 @@ export function annualListeningDNA(
     qualifiedListens++;
     const month = new Date(at).getUTCMonth();
     months.add(month);
-    monthlyCounts[month] += 1;
+    monthlyCounts[month] = (monthlyCounts[month] ?? 0) + 1;
     const previous = songCounts.get(listen.id);
     songCounts.set(listen.id, {
       title: listen.title,
