@@ -9,6 +9,8 @@ import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { getPodcastCatalog } from '@/lib/podcasts/catalog';
 import { getSessionUser } from '@/lib/auth/session';
+import { podcastInbox } from '@/lib/podcasts/notification-inbox';
+import { demoMode } from '@/lib/env';
 import {
   PodcastCategoryCard,
   PodcastEpisodeCard,
@@ -59,6 +61,14 @@ export default async function PodcastsHome({
     await getContentLanguagePreference(),
   );
   const user = await getSessionUser();
+  let podcastUnreadCount = 0;
+  if (user && !demoMode) {
+    try {
+      podcastUnreadCount = (await podcastInbox(user.id)).unreadCount;
+    } catch {
+      // Notification failures should not block podcast browsing.
+    }
+  }
   const canPublish = Boolean(
     user?.isArtistManager ||
     user?.roles.some((role) => role === 'admin' || role === 'super_admin'),
@@ -123,6 +133,14 @@ export default async function PodcastsHome({
             >
               <Bell className="h-4 w-4" aria-hidden="true" />
               {ar ? 'إشعارات البودكاست' : 'Notifications'}
+              {podcastUnreadCount > 0 ? (
+                <span
+                  className="rounded-full bg-[#d4b0f4] px-2 py-0.5 text-xs font-bold text-[#211527]"
+                  aria-label={ar ? `${podcastUnreadCount} إشعارات غير مقروءة` : `${podcastUnreadCount} unread alerts`}
+                >
+                  {podcastUnreadCount > 99 ? '99+' : podcastUnreadCount}
+                </span>
+              ) : null}
             </Link>
             <Link
               href={`/${locale}/podcasts/following`}
