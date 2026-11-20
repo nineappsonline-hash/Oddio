@@ -1,0 +1,53 @@
+name: Format UX roadmap branch
+
+on:
+  push:
+    branches:
+      - feature/ux-roadmap-2026
+    paths:
+      - .github/workflows/format-ux-roadmap.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ux-roadmap-formatter
+  cancel-in-progress: false
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/ux-roadmap-2026
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format files changed by UX roadmap
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only -z --diff-filter=ACM origin/main...HEAD |
+            xargs -0 -r -n 1 sh -c '
+              case "$0" in
+                *.ts|*.tsx|*.js|*.mjs|*.cjs|*.json|*.md|*.yml|*.yaml|*.css)
+                  if test -f "$0"; then npx prettier --write "$0"; fi ;;
+              esac
+            '
+      - name: Commit formatting only to the feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo 'Already formatted'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --update
+          git commit -m 'style: apply Prettier to UX roadmap files'
+          git push origin HEAD:feature/ux-roadmap-2026
