@@ -1,5 +1,5 @@
 name: Format UX roadmap branch
-# Phase 12 final smoke formatting pass: WebKit bootstrap navigation assertions.
+# Phase 12 final smoke formatting pass: RTL viewport clipping assertions.
 
 on:
   push:
