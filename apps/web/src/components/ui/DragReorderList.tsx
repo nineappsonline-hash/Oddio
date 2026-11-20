@@ -24,6 +24,7 @@ export function DragReorderList<T>({
   const pointer = useRef<{ id: number; from: number; target: number; startX: number; startY: number; moved: boolean } | null>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
+  const [dropAllowed, setDropAllowed] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const ar = locale === 'ar';
 
@@ -31,6 +32,7 @@ export function DragReorderList<T>({
     pointer.current = null;
     setDragging(null);
     setOver(null);
+    setDropAllowed(false);
   };
   function onPointerDown(event: PointerEvent<HTMLButtonElement>, index: number) {
     if (disabled || event.button !== 0 || !event.isPrimary) return;
@@ -55,7 +57,12 @@ export function DragReorderList<T>({
     }
     const element = document.elementFromPoint(event.clientX, event.clientY);
     const row = element?.closest('[data-reorder-index]') as HTMLElement | null;
-    if (!row || !ref.current?.contains(row)) return;
+    if (!row || !ref.current?.contains(row)) {
+      setDropAllowed(false);
+      setOver(null);
+      return;
+    }
+    setDropAllowed(true);
     const target = Number(row.dataset.reorderIndex);
     if (Number.isInteger(target) && target >= 0 && target < items.length) {
       drag.target = target;
@@ -65,7 +72,10 @@ export function DragReorderList<T>({
   function onPointerUp(event: PointerEvent<HTMLButtonElement>) {
     const drag = pointer.current;
     if (!drag || drag.id !== event.pointerId) return;
-    if (drag.moved && drag.from !== drag.target && !disabled) {
+    const droppedElement = document.elementFromPoint(event.clientX, event.clientY);
+    const droppedRow = droppedElement?.closest('[data-reorder-index]') as HTMLElement | null;
+    const droppedInside = Boolean(droppedRow && ref.current?.contains(droppedRow));
+    if (drag.moved && droppedInside && drag.from !== drag.target && !disabled) {
       onMove(drag.from, drag.target);
       setAnnouncement(ar
         ? `تم نقل العنصر من رقم ${drag.from + 1} إلى رقم ${drag.target + 1}`
@@ -79,7 +89,7 @@ export function DragReorderList<T>({
     <ul ref={ref} className={cn(layout === 'list' ? 'space-y-1' : 'grid', className)} aria-label={ar ? 'قائمة قابلة لإعادة الترتيب' : 'Reorderable list'}>
       {items.map((item, index) => (
         <li key={getId(item)} data-reorder-index={index}
-          className={cn('flex min-w-0 items-center gap-1 rounded-xl transition-colors', dragging === index && 'bg-primary/15 opacity-70', over === index && dragging !== index && 'ring-2 ring-primary/60')}>
+          className={cn('flex min-w-0 items-center gap-1 rounded-xl transition-colors', dragging === index && 'bg-primary/15 opacity-70', over === index && dragging !== index && dropAllowed && 'ring-2 ring-primary/60 bg-primary/[0.09]')}>
           <button type="button" disabled={disabled}
             aria-label={ar ? `اسحب العنصر رقم ${index + 1} لترتيبه، أو استخدم سهم فوق وتحت` : `Drag item ${index + 1} to reorder, or use arrow up/down`}
             title={ar ? 'اسحب للترتيب' : 'Drag to reorder'}
