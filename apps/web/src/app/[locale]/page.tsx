@@ -187,6 +187,7 @@ export default async function HomePage({
         <DiscoveryMixShelf
           tracks={recommended.tracks}
           publicTracks={publicRecommended.tracks}
+          genres={db.genres.filter((genre) => genre.active).map((genre) => ({ id: genre.id, name: ar ? genre.labelAr : genre.labelEn }))}
           personalized={recommended.personalized}
           locale={locale}
           viewerId={viewer.userId}
