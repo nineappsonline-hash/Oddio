@@ -22,6 +22,7 @@ import {
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
+import { DragReorderList } from '@/components/ui/DragReorderList';
 import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
 import { PlayerVolumeControl } from '@/components/player/PlayerVolumeControl';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
@@ -142,6 +143,7 @@ export function FullPlayer() {
   const jumpTo = usePlayer((state) => state.jumpTo);
   const removeFromQueue = usePlayer((state) => state.removeFromQueue);
   const moveInQueue = usePlayer((state) => state.moveInQueue);
+  const reorderQueue = usePlayer((state) => state.reorderQueue);
   const clearQueue = usePlayer((state) => state.clearQueue);
 
   // The full player is a modal: lock background scrolling and keep keyboard
@@ -934,12 +936,11 @@ export function FullPlayer() {
                     {t('player.emptyQueue')}
                   </p>
                 ) : (
-                  <ul className="scroll-thin -mx-1 space-y-1 overflow-y-auto px-1">
-                    {queue.map((item, index) => (
-                      <li
-                        key={`${item.id}-${index}`}
-                        className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/5"
-                      >
+                  <DragReorderList items={queue} getId={(item) => item.id}
+                    locale={rtl ? 'ar' : 'en'} onMove={reorderQueue}
+                    className="scroll-thin -mx-1 min-h-0 flex-1 overflow-y-auto px-1"
+                    renderItem={(item, index) => (
+                      <div className="group flex min-w-0 items-center gap-1 rounded-xl px-1 py-1.5 hover:bg-white/5">
                         <button
                           type="button"
                           onClick={() => jumpTo(item.id)}
@@ -982,9 +983,10 @@ export function FullPlayer() {
                             <X className="h-4 w-4" />
                           </button>
                         </div>
-                      </li>
-                    ))}
-                  </ul>
+
+                      </div>
+                    )}
+                  />
                 )}
               </div>
             )}
