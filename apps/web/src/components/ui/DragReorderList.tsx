@@ -44,11 +44,14 @@ export function DragReorderList<T>({
     drag.moved = true;
     setDragging(drag.from);
     // While dragging long queues, scroll the nearest scrollable panel near its edges.
-    const panel = ref.current;
-    if (panel && panel.scrollHeight > panel.clientHeight) {
+    const list = ref.current;
+    // The scrollable element may be the list or a containing dialog/panel.
+    let panel: HTMLElement | null = list;
+    while (panel && panel.scrollHeight <= panel.clientHeight + 1) panel = panel.parentElement;
+    if (panel && panel !== document.body && panel !== document.documentElement) {
       const bounds = panel.getBoundingClientRect();
-      if (event.clientY > bounds.bottom - 40 && event.clientY < bounds.bottom + 20) panel.scrollTop += 18;
-      else if (event.clientY < bounds.top + 40 && event.clientY > bounds.top - 20) panel.scrollTop -= 18;
+      if (event.clientY > bounds.bottom - 48 && event.clientY < bounds.bottom + 24) panel.scrollTop += 20;
+      else if (event.clientY < bounds.top + 48 && event.clientY > bounds.top - 24) panel.scrollTop -= 20;
     }
     const element = document.elementFromPoint(event.clientX, event.clientY);
     const row = element?.closest('[data-reorder-index]') as HTMLElement | null;
@@ -71,7 +74,7 @@ export function DragReorderList<T>({
     stop();
   }
   return (
-    <div className="min-h-0">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
     <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
     <ul ref={ref} className={cn(layout === 'list' ? 'space-y-1' : 'grid', className)} aria-label={ar ? 'قائمة قابلة لإعادة الترتيب' : 'Reorderable list'}>
       {items.map((item, index) => (
