@@ -60,7 +60,7 @@ export default async function RewindPage({
   const report = annualListeningDNA(events, year, locale);
   const format = (n: number) => new Intl.NumberFormat(ar ? 'ar-EG' : 'en-US').format(n);
   return (
-    <main className="space-y-8 pb-20">
+    <main className="w-full min-w-0 max-w-full space-y-8 pb-20">
       <header className="rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-600/15 to-cyan-500/10 p-6">
         <p className="text-xs font-bold uppercase tracking-widest text-violet-300">
           ODDIO REWIND · MUSIC DNA
@@ -90,7 +90,7 @@ export default async function RewindPage({
         </nav>
       </header>
       <section
-        className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+        className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-4"
         aria-label={ar ? 'ملخص السنة' : 'Year summary'}
       >
         {[
@@ -101,9 +101,9 @@ export default async function RewindPage({
         ].map(([label, value]) => (
           <div
             key={String(label)}
-            className="rounded-2xl border border-white/10 bg-white/[.035] p-4"
+            className="min-w-0 rounded-2xl border border-white/10 bg-white/[.035] p-4"
           >
-            <p className="text-xs text-muted">{label}</p>
+            <p className="break-words text-xs text-muted">{label}</p>
             <p className="mt-3 text-2xl font-extrabold tabular-nums">
               {format(Number(value))}
             </p>
