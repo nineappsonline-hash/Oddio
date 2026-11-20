@@ -17,7 +17,11 @@ import {
 } from '@/lib/player-session';
 import type { CatalogTrack, HomeData } from '@/lib/data/queries';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
-import { readPodcastProgress, savePodcastProgress, clearPodcastProgress } from '@/lib/podcast-progress-store';
+import {
+  readPodcastProgress, readPodcastSyncRecords, replacePodcastSyncRecords,
+  savePodcastProgress, clearPodcastProgress, PODCAST_PROGRESS_EVENT,
+  type SavedPodcastProgress,
+} from '@/lib/podcast-progress-store';
 import { useToast } from '@/components/providers/ToastProvider';
 
 interface PlaybackAuthorization {
@@ -145,6 +149,71 @@ export function PlayerProvider({
       saveOnExit();
       unsubscribe();
       window.removeEventListener('pagehide', saveOnExit);
+    };
+  }, [viewerId]);
+
+  // Sync multiple podcast positions across a signed-in listener's devices.
+  // Local saves work offline; reconnect/visibility triggers a best-effort merge.
+  useEffect(() => {
+    if (!viewerId) return;
+    let stopped = false;
+    let syncing = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let lastPulled = 0;
+    const send = async () => {
+      if (stopped || syncing || !navigator.onLine) return;
+      syncing = true;
+      try {
+        if (!lastPulled || Date.now() - lastPulled > 60_000) {
+          const cloud = await apiRequest<{ entries: SavedPodcastProgress[] }>(
+            '/api/podcasts/progress',
+          );
+          if (stopped) return;
+          replacePodcastSyncRecords(viewerId, cloud.entries);
+          lastPulled = Date.now();
+        }
+        const entries = readPodcastSyncRecords(viewerId);
+        if (!entries.length) return;
+        const cloud = await apiRequest<{
+          entries: SavedPodcastProgress[]; saved: boolean;
+        }>('/api/podcasts/progress', {
+          method: 'PUT',
+          body: JSON.stringify({ entries }),
+        });
+        if (!stopped) replacePodcastSyncRecords(viewerId, cloud.entries);
+      } catch {
+        // An offline listener keeps their local history and retries on reconnect.
+        lastPulled = 0;
+      } finally {
+        syncing = false;
+      }
+    };
+    const schedule = () => {
+      if (stopped || timer) return;
+      timer = setTimeout(() => {
+        timer = null;
+        void send();
+      }, 12_000);
+    };
+    const onFocus = () => {
+      lastPulled = 0;
+      schedule();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') onFocus();
+    };
+    void send();
+    window.addEventListener(PODCAST_PROGRESS_EVENT, schedule);
+    window.addEventListener('online', onFocus);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+      window.removeEventListener(PODCAST_PROGRESS_EVENT, schedule);
+      window.removeEventListener('online', onFocus);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [viewerId]);
 
