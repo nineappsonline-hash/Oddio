@@ -5,9 +5,11 @@ import type { Locale } from '@ai-music/contracts';
 import { getHomeData } from '@/lib/data/queries';
 import { recommendTracks } from '@/lib/data/recommendations';
 import { getRecentHomeTracks } from '@/lib/data/home-recent';
+import { getFollowedArtistReleases } from '@/lib/data/followed-releases';
 import { getDiscoveryArtists } from '@/lib/data/discovery-artists';
 import { DiscoveryMixShelf } from '@/components/music/DiscoveryMixShelf';
 import { ContinueListeningHome } from '@/components/music/ContinueListeningHome';
+import { FollowedReleasesHome } from '@/components/music/FollowedReleasesHome';
 import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
@@ -66,6 +68,7 @@ export default async function HomePage({
     : recommended;
   const discoveryArtists = getDiscoveryArtists(db, viewer);
   const recentTracks = getRecentHomeTracks(db, viewer, 8);
+  const followedReleases = getFollowedArtistReleases(db, viewer, 8);
   const hero = data.hero;
   const heroQueue = hero
     ? [
@@ -185,6 +188,9 @@ export default async function HomePage({
       </div>
 
       <ContinueListeningHome locale={locale} />
+      {viewer.userId && followedReleases.length > 0 ? (
+        <FollowedReleasesHome locale={locale} viewerId={viewer.userId} tracks={followedReleases} />
+      ) : null}
 
       {recommended.tracks.length > 0 ? (
         <DiscoveryMixShelf
