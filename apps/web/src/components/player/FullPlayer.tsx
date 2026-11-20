@@ -291,7 +291,7 @@ export function FullPlayer() {
     <div
       ref={dialogRef}
       tabIndex={-1}
-      className="oddio-full-player fixed inset-0 z-[60] h-[100dvh] w-full max-w-full overflow-x-hidden overflow-y-auto overscroll-x-none bg-[#090a0c] text-white scroll-thin"
+      className="oddio-full-player fixed inset-0 z-[60] h-[100dvh] w-full max-w-full overflow-x-hidden overflow-y-auto overscroll-contain bg-[#090a0c] text-white scroll-thin"
       role="dialog"
       aria-modal="true"
       aria-label={t('player.fullPlayer')}
@@ -308,7 +308,7 @@ export function FullPlayer() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-24 left-1/2 z-[90] -translate-x-1/2 whitespace-nowrap rounded-full border border-white/20 bg-[#171819]/95 backdrop-blur-xl px-4 py-2 text-sm font-bold text-white shadow-xl"
+          className="fixed bottom-24 left-1/2 z-[90] w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-full border border-white/20 bg-[#171819]/95 px-4 py-2 text-center text-sm font-bold text-white shadow-xl backdrop-blur-xl"
         >
           {controlNotice}
         </div>
@@ -348,7 +348,16 @@ export function FullPlayer() {
               : 'Immersive audio. Seamless control.'}
           </p>
         </div>
-        <div className="mb-3 flex items-center justify-end lg:hidden">
+        <div className="mb-3 flex items-center justify-between gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            aria-label={t('player.minimize')}
+            title={t('player.minimize')}
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            <ChevronDown className="h-5 w-5" aria-hidden="true" />
+          </button>
           <button
             type="button"
             onClick={() => setSideTab(sideTab === 'queue' ? 'similar' : 'queue')}
