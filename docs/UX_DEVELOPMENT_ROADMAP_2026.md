@@ -164,3 +164,10 @@
 - A successful operation updates the local playlist and refreshes server-rendered metadata. Partial failures display exact completed/attempted counts and **block further edits until the page is reloaded**. No automatic retry or false rollback claims; bulk deletion is not atomic, and immediate server-side undo is not yet supported.
 - While confirmation is open or a deletion runs, drag-reorder is locked to avoid conflicting mutations.
 - Latest earlier previews for the previous implementation had reached READY, but these new removal changes still require current-commit build verification and manual browser QA. Production remains unchanged.
+
+### Phase 2 reliability pass — 2026-11-20
+- Confirmed the previous phase-2 preview commit `699f964a` is **Vercel READY**. This establishes a successful build, not verified browser behavior.
+- Added a shared sequential mutation runner, `apps/web/src/lib/sequential-playlist-mutations.ts`, with Vitest cases for ordered completion, stopped-on-first-error behavior, progress callbacks and empty selection.
+- Wired playlist bulk removal and liked-song bulk add-to-playlist through that runner, including visible completed/total counters. When a request fails, the UI treats its server outcome as **unknown**, since a lost response may follow a committed write. It does not retry automatically.
+- The bulk-removal UI blocks editing until authoritative playlist state is reloaded after an interruption. A bulk-add interruption links to the playlist for review.
+- **Verification remaining:** new commits' Vercel build completion, execution of Vitest, real browser confirmation on mobile/desktop and audit of DB-level idempotent batch APIs. This feature branch is not merged into production.
