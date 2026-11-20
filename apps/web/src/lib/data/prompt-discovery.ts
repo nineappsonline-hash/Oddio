@@ -23,6 +23,8 @@ const synonyms: Record<string, string[]> = {
   english: ['english', 'انجليزي', 'إنجليزي'],
 };
 
+export type DiscoveryMatchReason = { kind: 'genre' | 'mood' | 'language' | 'artist' | 'title'; value: string };
+
 function containsTerm(text: string, term: string): boolean {
   const input = ' ' + normalize(text) + ' ';
   const word = normalize(term);
@@ -34,9 +36,9 @@ export function promptDiscoveryTracks(
   viewer: Viewer,
   prompt: string,
   limit = 12,
-): { tracks: CatalogTrack[]; matched: boolean } {
+): { tracks: CatalogTrack[]; matched: boolean; reasons: Record<string, DiscoveryMatchReason[]> } {
   const text = normalize(prompt).slice(0, 240);
-  if (text.length < 3) return { tracks: [], matched: false };
+  if (text.length < 3) return { tracks: [], matched: false, reasons: {} };
   const catalog = listableTracks(db, viewer).filter(
     (track) => track.access.allowed && track.audio?.processingStatus === 'ready',
   );
@@ -61,20 +63,49 @@ export function promptDiscoveryTracks(
         .join(' ');
       const artistText = track.artist?.name ?? '';
       let score = 0;
+      const reasons: DiscoveryMatchReason[] = [];
+      const addReason = (kind: DiscoveryMatchReason['kind'], value: string) => {
+        if (!reasons.some((reason) => reason.kind === kind && reason.value === value))
+          reasons.push({ kind, value });
+      };
       for (const word of tokens) {
-        if (containsTerm(genreText, word)) score += 6;
-        if (containsTerm(moodText, word)) score += 6;
-        if (containsTerm(artistText, word)) score += 4;
-        if (containsTerm(track.title, word)) score += 2;
+        if (containsTerm(genreText, word)) {
+          score += 6;
+          for (const genre of genres) {
+            if (containsTerm(genre.labelEn + ' ' + genre.labelAr + ' ' + genre.slug, word))
+              addReason('genre', genre.labelEn);
+          }
+        }
+        if (containsTerm(moodText, word)) {
+          score += 6;
+          for (const mood of moods) {
+            if (containsTerm(mood.labelEn + ' ' + mood.labelAr + ' ' + mood.slug, word))
+              addReason('mood', mood.labelEn);
+          }
+        }
+        if (containsTerm(artistText, word)) { score += 4; addReason('artist', artistText); }
+        if (containsTerm(track.title, word)) { score += 2; addReason('title', track.title); }
       }
       for (const intent of intents) {
         const terms = synonyms[intent] ?? [];
-        if (intent === 'arabic' && track.languageCode === 'ar') score += 6;
-        if (intent === 'english' && track.languageCode === 'en') score += 6;
-        if (terms.some((term) => containsTerm(genreText + ' ' + moodText, term)))
-          score += 5;
+        if (intent === 'arabic' && track.languageCode === 'ar') {
+          score += 6; addReason('language', 'ar');
+        }
+        if (intent === 'english' && track.languageCode === 'en') {
+          score += 6; addReason('language', 'en');
+        }
+        for (const genre of genres) {
+          if (terms.some((term) => containsTerm(genre.labelEn + ' ' + genre.labelAr + ' ' + genre.slug, term))) {
+            score += 5; addReason('genre', genre.labelEn);
+          }
+        }
+        for (const mood of moods) {
+          if (terms.some((term) => containsTerm(mood.labelEn + ' ' + mood.labelAr + ' ' + mood.slug, term))) {
+            score += 5; addReason('mood', mood.labelEn);
+          }
+        }
       }
-      return { track, score };
+      return { track, score, reasons: reasons.slice(0, 4) };
     })
     .sort(
       (a, b) =>
@@ -84,7 +115,7 @@ export function promptDiscoveryTracks(
     );
   const matched = ranked.some((item) => item.score > 0);
   // Do not claim that a completely unrecognized prompt has been interpreted.
-  if (!matched) return { tracks: [], matched: false };
+  if (!matched) return { tracks: [], matched: false, reasons: {} };
   const scored = ranked.filter((item) => item.score > 0);
   const selected: CatalogTrack[] = [];
   const artists = new Set<string>();
@@ -99,5 +130,8 @@ export function promptDiscoveryTracks(
     if (selected.length >= cap) break;
     if (!selected.some((track) => track.id === item.track.id)) selected.push(item.track);
   }
-  return { tracks: selected, matched };
+  const reasons = Object.fromEntries(selected.map((track) => [
+    track.id, scored.find((item) => item.track.id === track.id)?.reasons ?? [],
+  ]));
+  return { tracks: selected, matched, reasons };
 }
