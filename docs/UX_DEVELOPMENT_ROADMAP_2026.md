@@ -142,3 +142,10 @@
 - Added instant liked-track search by title or artist across recent/title/popular/custom views, including an empty-results state and matching queue playback order.
 - This phase is **partially implemented**, not released: pinning, multi-select/bulk actions, server-persisted shelf order, and detailed playlist management remain pending. Existing shelf preferences are stored on the current device only.
 - Latest Vercel preview for these commits is BUILDING; no browser, lint, typecheck or unit-suite confirmation yet. No merge or production release.
+
+### Phase 2 continuation — pinning and bulk queue actions
+- Diagnosed a **real Vercel compile failure** (unterminated JSX conditional) in `apps/web/src/app/[locale]/library/page.tsx`; corrected the missing closing `}` in commit `ebeca6d6`. Earlier preview deployments reporting ERROR are not eligible for release.
+- Added per-listener, per-shelf **Pin/Unpin** for owned and followed playlists. Pinned entries sort to the top and are persisted via browser localStorage; pin order is intentionally device-only. Manual drag is disabled while pins exist to prevent unexpected reorder results; unpin to restore custom sorting.
+- Added **Select visible / Deselect visible** and **Add selected to queue** on liked-song search results. Bulk queue action only affects the local player queue, and intentionally does not touch liked-song or playlist membership server-side.
+- Unfinished: multi-select in custom liked-song ordering, bulk playlist mutations, cross-device pinned state, authoritative E2E and accessibility testing.
+- Build for the latest commits was still in progress at last observation. Retain production isolation until a passing preview and browser QA are available.
