@@ -1,0 +1,30 @@
+name: Temporary format browser smoke
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: write
+jobs:
+  format-browser:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feat/ux-phase9-smart-podcast-discovery'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx prettier --write scripts/browser-release.mjs
+      - name: Commit formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/browser-release.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m "style: format Phase 9 browser test"
+            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          fi
