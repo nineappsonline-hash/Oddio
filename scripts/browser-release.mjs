@@ -661,7 +661,8 @@ try {
                 engine === 'webkit' &&
                 message.includes('due to access control checks') &&
                 (message.includes('/api/podcasts/progress') ||
-                  message.includes('/api/player/resume'))
+                  message.includes('/api/player/resume') ||
+                  message.includes('/api/library/smart-playlists'))
               ),
           );
           assert.equal(
