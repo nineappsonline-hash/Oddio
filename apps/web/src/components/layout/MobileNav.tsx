@@ -275,7 +275,7 @@ export function MobileNav() {
             role="dialog"
             aria-modal="true"
             aria-label={locale === 'ar' ? 'القائمة' : 'Menu'}
-            className="absolute inset-y-0 start-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto overscroll-contain border-e border-[#604b83]/50 bg-[#101015] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
+            className="absolute inset-y-0 left-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto overscroll-contain border-e border-[#604b83]/50 bg-[#101015] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
           >
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
