@@ -20,6 +20,8 @@ import { ArtistListRow } from '@/components/music/ArtistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ButtonLink } from '@/components/ui/Button';
 import { ClearListeningHistory } from '@/components/library/ClearListeningHistory';
+import { SmartPlaylists } from '@/components/library/SmartPlaylists';
+import { listableTracks } from '@/lib/data/queries';
 
 export async function generateMetadata({
   params,
@@ -89,6 +91,9 @@ export default async function LibraryPage({
         <a href="#liked" className="chip">
           {t('library.likes')}
         </a>
+        <a href="#smart-playlists" className="chip">
+          {locale === 'ar' ? 'قوائم ذكية' : 'Smart playlists'}
+        </a>
         <a href="#playlists" className="chip">
           {t('library.playlists')}
         </a>
@@ -140,6 +145,24 @@ export default async function LibraryPage({
         ) : (
           <SearchableLikedTracks tracks={likedTracks} locale={locale} />
         )}
+      </section>
+
+      <section id="smart-playlists" className="scroll-mt-24">
+        <SectionHeader title={locale === 'ar' ? 'قوائم ذكية' : 'Smart playlists'} />
+        <SmartPlaylists
+          userId={user.id}
+          locale={locale}
+          catalog={listableTracks(db, { userId: null, roles: [] })
+            .filter((track) => track.audio?.processingStatus === 'ready' && track.access.allowed)
+            .slice(0, 1500)}
+          likedIds={library.likedTracks.map((track) => track.id)}
+          genres={db.genres.filter((genre) => genre.active).map((genre) => ({
+            id: genre.id, name: locale === 'ar' ? genre.labelAr : genre.labelEn,
+          }))}
+          moods={db.moods.filter((mood) => mood.active).map((mood) => ({
+            id: mood.id, name: locale === 'ar' ? mood.labelAr : mood.labelEn,
+          }))}
+        />
       </section>
 
       <section id="playlists" className="scroll-mt-24">
