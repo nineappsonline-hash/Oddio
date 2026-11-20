@@ -158,7 +158,7 @@ export function SearchExperience({
 
   return (
     <section aria-label={searchLabel} dir={ar ? "rtl" : "ltr"} className="mb-8 min-w-0 space-y-3">
-      <form role="search" onSubmit={submit} className="oddio-search-form flex min-w-0 gap-2">
+      <form role="search" method="get" action={`/${locale}/search`} onSubmit={submit} className="oddio-search-form flex min-w-0 gap-2">
         <input
           ref={inputRef}
           type="search"
