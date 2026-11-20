@@ -23,6 +23,7 @@ export function DragReorderList<T>({
   const pointer = useRef<{ id: number; from: number; target: number; startX: number; startY: number; moved: boolean } | null>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
+  const [announcement, setAnnouncement] = useState('');
   const ar = locale === 'ar';
 
   const stop = () => {
@@ -41,6 +42,13 @@ export function DragReorderList<T>({
     if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 6) return;
     drag.moved = true;
     setDragging(drag.from);
+    // While dragging long queues, scroll the nearest scrollable panel near its edges.
+    const panel = ref.current;
+    if (panel && panel.scrollHeight > panel.clientHeight) {
+      const bounds = panel.getBoundingClientRect();
+      if (event.clientY > bounds.bottom - 40 && event.clientY < bounds.bottom + 20) panel.scrollTop += 18;
+      else if (event.clientY < bounds.top + 40 && event.clientY > bounds.top - 20) panel.scrollTop -= 18;
+    }
     const element = document.elementFromPoint(event.clientX, event.clientY);
     const row = element?.closest('[data-reorder-index]') as HTMLElement | null;
     if (!row || !ref.current?.contains(row)) return;
@@ -53,10 +61,17 @@ export function DragReorderList<T>({
   function onPointerUp(event: PointerEvent<HTMLButtonElement>) {
     const drag = pointer.current;
     if (!drag || drag.id !== event.pointerId) return;
-    if (drag.moved && drag.from !== drag.target && !disabled) onMove(drag.from, drag.target);
+    if (drag.moved && drag.from !== drag.target && !disabled) {
+      onMove(drag.from, drag.target);
+      setAnnouncement(ar
+        ? `تم نقل العنصر من رقم ${drag.from + 1} إلى رقم ${drag.target + 1}`
+        : `Moved item from position ${drag.from + 1} to ${drag.target + 1}`);
+    }
     stop();
   }
   return (
+    <div className="min-h-0">
+    <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
     <ul ref={ref} className={cn('space-y-1', className)} aria-label={ar ? 'قائمة قابلة لإعادة الترتيب' : 'Reorderable list'}>
       {items.map((item, index) => (
         <li key={getId(item)} data-reorder-index={index}
@@ -76,6 +91,7 @@ export function DragReorderList<T>({
               if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && to >= 0 && to < items.length) {
                 event.preventDefault();
                 onMove(index, to);
+                setAnnouncement(ar ? `تم نقل العنصر إلى رقم ${to + 1}` : `Moved item to position ${to + 1}`);
                 // The keyed handle stays mounted and retains keyboard focus.
               }
             }}>
@@ -85,5 +101,6 @@ export function DragReorderList<T>({
         </li>
       ))}
     </ul>
+    </div>
   );
 }
