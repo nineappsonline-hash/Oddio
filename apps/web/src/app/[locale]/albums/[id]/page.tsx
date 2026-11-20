@@ -73,7 +73,14 @@ export default async function AlbumPage({
   );
   const totalDurationMs = readyTracks.reduce((sum, track) => sum + Math.max(0, track.durationMs), 0);
   const relatedAlbums = db.albums
-    .filter((item) => item.artistId === artist.id && item.id !== album.id)
+    .filter((item) =>
+      item.artistId === artist.id &&
+      item.id !== album.id &&
+      item.status === 'published' &&
+      item.visibility === 'public' &&
+      Number.isFinite(Date.parse(item.releaseAt)) &&
+      Date.parse(item.releaseAt) <= Date.now(),
+    )
     .map((item) => getAlbumPage(db, { userId: null, roles: [] }, item.id))
     .filter((item): item is NonNullable<typeof item> => item !== null)
     .filter((item) => item.tracks.some((track) => track.audio?.processingStatus === 'ready' && track.access.allowed))
