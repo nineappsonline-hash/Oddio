@@ -120,6 +120,7 @@ export function PromptPlaylist({
         (reason.value === 'ar' ? (ar ? 'عربي' : 'Arabic') : (ar ? 'إنجليزي' : 'English'));
       case 'artist': return (ar ? 'الفنان: ' : 'Artist: ') + reason.value;
       case 'title': return (ar ? 'اسم الأغنية: ' : 'Title: ') + reason.value;
+      case 'tempo': return (ar ? 'إيقاع مقاس: ' : 'Measured tempo: ') + reason.value;
     }
   };
 
