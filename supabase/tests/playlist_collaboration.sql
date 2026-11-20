@@ -88,4 +88,37 @@ begin
   end if;
 end $$;
 
+-- Revocation must take effect immediately, including for invitations that
+-- have not yet been used and for users removed from an editor role.
+do $
+declare
+  owner_playlist uuid := '62000000-0000-4000-8000-000000000001';
+  editor uuid := '72000000-0000-4000-8000-000000000002';
+  outsider uuid := '72000000-0000-4000-8000-000000000003';
+  public_track uuid := '52000000-0000-4000-8000-000000000001';
+begin
+  update public.playlist_collaboration_invites
+    set revoked_at = now() where playlist_id = owner_playlist;
+  begin
+    perform public.oddio_join_playlist_invite(outsider,owner_playlist,repeat('a',64));
+    raise exception 'Revoked invite was accepted';
+  exception when sqlstate 'P0002' then null;
+  end;
+  delete from public.playlist_collaborators
+    where playlist_id = owner_playlist and user_id = editor;
+  begin
+    perform public.oddio_collaborator_add_playlist_track(editor,owner_playlist,public_track);
+    raise exception 'Removed editor retained access';
+  exception when sqlstate 'P0002' then null;
+  end;
+  insert into public.playlist_collaborators(playlist_id,user_id)
+    values (owner_playlist,editor);
+  update public.playlists set visibility='private' where id=owner_playlist;
+  begin
+    perform public.oddio_collaborator_add_playlist_track(editor,owner_playlist,public_track);
+    raise exception 'Editor could still mutate a private playlist';
+  exception when sqlstate 'P0002' then null;
+  end;
+end $;
+
 rollback;
