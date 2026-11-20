@@ -422,19 +422,20 @@ export function FullPlayer() {
                   {!podcast && mobileLyricsOpen ? (
                     <div
                       id="oddio-mobile-lyrics"
-                      className="absolute inset-1.5 z-40 flex flex-col rounded-[1.35rem] bg-[#121314]/95 p-4 backdrop-blur-xl lg:hidden"
+                      className="absolute inset-1.5 z-40 flex min-h-0 flex-col overflow-y-auto overscroll-contain rounded-[1.35rem] bg-[#121314]/95 p-3 backdrop-blur-xl sm:p-4 lg:hidden"
                     >
                       <div className="mb-2 flex items-center justify-between text-sm font-bold text-white">
                         <span>🎤 {rtl ? 'كلمات الأغنية' : 'Lyrics'}</span>
                         <button
                           type="button"
                           onClick={() => setMobileLyricsOpen(false)}
-                          className="rounded-lg bg-white/10 px-3 py-1.5"
+                          aria-label={rtl ? 'إغلاق كلمات الأغنية' : 'Close lyrics'}
+                          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/10 px-3 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         >
                           {rtl ? 'إغلاق' : 'Close'}
                         </button>
                       </div>
-                      <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+                      <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto">
                         {lyricsLoading ? (
                           <p className="text-sm text-white/70">
                             {rtl ? 'جاري التحميل…' : 'Loading…'}
