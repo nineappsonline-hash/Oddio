@@ -517,15 +517,18 @@ try {
         // Listening recaps must remain protected and never expose a user's
         // history in anonymous responses (including an explicitly chosen year).
         for (const privatePath of ['library/recap', 'library/rewind?year=2026']) {
-          const url = `${base}/${locale}/${privatePath}`;
-          const result = await page.request.get(url, { maxRedirects: 0 });
-          assert.ok(
-            [302, 303, 307, 308].includes(result.status()),
-            `Expected protected recap redirect, got ${result.status()} for ${url}`,
-          );
-          assert.ok(
-            (result.headers()['location'] ?? '').includes('/login'),
-            'Private recap must redirect anonymous visitor to sign-in',
+          await page.goto(`${base}/${locale}/${privatePath}`, {
+            waitUntil: 'domcontentloaded',
+          });
+          // A streamed Next.js redirect can return HTTP 200; assert the
+          // actual guest navigation and absence of a share action.
+          await page.waitForURL((url) => url.pathname === `/${locale}/login`, {
+            timeout: 15_000,
+          });
+          assert.equal(
+            await page.getByRole('button', { name: /share card|شارك البطاقة/i }).count(),
+            0,
+            'Anonymous visitor must not see a recap share control',
           );
         }
         // WebKit may abort a stale speculative Next.js RSC prefetch when the
