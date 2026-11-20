@@ -52,6 +52,29 @@ export function buildDiscoveryMix(
       ),
   );
   const allowed = new Set(catalog.map((track) => track.id));
+  // Weekly discovery prioritizes tracks the listener has not qualified-played.
+  // Keep older listens as a last-resort fallback for small catalogs.
+  const sessionIds = new Set(
+    viewer.userId
+      ? db.playbackSessions
+          .filter((session) => session.userId === viewer.userId)
+          .map((session) => session.id)
+      : [],
+  );
+  const previouslyHeard = new Set(
+    viewer.userId
+      ? [
+          ...db.playbackEvents
+            .filter((event) =>
+              event.qualified && sessionIds.has(event.sessionId),
+            )
+            .map((event) => event.trackId),
+          ...db.history
+            .filter((item) => item.userId === viewer.userId)
+            .map((item) => item.trackId),
+        ]
+      : [],
+  );
   const base = recommendTracks(db, viewer, 20);
   const ranked = base.tracks.filter((track) => allowed.has(track.id));
   const seed = playable.find((track) => track.id === options.seedId);
@@ -102,9 +125,11 @@ export function buildDiscoveryMix(
     const preferenceRank = new Map(ranked.map((track, index) => [track.id, index]));
     candidates = candidates.sort((a, b) => {
       const aScore =
+        (options.kind === 'weekly' && !previouslyHeard.has(a.id) ? 100 : 0) +
         (preferenceRank.has(a.id) ? 10 : 0) +
         (stableNumber(principal + ':' + rotation + ':' + a.id) % 1000) / 1000;
       const bScore =
+        (options.kind === 'weekly' && !previouslyHeard.has(b.id) ? 100 : 0) +
         (preferenceRank.has(b.id) ? 10 : 0) +
         (stableNumber(principal + ':' + rotation + ':' + b.id) % 1000) / 1000;
       return bScore - aScore || a.id.localeCompare(b.id);
