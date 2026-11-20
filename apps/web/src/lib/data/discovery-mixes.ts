@@ -135,6 +135,28 @@ export function buildDiscoveryMix(
       return bScore - aScore || a.id.localeCompare(b.id);
     });
   }
+  // An already-heard track should not displace an unheard one in weekly mixes
+  // solely to satisfy artist variety; only use repeats once novel tracks run out.
+  if (options.kind === 'weekly' && viewer.userId) {
+    const novel = candidates.filter((track) => !previouslyHeard.has(track.id));
+    const repeats = candidates.filter((track) => previouslyHeard.has(track.id));
+    const selected: CatalogTrack[] = [];
+    const seenArtists = new Set<string>();
+    for (const group of [novel, repeats]) {
+      for (const item of group) {
+        if (selected.length >= limit) break;
+        if (seenArtists.has(item.artistId)) continue;
+        selected.push(item);
+        seenArtists.add(item.artistId);
+      }
+      for (const item of group) {
+        if (selected.length >= limit) break;
+        if (!selected.some((track) => track.id === item.id)) selected.push(item);
+      }
+      if (selected.length >= limit) break;
+    }
+    return { tracks: selected, personalized: base.personalized };
+  }
   // Keep song-radio's seed first; otherwise use the ranking's strongest track.
   const first =
     options.kind === 'song' &&
