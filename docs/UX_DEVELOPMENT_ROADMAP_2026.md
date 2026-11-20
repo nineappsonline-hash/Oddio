@@ -95,7 +95,7 @@
 | Phase | State | Gate |
 |---|---|---|
 | 0 Baseline & risk audit | IN PROGRESS | Source review started; tests pending |
-| 1 Player & Queue | IN PROGRESS | Desktop volume-wheel code committed; browser and CI tests pending |
+| 1 Player & Queue | IN PROGRESS | Desktop volume wheel + Queue Undo code and unit tests committed; browser and CI tests pending |
 | 2 Library & Playlists | NOT STARTED | Authorized saved ordering |
 | 3 Search | NOT STARTED | Search-to-play measurement |
 | 4 Mobile & Accessibility | NOT STARTED | Cross-device QA |
@@ -120,3 +120,10 @@
 - **First feature commit:** mouse-wheel volume adjustment when the pointer is over the desktop volume slider, with 5% steps and clamping to 0–100%. Excludes mobile UI. Requires browser regression testing (especially scrolling/trackpads) before release.
 - Tests/build were **not run** because this connector provides repository file access, not an executable checkout. No production deployment or merge was performed.
 - Next: inspect `FullPlayer.tsx` queue interactions and playlist save APIs; add reversible queue edits and verify with test suite + browser.
+
+### Phase 1 continuation — 2026-11-20
+- Implemented one-step queue Undo in the Zustand player store for remove, clear, drag reorder and accessible up/down move. The most recent edit can be undone; playback transitions, playlist replacement and new queue additions invalidate stale snapshots.
+- Added an Arabic/English Undo action to the full-player queue header; it stays available even when the list has been cleared.
+- Reset queue Undo snapshot during restored listener sessions to avoid cross-session stale edits.
+- Added Vitest regression coverage in `apps/web/src/lib/player-store.test.ts` for remove/clear/reorder/advance/invalidation.
+- **Validation pending:** Vercel commit status was `pending` at check; GitHub returned no associated PR workflow runs. Tests were committed but not executed in this tool environment. No merge or production deploy.
