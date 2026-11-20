@@ -286,3 +286,10 @@
 - Replaced arbitrary first-available “Related Artists” shortlist with deterministic ranking using only publicly playable genre/mood overlap. This does not infer facts about AI artists or rely on cross-user listening histories. Added Vitest cases for excluding the current artist, visible catalog eligibility, viewer independence and bounded results.
 - Latest Phase 7 preview builds remain pending; neither added tests nor interactive keyboard/touch/mobile E2E have been executed. Do not publish to production until QA gates pass.
 - Phase 7 next: verify preview build, album track count vs playability and duration UX, artist discography chronology, AI-persona attribution clarity and cross-locale responsive checks.
+
+### Phase 7 continuation — artist discography and identity clarity (2026-11-20)
+- Verified previous Phase 7 album/shuffle and similar-artists cumulative preview `b7493f38` reached Vercel **READY**. This confirms Next build only, not browser/mobile or unit test acceptance.
+- Artist page now separates **Albums** (newest-first, with playable released track count) from **Singles & other releases** (public listable, ready-to-play tracks without a visible published album), with a bounded 8-track list. No synthetic singles or fabricated release metadata are created.
+- Added clear AR/EN explanation that per-track AI production metadata does not prove whether the artist identity is a real person or an AI/virtual persona. This avoids presenting generated bios as verified real-world facts.
+- Fixed artist-page AlbumCard routing to include the current locale when provided; existing callers without locale retain prior routing behavior.
+- Updated Phase 7 preview builds still pending at time of check; browser E2E, RTL, data access controls, and full test suite not yet executed. No production merge.
