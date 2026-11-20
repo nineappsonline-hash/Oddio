@@ -25,7 +25,7 @@ export function TrackCard({
   const isPlaying = usePlayer((state) => state.track?.id === track.id && state.isPlaying);
 
   return (
-    <article className="group card card-hover relative overflow-hidden p-3">
+    <article className="group card card-hover relative min-w-0 overflow-hidden p-3 transition-colors duration-200 focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20">
       <div className="art-frame relative rounded-xl">
         <Artwork
           title={track.title}
@@ -62,14 +62,14 @@ export function TrackCard({
       <div className="mt-3 space-y-0.5 px-0.5">
         <Link
           href={`/${locale}/tracks/${track.id}-${track.slug}`}
-          className="block min-w-0 text-sm font-semibold text-ink transition group-hover:text-primary"
+          className="block min-w-0 rounded-sm text-sm font-semibold text-ink transition group-hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           <AutoScrollTitle text={track.title} lines={1} />
         </Link>
         {track.artist ? (
           <Link
             href={`/${locale}/artists/${track.artist.slug}`}
-            className="block truncate text-xs text-muted transition hover:text-ink"
+            className="block truncate rounded-sm text-xs text-muted transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {track.artist.name}
           </Link>
