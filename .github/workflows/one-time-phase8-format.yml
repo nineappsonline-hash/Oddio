@@ -26,7 +26,6 @@ jobs:
             'apps/web/src/app/[locale]/podcasts/shows/[slug]/page.tsx' \
             'apps/web/src/app/api/podcasts/follows/route.ts' \
             'apps/web/src/components/podcasts/PodcastFollowButton.tsx' \
-            'scripts/test-db.sh' \
             'scripts/browser-release.mjs'
       - name: Commit formatting once
         run: |
