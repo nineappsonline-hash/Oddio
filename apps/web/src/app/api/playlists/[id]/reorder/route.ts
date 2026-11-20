@@ -3,6 +3,7 @@ import { demoMode } from '@/lib/env';
 import { mutateDb } from '@/lib/data/db';
 import { serviceClient } from '@/lib/data/supabase-store';
 import { Errors } from '@/lib/errors';
+import { isValidPlaylistReorder } from '@/lib/playlist-reorder-validation';
 import { assertSameOrigin, jsonError, jsonOk, parseBody, requireUser } from '@/lib/api-helpers';
 
 export const runtime = 'nodejs';
@@ -28,8 +29,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         const existing = db.playlists.find((entry) => entry.id === id);
         if (!existing) throw Errors.notFound('Playlist not found');
         if (existing.ownerId !== user.id) throw Errors.forbidden();
-        if (existing.trackIds.length !== trackIds.length ||
-            existing.trackIds.some((trackId, index) => !trackIds.includes(trackId) || expectedTrackIds[index] !== trackId)) {
+        if (!isValidPlaylistReorder(existing.trackIds, expectedTrackIds, trackIds)) {
           throw Errors.conflict('Playlist changed. Reload and try again.');
         }
         existing.trackIds = [...trackIds];
@@ -50,8 +50,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       .select('track_id,position').eq('playlist_id', id).order('position', { ascending: true });
     if (rowError) throw new Error(rowError.message);
     const existing = (existingRows ?? []).map((row) => row.track_id);
-    if (existing.length !== trackIds.length ||
-        existing.some((trackId, index) => !trackIds.includes(trackId) || expectedTrackIds[index] !== trackId)) {
+    if (!isValidPlaylistReorder(existing, expectedTrackIds, trackIds)) {
       throw Errors.conflict('Playlist changed. Reload and try again.');
     }
     if (trackIds.length) {
@@ -60,6 +59,15 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         { onConflict: 'playlist_id,track_id' },
       );
       if (error) throw new Error(`Playlist reorder failed: ${error.message}`);
+      // Read back the authoritative sequence, rather than claim success
+      // when a constraint or concurrent writer has changed the result.
+      const { data: saved, error: verifyError } = await db.from('playlist_tracks')
+        .select('track_id').eq('playlist_id', id).order('position', { ascending: true });
+      if (verifyError) throw new Error(`Playlist reorder verification failed: ${verifyError.message}`);
+      if (!saved || saved.length !== trackIds.length ||
+          saved.some((row, index) => row.track_id !== trackIds[index])) {
+        throw Errors.conflict('Playlist order changed while saving. Reload and try again.');
+      }
     }
     return jsonOk({ trackIds });
   } catch (error) {
