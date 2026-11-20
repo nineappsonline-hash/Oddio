@@ -193,3 +193,10 @@
 - Search suggestion links now support ArrowDown/ArrowUp focus traversal with movement back into the query input; Escape closes suggestions. Mouse and Tab links remain ordinary anchors. Added a pure focus-boundary helper and Vitest regression cases (committed; run status pending).
 - Zero-results UI now offers helpful guidance (fewer words, remove filters), a link to retry the same query without genre/mood/language filters, and direct links to up to six active genres from the current visible catalog. No invented popular terms or unverified content counts.
 - Latest implementation builds are pending. Pending QA: mobile tap behavior, keyboard screen-reader flow, RTL focus transitions, no-result URL navigation, unit tests, and release review. Production unchanged.
+
+### Phase 3 mobile / RTL accessibility pass — 2026-11-20
+- Verified preceding Phase 3 commit `5a33f510` reached Vercel **READY** (compilation succeeded; browser acceptance not yet established).
+- Fixed an autocomplete keyboard gap: artist suggestions now carry the same `data-suggestion-link` marker as track suggestions and are included in ArrowUp/ArrowDown traversal. Clicking an artist suggestion records search history and closes the panel consistently.
+- Added explicit RTL direction to the self-contained search interaction; restrained the suggestion list to 55dvh / 400px maximum, enabled contained scrolling and touch-sized controls, and tightened the small-screen search button to prevent horizontal overflow.
+- Updated blur handling to defer dismissal for 180ms when a touch/mouse focus transition has no reliable `relatedTarget`; this is a best-effort fix to allow suggestion taps to activate, and still needs live mobile browser testing (including VoiceOver/TalkBack and soft keyboard).
+- No production merge or publication. New commits require current preview READY and hands-on QA before release.
