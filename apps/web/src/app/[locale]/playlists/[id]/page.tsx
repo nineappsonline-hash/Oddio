@@ -15,6 +15,7 @@ import { Artwork } from '@/components/ui/Artwork';
 import { Badge } from '@/components/ui/Badge';
 import { PlayButton } from '@/components/player/PlayButton';
 import { TrackRow } from '@/components/music/TrackRow';
+import { PlaylistReorderableTracks } from '@/components/playlists/PlaylistReorderableTracks';
 import { PlaylistFollowButton } from '@/components/playlists/PlaylistFollowButton';
 import { ShareButton } from '@/components/community/ShareButton';
 import { PlaylistCollaboration } from '@/components/playlists/PlaylistCollaboration';
@@ -151,6 +152,8 @@ export default async function PlaylistPage({
       <h2 className="mb-3 text-lg font-bold text-ink">{t('playlist.tracks')}</h2>
       {tracks.length === 0 ? (
         <EmptyState title={t('playlist.empty')} />
+      ) : canEdit && tracks.length === playlist.trackIds.length ? (
+        <PlaylistReorderableTracks playlistId={playlist.id} initialTracks={tracks} locale={locale} />
       ) : (
         <div className="card divide-y divide-white/5 p-2">
           {tracks.map((track, index) => (
