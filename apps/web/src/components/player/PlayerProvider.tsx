@@ -17,6 +17,7 @@ import {
 } from '@/lib/player-session';
 import type { CatalogTrack, HomeData } from '@/lib/data/queries';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
+import { readPodcastProgress, savePodcastProgress, clearPodcastProgress } from '@/lib/podcast-progress-store';
 import { useToast } from '@/components/providers/ToastProvider';
 
 interface PlaybackAuthorization {
@@ -117,6 +118,34 @@ export function PlayerProvider({
       }
     });
     return unsubscribe;
+  }, [viewerId]);
+
+  // Remember each podcast episode independently, including the one we leave
+  // when switching to a different episode. No server writes or autoplay.
+  useEffect(() => {
+    let lastSavedAt = 0;
+    const unsubscribe = usePlayer.subscribe((state, previous) => {
+      const changed = state.track?.id !== previous.track?.id;
+      if (changed && isPodcastPlayback(previous.track)) {
+        savePodcastProgress(viewerId, previous.track, previous.currentTime, previous.duration);
+      }
+      if (!isPodcastPlayback(state.track)) return;
+      const now = Date.now();
+      if (changed || now - lastSavedAt >= 2500) {
+        lastSavedAt = now;
+        savePodcastProgress(viewerId, state.track, state.currentTime, state.duration);
+      }
+    });
+    const saveOnExit = () => {
+      const state = usePlayer.getState();
+      savePodcastProgress(viewerId, state.track, state.currentTime, state.duration);
+    };
+    window.addEventListener('pagehide', saveOnExit);
+    return () => {
+      saveOnExit();
+      unsubscribe();
+      window.removeEventListener('pagehide', saveOnExit);
+    };
   }, [viewerId]);
 
   // A new selection must silence the outgoing media element synchronously.
@@ -388,6 +417,15 @@ export function PlayerProvider({
       if (pendingRestoreTrackId.current !== trackId) {
         pendingRestoreTime.current = null;
         pendingRestoreTrackId.current = null;
+        if (isPodcastPlayback(state.track)) {
+          const position = readPodcastProgress(viewerId)
+            .find((item) => item.episodeId === trackId)?.seconds;
+          if (position && state.currentTime < 15) {
+            pendingRestoreTime.current = position;
+            pendingRestoreTrackId.current = trackId;
+            usePlayer.getState().setCurrentTime(position);
+          }
+        }
       }
       audibleRef.current = { accumulated: 0, lastTime: 0, qualified: false, lastSent: 0 };
       startSentRef.current = false;
@@ -762,6 +800,7 @@ export function PlayerProvider({
     };
     const onEnded = () => {
       const state = usePlayer.getState();
+      if (isPodcastPlayback(state.track)) clearPodcastProgress(viewerId, state.track!.id);
       // Standby handoff is complete only after the next primary stream starts.
       // If the preauthorized stream expired, normal per-track playback recovery
       // still runs and the secondary source is discarded.
