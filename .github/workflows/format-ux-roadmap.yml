@@ -1,5 +1,5 @@
 name: Format UX roadmap branch
-# Phase 10 formatting pass for sharing and collaboration UX.
+# Phase 10 follow-up pass for sharing, collaboration and browser QA.
 
 on:
   push:
