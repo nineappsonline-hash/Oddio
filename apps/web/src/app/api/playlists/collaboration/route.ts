@@ -76,7 +76,7 @@ export async function GET(request: Request) {
       : { data: [] as Array<{ id: string; display_name: string }>, error: null };
     if (profileError) throw new Error(profileError.message);
     const names = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
-    return jsonOk({
+    const response = jsonOk({
       members: (members ?? []).map((m) => ({
         id: m.user_id,
         name: names.get(m.user_id) ?? 'Oddio listener',
@@ -89,6 +89,8 @@ export async function GET(request: Request) {
         revoked: Boolean(i.revoked_at),
       })),
     });
+    response.headers.set('Cache-Control', 'private, no-store');
+    return response;
   } catch (error) {
     return jsonError(error);
   }
@@ -124,7 +126,9 @@ export async function POST(request: Request) {
         max_uses: 10,
       });
       if (error) throw new Error(error.message);
-      return jsonOk({ code, expiresAt, maxUses: 10 });
+      const response = jsonOk({ code, expiresAt, maxUses: 10 });
+      response.headers.set('Cache-Control', 'private, no-store');
+      return response;
     }
     if (body.action === 'revoke' || body.action === 'remove') {
       await requireOwner(body.playlistId, user.id);

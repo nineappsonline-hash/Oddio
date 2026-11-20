@@ -15,10 +15,13 @@ import { SectionHeader } from '@/components/ui/SectionHeader';
 import { TrackRow } from '@/components/music/TrackRow';
 import { ReorderablePlaylistGrid } from '@/components/library/ReorderablePlaylistGrid';
 import { ReorderableLikedTracks } from '@/components/library/ReorderableLikedTracks';
+import { SearchableLikedTracks } from '@/components/library/SearchableLikedTracks';
 import { ArtistListRow } from '@/components/music/ArtistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ButtonLink } from '@/components/ui/Button';
 import { ClearListeningHistory } from '@/components/library/ClearListeningHistory';
+import { SmartPlaylists } from '@/components/library/SmartPlaylists';
+import { listableTracks } from '@/lib/data/queries';
 
 export async function generateMetadata({
   params,
@@ -88,6 +91,9 @@ export default async function LibraryPage({
         <a href="#liked" className="chip">
           {t('library.likes')}
         </a>
+        <a href="#smart-playlists" className="chip">
+          {locale === 'ar' ? 'قوائم ذكية' : 'Smart playlists'}
+        </a>
         <a href="#playlists" className="chip">
           {t('library.playlists')}
         </a>
@@ -137,18 +143,35 @@ export default async function LibraryPage({
             userId={user.id}
           />
         ) : (
-          <div className="card divide-y divide-white/5 p-2">
-            {likedTracks.map((track, index) => (
-              <TrackRow
-                key={track.id}
-                track={track}
-                queue={likedTracks}
-                index={index}
-                locale={locale}
-              />
-            ))}
-          </div>
+          <SearchableLikedTracks tracks={likedTracks} locale={locale} />
         )}
+      </section>
+
+      <section id="smart-playlists" className="scroll-mt-24">
+        <SectionHeader title={locale === 'ar' ? 'قوائم ذكية' : 'Smart playlists'} />
+        <SmartPlaylists
+          userId={user.id}
+          locale={locale}
+          catalog={listableTracks(db, { userId: null, roles: [] })
+            .filter(
+              (track) =>
+                track.audio?.processingStatus === 'ready' && track.access.allowed,
+            )
+            .slice(0, 1500)}
+          likedIds={library.likedTracks.map((track) => track.id)}
+          genres={db.genres
+            .filter((genre) => genre.active)
+            .map((genre) => ({
+              id: genre.id,
+              name: locale === 'ar' ? genre.labelAr : genre.labelEn,
+            }))}
+          moods={db.moods
+            .filter((mood) => mood.active)
+            .map((mood) => ({
+              id: mood.id,
+              name: locale === 'ar' ? mood.labelAr : mood.labelEn,
+            }))}
+        />
       </section>
 
       <section id="playlists" className="scroll-mt-24">

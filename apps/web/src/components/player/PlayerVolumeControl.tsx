@@ -62,6 +62,30 @@ export function PlayerVolumeControl({
     });
   };
 
+  // React wheel listeners may be passive, in which case preventDefault is
+  // ignored. Attach an explicitly non-passive listener to the desktop slider
+  // only, allowing normal page scrolling outside the control.
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider || mobile || ios) return;
+    const onWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || event.deltaY === 0) return;
+      event.preventDefault();
+      const current = Number(slider.value);
+      const next = Math.max(0, Math.min(100, current + (event.deltaY < 0 ? 5 : -5)));
+      if (next === current) return;
+      slider.value = String(next);
+      slider.style.setProperty('--oddio-volume-progress', `${next}%`);
+      if (outputRef.current) outputRef.current.textContent = String(next);
+      pendingRef.current = next / 100;
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+      setVolume(next / 100);
+    };
+    slider.addEventListener('wheel', onWheel, { passive: false });
+    return () => slider.removeEventListener('wheel', onWheel);
+  }, [ios, mobile, setVolume]);
+
   const finishDrag = () => {
     if (frameRef.current !== null) {
       cancelAnimationFrame(frameRef.current);

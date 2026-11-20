@@ -13,11 +13,16 @@
 
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
+  width: 100%;
+  max-width: 100%;
   min-height: 100dvh;
-  overflow-x: hidden;
+  overflow-x: clip;
   background-color: #0a0a0a;
   background-image:
     radial-gradient(1100px 600px at 12% -10%, rgba(130, 130, 130, 0.16), transparent 60%),

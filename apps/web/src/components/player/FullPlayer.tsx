@@ -25,6 +25,7 @@ import { Artwork } from '@/components/ui/Artwork';
 import { DragReorderList } from '@/components/ui/DragReorderList';
 import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
 import { PlayerVolumeControl } from '@/components/player/PlayerVolumeControl';
+import { SaveQueueAsPlaylist } from '@/components/player/SaveQueueAsPlaylist';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Badge } from '@/components/ui/Badge';
 import { LikeButton } from '@/components/community/LikeButton';
@@ -120,6 +121,8 @@ export function FullPlayer() {
   }, [track?.id]);
   const hasTrack = Boolean(track);
   const queue = usePlayer((state) => state.queue);
+  const canUndoQueue = usePlayer((state) => state.queueUndo !== null);
+  const undoQueue = usePlayer((state) => state.undoQueue);
   const isPlaying = usePlayer((state) => state.isPlaying);
   const error = usePlayer((state) => state.error);
   const retryPlayback = usePlayer((state) => state.retryPlayback);
@@ -165,6 +168,15 @@ export function FullPlayer() {
   useEffect(() => {
     if (!expanded || !hasTrack) return;
     const onKeyDown = (event: KeyboardEvent) => {
+      // Child actions can open their own portaled dialog. Let that topmost
+      // dialog handle Escape and Tab rather than stealing focus or closing
+      // the underlying full player.
+      const nestedDialogOpen = Array.from(
+        document.querySelectorAll<HTMLElement>('[role="dialog"][aria-modal="true"]'),
+      ).some(
+        (dialog) => dialog !== dialogRef.current && !dialogRef.current?.contains(dialog),
+      );
+      if (nestedDialogOpen) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         if (mobileLyricsOpen) setMobileLyricsOpen(false);
@@ -281,7 +293,7 @@ export function FullPlayer() {
     <div
       ref={dialogRef}
       tabIndex={-1}
-      className="oddio-full-player fixed inset-0 z-[60] h-[100dvh] w-full max-w-full overflow-x-hidden overflow-y-auto overscroll-x-none bg-[#090a0c] text-white scroll-thin"
+      className="oddio-full-player fixed inset-0 z-[60] h-[100dvh] w-full max-w-full overflow-x-hidden overflow-y-auto overscroll-contain bg-[#090a0c] text-white scroll-thin"
       role="dialog"
       aria-modal="true"
       aria-label={t('player.fullPlayer')}
@@ -298,7 +310,7 @@ export function FullPlayer() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-24 left-1/2 z-[90] -translate-x-1/2 whitespace-nowrap rounded-full border border-white/20 bg-[#171819]/95 backdrop-blur-xl px-4 py-2 text-sm font-bold text-white shadow-xl"
+          className="fixed bottom-24 left-1/2 z-[90] w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-full border border-white/20 bg-[#171819]/95 px-4 py-2 text-center text-sm font-bold text-white shadow-xl backdrop-blur-xl"
         >
           {controlNotice}
         </div>
@@ -338,7 +350,16 @@ export function FullPlayer() {
               : 'Immersive audio. Seamless control.'}
           </p>
         </div>
-        <div className="mb-3 flex items-center justify-end lg:hidden">
+        <div className="mb-3 flex items-center justify-between gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            aria-label={t('player.minimize')}
+            title={t('player.minimize')}
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            <ChevronDown className="h-5 w-5" aria-hidden="true" />
+          </button>
           <button
             type="button"
             onClick={() => setSideTab(sideTab === 'queue' ? 'similar' : 'queue')}
@@ -403,19 +424,20 @@ export function FullPlayer() {
                   {!podcast && mobileLyricsOpen ? (
                     <div
                       id="oddio-mobile-lyrics"
-                      className="absolute inset-1.5 z-40 flex flex-col rounded-[1.35rem] bg-[#121314]/95 p-4 backdrop-blur-xl lg:hidden"
+                      className="absolute inset-1.5 z-40 flex min-h-0 flex-col overflow-y-auto overscroll-contain rounded-[1.35rem] bg-[#121314]/95 p-3 backdrop-blur-xl sm:p-4 lg:hidden"
                     >
                       <div className="mb-2 flex items-center justify-between text-sm font-bold text-white">
                         <span>🎤 {rtl ? 'كلمات الأغنية' : 'Lyrics'}</span>
                         <button
                           type="button"
                           onClick={() => setMobileLyricsOpen(false)}
-                          className="rounded-lg bg-white/10 px-3 py-1.5"
+                          aria-label={rtl ? 'إغلاق كلمات الأغنية' : 'Close lyrics'}
+                          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/10 px-3 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         >
                           {rtl ? 'إغلاق' : 'Close'}
                         </button>
                       </div>
-                      <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+                      <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto">
                         {lyricsLoading ? (
                           <p className="text-sm text-white/70">
                             {rtl ? 'جاري التحميل…' : 'Loading…'}
@@ -874,12 +896,14 @@ export function FullPlayer() {
 
           <aside
             className={cn(
-              'min-h-[55dvh] max-h-[calc(100dvh-110px)] flex-col overflow-hidden rounded-[28px] border border-white/[0.13] bg-white/[0.055] p-4 shadow-[0_24px_70px_rgba(0,0,0,.2)] backdrop-blur-[28px] lg:flex lg:min-h-[470px] lg:max-h-[calc(100vh-175px)]',
-              sideTab === 'queue' ? 'flex' : 'hidden lg:flex',
+              'min-h-[55dvh] max-h-[calc(100dvh-100px)] flex-col overflow-hidden rounded-[28px] border border-white/[0.13] bg-white/[0.055] p-4 shadow-[0_24px_70px_rgba(0,0,0,.2)] backdrop-blur-[28px] lg:flex lg:min-h-[470px] lg:max-h-[calc(100vh-175px)]',
+              sideTab === 'queue' || sideTab === 'lyrics' ? 'flex' : 'hidden lg:flex',
             )}
             aria-label={
               sideTab === 'lyrics'
-                ? 'Lyrics'
+                ? rtl
+                  ? 'كلمات الأغنية'
+                  : 'Lyrics'
                 : sideTab === 'queue'
                   ? t('player.queue')
                   : rtl
@@ -893,16 +917,40 @@ export function FullPlayer() {
                 podcast ? 'grid-cols-2' : 'grid-cols-3',
               )}
               role="tablist"
-              aria-label="Player panels"
+              aria-label={rtl ? 'أقسام المشغل' : 'Player panels'}
+              onKeyDown={(event) => {
+                if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key))
+                  return;
+                const tabs = Array.from(
+                  event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+                );
+                const position = tabs.indexOf(
+                  document.activeElement as HTMLButtonElement,
+                );
+                if (position < 0 || !tabs.length) return;
+                event.preventDefault();
+                const delta = (event.key === 'ArrowRight' ? 1 : -1) * (rtl ? -1 : 1);
+                const target =
+                  event.key === 'Home'
+                    ? 0
+                    : event.key === 'End'
+                      ? tabs.length - 1
+                      : (position + delta + tabs.length) % tabs.length;
+                tabs[target]?.focus();
+                tabs[target]?.click();
+              }}
             >
               {!podcast && (
                 <button
                   type="button"
                   role="tab"
                   aria-selected={sideTab === 'lyrics'}
+                  id="oddio-tab-lyrics"
+                  aria-controls="oddio-player-panel"
+                  tabIndex={sideTab === 'lyrics' ? 0 : -1}
                   onClick={() => setSideTab('lyrics')}
                   className={cn(
-                    'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
+                    'flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-2.5 text-xs font-bold transition sm:gap-2 sm:px-3 sm:text-sm',
                     sideTab === 'lyrics'
                       ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
                       : 'text-muted hover:bg-white/5 hover:text-ink',
@@ -915,9 +963,12 @@ export function FullPlayer() {
                 type="button"
                 role="tab"
                 aria-selected={sideTab === 'queue'}
+                id="oddio-tab-queue"
+                aria-controls="oddio-player-panel"
+                tabIndex={sideTab === 'queue' ? 0 : -1}
                 onClick={() => setSideTab('queue')}
                 className={cn(
-                  'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
+                  'flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-2.5 text-xs font-bold transition sm:gap-2 sm:px-3 sm:text-sm',
                   sideTab === 'queue'
                     ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
                     : 'text-muted hover:bg-white/5 hover:text-ink',
@@ -929,9 +980,12 @@ export function FullPlayer() {
                 type="button"
                 role="tab"
                 aria-selected={sideTab === 'similar'}
+                id="oddio-tab-similar"
+                aria-controls="oddio-player-panel"
+                tabIndex={sideTab === 'similar' ? 0 : -1}
                 onClick={() => setSideTab('similar')}
                 className={cn(
-                  'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
+                  'flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-2.5 text-xs font-bold transition sm:gap-2 sm:px-3 sm:text-sm',
                   sideTab === 'similar'
                     ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
                     : 'text-muted hover:bg-white/5 hover:text-ink',
@@ -953,15 +1007,24 @@ export function FullPlayer() {
                     : 'LYRICS'}
             </p>
             {sideTab === 'similar' ? (
-              <SimilarPlayerPanel
-                trackId={track.id}
-                podcast={podcast}
-                rtl={rtl}
-                active={expanded && sideTab === 'similar'}
-              />
+              <div
+                id="oddio-player-panel"
+                role="tabpanel"
+                aria-labelledby="oddio-tab-similar"
+                className="min-h-0 flex-1 overflow-y-auto"
+              >
+                <SimilarPlayerPanel
+                  trackId={track.id}
+                  podcast={podcast}
+                  rtl={rtl}
+                  active={expanded && sideTab === 'similar'}
+                />
+              </div>
             ) : sideTab === 'lyrics' && !podcast ? (
               <div
+                id="oddio-player-panel"
                 role="tabpanel"
+                aria-labelledby="oddio-tab-lyrics"
                 aria-label={rtl ? 'كلمات الأغنية' : 'Synchronized lyrics'}
                 className="scroll-thin min-h-0 flex-1 overflow-y-auto"
               >
@@ -1015,29 +1078,48 @@ export function FullPlayer() {
               </div>
             ) : (
               <div
+                id="oddio-player-panel"
                 role="tabpanel"
+                aria-labelledby="oddio-tab-queue"
                 aria-label={t('player.queue')}
                 title={t('player.queue')}
                 className="flex min-h-0 flex-1 flex-col"
               >
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <h2 className="text-sm font-bold text-ink">
                     {t('player.queue')}{' '}
                     <span className="text-xs font-normal text-muted">
                       ({queue.length})
                     </span>
                   </h2>
-                  {queue.length > 0 ? (
-                    <button
-                      type="button"
-                      onClick={clearQueue}
-                      className="grid h-10 w-10 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                      aria-label={t('player.clearQueue')}
-                      title={t('player.clearQueue')}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  ) : null}
+                  <div className="flex flex-wrap items-center justify-end gap-1">
+                    {queue.length > 0 ? <SaveQueueAsPlaylist /> : null}
+                    {canUndoQueue ? (
+                      <button
+                        type="button"
+                        onClick={undoQueue}
+                        className="min-h-10 rounded-full border border-primary/40 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        aria-label={
+                          rtl
+                            ? 'تراجع عن آخر تعديل في قائمة الانتظار'
+                            : 'Undo last queue edit'
+                        }
+                      >
+                        {rtl ? 'تراجع' : 'Undo'}
+                      </button>
+                    ) : null}
+                    {queue.length > 0 ? (
+                      <button
+                        type="button"
+                        onClick={clearQueue}
+                        className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        aria-label={t('player.clearQueue')}
+                        title={t('player.clearQueue')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/30 bg-white/15 p-3">
                   <Equalizer

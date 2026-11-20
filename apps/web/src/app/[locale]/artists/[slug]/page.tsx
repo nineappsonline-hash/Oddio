@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ExternalLink } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
-import { getArtistPage, listableTracks } from '@/lib/data/queries';
+import { getArtistPage } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/Badge';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { GenrePlayAllButton } from '@/components/music/GenrePlayAllButton';
 import { FlowButton } from '@/components/player/FlowButton';
+import { getRelatedArtistsBySound } from '@/lib/data/related-artists';
 import { FollowButton } from '@/components/community/FollowButton';
 import { ShareButton } from '@/components/community/ShareButton';
 import { ReportButton } from '@/components/community/ReportButton';
@@ -106,15 +107,16 @@ export default async function ArtistPage({
         .map((track) => [track.genre!.id, track.genre!]),
     ).values(),
   ].slice(0, 6);
-  const relatedArtists = listableTracks(db, viewer)
-    .flatMap((track) =>
-      track.artist && track.artist.id !== artist.id ? [track.artist] : [],
-    )
-    .filter(
-      (candidate, index, all) =>
-        all.findIndex((item) => item.id === candidate.id) === index,
-    )
-    .slice(0, 4);
+  const relatedArtists = getRelatedArtistsBySound(db, artist.id, viewer, 4);
+  const publicAlbumIds = new Set(albums.map((album) => album.id));
+  const singles = tracks
+    .filter((track) => !track.albumId || !publicAlbumIds.has(track.albumId))
+    .filter((track) => track.access.listable && track.audio?.processingStatus === 'ready')
+    .sort((a, b) => b.releaseAt.localeCompare(a.releaseAt))
+    .slice(0, 8);
+  const orderedAlbums = [...albums]
+    .filter((album) => album.trackCount > 0)
+    .sort((a, b) => b.releaseAt.localeCompare(a.releaseAt));
 
   return (
     <div>
@@ -172,7 +174,7 @@ export default async function ArtistPage({
             {queue.length > 0 ? (
               <FlowButton
                 kind="artist"
-                seedId={queue[0]!.id}
+                seedId={artist.id}
                 locale={locale}
                 viewerId={viewer.userId}
               />
@@ -229,6 +231,11 @@ export default async function ArtistPage({
             </Link>
           ))}
         </div>
+        <p className="mt-4 max-w-2xl text-xs leading-6 text-muted">
+          {locale === 'ar'
+            ? 'Oddio بيعرض نوع إنتاج الأغاني حسب البيانات المسجلة لكل عمل. ده مش إثبات إن اسم الفنان شخصية حقيقية أو افتراضية؛ راجع بيانات العمل لمعرفة طريقة إنتاجه.'
+            : 'Oddio labels AI involvement using each release’s recorded production data. This does not verify whether the artist identity is a real person or a virtual persona; check each release for production details.'}
+        </p>
         <div className="mt-5 flex flex-wrap gap-3 text-xs text-muted">
           <span className="rounded-lg border border-white/10 px-3 py-2">
             {locale === 'ar'
@@ -339,17 +346,40 @@ export default async function ArtistPage({
         </aside>
       </div>
 
-      {albums.length > 0 ? (
-        <section className="mt-12">
-          <SectionHeader title={t('artist.releases')} />
+      {orderedAlbums.length > 0 ? (
+        <section className="mt-12" aria-labelledby="artist-albums-heading">
+          <h2 id="artist-albums-heading" className="mb-4 text-xl font-bold text-ink">
+            {locale === 'ar' ? 'الألبومات' : 'Albums'}
+          </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {albums.map((album) => (
+            {orderedAlbums.map((album) => (
               <AlbumCard
                 key={album.id}
                 album={album}
                 accent={album.accent}
                 artistName={artist.name}
                 artistSlug={artist.slug}
+                locale={locale}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {singles.length > 0 ? (
+        <section className="mt-10" aria-labelledby="artist-singles-heading">
+          <h2 id="artist-singles-heading" className="mb-4 text-xl font-bold text-ink">
+            {locale === 'ar' ? 'أغاني منفردة وإصدارات أخرى' : 'Singles & other releases'}
+          </h2>
+          <div className="card divide-y divide-white/5 p-2">
+            {singles.map((track, index) => (
+              <TrackRow
+                key={track.id}
+                track={track}
+                queue={singles}
+                index={index}
+                locale={locale}
+                showArtist={false}
               />
             ))}
           </div>

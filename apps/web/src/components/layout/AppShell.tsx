@@ -40,17 +40,18 @@ export function AppShell({
             href="#main"
             className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
           >
-            {t('app.tagline')}
+            {locale === 'ar' ? 'تخطَّ إلى المحتوى الرئيسي' : 'Skip to main content'}
           </a>
           <AmbientBackground />
           <Sidebar user={user} />
           <div
-            className={`oddio-workspace relative z-10 lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}
+            className={`oddio-workspace relative z-10 w-full min-w-0 max-w-full overflow-x-clip lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}
           >
             <MobileHeader user={user} contentLanguage={contentLanguage} />
             <DesktopTopBar contentLanguage={contentLanguage} />
             <main
               id="main"
+              tabIndex={-1}
               className={`oddio-main-content mx-auto w-full max-w-[1720px] px-4 pt-6 sm:px-6 lg:px-7 2xl:px-8 pb-48 lg:pb-36`}
             >
               {children}

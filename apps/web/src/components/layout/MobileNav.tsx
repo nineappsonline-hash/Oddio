@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Bell,
   Menu,
@@ -55,7 +55,7 @@ export function MobileHeader({
           type="button"
           aria-label={locale === 'ar' ? 'افتح القائمة' : 'Open menu'}
           onClick={() => document.getElementById('oddio-mobile-menu-trigger')?.click()}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#4c395f] bg-[#1e1925] text-[#eeeaf5] transition hover:border-[#a88ae7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7]"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#4c395f] bg-[#1e1925] text-[#eeeaf5] transition hover:border-[#a88ae7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7]"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -97,14 +97,14 @@ export function MobileHeader({
               href={`/${locale}/settings`}
               aria-label={t('nav.settings')}
             >
-              <Avatar name={currentUser.displayName} className="h-8 w-8" />
+              <Avatar name={currentUser.displayName} className="h-9 w-9" />
             </Link>
           </>
         ) : (
           <Link
             prefetch={false}
             href={`/${locale}/login`}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#4c395f] bg-[#1e1925] text-[#ddd4e8] transition hover:border-[#a88ae7] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7] sm:w-auto sm:gap-2 sm:px-3"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#4c395f] bg-[#1e1925] text-[#ddd4e8] transition hover:border-[#a88ae7] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7] sm:w-auto sm:gap-2 sm:px-3"
           >
             <LogIn className="h-4 w-4" />
             <span className="hidden sm:inline">{t('nav.login')}</span>
@@ -120,6 +120,8 @@ export function MobileNav() {
   const { locale, pathname } = useLocalePath();
   const { user } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const podcastMode =
     pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   useEffect(() => {
@@ -127,11 +129,48 @@ export function MobileNav() {
   }, [pathname]);
   useEffect(() => {
     if (!menuOpen) return;
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    const dialog = dialogRef.current;
+    const focusable = () =>
+      Array.from(
+        dialog?.querySelectorAll<HTMLElement>(
+          'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex="0"]',
+        ) ?? [],
+      ).filter((element) => element.getClientRects().length > 0);
+    focusable()[0]?.focus();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMenuOpen(false);
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setMenuOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = focusable();
+      if (!items.length) {
+        event.preventDefault();
+        dialog?.focus();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (!first || !last) return;
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !dialog?.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !dialog?.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocusRef.current?.focus();
+    };
   }, [menuOpen]);
 
   const items = podcastMode
@@ -196,7 +235,7 @@ export function MobileNav() {
               href={item.href}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'group/mnav relative flex min-w-0 flex-col items-center justify-center gap-1 px-1 py-2.5 text-[10px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
+                'group/mnav relative flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden px-1 py-2 text-center text-[10px] font-semibold leading-tight transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
                 active ? 'text-primary' : 'text-muted hover:text-ink',
               )}
             >
@@ -204,7 +243,7 @@ export function MobileNav() {
                 <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-primary" />
               ) : null}
               <OddioGlyph name={glyph} size={22} className="oddio-glyph shrink-0" />
-              {item.label}
+              <span className="w-full truncate px-0.5">{item.label}</span>
             </Link>
           );
         })}
@@ -215,12 +254,14 @@ export function MobileNav() {
           aria-label={locale === 'ar' ? 'القائمة' : 'Menu'}
           aria-expanded={menuOpen}
           className={cn(
-            'flex min-w-0 flex-col items-center justify-center gap-1 px-1 py-2.5 text-[10px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
+            'flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden px-1 py-2 text-[10px] font-semibold leading-tight transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
             menuOpen ? 'text-[#eab997]' : 'text-muted hover:text-ink',
           )}
         >
           <Menu className="h-5 w-5" />
-          {locale === 'ar' ? 'القائمة' : 'Menu'}
+          <span className="w-full truncate px-0.5">
+            {locale === 'ar' ? 'القائمة' : 'Menu'}
+          </span>
         </button>
       </nav>
       {menuOpen ? (
@@ -232,10 +273,12 @@ export function MobileNav() {
             onClick={() => setMenuOpen(false)}
           />
           <section
+            ref={dialogRef}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label={locale === 'ar' ? 'القائمة' : 'Menu'}
-            className="absolute inset-y-0 left-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto border-r border-[#604b83]/50 bg-[#101015] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
+            className="absolute inset-y-0 left-0 flex w-[min(88vw,360px)] flex-col overflow-y-auto overscroll-contain border-e border-[#604b83]/50 bg-[#101015] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] shadow-[15px_0_80px_rgba(0,0,0,0.65)]"
           >
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-3">

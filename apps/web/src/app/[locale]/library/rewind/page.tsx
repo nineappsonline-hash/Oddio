@@ -6,6 +6,8 @@ import { readRuntimeDb } from '@/lib/data/runtime-store';
 import { getHistoryData } from '@/lib/data/queries';
 import { qualifiedRecapEvents } from '@/lib/data/monthly-recap';
 import { annualListeningDNA } from '@/lib/data/annual-listening-dna';
+import { ShareAnnualRewind } from '@/components/library/ShareAnnualRewind';
+import { MIN_QUALIFIED_LISTENS_TO_SHARE } from '@/lib/annual-share';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 
@@ -58,7 +60,7 @@ export default async function RewindPage({
   const report = annualListeningDNA(events, year, locale);
   const format = (n: number) => new Intl.NumberFormat(ar ? 'ar-EG' : 'en-US').format(n);
   return (
-    <main className="space-y-8 pb-20">
+    <main className="w-full min-w-0 max-w-full space-y-8 pb-20">
       <header className="rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-600/15 to-cyan-500/10 p-6">
         <p className="text-xs font-bold uppercase tracking-widest text-violet-300">
           ODDIO REWIND · MUSIC DNA
@@ -88,7 +90,7 @@ export default async function RewindPage({
         </nav>
       </header>
       <section
-        className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+        className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-4"
         aria-label={ar ? 'ملخص السنة' : 'Year summary'}
       >
         {[
@@ -99,9 +101,9 @@ export default async function RewindPage({
         ].map(([label, value]) => (
           <div
             key={String(label)}
-            className="rounded-2xl border border-white/10 bg-white/[.035] p-4"
+            className="min-w-0 rounded-2xl border border-white/10 bg-white/[.035] p-4"
           >
-            <p className="text-xs text-muted">{label}</p>
+            <p className="break-words text-xs text-muted">{label}</p>
             <p className="mt-3 text-2xl font-extrabold tabular-nums">
               {format(Number(value))}
             </p>
@@ -146,6 +148,61 @@ export default async function RewindPage({
                   : 'Not enough catalog genre labels to display a breakdown.'}
               </p>
             )}
+          </section>
+          <section
+            className="rounded-2xl border border-white/10 bg-white/[.035] p-5"
+            aria-labelledby="year-months-title"
+          >
+            <h2 id="year-months-title" className="text-xl font-bold">
+              {ar ? 'رحلتك الموسيقية شهر بشهر' : 'Your listening year, month by month'}
+            </h2>
+            <p className="mt-2 text-xs leading-5 text-muted">
+              {ar
+                ? 'الأرقام تمثل الاستماعات المؤهلة المسجلة، مش دقائق استماع تقديرية.'
+                : 'Counts reflect recorded qualified listens, not estimated listening minutes.'}
+            </p>
+            <ol
+              className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6 lg:grid-cols-12"
+              aria-label={ar ? 'الاستماعات حسب الشهر' : 'Qualified listens by month'}
+            >
+              {report.monthlyQualifiedListens.map(({ month, plays }) => {
+                const monthLabel = new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-US', {
+                  month: 'short',
+                  timeZone: 'UTC',
+                }).format(new Date(Date.UTC(year, month - 1, 1)));
+                const peak = Math.max(
+                  1,
+                  ...report.monthlyQualifiedListens.map((item) => item.plays),
+                );
+                return (
+                  <li
+                    key={month}
+                    className="min-w-0 rounded-xl bg-black/20 px-2 py-3 text-center"
+                    aria-label={
+                      ar
+                        ? `${monthLabel}: ${format(plays)} استماع مؤهل`
+                        : `${monthLabel}: ${format(plays)} qualified listens`
+                    }
+                  >
+                    <div
+                      className="flex h-20 items-end justify-center"
+                      aria-hidden="true"
+                    >
+                      <div
+                        className="w-6 rounded-t-md bg-gradient-to-t from-violet-600 to-cyan-400"
+                        style={{
+                          height: plays ? `${Math.max(6, (plays / peak) * 100)}%` : '2px',
+                        }}
+                      />
+                    </div>
+                    <p className="mt-2 text-xs font-semibold text-ink">{monthLabel}</p>
+                    <p className="mt-1 text-xs tabular-nums text-muted">
+                      {format(plays)}
+                    </p>
+                  </li>
+                );
+              })}
+            </ol>
           </section>
           <section className="grid gap-4 md:grid-cols-2">
             {[
@@ -197,6 +254,15 @@ export default async function RewindPage({
           </section>
         </>
       )}
+      {report.qualifiedListens >= MIN_QUALIFIED_LISTENS_TO_SHARE ? (
+        <ShareAnnualRewind report={report} locale={locale} />
+      ) : report.qualifiedListens > 0 ? (
+        <p className="rounded-2xl border border-white/10 p-4 text-sm text-muted">
+          {ar
+            ? `حصادك يفضل خاص لحد ما تسجل ${MIN_QUALIFIED_LISTENS_TO_SHARE} استماعات مؤهلة على الأقل. تقدر تشوف أرقامك هنا من غير مشاركة.`
+            : `You can view your private stats here. Sharing unlocks after at least ${MIN_QUALIFIED_LISTENS_TO_SHARE} recorded qualified listens.`}
+        </p>
+      ) : null}
       <Link
         href={`/${locale}/library/recap`}
         className="inline-block text-sm text-primary hover:underline"

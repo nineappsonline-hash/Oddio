@@ -4,8 +4,12 @@ import { ArrowRight, ArrowUpRight, Disc3 } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
 import { getHomeData } from '@/lib/data/queries';
 import { recommendTracks } from '@/lib/data/recommendations';
+import { getRecentHomeTracks } from '@/lib/data/home-recent';
+import { getFollowedArtistReleases } from '@/lib/data/followed-releases';
 import { getDiscoveryArtists } from '@/lib/data/discovery-artists';
 import { DiscoveryMixShelf } from '@/components/music/DiscoveryMixShelf';
+import { ContinueListeningHome } from '@/components/music/ContinueListeningHome';
+import { FollowedReleasesHome } from '@/components/music/FollowedReleasesHome';
 import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
@@ -59,7 +63,12 @@ export default async function HomePage({
   );
   const data = getHomeData(db, viewer);
   const recommended = recommendTracks(db, viewer, 20);
+  const publicRecommended = viewer.userId
+    ? recommendTracks(db, { userId: null, roles: [] }, 20)
+    : recommended;
   const discoveryArtists = getDiscoveryArtists(db, viewer);
+  const recentTracks = getRecentHomeTracks(db, viewer, 8);
+  const followedReleases = getFollowedArtistReleases(db, viewer, 8);
   const hero = data.hero;
   const heroQueue = hero
     ? [
@@ -178,13 +187,56 @@ export default async function HomePage({
         </Link>
       </div>
 
+      <ContinueListeningHome locale={locale} />
+      {viewer.userId && followedReleases.length > 0 ? (
+        <FollowedReleasesHome
+          locale={locale}
+          viewerId={viewer.userId}
+          tracks={followedReleases}
+        />
+      ) : null}
+
       {recommended.tracks.length > 0 ? (
         <DiscoveryMixShelf
           tracks={recommended.tracks}
+          publicTracks={publicRecommended.tracks}
+          genres={db.genres
+            .filter((genre) => genre.active)
+            .map((genre) => ({ id: genre.id, name: ar ? genre.labelAr : genre.labelEn }))}
           personalized={recommended.personalized}
           locale={locale}
           viewerId={viewer.userId}
         />
+      ) : null}
+
+      {viewer.userId && recentTracks.length > 0 ? (
+        <section
+          className="oddio-dashboard-section"
+          aria-label={ar ? 'استمعت مؤخرًا' : 'Recently played'}
+        >
+          <div className="oddio-section-title-row">
+            <div>
+              <p className="oddio-micro-label">
+                {ar ? 'كمّل مع موسيقاك' : 'PICK UP WHERE YOU LEFT OFF'}
+              </p>
+              <h2>{ar ? 'سمعتها مؤخرًا' : 'Recently played'}</h2>
+              <p className="text-sm text-muted">
+                {ar
+                  ? 'أغاني من سجل استماعك، ظاهرة ليك إنت بس.'
+                  : 'From your own listening history, visible only to you.'}
+              </p>
+            </div>
+            <Link href={`/${locale}/library`} className="oddio-section-action">
+              {ar ? 'مكتبتك' : 'Your library'}{' '}
+              <ArrowRight size={16} className="rtl:-scale-x-100" />
+            </Link>
+          </div>
+          <div className="oddio-explore-results-grid grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {recentTracks.map((track) => (
+              <TrackCard key={track.id} track={track} queue={recentTracks} />
+            ))}
+          </div>
+        </section>
       ) : null}
 
       <section className="oddio-dashboard-section oddio-genres-section">

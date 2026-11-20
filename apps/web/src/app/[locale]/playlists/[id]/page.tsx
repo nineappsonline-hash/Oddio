@@ -135,7 +135,13 @@ export default async function PlaylistPage({
               initialFollowing={isFollowing}
               labels={{ follow: t('common.follow'), following: t('common.following') }}
             />
-            <ShareButton title={playlist.title} label={t('common.share')} />
+            {playlist.visibility !== 'private' ? (
+              <ShareButton
+                title={playlist.title}
+                label={t('common.share')}
+                url={`/${locale}/playlists/${playlist.id}`}
+              />
+            ) : null}
             {canEdit ? (
               <Link
                 href={`/${locale}/library`}

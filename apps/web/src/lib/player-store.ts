@@ -12,6 +12,8 @@ interface PlayerState {
   track: CatalogTrack | null;
   queue: CatalogTrack[];
   history: CatalogTrack[];
+  queueUndo: CatalogTrack[] | null;
+  undoQueue: () => void;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
@@ -79,6 +81,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   track: null,
   queue: [],
   history: [],
+  queueUndo: null,
+  undoQueue: () =>
+    set((state) =>
+      state.queueUndo === null ? state : { queue: state.queueUndo, queueUndo: null },
+    ),
   isPlaying: false,
   currentTime: 0,
   duration: 0,
@@ -131,6 +138,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       track,
       station: null,
       queue: list.filter((item) => item.id !== track.id),
+      queueUndo: null,
       history: [],
       isPlaying: true,
       currentTime: 0,
@@ -151,6 +159,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       track: first,
       station,
       queue: rest,
+      queueUndo: null,
       history: [],
       shuffle: false,
       repeat: 'off',
@@ -181,6 +190,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set({
       track: first,
       queue: rest,
+      queueUndo: null,
       history: state.track ? [...state.history, state.track].slice(-100) : state.history,
       isPlaying: true,
       currentTime: 0,
@@ -230,6 +240,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
           set({
             track: first,
             queue: rest,
+            queueUndo: null,
             history: state.track ? [state.track] : [],
             currentTime: 0,
             duration: first.durationMs / 1000,
@@ -248,6 +259,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set({
       track: first,
       queue: rest,
+      queueUndo: null,
       history: state.track ? [...state.history, state.track] : state.history,
       currentTime: 0,
       duration: first.durationMs / 1000,
@@ -273,6 +285,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       track: previous,
       history,
       queue: state.track ? [state.track, ...state.queue] : state.queue,
+      queueUndo: null,
       currentTime: 0,
       duration: previous.durationMs / 1000,
       isPlaying: true,
@@ -310,6 +323,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set((state) => ({
       shuffle: !state.shuffle,
       queue: !state.shuffle ? shuffleArray(state.queue) : state.queue,
+      queueUndo: null,
     })),
 
   toggleAutoplay: () => set((state) => ({ autoplay: !state.autoplay })),
@@ -318,7 +332,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set((state) => {
       if (state.track?.id === track.id) return state;
       if (state.queue.some((item) => item.id === track.id)) return state;
-      return { queue: [...state.queue, track] };
+      return { queue: [...state.queue, track], queueUndo: null };
     }),
 
   playNextInQueue: (track) =>
@@ -327,6 +341,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         ? state
         : {
             queue: [track, ...state.queue.filter((item) => item.id !== track.id)],
+            queueUndo: null,
           },
     ),
 
@@ -342,11 +357,18 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         from === to
       )
         return state;
-      return { queue: moveItem(state.queue, from, to) };
+      return { queue: moveItem(state.queue, from, to), queueUndo: [...state.queue] };
     }),
 
   removeFromQueue: (trackId) =>
-    set((state) => ({ queue: state.queue.filter((item) => item.id !== trackId) })),
+    set((state) =>
+      state.queue.some((item) => item.id === trackId)
+        ? {
+            queue: state.queue.filter((item) => item.id !== trackId),
+            queueUndo: [...state.queue],
+          }
+        : state,
+    ),
   moveInQueue: (trackId, direction) =>
     set((state) => {
       const index = state.queue.findIndex((item) => item.id === trackId);
@@ -354,7 +376,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       if (index < 0 || target < 0 || target >= state.queue.length) return state;
       const queue = [...state.queue];
       [queue[index], queue[target]] = [queue[target]!, queue[index]!];
-      return { queue };
+      return { queue, queueUndo: [...state.queue] };
     }),
 
   jumpTo: (trackId) =>
@@ -367,6 +389,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       return {
         track: selected,
         queue: remaining,
+        queueUndo: null,
         history: state.track ? [...state.history, state.track] : state.history,
         currentTime: 0,
         duration: selected.durationMs / 1000,
@@ -375,5 +398,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       };
     }),
 
-  clearQueue: () => set({ queue: [] }),
+  clearQueue: () =>
+    set((state) =>
+      state.queue.length ? { queue: [], queueUndo: [...state.queue] } : state,
+    ),
 }));

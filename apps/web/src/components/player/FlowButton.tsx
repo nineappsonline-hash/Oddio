@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Radio } from 'lucide-react';
+import type { RadioDiscoveryMode } from '@/lib/data/discovery-mixes';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { usePlayer, type StationMode } from '@/lib/player-store';
 import {
@@ -15,15 +16,20 @@ export function FlowButton({
   kind = 'flow',
   seedId,
   viewerId = null,
+  localOnly = false,
 }: {
   tracks?: CatalogTrack[];
   locale: 'ar' | 'en';
   kind?: StationMode;
   seedId?: string;
   viewerId?: string | null;
+  /** Start only the supplied curated track list; do not call personalized mix API. */
+  localOnly?: boolean;
 }) {
   const startFlow = usePlayer((state) => state.startFlow);
   const [busy, setBusy] = useState(false);
+  const [radioMode, setRadioMode] = useState<RadioDiscoveryMode>('balanced');
+  const canTuneRadio = kind === 'song' || kind === 'artist';
   const [failed, setFailed] = useState(false);
   const ar = locale === 'ar';
   const titles = {
@@ -42,8 +48,21 @@ export function FlowButton({
     try {
       await hydrateDiscoveryExclusions(viewerId);
       const hidden = readDiscoveryExclusions(viewerId);
+      if (localOnly) {
+        const fallback = tracks.filter(
+          (item) =>
+            !hidden.trackIds.includes(item.id) &&
+            !(item.genreIds?.length ? item.genreIds : [item.genreId]).some((id) =>
+              hidden.genreIds.includes(id),
+            ),
+        );
+        if (!fallback.length) throw new Error('No playable music available');
+        startFlow(fallback, { kind, ...(seedId ? { seedId } : {}) });
+        return;
+      }
       const params = new URLSearchParams({ kind });
       if (seedId) params.set('seed', seedId);
+      if (canTuneRadio) params.set('radioMode', radioMode);
       if (hidden.trackIds.length) params.set('exclude', hidden.trackIds.join(','));
       if (hidden.genreIds.length) params.set('blockedGenres', hidden.genreIds.join(','));
       const response = await fetch('/api/discovery/mix?' + params.toString(), {
@@ -78,7 +97,23 @@ export function FlowButton({
   }
 
   return (
-    <span className="inline-flex flex-col items-start gap-1">
+    <span className="inline-flex max-w-full flex-col items-start gap-2">
+      {canTuneRadio ? (
+        <label className="flex max-w-full flex-wrap items-center gap-2 text-xs font-semibold text-muted">
+          <span>{ar ? 'درجة الاكتشاف' : 'Discovery range'}</span>
+          <select
+            value={radioMode}
+            onChange={(event) => setRadioMode(event.target.value as RadioDiscoveryMode)}
+            disabled={busy}
+            className="min-h-11 max-w-full rounded-lg border border-white/20 bg-surface px-3 text-xs text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            aria-label={ar ? 'مدى تنوع أغاني الراديو' : 'Radio discovery range'}
+          >
+            <option value="familiar">{ar ? 'قريب من ذوقك' : 'Stay close'}</option>
+            <option value="balanced">{ar ? 'متوازن' : 'Balanced'}</option>
+            <option value="explore">{ar ? 'اكتشف أكتر' : 'Explore more'}</option>
+          </select>
+        </label>
+      ) : null}
       <button
         type="button"
         onClick={() => void start()}

@@ -4,9 +4,11 @@ import { listableTracks, type CatalogTrack } from './queries';
 import { recommendTracks } from './recommendations';
 
 export type MixKind = 'flow' | 'daily' | 'weekly' | 'song' | 'artist' | 'genre' | 'mood';
+export type RadioDiscoveryMode = 'familiar' | 'balanced' | 'explore';
 export interface MixOptions {
   kind: MixKind;
   seedId?: string;
+  radioMode?: RadioDiscoveryMode;
   excludeIds?: string[];
   blockedGenreIds?: string[];
   now?: Date;
@@ -52,9 +54,46 @@ export function buildDiscoveryMix(
       ),
   );
   const allowed = new Set(catalog.map((track) => track.id));
+  // Weekly discovery prioritizes tracks the listener has not qualified-played.
+  // Keep older listens as a last-resort fallback for small catalogs.
+  const sessionIds = new Set(
+    viewer.userId
+      ? db.playbackSessions
+          .filter((session) => session.userId === viewer.userId)
+          .map((session) => session.id)
+      : [],
+  );
+  const previouslyHeard = new Set(
+    viewer.userId
+      ? [
+          ...db.playbackEvents
+            .filter((event) => event.qualified && sessionIds.has(event.sessionId))
+            .map((event) => event.trackId),
+          ...(db.history ?? [])
+            .filter((item) => item.userId === viewer.userId)
+            .map((item) => item.trackId),
+        ]
+      : [],
+  );
   const base = recommendTracks(db, viewer, 20);
   const ranked = base.tracks.filter((track) => allowed.has(track.id));
-  const seed = playable.find((track) => track.id === options.seedId);
+  // Artist radio is keyed by artist ID, not whichever song happened to be
+  // featured on their profile. Accept a legacy track-ID seed for old stations.
+  const legacyArtistId =
+    options.kind === 'artist'
+      ? playable.find((track) => track.id === options.seedId)?.artistId
+      : undefined;
+  const artistId = legacyArtistId ?? options.seedId;
+  const artistTracks =
+    options.kind === 'artist'
+      ? playable.filter((track) => track.artistId === artistId)
+      : [];
+  const seed =
+    options.kind === 'artist'
+      ? [...artistTracks].sort(
+          (a, b) => b.qualifiedPlays - a.qualifiedPlays || a.id.localeCompare(b.id),
+        )[0]
+      : playable.find((track) => track.id === options.seedId);
   // Never convert an invalid/deleted radio target into an unrelated mix.
   if ((options.kind === 'song' || options.kind === 'artist') && !seed)
     return { tracks: [], personalized: false };
@@ -102,13 +141,85 @@ export function buildDiscoveryMix(
     const preferenceRank = new Map(ranked.map((track, index) => [track.id, index]));
     candidates = candidates.sort((a, b) => {
       const aScore =
+        (options.kind === 'weekly' && !previouslyHeard.has(a.id) ? 100 : 0) +
         (preferenceRank.has(a.id) ? 10 : 0) +
         (stableNumber(principal + ':' + rotation + ':' + a.id) % 1000) / 1000;
       const bScore =
+        (options.kind === 'weekly' && !previouslyHeard.has(b.id) ? 100 : 0) +
         (preferenceRank.has(b.id) ? 10 : 0) +
         (stableNumber(principal + ':' + rotation + ':' + b.id) % 1000) / 1000;
       return bScore - aScore || a.id.localeCompare(b.id);
     });
+  }
+  // An already-heard track should not displace an unheard one in weekly mixes
+  // solely to satisfy artist variety; only use repeats once novel tracks run out.
+  if (options.kind === 'weekly' && viewer.userId) {
+    const novel = candidates.filter((track) => !previouslyHeard.has(track.id));
+    const repeats = candidates.filter((track) => previouslyHeard.has(track.id));
+    const selected: CatalogTrack[] = [];
+    const seenArtists = new Set<string>();
+    for (const group of [novel, repeats]) {
+      for (const item of group) {
+        if (selected.length >= limit) break;
+        if (seenArtists.has(item.artistId)) continue;
+        selected.push(item);
+        seenArtists.add(item.artistId);
+      }
+      for (const item of group) {
+        if (selected.length >= limit) break;
+        if (!selected.some((track) => track.id === item.id)) selected.push(item);
+      }
+      if (selected.length >= limit) break;
+    }
+    return { tracks: selected, personalized: base.personalized };
+  }
+  // Preserve a recognizable sound before widening a station to unrelated
+  // fallback tracks. This matters on smaller catalogs where artist variety
+  // must not push unrelated songs above matching genres or moods.
+  if ((options.kind === 'song' || options.kind === 'artist') && seed) {
+    const familiar = candidates.filter((track) => affinity(track) > 0);
+    const exploration = candidates.filter((track) => affinity(track) === 0);
+    const mode = options.radioMode ?? 'balanced';
+    const selected: CatalogTrack[] = [];
+    if (
+      options.kind === 'song' &&
+      familiar.some((track) => track.id === seed.id) &&
+      limit > 0
+    ) {
+      selected.push(seed);
+    }
+    const seenArtists = new Set(selected.map((track) => track.artistId));
+    // Explore intentionally gives an early share of the queue to diverse,
+    // otherwise unrelated music. Familiar keeps only real metadata matches.
+    // Balanced retains the established matching-first behavior.
+    const groups =
+      mode === 'familiar'
+        ? [familiar]
+        : mode === 'explore'
+          ? [
+              familiar.slice(0, Math.max(1, Math.ceil(limit / 2))),
+              exploration,
+              familiar.slice(Math.max(1, Math.ceil(limit / 2))),
+            ]
+          : [familiar, exploration];
+    for (const group of groups) {
+      for (const track of group) {
+        if (selected.length >= limit) break;
+        if (
+          selected.some((item) => item.id === track.id) ||
+          seenArtists.has(track.artistId)
+        )
+          continue;
+        selected.push(track);
+        seenArtists.add(track.artistId);
+      }
+      for (const track of group) {
+        if (selected.length >= limit) break;
+        if (!selected.some((item) => item.id === track.id)) selected.push(track);
+      }
+      if (selected.length >= limit) break;
+    }
+    return { tracks: selected, personalized: false };
   }
   // Keep song-radio's seed first; otherwise use the ranking's strongest track.
   const first =

@@ -9,6 +9,7 @@ export interface ListeningDNA {
   topTracks: Array<{ id: string; title: string; artist: string; plays: number }>;
   topArtists: Array<{ id: string; name: string; plays: number }>;
   activeMonths: number;
+  monthlyQualifiedListens: Array<{ month: number; plays: number }>;
 }
 
 /** Deterministic, opt-in private Rewind. Never guesses genre or listening minutes. */
@@ -23,12 +24,15 @@ export function annualListeningDNA(
   const artistCounts = new Map<string, { name: string; plays: number }>();
   const genreCounts = new Map<string, { name: string; plays: number }>();
   const months = new Set<number>();
+  const monthlyCounts = Array.from({ length: 12 }, () => 0);
   let qualifiedListens = 0;
   for (const listen of listens) {
     const at = Date.parse(listen.playedAt);
     if (!Number.isFinite(at) || at < start || at >= end) continue;
     qualifiedListens++;
-    months.add(new Date(at).getUTCMonth());
+    const month = new Date(at).getUTCMonth();
+    months.add(month);
+    monthlyCounts[month] = (monthlyCounts[month] ?? 0) + 1;
     const previous = songCounts.get(listen.id);
     songCounts.set(listen.id, {
       title: listen.title,
@@ -62,6 +66,10 @@ export function annualListeningDNA(
     tracks: songCounts.size,
     artists: artistCounts.size,
     activeMonths: months.size,
+    monthlyQualifiedListens: monthlyCounts.map((plays, month) => ({
+      month: month + 1,
+      plays,
+    })),
     genres: sorted([...genreCounts.entries()]),
     topTracks: sorted([...songCounts.entries()]),
     topArtists: sorted([...artistCounts.entries()]),

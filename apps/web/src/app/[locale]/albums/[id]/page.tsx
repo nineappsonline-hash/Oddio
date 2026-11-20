@@ -14,10 +14,10 @@ import { buildMetadata, musicAlbumJsonLd } from '@/lib/seo';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { idFromSegment } from '@/lib/links';
 import { Artwork } from '@/components/ui/Artwork';
-import { PlayButton } from '@/components/player/PlayButton';
+import { AlbumPlaybackActions } from '@/components/music/AlbumPlaybackActions';
 import { TrackRow } from '@/components/music/TrackRow';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDuration } from '@/lib/utils';
 
 export async function generateMetadata({
   params,
@@ -68,7 +68,32 @@ export default async function AlbumPage({
   const page = getAlbumPage(db, viewer, idFromSegment(id));
   if (!page) notFound();
   const { album, artist, tracks } = page;
-  const firstTrack = tracks[0];
+  const readyTracks = tracks.filter(
+    (track) => track.access.allowed && track.audio?.processingStatus === 'ready',
+  );
+  const totalDurationMs = readyTracks.reduce(
+    (sum, track) => sum + Math.max(0, track.durationMs),
+    0,
+  );
+  const relatedAlbums = db.albums
+    .filter(
+      (item) =>
+        item.artistId === artist.id &&
+        item.id !== album.id &&
+        item.status === 'published' &&
+        item.visibility === 'public' &&
+        Number.isFinite(Date.parse(item.releaseAt)) &&
+        Date.parse(item.releaseAt) <= Date.now(),
+    )
+    .map((item) => getAlbumPage(db, { userId: null, roles: [] }, item.id))
+    .filter((item): item is NonNullable<typeof item> => item !== null)
+    .filter((item) =>
+      item.tracks.some(
+        (track) => track.audio?.processingStatus === 'ready' && track.access.allowed,
+      ),
+    )
+    .sort((a, b) => b.album.releaseAt.localeCompare(a.album.releaseAt))
+    .slice(0, 4);
 
   return (
     <div>
@@ -114,16 +139,15 @@ export default async function AlbumPage({
           </Link>
           <p className="mt-1 text-xs text-muted">
             {t('album.releaseDate', { date: formatDate(album.releaseAt, locale) })} ·{' '}
-            {tracks.length} {t('common.tracks')}
+            {readyTracks.length} {t('common.tracks')}
+            {readyTracks.length > 0 ? ` · ${formatDuration(totalDurationMs)}` : ''}
           </p>
           {album.description ? (
             <p className="mt-3 max-w-2xl text-sm text-muted">{album.description}</p>
           ) : null}
-          {firstTrack ? (
-            <div className="mt-5">
-              <PlayButton track={firstTrack} queue={tracks} size="lg" />
-            </div>
-          ) : null}
+          <div className="mt-5">
+            <AlbumPlaybackActions tracks={tracks} locale={locale} />
+          </div>
         </div>
       </section>
 
@@ -144,6 +168,50 @@ export default async function AlbumPage({
           ))}
         </div>
       )}
+      {relatedAlbums.length > 0 ? (
+        <section className="mt-10" aria-labelledby="more-artist-albums">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 id="more-artist-albums" className="text-lg font-bold text-ink">
+              {locale === 'ar'
+                ? `ألبومات تانية من ${artist.name}`
+                : `More from ${artist.name}`}
+            </h2>
+            <Link
+              href={`/${locale}/artists/${artist.slug}`}
+              className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-primary hover:underline"
+            >
+              {locale === 'ar' ? 'كل أعمال الفنان' : 'All artist releases'}
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {relatedAlbums.map((item) => (
+              <Link
+                key={item.album.id}
+                href={`/${locale}/albums/${item.album.id}`}
+                className="group min-w-0 rounded-2xl border border-white/10 bg-white/[0.035] p-3 transition hover:border-primary/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                <Artwork
+                  title={item.album.title}
+                  url={item.album.artworkUrl}
+                  accent={artist.accent}
+                  className="aspect-square w-full"
+                  rounded="rounded-xl"
+                />
+                <p
+                  className="mt-3 truncate text-sm font-semibold text-ink group-hover:text-primary"
+                  dir="auto"
+                >
+                  {item.album.title}
+                </p>
+                <p className="mt-1 text-xs text-muted">
+                  {formatDate(item.album.releaseAt, locale)} · {item.tracks.length}{' '}
+                  {t('common.tracks')}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

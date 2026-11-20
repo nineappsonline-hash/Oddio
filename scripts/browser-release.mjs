@@ -119,6 +119,17 @@ try {
             name: locale === 'ar' ? 'القائمة' : 'Menu',
           });
           await dialog.waitFor({ state: 'visible' });
+          // Wait for the opening transform to settle before inspecting the
+          // actual drawer geometry; visible does not imply animation finished.
+          await page.waitForFunction(
+            () => {
+              const element = document.querySelector('[role="dialog"][aria-label]');
+              if (!element) return false;
+              return Math.abs(element.getBoundingClientRect().left) <= 2;
+            },
+            null,
+            { timeout: 3000 },
+          );
           const left = await dialog.evaluate(
             (element) => element.getBoundingClientRect().left,
           );
@@ -246,15 +257,47 @@ try {
         });
         assert.equal(search?.status(), 200);
         const input = page.locator('main input[type="search"][name="q"]');
-        await input.fill('zzzzunlikelyreleasequery123');
-        await input.press('Enter');
-        await page.waitForURL(new RegExp(`/\\${locale}/search\\?q=`), {
-          timeout: 15_000,
-        });
+        const query = 'zzzzunlikelyreleasequery123';
+        const submit = page.locator('main form[role="search"] button[type="submit"]');
+        // Hydration may reset a value filled before React attaches the
+        // controlled input, especially in Firefox. Retry the real input
+        // interaction after hydration; never force-click a disabled button.
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+          await input.fill(query);
+          try {
+            await submit.waitFor({ state: 'visible', timeout: 3000 });
+            await page.waitForFunction(
+              () => {
+                const form = document.querySelector('main form[role="search"]');
+                const field = form?.querySelector('input[name="q"]');
+                const button = form?.querySelector('button[type="submit"]');
+                return (
+                  field?.value === 'zzzzunlikelyreleasequery123' &&
+                  button &&
+                  !button.disabled
+                );
+              },
+              null,
+              { timeout: 3000 },
+            );
+            break;
+          } catch (error) {
+            if (attempt === 4) throw error;
+          }
+        }
+        await submit.click();
+        await page.waitForURL(
+          (url) =>
+            url.pathname === `/${locale}/search` &&
+            url.searchParams.get('q') === 'zzzzunlikelyreleasequery123',
+          { timeout: 30_000 },
+        );
         // Next.js may stream the route after the URL changes; wait for the
         // actual no-results state rather than racing the navigation shell.
         await page
+          .locator('main')
           .getByText('zzzzunlikelyreleasequery123', { exact: true })
+          .last()
           .waitFor({ timeout: 15_000 });
         assert.equal(pageErrors.length, 0, pageErrors.join('; '));
       });
@@ -266,21 +309,21 @@ try {
         const title = locale === 'ar' ? 'شغّل Oddio Flow' : 'Start Oddio Flow';
         const start = page.getByRole('button', { name: title, exact: true });
         await start.waitFor({ state: 'visible', timeout: 15_000 });
-        const responsePromise = page.waitForResponse(
-          (response) =>
-            response.url().includes('/api/discovery/mix?kind=flow') &&
-            response.request().method() === 'GET',
-        );
+        // Guest Flow intentionally uses the public server-rendered list
+        // and does NOT make a personalized discovery API request.
         await start.click();
-        const response = await responsePromise;
-        assert.equal(response.status(), 200);
-        const body = await response.json();
-        assert.ok(body.data?.tracks?.length > 0, 'Flow must return playable tracks');
+        await page
+          .getByRole('region', {
+            name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
+          })
+          .waitFor({ state: 'visible', timeout: 15_000 });
         const weeklyTitle =
           locale === 'ar' ? 'شغّل Discover Weekly' : 'Play Discover Weekly';
+        // Daily and weekly mixes are intentionally hidden for guest visitors:
+        // without a signed-in taste profile these would imply personalization.
         assert.equal(
           await page.getByRole('button', { name: weeklyTitle, exact: true }).count(),
-          1,
+          0,
         );
         const hidden = page.getByRole('button', {
           name: locale === 'ar' ? 'مش مهتم' : 'Not interested',
@@ -471,6 +514,23 @@ try {
           timeout: 15_000,
         });
         assert.ok(page.url().includes('/login?next='));
+        // Listening recaps must remain protected and never expose a user's
+        // history in anonymous responses (including an explicitly chosen year).
+        for (const privatePath of ['library/recap', 'library/rewind?year=2026']) {
+          await page.goto(`${base}/${locale}/${privatePath}`, {
+            waitUntil: 'domcontentloaded',
+          });
+          // A streamed Next.js redirect can return HTTP 200; assert the
+          // actual guest navigation and absence of a share action.
+          await page.waitForURL((url) => url.pathname === `/${locale}/login`, {
+            timeout: 15_000,
+          });
+          assert.equal(
+            await page.getByRole('button', { name: /share card|شارك البطاقة/i }).count(),
+            0,
+            'Anonymous visitor must not see a recap share control',
+          );
+        }
         // WebKit may abort a stale speculative Next.js RSC prefetch when the
         // protected route redirects. The authenticated redirect is asserted
         // above; ignore only this browser-level navigation cancellation.
@@ -530,6 +590,89 @@ try {
       }
 
       if (locale === 'en' && viewport.width === 1366) {
+        await test('signed-in Rewind shows honest empty state and protects sharing', async () => {
+          // Demo seed intentionally has no qualified playback events.
+          // A history row alone must not be counted as an annual qualified play.
+          const response = await page.goto(`${base}/en/library/rewind?year=2026`, {
+            waitUntil: 'domcontentloaded',
+          });
+          assert.equal(response?.status(), 200);
+          await page
+            .getByRole('heading', { level: 1, name: /2026 Music Rewind/ })
+            .waitFor();
+          assert.ok(
+            await page
+              .getByText('No recorded qualified listens for this year yet.')
+              .isVisible(),
+          );
+          assert.equal(await page.getByRole('button', { name: 'Share card' }).count(), 0);
+          assert.equal(
+            await page.getByRole('button', { name: 'Save PNG image' }).count(),
+            0,
+          );
+          const arabic = await page.goto(`${base}/ar/library/rewind?year=2026`, {
+            waitUntil: 'domcontentloaded',
+          });
+          assert.equal(arabic?.status(), 200);
+          assert.equal(await page.locator('html').getAttribute('dir'), 'rtl');
+          await page.getByRole('heading', { level: 1 }).waitFor();
+          await page.setViewportSize({ width: 390, height: 844 });
+          const layout = await page.evaluate(() => ({
+            overflow: document.documentElement.scrollWidth - window.innerWidth,
+            widths: {
+              viewport: window.innerWidth,
+              html: document.documentElement.clientWidth,
+              body: document.body.getBoundingClientRect().width,
+              workspace: document
+                .querySelector('.oddio-workspace')
+                ?.getBoundingClientRect().width,
+            },
+            offenders: Array.from(document.querySelectorAll('body *'))
+              .filter((element) => {
+                const rect = element.getBoundingClientRect();
+                return (
+                  rect.width > 1 &&
+                  (rect.right > innerWidth + 2 || rect.left < -2) &&
+                  getComputedStyle(element).position !== 'fixed'
+                );
+              })
+              .slice(0, 8)
+              .map((element) => ({
+                tag: element.tagName,
+                className:
+                  typeof element.className === 'string'
+                    ? element.className.slice(0, 100)
+                    : '',
+                width: Math.round(element.getBoundingClientRect().width),
+                left: Math.round(element.getBoundingClientRect().left),
+              })),
+          }));
+          assert.ok(
+            layout.overflow <= 2,
+            `Arabic Rewind overflow: ${layout.overflow}px; widths: ${JSON.stringify(layout.widths)}; offenders: ${JSON.stringify(layout.offenders)}`,
+          );
+          await page.setViewportSize({ width: 1366, height: 900 });
+          // WebKit cancels pending player/podcast bootstrap fetches when the
+          // signed-in page navigates to Rewind. The route checks above validate
+          // actual rendering; only these aborted requests are benign.
+          const unexpectedRewindErrors = pageErrors.filter(
+            (message) =>
+              !(
+                engine === 'webkit' &&
+                message.includes('due to access control checks') &&
+                (message.includes('/api/podcasts/progress') ||
+                  message.includes('/api/player/resume'))
+              ),
+          );
+          assert.equal(
+            unexpectedRewindErrors.length,
+            0,
+            unexpectedRewindErrors.join('; '),
+          );
+        });
+      }
+
+      if (locale === 'en' && viewport.width === 1366) {
         await test('liked songs custom drag order survives a page reload', async () => {
           await page.goto(`${base}/en/library?likedSort=custom#liked`, {
             waitUntil: 'domcontentloaded',
@@ -547,16 +690,33 @@ try {
           );
           const handles = list.getByRole('button', { name: /Drag item/ });
           const first = await handles.nth(0).boundingBox();
-          const second = await handles.nth(1).boundingBox();
-          assert.ok(first && second, 'drag handles must have visible bounds');
+          const second = await rows.nth(1).boundingBox();
+          assert.ok(first && second, 'drag handles and rows must have visible bounds');
+          // Aim for the body of the target row, not its narrow handle:
+          // browsers can shift a focused handle when a drag begins.
           await page.mouse.move(first.x + first.width / 2, first.y + first.height / 2);
           await page.mouse.down();
           await page.mouse.move(
-            second.x + second.width / 2,
+            first.x + first.width / 2,
+            first.y + first.height / 2 + 10,
+            { steps: 4 },
+          );
+          await page.mouse.move(
+            second.x + Math.min(second.width - 8, 45),
             second.y + second.height / 2,
-            { steps: 10 },
+            { steps: 14 },
           );
           await page.mouse.up();
+          await page.waitForFunction(
+            (expected) => {
+              const firstRow = document.querySelector(
+                'ul[aria-label="Reorderable list"] [data-reorder-id]',
+              );
+              return firstRow?.getAttribute('data-reorder-id') === expected;
+            },
+            before[1],
+            { timeout: 4000 },
+          );
           const after = await rows.evaluateAll((items) =>
             items.map((item) => item.getAttribute('data-reorder-id')),
           );

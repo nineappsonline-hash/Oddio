@@ -46,6 +46,18 @@ export function PlaylistCollaboration({
     void refreshManagement();
   }, [isOwner, playlistId]);
   async function manage(action: 'remove' | 'revoke', id: string) {
+    if (
+      !window.confirm(
+        action === 'revoke'
+          ? ar
+            ? 'متأكد إنك عاوز تلغي الدعوة دي؟'
+            : 'Revoke this invitation?'
+          : ar
+            ? 'متأكد إنك عاوز تشيل المحرر ده؟'
+            : 'Remove this editor?',
+      )
+    )
+      return;
     setWorking(true);
     setMessage('');
     try {
@@ -198,13 +210,38 @@ export function PlaylistCollaboration({
               <p className="break-all rounded-lg border border-white/10 p-3 font-mono text-xs">
                 {inviteCode}
               </p>
-              <button
-                type="button"
-                onClick={() => void navigator.clipboard.writeText(inviteCode)}
-                className="rounded-lg border border-white/20 px-3 py-2 text-xs"
-              >
-                {ar ? 'نسخ الرمز' : 'Copy code'}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    void navigator.clipboard.writeText(inviteCode).then(
+                      () =>
+                        setMessage(ar ? 'تم نسخ رمز الدعوة.' : 'Invitation code copied.'),
+                      () =>
+                        setMessage(
+                          ar
+                            ? 'النسخ غير متاح. انسخ الرمز يدويًا.'
+                            : 'Clipboard unavailable. Copy the code manually.',
+                        ),
+                    )
+                  }
+                  className="min-h-11 rounded-lg border border-white/20 px-3 py-2 text-xs"
+                >
+                  {ar ? 'نسخ الرمز' : 'Copy code'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInviteCode('')}
+                  className="min-h-11 rounded-lg border border-white/20 px-3 py-2 text-xs"
+                >
+                  {ar ? 'إخفاء الرمز' : 'Hide code'}
+                </button>
+              </div>
+              <p className="text-xs text-muted">
+                {ar
+                  ? 'الرمز بيظهر مرة واحدة. لو قفلت الصفحة مش هتقدر تشوفه تاني.'
+                  : 'The code is shown only once. You cannot retrieve it after leaving this page.'}
+              </p>
               <p className="text-xs text-muted">
                 {ar ? 'صالح حتى' : 'Expires'}{' '}
                 {new Date(expiresAt).toLocaleDateString(locale)}

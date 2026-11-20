@@ -10,6 +10,12 @@ import { presignR2Get, presignR2OriginalGet } from '@/lib/storage/r2-presign';
 
 export const runtime = 'nodejs';
 
+const AUDIO_ERROR_HEADERS = {
+  'Cache-Control': 'private, no-store',
+  'Referrer-Policy': 'no-referrer',
+  'X-Content-Type-Options': 'nosniff',
+} as const;
+
 function contentTypeFor(format: string): string {
   switch (format) {
     case 'flac':
@@ -36,7 +42,7 @@ export async function GET(
       {
         error: { code: 'expired_token', message: 'Playback link is invalid or expired.' },
       },
-      { status: 403 },
+      { status: 403, headers: AUDIO_ERROR_HEADERS },
     );
   }
 
@@ -45,7 +51,7 @@ export async function GET(
   if (!track || !track.audio) {
     return NextResponse.json(
       { error: { code: 'not_found', message: 'Audio not found.' } },
-      { status: 404 },
+      { status: 404, headers: AUDIO_ERROR_HEADERS },
     );
   }
   const viewer = await getViewer();
@@ -53,7 +59,7 @@ export async function GET(
   if (!access.allowed) {
     return NextResponse.json(
       { error: { code: 'playback_denied', message: 'Playback is not authorized.' } },
-      { status: 403 },
+      { status: 403, headers: AUDIO_ERROR_HEADERS },
     );
   }
 
@@ -69,7 +75,7 @@ export async function GET(
     if (!ready && !originalFallback) {
       return NextResponse.json(
         { error: { code: 'audio_not_ready', message: 'Audio is still processing.' } },
-        { status: 409 },
+        { status: 409, headers: AUDIO_ERROR_HEADERS },
       );
     }
     try {
@@ -91,7 +97,7 @@ export async function GET(
             message: 'Audio storage is unavailable.',
           },
         },
-        { status: 503 },
+        { status: 503, headers: AUDIO_ERROR_HEADERS },
       );
     }
   }
@@ -106,7 +112,7 @@ export async function GET(
             'Audio file is not available. Run npm run setup:demo to generate samples.',
         },
       },
-      { status: 404 },
+      { status: 404, headers: AUDIO_ERROR_HEADERS },
     );
   }
 
@@ -116,6 +122,7 @@ export async function GET(
     'Content-Type': contentTypeFor(track.audio.format),
     'Accept-Ranges': 'bytes',
     'Cache-Control': 'private, max-age=0, no-store',
+    'Referrer-Policy': 'no-referrer',
     'X-Content-Type-Options': 'nosniff',
   };
 
@@ -127,7 +134,11 @@ export async function GET(
     if (!match || (!match[1] && !match[2])) {
       return new NextResponse('Invalid range', {
         status: 416,
-        headers: { 'Content-Range': `bytes */${stat.size}` },
+        headers: {
+          'Content-Range': `bytes */${stat.size}`,
+          'Cache-Control': 'private, no-store',
+          'Referrer-Policy': 'no-referrer',
+        },
       });
     }
     const start = match[1]
@@ -146,7 +157,11 @@ export async function GET(
     ) {
       return new NextResponse('Range not satisfiable', {
         status: 416,
-        headers: { 'Content-Range': `bytes */${stat.size}` },
+        headers: {
+          'Content-Range': `bytes */${stat.size}`,
+          'Cache-Control': 'private, no-store',
+          'Referrer-Policy': 'no-referrer',
+        },
       });
     }
     const length = end - start + 1;
