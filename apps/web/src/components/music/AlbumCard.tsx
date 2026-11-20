@@ -6,15 +6,17 @@ export function AlbumCard({
   artistName,
   artistSlug,
   accent,
+  locale,
 }: {
   album: { id: string; title: string; artworkUrl: string; releaseAt: string };
   artistName: string;
   artistSlug?: string;
   accent: string;
+  locale?: 'ar' | 'en';
 }) {
   return (
     <Link
-      href={`/albums/${album.id}-${album.title
+      href={`${locale ? `/${locale}` : ''}/albums/${album.id}-${album.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '')}`}
