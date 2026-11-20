@@ -54,6 +54,7 @@ interface PlayerState {
   addToQueue: (track: CatalogTrack) => void;
   playNextInQueue: (track: CatalogTrack) => void;
   removeFromQueue: (trackId: string) => void;
+  moveInQueue: (trackId: string, direction: 'up' | 'down') => void;
   jumpTo: (trackId: string) => void;
   clearQueue: () => void;
   setExpanded: (expanded: boolean) => void;
@@ -327,6 +328,15 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   removeFromQueue: (trackId) =>
     set((state) => ({ queue: state.queue.filter((item) => item.id !== trackId) })),
+  moveInQueue: (trackId, direction) =>
+    set((state) => {
+      const index = state.queue.findIndex((item) => item.id === trackId);
+      const target = index + (direction === 'up' ? -1 : 1);
+      if (index < 0 || target < 0 || target >= state.queue.length) return state;
+      const queue = [...state.queue];
+      [queue[index], queue[target]] = [queue[target]!, queue[index]!];
+      return { queue };
+    }),
 
   jumpTo: (trackId) =>
     set((state) => {
