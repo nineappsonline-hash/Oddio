@@ -214,3 +214,10 @@
 - Increased the mobile header menu and guest login touch targets to 44x44px. Bottom navigation tab labels are now centered and truncated within their own slots instead of overflowing on 320px-wide layouts; maintained accessible labels and focus outlines.
 - Compressed mobile mini-player spacing on narrow screens, preserved its large artwork/transport touch surfaces, hid the redundant expand icon below `sm` since artwork/title/background already open the full player, and constrained toast notices to the mobile viewport width.
 - Pending: successful Vercel build for these commits, actual mobile viewport interactions, screen-reader verification, visual regression and controlled release. Production untouched.
+
+### Phase 4 continuation — Full Player mobile queue (2026-11-20)
+- Verified last phase-4 mini-player/nav preview `7839a04b` was Vercel **READY** (build succeeded; manual visual QA pending).
+- Audited `FullPlayer`: on mobile its minimize action existed only over artwork; when the queue panel hid the artwork, there was no consistently visible minimize control. Added an always-visible 44x44px mobile minimize button next to the queue/back control.
+- Reduced overflow risks: live notices wrap to the viewport rather than using unbounded `whitespace-nowrap`, the overlay contains scrolling, and player-side queue layout constrains its height relative to the viewport.
+- Improved mobile queue actions to wrap instead of overflowing narrow panels. Queue clearing touch target enlarged to 44px, and panel tabs enlarged to >=44px with compact narrow-screen text. Localized the player panel tablist label for Arabic/English UI.
+- **Verification pending:** compilation of commits `803d4397` and `e145ee93`, device tests for queue/mini-player/lyrics navigation and focus, landscape/safe-area insets, RTL, screen readers. No production deployment or merge.
