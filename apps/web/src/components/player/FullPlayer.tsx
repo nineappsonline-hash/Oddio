@@ -893,7 +893,7 @@ export function FullPlayer() {
 
           <aside
             className={cn(
-              'min-h-[55dvh] max-h-[calc(100dvh-110px)] flex-col overflow-hidden rounded-[28px] border border-white/[0.13] bg-white/[0.055] p-4 shadow-[0_24px_70px_rgba(0,0,0,.2)] backdrop-blur-[28px] lg:flex lg:min-h-[470px] lg:max-h-[calc(100vh-175px)]',
+              'min-h-[55dvh] max-h-[calc(100dvh-100px)] flex-col overflow-hidden rounded-[28px] border border-white/[0.13] bg-white/[0.055] p-4 shadow-[0_24px_70px_rgba(0,0,0,.2)] backdrop-blur-[28px] lg:flex lg:min-h-[470px] lg:max-h-[calc(100vh-175px)]',
               sideTab === 'queue' ? 'flex' : 'hidden lg:flex',
             )}
             aria-label={
@@ -912,7 +912,7 @@ export function FullPlayer() {
                 podcast ? 'grid-cols-2' : 'grid-cols-3',
               )}
               role="tablist"
-              aria-label="Player panels"
+              aria-label={rtl ? 'أقسام المشغل' : 'Player panels'}
             >
               {!podcast && (
                 <button
@@ -921,7 +921,7 @@ export function FullPlayer() {
                   aria-selected={sideTab === 'lyrics'}
                   onClick={() => setSideTab('lyrics')}
                   className={cn(
-                    'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
+                    'flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-2.5 text-xs font-bold transition sm:gap-2 sm:px-3 sm:text-sm',
                     sideTab === 'lyrics'
                       ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
                       : 'text-muted hover:bg-white/5 hover:text-ink',
@@ -1039,20 +1039,20 @@ export function FullPlayer() {
                 title={t('player.queue')}
                 className="flex min-h-0 flex-1 flex-col"
               >
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <h2 className="text-sm font-bold text-ink">
                     {t('player.queue')}{' '}
                     <span className="text-xs font-normal text-muted">
                       ({queue.length})
                     </span>
                   </h2>
-                  <div className="flex items-center gap-1">
+                  <div className="flex flex-wrap items-center justify-end gap-1">
                     {queue.length > 0 ? <SaveQueueAsPlaylist /> : null}
                     {canUndoQueue ? (
                       <button
                         type="button"
                         onClick={undoQueue}
-                        className="rounded-full border border-primary/40 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        className="min-h-10 rounded-full border border-primary/40 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         aria-label={rtl ? 'تراجع عن آخر تعديل في قائمة الانتظار' : 'Undo last queue edit'}
                       >
                         {rtl ? 'تراجع' : 'Undo'}
@@ -1062,7 +1062,7 @@ export function FullPlayer() {
                     <button
                       type="button"
                       onClick={clearQueue}
-                      className="grid h-10 w-10 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                      className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                       aria-label={t('player.clearQueue')}
                       title={t('player.clearQueue')}
                     >
