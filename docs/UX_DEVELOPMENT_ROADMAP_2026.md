@@ -187,3 +187,9 @@
 - **Verification:** earlier Phase 3 preview `2d3cac46` is Vercel READY; latest autocomplete commits are still BUILDING at last check. Browser keyboard/RTL/mobile testing and tests for this endpoint remain open. Do not merge to production without successful preview and QA.
 
 - Follow-up Phase 3 safety regression: extracted a minimal `projectSearchSuggestions` response mapper and added Vitest cases for field allowlisting and rejection of another listener's private track in suggestion results. These are committed tests; their execution is not yet confirmed. The live API now uses this projection.
+
+### Phase 3 continuation — keyboard suggestions and zero-results recovery
+- Confirmed autocomplete privacy-test preview `6b40a7ae` is Vercel READY. This proves successful compilation but does not mean browser UX or unit tests have run.
+- Search suggestion links now support ArrowDown/ArrowUp focus traversal with movement back into the query input; Escape closes suggestions. Mouse and Tab links remain ordinary anchors. Added a pure focus-boundary helper and Vitest regression cases (committed; run status pending).
+- Zero-results UI now offers helpful guidance (fewer words, remove filters), a link to retry the same query without genre/mood/language filters, and direct links to up to six active genres from the current visible catalog. No invented popular terms or unverified content counts.
+- Latest implementation builds are pending. Pending QA: mobile tap behavior, keyboard screen-reader flow, RTL focus transitions, no-result URL navigation, unit tests, and release review. Production unchanged.
