@@ -63,6 +63,9 @@ export default async function DiscoverPage({
   const home = getHomeData(db, viewer);
   const flow = recommendTracks(db, viewer, 20);
   const recommendations = flow;
+  const publicRecommendations = viewer.userId
+    ? recommendTracks(db, { userId: null, roles: [] }, 20)
+    : recommendations;
 
   const parsed = searchQuery.safeParse({
     q: first(sp.q) ?? '',
@@ -133,6 +136,8 @@ export default async function DiscoverPage({
       !first(sp.cursor) ? (
         <DiscoveryMixShelf
           tracks={recommendations.tracks}
+          publicTracks={publicRecommendations.tracks}
+          genres={db.genres.filter((genre) => genre.active).map((genre) => ({ id: genre.id, name: genreLabel(genre) }))}
           personalized={recommendations.personalized}
           locale={locale}
           viewerId={viewer.userId}
