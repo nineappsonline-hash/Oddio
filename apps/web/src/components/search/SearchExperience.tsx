@@ -3,9 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock3, Search, X } from 'lucide-react';
-
-const MAX_RECENT = 8;
-const MAX_QUERY_LENGTH = 120;
+import { addRecentMusicSearch, sanitizeRecentMusicSearches, MAX_MUSIC_QUERY_LENGTH } from '@/lib/recent-music-searches';
 
 export function SearchExperience({
   locale,
@@ -34,9 +32,7 @@ export function SearchExperience({
     const store = userId ? window.localStorage : window.sessionStorage;
     try {
       const saved: unknown = JSON.parse(store.getItem(storageKey) ?? '[]');
-      setRecent(Array.isArray(saved)
-        ? saved.filter((item): item is string => typeof item === 'string' && item.length <= MAX_QUERY_LENGTH).slice(0, MAX_RECENT)
-        : []);
+      setRecent(sanitizeRecentMusicSearches(saved));
     } catch {
       setRecent([]);
     }
@@ -62,9 +58,9 @@ export function SearchExperience({
   }, []);
 
   const saveRecent = (value: string) => {
-    const clean = value.trim().slice(0, MAX_QUERY_LENGTH);
+    const clean = value.trim().slice(0, MAX_MUSIC_QUERY_LENGTH);
     if (!clean) return;
-    const next = [clean, ...recent.filter((item) => item.toLocaleLowerCase() !== clean.toLocaleLowerCase())].slice(0, MAX_RECENT);
+    const next = addRecentMusicSearch(clean, recent);
     setRecent(next);
     try {
       (userId ? window.localStorage : window.sessionStorage).setItem(storageKey, JSON.stringify(next));
@@ -74,7 +70,7 @@ export function SearchExperience({
   };
 
   const openSearch = (value: string) => {
-    const clean = value.trim().slice(0, MAX_QUERY_LENGTH);
+    const clean = value.trim().slice(0, MAX_MUSIC_QUERY_LENGTH);
     if (!clean) return;
     saveRecent(clean);
     router.push(`/${locale}/search?q=${encodeURIComponent(clean)}`);
@@ -102,7 +98,7 @@ export function SearchExperience({
           ref={inputRef}
           type="search"
           name="q"
-          maxLength={MAX_QUERY_LENGTH}
+          maxLength={MAX_MUSIC_QUERY_LENGTH}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={placeholder}
