@@ -59,6 +59,9 @@ export default async function HomePage({
   );
   const data = getHomeData(db, viewer);
   const recommended = recommendTracks(db, viewer, 20);
+  const publicRecommended = viewer.userId
+    ? recommendTracks(db, { userId: null, roles: [] }, 20)
+    : recommended;
   const discoveryArtists = getDiscoveryArtists(db, viewer);
   const hero = data.hero;
   const heroQueue = hero
@@ -181,6 +184,7 @@ export default async function HomePage({
       {recommended.tracks.length > 0 ? (
         <DiscoveryMixShelf
           tracks={recommended.tracks}
+          publicTracks={publicRecommended.tracks}
           personalized={recommended.personalized}
           locale={locale}
           viewerId={viewer.userId}
