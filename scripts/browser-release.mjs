@@ -388,6 +388,30 @@ try {
         assert.ok(overflow <= 2, `history layout horizontal overflow: ${overflow}px`);
       });
 
+      await test(`${label} following shows page and anonymous follow privacy`, async () => {
+        const response = await page.goto(`${base}/${locale}/podcasts/following`, {
+          waitUntil: 'domcontentloaded',
+        });
+        assert.equal(response?.status(), 200);
+        await page.getByRole('heading', { level: 1 }).waitFor({ state: 'visible' });
+        const get = await page.request.get(`${base}/api/podcasts/follows`);
+        assert.equal(get.status(), 401, 'follows must require user session');
+        const post = await page.request.post(`${base}/api/podcasts/follows`, {
+          data: { showId: '00000000-0000-4000-8000-000000000001' },
+          headers: { origin: base },
+        });
+        assert.equal(post.status(), 401, 'anonymous users cannot follow shows');
+        const remove = await page.request.delete(`${base}/api/podcasts/follows`, {
+          data: { showId: '00000000-0000-4000-8000-000000000001' },
+          headers: { origin: base },
+        });
+        assert.equal(remove.status(), 401, 'anonymous users cannot unfollow shows');
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        assert.ok(overflow <= 2, `following page horizontal overflow: ${overflow}px`);
+      });
+
       await test(`${label} anonymous discovery preference sync is protected`, async () => {
         const read = await page.request.get(`${base}/api/discovery/preferences`);
         assert.equal(read.status(), 401);
