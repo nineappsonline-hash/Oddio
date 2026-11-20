@@ -40,21 +40,32 @@ export function recommendPodcasts({
 
   for (const id of followed) {
     const show = showsById.get(id);
-    if (show) categoryInterests.set(show.categoryId, (categoryInterests.get(show.categoryId) ?? 0) + 4);
+    if (show)
+      categoryInterests.set(
+        show.categoryId,
+        (categoryInterests.get(show.categoryId) ?? 0) + 4,
+      );
   }
   for (const episodeId of listened) {
     const show = showsById.get(episodeById.get(episodeId)?.showId ?? '');
-    if (show) categoryInterests.set(show.categoryId, (categoryInterests.get(show.categoryId) ?? 0) + 1);
+    if (show)
+      categoryInterests.set(
+        show.categoryId,
+        (categoryInterests.get(show.categoryId) ?? 0) + 1,
+      );
   }
 
   const relevantEpisodes = episodes
     .filter((episode) => visible.has(episode.showId))
     .filter((episode) => Number.isFinite(Date.parse(episode.publishedAt)))
     .filter((episode) => Date.parse(episode.publishedAt) <= now)
-    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt) || a.id.localeCompare(b.id));
+    .sort(
+      (a, b) => b.publishedAt.localeCompare(a.publishedAt) || a.id.localeCompare(b.id),
+    );
   const lastRelease = new Map<string, number>();
   for (const episode of relevantEpisodes) {
-    if (!lastRelease.has(episode.showId)) lastRelease.set(episode.showId, Date.parse(episode.publishedAt));
+    if (!lastRelease.has(episode.showId))
+      lastRelease.set(episode.showId, Date.parse(episode.publishedAt));
   }
   const personalized = categoryInterests.size > 0;
   const recommendations = shows
@@ -67,13 +78,19 @@ export function recommendPodcasts({
       return {
         show,
         score: Math.min(16, categoryScore) + freshScore,
-        reason: categoryScore > 0 ? 'similar' as const : freshScore > 0 ? 'recent' as const : 'discover' as const,
+        reason:
+          categoryScore > 0
+            ? ('similar' as const)
+            : freshScore > 0
+              ? ('recent' as const)
+              : ('discover' as const),
       };
     })
-    .sort((a, b) =>
-      b.score - a.score ||
-      (lastRelease.get(b.show.id) ?? 0) - (lastRelease.get(a.show.id) ?? 0) ||
-      a.show.id.localeCompare(b.show.id),
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        (lastRelease.get(b.show.id) ?? 0) - (lastRelease.get(a.show.id) ?? 0) ||
+        a.show.id.localeCompare(b.show.id),
     );
 
   // Spread exposure across genres rather than filling the shelf from one category.
