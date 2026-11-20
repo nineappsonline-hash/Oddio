@@ -2,8 +2,14 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { apiRequest } from '@/lib/client-api';
 import { Clock3, Search, X } from 'lucide-react';
 import { addRecentMusicSearch, sanitizeRecentMusicSearches, MAX_MUSIC_QUERY_LENGTH } from '@/lib/recent-music-searches';
+
+type SuggestionTrack = { id: string; title: string; slug: string; artistName: string };
+type SuggestionArtist = { id: string; name: string; slug: string };
+type Suggestions = { tracks: SuggestionTrack[]; artists: SuggestionArtist[] };
 
 export function SearchExperience({
   locale,
@@ -25,6 +31,10 @@ export function SearchExperience({
   const [query, setQuery] = useState(initialQuery);
   const [recent, setRecent] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestions>({ tracks: [], artists: [] });
+  const [suggestionLoading, setSuggestionLoading] = useState(false);
+  const [suggestionError, setSuggestionError] = useState(false);
 
   useEffect(() => { setQuery(initialQuery); }, [initialQuery]);
 
@@ -38,6 +48,36 @@ export function SearchExperience({
     }
     setReady(true);
   }, [storageKey, userId]);
+
+  useEffect(() => {
+    if (!focused || query.trim().length < 2) {
+      setSuggestions({ tracks: [], artists: [] });
+      setSuggestionLoading(false);
+      setSuggestionError(false);
+      return;
+    }
+    const controller = new AbortController();
+    setSuggestionLoading(true);
+    setSuggestionError(false);
+    const timer = window.setTimeout(() => {
+      apiRequest<Suggestions>(
+        `/api/search/suggestions?q=${encodeURIComponent(query.trim())}`,
+        { signal: controller.signal },
+      )
+        .then((items) => { if (!controller.signal.aborted) setSuggestions(items); })
+        .catch(() => {
+          if (!controller.signal.aborted) {
+            setSuggestions({ tracks: [], artists: [] });
+            setSuggestionError(true);
+          }
+        })
+        .finally(() => { if (!controller.signal.aborted) setSuggestionLoading(false); });
+    }, 260);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query, focused]);
 
   // Slash focuses search unless a user is already typing in an editable field.
   // Escape returns focus to the page. Cmd/Ctrl+K is also supported.
@@ -73,6 +113,7 @@ export function SearchExperience({
     const clean = value.trim().slice(0, MAX_MUSIC_QUERY_LENGTH);
     if (!clean) return;
     saveRecent(clean);
+    setFocused(false);
     router.push(`/${locale}/search?q=${encodeURIComponent(clean)}`);
   };
 
@@ -101,6 +142,11 @@ export function SearchExperience({
           maxLength={MAX_MUSIC_QUERY_LENGTH}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => { window.setTimeout(() => setFocused(false), 150); }}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') { setFocused(false); inputRef.current?.blur(); }
+          }}
           placeholder={placeholder}
           aria-label={searchLabel}
           className="input oddio-search-input h-12 min-w-0 flex-1 text-base"
@@ -114,6 +160,64 @@ export function SearchExperience({
           {ar ? 'بحث' : 'Search'}
         </button>
       </form>
+      {focused && query.trim().length >= 2 ? (
+        <div
+          aria-label={ar ? 'اقتراحات البحث' : 'Search suggestions'}
+          className="rounded-2xl border border-white/15 bg-[#1d1827] p-3 shadow-xl"
+        >
+          {suggestionLoading ? (
+            <p role="status" className="px-2 py-3 text-xs text-muted">{ar ? 'بندور على نتائج…' : 'Finding matches…'}</p>
+          ) : suggestionError ? (
+            <p role="status" className="px-2 py-3 text-xs text-muted">{ar ? 'الاقتراحات مش متاحة حاليًا. تقدر تبحث بالطريقة العادية.' : 'Suggestions unavailable. You can still search normally.'}</p>
+          ) : suggestions.tracks.length === 0 && suggestions.artists.length === 0 ? (
+            <p role="status" className="px-2 py-3 text-xs text-muted">{ar ? 'مفيش اقتراحات مطابقة.' : 'No matching suggestions.'}</p>
+          ) : (
+            <div className="space-y-3">
+              {suggestions.tracks.length > 0 ? (
+                <div>
+                  <h2 className="mb-1 px-2 text-xs font-semibold text-muted">{ar ? 'أغاني' : 'Tracks'}</h2>
+                  <ul>
+                    {suggestions.tracks.map((track) => (
+                      <li key={track.id}>
+                        <Link
+                          href={`/${locale}/tracks/${track.id}-${track.slug}`}
+                          onClick={() => saveRecent(query)}
+                          className="flex min-h-11 items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-ink hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        >
+                          <span className="min-w-0 truncate font-semibold">{track.title}</span>
+                          <span className="max-w-[35%] shrink-0 truncate text-xs text-muted">{track.artistName}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {suggestions.artists.length > 0 ? (
+                <div>
+                  <h2 className="mb-1 px-2 text-xs font-semibold text-muted">{ar ? 'فنانين' : 'Artists'}</h2>
+                  <ul>
+                    {suggestions.artists.map((artist) => (
+                      <li key={artist.id}>
+                        <Link
+                          href={`/${locale}/artists/${artist.slug}`}
+                          onClick={() => saveRecent(query)}
+                          className="block min-h-11 rounded-lg px-3 py-2 text-sm text-ink hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        >
+                          {artist.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          )}
+          <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => openSearch(query)}
+            className="mt-2 min-h-10 w-full rounded-xl border border-primary/30 px-3 text-start text-xs font-semibold text-primary hover:bg-primary/10">
+            {ar ? `عرض كل نتائج «${query.trim()}»` : `See all results for “${query.trim()}”`}
+          </button>
+        </div>
+      ) : null}
       <p className="text-xs text-muted">
         {ar ? 'اضغط / علشان تبدأ بحث، أو Ctrl+K' : 'Press / or Ctrl+K to focus search'}
       </p>
