@@ -90,6 +90,21 @@ describe('prompt-generated playlists', () => {
     expect(result.reasons).toEqual({});
   });
 
+  it('requires all explicit genre, mood and language facets together', () => {
+    const db = dbFixture();
+    expect(promptDiscoveryTracks(db, viewer, 'calm Arabic pop').tracks.map((track) => track.id))
+      .toEqual(['arabic']);
+    expect(promptDiscoveryTracks(db, viewer, 'Arabic energetic rock').tracks).toEqual([]);
+    expect(promptDiscoveryTracks(db, viewer, 'English energetic rock').tracks.map((track) => track.id))
+      .toEqual(['english']);
+  });
+
+  it('never treats a language-only partial match as satisfying a conflicting genre', () => {
+    const result = promptDiscoveryTracks(dbFixture(), viewer, 'English pop');
+    expect(result.tracks).toEqual([]);
+    expect(result.reasons).toEqual({});
+  });
+
   it('matches English genre words', () => {
     const result = promptDiscoveryTracks(dbFixture(), viewer, 'energetic rock');
     expect(result.matched).toBe(true);
