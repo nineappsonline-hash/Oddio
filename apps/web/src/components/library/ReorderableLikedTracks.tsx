@@ -17,8 +17,10 @@ export function ReorderableLikedTracks({
 }) {
   const [tracks, setTracks] = useState(initialTracks);
   const [message, setMessage] = useState('');
+  const [ready, setReady] = useState(false);
   const key = `oddio-library-liked-order:${userId}`;
   useEffect(() => {
+    setReady(false);
     try {
       const saved = JSON.parse(window.localStorage.getItem(key) ?? '[]') as unknown;
       if (!Array.isArray(saved) || !saved.every((id) => typeof id === 'string')) {
@@ -35,6 +37,8 @@ export function ReorderableLikedTracks({
       );
     } catch {
       setTracks(initialTracks);
+    } finally {
+      setReady(true);
     }
   }, [initialTracks, key]);
 
@@ -59,7 +63,7 @@ export function ReorderableLikedTracks({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-reorder-ready={ready ? 'true' : 'false'}>
       <p className="text-xs leading-5 text-muted">
         {locale === 'ar'
           ? 'اسحب العلامة بجانب الأغنية لترتيب المفضلة بنفسك. الترتيب بيتحفظ على الجهاز ده.'
@@ -73,6 +77,7 @@ export function ReorderableLikedTracks({
         getId={(track) => track.id}
         locale={locale}
         onMove={reorder}
+        disabled={!ready}
         className="card divide-y divide-white/5 p-2"
         renderItem={(track, index) => (
           <TrackRow track={track} queue={tracks} index={index} locale={locale} />
