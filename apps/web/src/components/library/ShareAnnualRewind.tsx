@@ -66,13 +66,13 @@ export function ShareAnnualRewind({
       context.fillText(String(report.year), x, 315);
       context.font = 'bold 58px sans-serif';
       context.fillText(ar ? 'حصادي الموسيقي' : 'My listening year', x, 420);
-      const lines = text.split('\\n').slice(1);
+      const lines = text.split('\n').slice(1);
       context.font = '37px sans-serif';
       context.fillStyle = '#e5e7eb';
       let y = 560;
       for (const line of lines) {
         // Wrap long rows by measured words without truncation.
-        const words = line.split(/\\s+/);
+        const words = line.split(/\s+/);
         let row = '';
         for (const word of words) {
           const candidate = row ? row + ' ' + word : word;
