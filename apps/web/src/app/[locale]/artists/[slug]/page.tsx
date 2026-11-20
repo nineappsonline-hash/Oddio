@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ExternalLink } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
-import { getArtistPage, listableTracks } from '@/lib/data/queries';
+import { getArtistPage } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
