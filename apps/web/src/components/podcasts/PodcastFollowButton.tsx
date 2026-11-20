@@ -7,7 +7,11 @@ import { Check, Plus } from 'lucide-react';
 import { apiRequest } from '@/lib/client-api';
 
 export function PodcastFollowButton({
-  showId, locale, signedIn, initialFollowing, demo = false,
+  showId,
+  locale,
+  signedIn,
+  initialFollowing,
+  demo = false,
 }: {
   showId: string;
   locale: 'ar' | 'en';
@@ -33,7 +37,8 @@ export function PodcastFollowButton({
   }
   return (
     <div className="inline-flex flex-col gap-1.5">
-      <button type="button"
+      <button
+        type="button"
         aria-pressed={following}
         disabled={busy || demo}
         onClick={async () => {
@@ -48,7 +53,11 @@ export function PodcastFollowButton({
             setFollowing(next);
             router.refresh();
           } catch {
-            setMessage(ar ? 'حصلت مشكلة في حفظ المتابعة. جرّب تاني.' : 'Could not save. Please retry.');
+            setMessage(
+              ar
+                ? 'حصلت مشكلة في حفظ المتابعة. جرّب تاني.'
+                : 'Could not save. Please retry.',
+            );
           } finally {
             setBusy(false);
           }
@@ -57,13 +66,23 @@ export function PodcastFollowButton({
       >
         {following ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
         {busy
-          ? ar ? 'بيتحفظ...' : 'Saving...'
+          ? ar
+            ? 'بيتحفظ...'
+            : 'Saving...'
           : following
-            ? ar ? 'بتتابع البرنامج ✓' : 'Following'
-            : ar ? 'تابع البرنامج' : 'Follow show'}
+            ? ar
+              ? 'بتتابع البرنامج ✓'
+              : 'Following'
+            : ar
+              ? 'تابع البرنامج'
+              : 'Follow show'}
       </button>
       <span role="status" aria-live="polite" className="text-xs text-white/65">
-        {demo ? (ar ? 'المتابعة مش متاحة في النسخة التجريبية' : 'Following is unavailable in demo mode') : message}
+        {demo
+          ? ar
+            ? 'المتابعة مش متاحة في النسخة التجريبية'
+            : 'Following is unavailable in demo mode'
+          : message}
       </span>
     </div>
   );

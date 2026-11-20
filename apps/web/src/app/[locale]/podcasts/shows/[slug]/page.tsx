@@ -53,14 +53,15 @@ export default async function PodcastShowPage({
     show = catalog.shows.find((s) => s.slug === slug);
   if (!show) notFound();
   const user = await getSessionUser();
-  const { data: followed } = user && !demoMode
-    ? await serviceClient()
-        .from('podcast_show_follows')
-        .select('show_id')
-        .eq('user_id', user.id)
-        .eq('show_id', show.id)
-        .maybeSingle()
-    : { data: null };
+  const { data: followed } =
+    user && !demoMode
+      ? await serviceClient()
+          .from('podcast_show_follows')
+          .select('show_id')
+          .eq('user_id', user.id)
+          .eq('show_id', show.id)
+          .maybeSingle()
+      : { data: null };
   const creator = show.artistId
     ? (
         await serviceClient()

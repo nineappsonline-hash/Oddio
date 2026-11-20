@@ -28,7 +28,10 @@ export async function GET() {
       .order('followed_at', { ascending: false })
       .limit(500);
     if (error) throw error;
-    return jsonOk({ showIds: (data ?? []).map((row) => row.show_id as string), demo: false });
+    return jsonOk({
+      showIds: (data ?? []).map((row) => row.show_id as string),
+      demo: false,
+    });
   } catch (error) {
     return jsonError(error);
   }
@@ -50,10 +53,12 @@ export async function POST(request: Request) {
       .maybeSingle();
     if (showError) throw showError;
     if (!show) throw Errors.notFound('Podcast show not found');
-    const { error } = await db.from('podcast_show_follows').upsert(
-      { user_id: user.id, show_id: showId },
-      { onConflict: 'user_id,show_id', ignoreDuplicates: true },
-    );
+    const { error } = await db
+      .from('podcast_show_follows')
+      .upsert(
+        { user_id: user.id, show_id: showId },
+        { onConflict: 'user_id,show_id', ignoreDuplicates: true },
+      );
     if (error) throw error;
     return jsonOk({ showId, following: true });
   } catch (error) {
