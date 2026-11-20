@@ -894,7 +894,7 @@ export function FullPlayer() {
           <aside
             className={cn(
               'min-h-[55dvh] max-h-[calc(100dvh-100px)] flex-col overflow-hidden rounded-[28px] border border-white/[0.13] bg-white/[0.055] p-4 shadow-[0_24px_70px_rgba(0,0,0,.2)] backdrop-blur-[28px] lg:flex lg:min-h-[470px] lg:max-h-[calc(100vh-175px)]',
-              sideTab === 'queue' ? 'flex' : 'hidden lg:flex',
+              sideTab === 'queue' || sideTab === 'lyrics' ? 'flex' : 'hidden lg:flex',
             )}
             aria-label={
               sideTab === 'lyrics'
@@ -913,12 +913,26 @@ export function FullPlayer() {
               )}
               role="tablist"
               aria-label={rtl ? 'أقسام المشغل' : 'Player panels'}
+              onKeyDown={(event) => {
+                if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+                const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+                const position = tabs.indexOf(document.activeElement as HTMLButtonElement);
+                if (position < 0 || !tabs.length) return;
+                event.preventDefault();
+                const delta = (event.key === 'ArrowRight' ? 1 : -1) * (rtl ? -1 : 1);
+                const target = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (position + delta + tabs.length) % tabs.length;
+                tabs[target]?.focus();
+                tabs[target]?.click();
+              }}
             >
               {!podcast && (
                 <button
                   type="button"
                   role="tab"
                   aria-selected={sideTab === 'lyrics'}
+                  id="oddio-tab-lyrics"
+                  aria-controls="oddio-player-panel"
+                  tabIndex={sideTab === 'lyrics' ? 0 : -1}
                   onClick={() => setSideTab('lyrics')}
                   className={cn(
                     'flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-2.5 text-xs font-bold transition sm:gap-2 sm:px-3 sm:text-sm',
@@ -934,9 +948,12 @@ export function FullPlayer() {
                 type="button"
                 role="tab"
                 aria-selected={sideTab === 'queue'}
+                id="oddio-tab-queue"
+                aria-controls="oddio-player-panel"
+                tabIndex={sideTab === 'queue' ? 0 : -1}
                 onClick={() => setSideTab('queue')}
                 className={cn(
-                  'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
+                  'flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-2.5 text-xs font-bold transition sm:gap-2 sm:px-3 sm:text-sm',
                   sideTab === 'queue'
                     ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
                     : 'text-muted hover:bg-white/5 hover:text-ink',
@@ -948,9 +965,12 @@ export function FullPlayer() {
                 type="button"
                 role="tab"
                 aria-selected={sideTab === 'similar'}
+                id="oddio-tab-similar"
+                aria-controls="oddio-player-panel"
+                tabIndex={sideTab === 'similar' ? 0 : -1}
                 onClick={() => setSideTab('similar')}
                 className={cn(
-                  'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
+                  'flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-2.5 text-xs font-bold transition sm:gap-2 sm:px-3 sm:text-sm',
                   sideTab === 'similar'
                     ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
                     : 'text-muted hover:bg-white/5 hover:text-ink',
@@ -972,15 +992,19 @@ export function FullPlayer() {
                     : 'LYRICS'}
             </p>
             {sideTab === 'similar' ? (
+              <div id="oddio-player-panel" role="tabpanel" aria-labelledby="oddio-tab-similar" className="min-h-0 flex-1 overflow-y-auto">
               <SimilarPlayerPanel
                 trackId={track.id}
                 podcast={podcast}
                 rtl={rtl}
                 active={expanded && sideTab === 'similar'}
               />
+              </div>
             ) : sideTab === 'lyrics' && !podcast ? (
               <div
+                id="oddio-player-panel"
                 role="tabpanel"
+                aria-labelledby="oddio-tab-lyrics"
                 aria-label={rtl ? 'كلمات الأغنية' : 'Synchronized lyrics'}
                 className="scroll-thin min-h-0 flex-1 overflow-y-auto"
               >
@@ -1034,7 +1058,9 @@ export function FullPlayer() {
               </div>
             ) : (
               <div
+                id="oddio-player-panel"
                 role="tabpanel"
+                aria-labelledby="oddio-tab-queue"
                 aria-label={t('player.queue')}
                 title={t('player.queue')}
                 className="flex min-h-0 flex-1 flex-col"
