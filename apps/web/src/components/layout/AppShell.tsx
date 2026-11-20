@@ -30,7 +30,8 @@ export function AppShell({
 }) {
   const t = useT();
   const { pathname } = useLocalePath();
-  const podcastMode = pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
+  const podcastMode =
+    pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   return (
     <SessionProvider user={user}>
       <ToastProvider>
@@ -43,7 +44,9 @@ export function AppShell({
           </a>
           <AmbientBackground />
           <Sidebar user={user} />
-          <div className={`oddio-workspace relative z-10 lg:ps-[244px] ${podcastMode ? "oddio-podcast-workspace 2xl:pe-0" : "2xl:pe-[300px]"}`}>
+          <div
+            className={`oddio-workspace relative z-10 lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}
+          >
             <MobileHeader user={user} contentLanguage={contentLanguage} />
             <DesktopTopBar contentLanguage={contentLanguage} />
             <main

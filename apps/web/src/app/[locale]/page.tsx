@@ -53,7 +53,10 @@ export default async function HomePage({
   const t = createTranslator(locale);
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    contentLanguage,
+  );
   const data = getHomeData(db, viewer);
   const recommended = recommendTracks(db, viewer, 20);
   const discoveryArtists = getDiscoveryArtists(db, viewer);

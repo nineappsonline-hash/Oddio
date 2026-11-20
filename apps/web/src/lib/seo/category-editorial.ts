@@ -31,7 +31,7 @@ const genreIntro: Record<string, Editorial> = {
     en: 'Dabke music is connected to a traditional Levantine line dance, recognizable for driving rhythms and communal energy. Discover Oddio tracks tagged Dabke.',
     ar: 'الدبكة من التراث الشامي ومرتبطة بالرقص الجماعي والإيقاع القوي. اكتشف الأعمال الموسيقية المصنفة دبكة على Oddio.',
   },
-  'hiphop': {
+  hiphop: {
     en: 'Hip-hop is rooted in rhythmic delivery, expressive lyricism and beat-driven production. Discover artists and original AI-generated releases categorized as hip-hop.',
     ar: 'الهيب هوب بيعتمد على الإيقاع وأسلوب إلقاء الكلمات والإنتاج الموسيقي القائم على الـBeats. اكتشف أغاني وفنانين هيب هوب على Oddio.',
   },
@@ -63,7 +63,7 @@ const genreIntro: Record<string, Editorial> = {
     en: 'Rock covers music shaped by guitars, bass, drums and expressive performance, from melodic songs to heavier sounds. Hear Oddio’s Rock-tagged releases.',
     ar: 'الروك بيضم أصوات موسيقية بتعتمد على الجيتار والباص والدرامز، من الأغاني اللحنية للأصوات الأقوى. اسمع أعمال الروك على Oddio.',
   },
-  'rnb': {
+  rnb: {
     en: 'R&B brings together soulful vocals, rhythmic grooves and contemporary production. Discover original songs categorized as R&B on Oddio.',
     ar: 'الـR&B بيجمع بين الأداء الغنائي التعبيري والإيقاع والتوزيع الموسيقي المعاصر. اكتشف الأغاني المصنفة R&B على Oddio.',
   },

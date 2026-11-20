@@ -10,7 +10,9 @@ describe('resumablePodcastProgress', () => {
   });
   it('returns meaningful, clamped progress for unfinished episodes', () => {
     expect(resumablePodcastProgress(150, 600)).toEqual({
-      position: 150, remaining: 450, percent: 25,
+      position: 150,
+      remaining: 450,
+      percent: 25,
     });
     expect(resumablePodcastProgress(15, 600)?.percent).toBe(3);
   });

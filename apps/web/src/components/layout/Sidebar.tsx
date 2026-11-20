@@ -49,21 +49,50 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
   const { locale, pathname } = useLocalePath();
   const session = useSession();
   const currentUser = session.user ?? user;
-  const podcastMode = pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
+  const podcastMode =
+    pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
 
-  const items = podcastMode ? [
-    { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'الرئيسية' : 'Podcast home', icon: 'home', exact: true },
-    { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'التصنيفات' : 'Categories', icon: 'discover' },
-    { href: `/${locale}/podcasts#series`, label: locale === 'ar' ? 'السلاسل' : 'Podcast series', icon: 'library', exact: true },
-    { href: `/${locale}/podcasts/creators`, label: locale === 'ar' ? 'صنّاع البودكاست' : 'Creators', icon: 'studio' },
-    { href: `/${locale}`, label: locale === 'ar' ? 'الموسيقى' : 'Music', icon: 'soundspace', exact: true },
-  ] : [
-    { href: `/${locale}`, label: t('nav.home'), icon: 'home', exact: true },
-    { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
-    { href: `/${locale}/discover`, label: t('nav.discover'), icon: 'discover' },
-    { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'بودكاست' : 'Podcasts', icon: 'studio' },
-
-  ];
+  const items = podcastMode
+    ? [
+        {
+          href: `/${locale}/podcasts`,
+          label: locale === 'ar' ? 'الرئيسية' : 'Podcast home',
+          icon: 'home',
+          exact: true,
+        },
+        {
+          href: `/${locale}/podcasts/categories`,
+          label: locale === 'ar' ? 'التصنيفات' : 'Categories',
+          icon: 'discover',
+        },
+        {
+          href: `/${locale}/podcasts#series`,
+          label: locale === 'ar' ? 'السلاسل' : 'Podcast series',
+          icon: 'library',
+          exact: true,
+        },
+        {
+          href: `/${locale}/podcasts/creators`,
+          label: locale === 'ar' ? 'صنّاع البودكاست' : 'Creators',
+          icon: 'studio',
+        },
+        {
+          href: `/${locale}`,
+          label: locale === 'ar' ? 'الموسيقى' : 'Music',
+          icon: 'soundspace',
+          exact: true,
+        },
+      ]
+    : [
+        { href: `/${locale}`, label: t('nav.home'), icon: 'home', exact: true },
+        { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
+        { href: `/${locale}/discover`, label: t('nav.discover'), icon: 'discover' },
+        {
+          href: `/${locale}/podcasts`,
+          label: locale === 'ar' ? 'بودكاست' : 'Podcasts',
+          icon: 'studio',
+        },
+      ];
 
   if (currentUser && !podcastMode) {
     items.push({
@@ -81,12 +110,24 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
       exact: false,
     });
   }
-  const staff = Boolean(currentUser?.roles.some(role => role === 'super_admin' || role === 'admin'));
+  const staff = Boolean(
+    currentUser?.roles.some((role) => role === 'super_admin' || role === 'admin'),
+  );
   const canPublishPodcasts = Boolean(currentUser?.isArtistManager || staff);
   if (podcastMode && canPublishPodcasts) {
     items.push(
-      { href: `/${locale}/podcasts/me`, label: locale === 'ar' ? 'ملفي' : 'My profile', icon: 'studio', exact: true },
-      { href: `/${locale}/podcasts/manage`, label: locale === 'ar' ? 'استوديو البودكاست' : 'Podcast Studio', icon: 'studio', exact: false },
+      {
+        href: `/${locale}/podcasts/me`,
+        label: locale === 'ar' ? 'ملفي' : 'My profile',
+        icon: 'studio',
+        exact: true,
+      },
+      {
+        href: `/${locale}/podcasts/manage`,
+        label: locale === 'ar' ? 'استوديو البودكاست' : 'Podcast Studio',
+        icon: 'studio',
+        exact: false,
+      },
     );
   }
   if (podcastMode && !canPublishPodcasts) {
@@ -147,74 +188,76 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         })}
       </nav>
 
-      {!podcastMode ? <section
-        className="mt-4 shrink-0 border-t border-white/10 pt-4"
-        aria-label={locale === 'ar' ? 'مجموعة الموسيقى' : 'Your collection'}
-      >
-        <div className="mb-3 flex items-center justify-between px-3">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#98858b]">
-            {locale === 'ar' ? 'مجموعتك' : 'YOUR COLLECTION'}
-          </p>
-          <Library size={14} className="text-[#b28a87]" aria-hidden="true" />
-        </div>
-        {[
-          {
-            label: locale === 'ar' ? 'الأغاني المفضلة' : 'Liked songs',
-            href: `/${locale}/library`,
-            symbol: 'liked',
-            color: '#303030',
-          },
-          {
-            label: locale === 'ar' ? 'على حسب مودك' : 'Made for your mood',
-            href: `/${locale}/soundspace`,
-            symbol: 'soundspace',
-            color: '#3c3c3c',
-          },
-          {
-            label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Music genres',
-            href: `/${locale}/genres`,
-            symbol: 'discover',
-            color: '#292929',
-          },
-          {
-            label: locale === 'ar' ? 'الأكثر استماعًا' : 'Charts',
-            href: `/${locale}/charts`,
-            symbol: 'charts',
-            color: '#303030',
-          },
-          {
-            label: locale === 'ar' ? 'غرف الاستماع' : 'Listening rooms',
-            href: `/${locale}/rooms`,
-            symbol: 'soundspace',
-            color: '#3c3c3c',
-          },
-          {
-            label: locale === 'ar' ? 'آخر الإصدارات' : 'New releases',
-            href: `/${locale}/discover?sort=newest`,
-            symbol: 'releases',
-            color: '#292929',
-          },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            prefetch={false}
-            className="group flex items-center gap-3 rounded-xl px-2 py-2 text-xs font-semibold text-[#c5b4b0] transition hover:bg-white/5 hover:text-white"
-          >
-            <span
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg text-[#f5c9a8]"
-              style={{ backgroundColor: item.color }}
+      {!podcastMode ? (
+        <section
+          className="mt-4 shrink-0 border-t border-white/10 pt-4"
+          aria-label={locale === 'ar' ? 'مجموعة الموسيقى' : 'Your collection'}
+        >
+          <div className="mb-3 flex items-center justify-between px-3">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#98858b]">
+              {locale === 'ar' ? 'مجموعتك' : 'YOUR COLLECTION'}
+            </p>
+            <Library size={14} className="text-[#b28a87]" aria-hidden="true" />
+          </div>
+          {[
+            {
+              label: locale === 'ar' ? 'الأغاني المفضلة' : 'Liked songs',
+              href: `/${locale}/library`,
+              symbol: 'liked',
+              color: '#303030',
+            },
+            {
+              label: locale === 'ar' ? 'على حسب مودك' : 'Made for your mood',
+              href: `/${locale}/soundspace`,
+              symbol: 'soundspace',
+              color: '#3c3c3c',
+            },
+            {
+              label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Music genres',
+              href: `/${locale}/genres`,
+              symbol: 'discover',
+              color: '#292929',
+            },
+            {
+              label: locale === 'ar' ? 'الأكثر استماعًا' : 'Charts',
+              href: `/${locale}/charts`,
+              symbol: 'charts',
+              color: '#303030',
+            },
+            {
+              label: locale === 'ar' ? 'غرف الاستماع' : 'Listening rooms',
+              href: `/${locale}/rooms`,
+              symbol: 'soundspace',
+              color: '#3c3c3c',
+            },
+            {
+              label: locale === 'ar' ? 'آخر الإصدارات' : 'New releases',
+              href: `/${locale}/discover?sort=newest`,
+              symbol: 'releases',
+              color: '#292929',
+            },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              prefetch={false}
+              className="group flex items-center gap-3 rounded-xl px-2 py-2 text-xs font-semibold text-[#c5b4b0] transition hover:bg-white/5 hover:text-white"
             >
-              <OddioGlyph
-                name={item.symbol as OddioGlyphName}
-                size={21}
-                className="oddio-glyph"
-              />
-            </span>
-            <span>{item.label}</span>
-          </Link>
-        ))}
-      </section> : null}
+              <span
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg text-[#f5c9a8]"
+                style={{ backgroundColor: item.color }}
+              >
+                <OddioGlyph
+                  name={item.symbol as OddioGlyphName}
+                  size={21}
+                  className="oddio-glyph"
+                />
+              </span>
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </section>
+      ) : null}
 
       {!podcastMode && !currentUser?.isArtistManager ? (
         <Link
@@ -258,7 +301,11 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
           <Settings className="h-4 w-4" />
           {t('nav.settings')}
         </Link>
-        <Link prefetch={false} href={`/${locale}/install`} className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink">
+        <Link
+          prefetch={false}
+          href={`/${locale}/install`}
+          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink"
+        >
           <OddioGlyph name="soundspace" size={17} />
           {locale === 'ar' ? 'ثبّت Oddio' : 'Install Oddio'}
         </Link>

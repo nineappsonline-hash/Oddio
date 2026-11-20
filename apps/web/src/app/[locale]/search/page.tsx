@@ -62,7 +62,10 @@ export default async function SearchPage({
   const query = parsed.success ? parsed.data : searchQuery.parse({});
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    contentLanguage,
+  );
   const genres = db.genres.filter((genre) => genre.active);
   const moods = db.moods.filter((mood) => mood.active);
   const hasSearch = Boolean(query.q || query.genre || query.mood || query.language);

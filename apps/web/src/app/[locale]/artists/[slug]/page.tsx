@@ -1,4 +1,8 @@
-import { filterMusicDb, filterPodcastCatalog, getContentLanguagePreference } from '@/lib/content-language';
+import {
+  filterMusicDb,
+  filterPodcastCatalog,
+  getContentLanguagePreference,
+} from '@/lib/content-language';
 import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import { getPodcastCatalog } from '@/lib/podcasts/catalog';
 import { PodcastShowCard } from '@/components/podcasts/PodcastUI';
@@ -47,9 +51,10 @@ export async function generateMetadata({
     });
   return buildMetadata({
     locale: safeLocale,
-    title: safeLocale === 'ar'
-      ? `${page.artist.name} | أغاني وفنانين على Oddio`
-      : `${page.artist.name} — AI Music Artist`,
+    title:
+      safeLocale === 'ar'
+        ? `${page.artist.name} | أغاني وفنانين على Oddio`
+        : `${page.artist.name} — AI Music Artist`,
     description: page.artist.bio
       ? `${page.artist.bio.slice(0, 145)} — Listen on Oddio.`
       : safeLocale === 'ar'
@@ -57,7 +62,9 @@ export async function generateMetadata({
         : `Explore ${page.artist.name}'s songs and releases on Oddio. Listen to original AI music and discover more artists.`,
     path: `/artists/${page.artist.slug}`,
     type: 'profile',
-    noindex: page.tracks.length === 0 && !podcastCatalog.shows.some(show => show.artistId === page.artist.id),
+    noindex:
+      page.tracks.length === 0 &&
+      !podcastCatalog.shows.some((show) => show.artistId === page.artist.id),
   });
 }
 
@@ -71,12 +78,18 @@ export default async function ArtistPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), await getContentLanguagePreference());
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    await getContentLanguagePreference(),
+  );
   const page = getArtistPage(db, viewer, slug);
   if (!page) notFound();
   const { artist, tracks, albums, followerCount, isFollowing, featuredTrack } = page;
-  const podcastCatalog=filterPodcastCatalog(await getPodcastCatalog(), await getContentLanguagePreference());
-  const artistSeries=podcastCatalog.shows.filter(show=>show.artistId===artist.id);
+  const podcastCatalog = filterPodcastCatalog(
+    await getPodcastCatalog(),
+    await getContentLanguagePreference(),
+  );
+  const artistSeries = podcastCatalog.shows.filter((show) => show.artistId === artist.id);
   const queue = featuredTrack
     ? [featuredTrack, ...tracks.filter((track) => track.id !== featuredTrack.id)]
     : tracks;
@@ -105,11 +118,13 @@ export default async function ArtistPage({
 
   return (
     <div>
-      <SeoBreadcrumbs items={[
-        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
-        { label: locale === 'ar' ? 'الفنانون' : 'Artists', href: `/${locale}/artists` },
-        { label: artist.name, href: `/${locale}/artists/${artist.slug}` },
-      ]} />
+      <SeoBreadcrumbs
+        items={[
+          { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+          { label: locale === 'ar' ? 'الفنانون' : 'Artists', href: `/${locale}/artists` },
+          { label: artist.name, href: `/${locale}/artists/${artist.slug}` },
+        ]}
+      />
       <JsonLd
         data={artistJsonLd({
           name: artist.name,
@@ -229,15 +244,27 @@ export default async function ArtistPage({
       </section>
 
       {artistSeries.length > 0 ? (
-        <section className="mb-10 space-y-5 rounded-3xl border border-white/10 bg-[#241b2d]/70 p-5 sm:p-7" aria-labelledby="artist-podcast-series-heading">
-          <h2 id="artist-podcast-series-heading" className="text-2xl font-bold text-white">
-            {locale==='ar'? `سلاسل بودكاست ${artist.name}` : `Podcast series by ${artist.name}`}
+        <section
+          className="mb-10 space-y-5 rounded-3xl border border-white/10 bg-[#241b2d]/70 p-5 sm:p-7"
+          aria-labelledby="artist-podcast-series-heading"
+        >
+          <h2
+            id="artist-podcast-series-heading"
+            className="text-2xl font-bold text-white"
+          >
+            {locale === 'ar'
+              ? `سلاسل بودكاست ${artist.name}`
+              : `Podcast series by ${artist.name}`}
           </h2>
           <p className="text-sm leading-7 text-[#b8adbf]">
-            {locale==='ar'?'استكشف سلاسل بتناقش مواضيع مختلفة من نفس الفنان، وكل سلسلة تجمع حلقاتها في مكان واحد.':'Explore this artist’s themed podcast series, with all related episodes together in one place.'}
+            {locale === 'ar'
+              ? 'استكشف سلاسل بتناقش مواضيع مختلفة من نفس الفنان، وكل سلسلة تجمع حلقاتها في مكان واحد.'
+              : 'Explore this artist’s themed podcast series, with all related episodes together in one place.'}
           </p>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {artistSeries.map(show=><PodcastShowCard key={show.id} show={show} locale={locale}/>)}
+            {artistSeries.map((show) => (
+              <PodcastShowCard key={show.id} show={show} locale={locale} />
+            ))}
           </div>
         </section>
       ) : null}

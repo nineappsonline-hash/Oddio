@@ -32,9 +32,15 @@ export function EmptyState({
           <circle cx="18" cy="16" r="3" stroke="currentColor" strokeWidth="1.6" />
         </svg>
       </div>
-      <h3 className="max-w-lg text-base font-bold leading-7 text-ink sm:text-lg">{title}</h3>
+      <h3 className="max-w-lg text-base font-bold leading-7 text-ink sm:text-lg">
+        {title}
+      </h3>
       {body ? <p className="mt-2 max-w-md text-sm leading-7 text-muted">{body}</p> : null}
-      {action ? <div className="mt-6 flex flex-wrap items-center justify-center gap-3">{action}</div> : null}
+      {action ? (
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          {action}
+        </div>
+      ) : null}
     </div>
   );
 }

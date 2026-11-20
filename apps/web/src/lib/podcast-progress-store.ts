@@ -35,7 +35,8 @@ export function mergePodcastProgress(
   for (const entry of [...remote, ...local]) {
     const current = entries.get(entry.episodeId);
     // Equal timestamps prefer local (same-device action).
-    if (!current || entry.updatedAt >= current.updatedAt) entries.set(entry.episodeId, entry);
+    if (!current || entry.updatedAt >= current.updatedAt)
+      entries.set(entry.episodeId, entry);
   }
   return [...entries.values()].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, LIMIT);
 }
@@ -51,13 +52,23 @@ export function readPodcastSyncRecords(viewerId: string | null): SavedPodcastPro
       .filter((item): item is SavedPodcastProgress => {
         if (!item || typeof item !== 'object') return false;
         const row = item as Record<string, unknown>;
-        if (typeof row.episodeId !== 'string' || row.episodeId.length > 128 || !row.episodeId ||
-            typeof row.seconds !== 'number' || !Number.isFinite(row.seconds) ||
-            typeof row.duration !== 'number' || !Number.isFinite(row.duration) ||
-            row.duration <= 0 || row.duration > MAX_SECONDS ||
-            row.seconds < 0 || row.seconds > row.duration ||
-            typeof row.updatedAt !== 'number' || !Number.isFinite(row.updatedAt) ||
-            (row.completed !== undefined && typeof row.completed !== 'boolean')) return false;
+        if (
+          typeof row.episodeId !== 'string' ||
+          row.episodeId.length > 128 ||
+          !row.episodeId ||
+          typeof row.seconds !== 'number' ||
+          !Number.isFinite(row.seconds) ||
+          typeof row.duration !== 'number' ||
+          !Number.isFinite(row.duration) ||
+          row.duration <= 0 ||
+          row.duration > MAX_SECONDS ||
+          row.seconds < 0 ||
+          row.seconds > row.duration ||
+          typeof row.updatedAt !== 'number' ||
+          !Number.isFinite(row.updatedAt) ||
+          (row.completed !== undefined && typeof row.completed !== 'boolean')
+        )
+          return false;
         if (seen.has(row.episodeId)) return false;
         seen.add(row.episodeId);
         return true;
@@ -70,8 +81,8 @@ export function readPodcastSyncRecords(viewerId: string | null): SavedPodcastPro
 }
 
 export function readPodcastProgress(viewerId: string | null): SavedPodcastProgress[] {
-  return readPodcastSyncRecords(viewerId).filter((row) =>
-    !row.completed && row.seconds >= 15 && row.seconds < row.duration - 20,
+  return readPodcastSyncRecords(viewerId).filter(
+    (row) => !row.completed && row.seconds >= 15 && row.seconds < row.duration - 20,
   );
 }
 
@@ -89,7 +100,9 @@ export function replacePodcastSyncRecords(
     if (JSON.stringify(merged) === JSON.stringify(before)) return;
     storage.setItem(keyFor(viewerId), JSON.stringify(merged));
     window.dispatchEvent(new Event(PODCAST_PROGRESS_EVENT));
-  } catch { /* Storage is optional. */ }
+  } catch {
+    /* Storage is optional. */
+  }
 }
 
 export function savePodcastProgress(
@@ -101,25 +114,39 @@ export function savePodcastProgress(
   if (!track || !isPodcastPlayback(track)) return;
   const storage = storageFor(viewerId);
   if (!storage) return;
-  const duration = Number.isFinite(durationSeconds) && durationSeconds > 0
-    ? durationSeconds : track.durationMs / 1000;
-  if (!Number.isFinite(seconds) || !Number.isFinite(duration) ||
-      duration <= 0 || duration > MAX_SECONDS) return;
-  const previous = readPodcastSyncRecords(viewerId).filter((row) => row.episodeId !== track.id);
+  const duration =
+    Number.isFinite(durationSeconds) && durationSeconds > 0
+      ? durationSeconds
+      : track.durationMs / 1000;
+  if (
+    !Number.isFinite(seconds) ||
+    !Number.isFinite(duration) ||
+    duration <= 0 ||
+    duration > MAX_SECONDS
+  )
+    return;
+  const previous = readPodcastSyncRecords(viewerId).filter(
+    (row) => row.episodeId !== track.id,
+  );
   // Persist completions as tombstones, so another device cannot resurrect them.
   const completed = seconds >= duration - 20;
   if (seconds < 15 && !completed) return;
-  const next = [{
-    episodeId: track.id,
-    seconds: Math.max(0, Math.min(seconds, duration)),
-    duration,
-    updatedAt: Date.now(),
-    completed,
-  }, ...previous];
+  const next = [
+    {
+      episodeId: track.id,
+      seconds: Math.max(0, Math.min(seconds, duration)),
+      duration,
+      updatedAt: Date.now(),
+      completed,
+    },
+    ...previous,
+  ];
   try {
     storage.setItem(keyFor(viewerId), JSON.stringify(next.slice(0, LIMIT)));
     window.dispatchEvent(new Event(PODCAST_PROGRESS_EVENT));
-  } catch { /* Local failure must never interrupt playback. */ }
+  } catch {
+    /* Local failure must never interrupt playback. */
+  }
 }
 
 export function clearPodcastProgress(viewerId: string | null, episodeId: string): void {
@@ -130,9 +157,22 @@ export function clearPodcastProgress(viewerId: string | null, episodeId: string)
     const existing = original.find((row) => row.episodeId === episodeId);
     // Keep a tombstone until both devices have received the completion/reset.
     if (!existing) return;
-    storage.setItem(keyFor(viewerId), JSON.stringify([{
-      ...existing, completed: true, seconds: existing.duration, updatedAt: Date.now(),
-    }, ...original.filter((row) => row.episodeId !== episodeId)].slice(0, LIMIT)));
+    storage.setItem(
+      keyFor(viewerId),
+      JSON.stringify(
+        [
+          {
+            ...existing,
+            completed: true,
+            seconds: existing.duration,
+            updatedAt: Date.now(),
+          },
+          ...original.filter((row) => row.episodeId !== episodeId),
+        ].slice(0, LIMIT),
+      ),
+    );
     window.dispatchEvent(new Event(PODCAST_PROGRESS_EVENT));
-  } catch { /* Storage is optional. */ }
+  } catch {
+    /* Storage is optional. */
+  }
 }

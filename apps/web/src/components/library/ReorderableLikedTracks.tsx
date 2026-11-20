@@ -7,7 +7,9 @@ import { DragReorderList } from '@/components/ui/DragReorderList';
 import { moveItem } from '@/lib/reorder-items';
 
 export function ReorderableLikedTracks({
-  initialTracks, locale, userId,
+  initialTracks,
+  locale,
+  userId,
 }: {
   initialTracks: CatalogTrack[];
   locale: 'ar' | 'en';
@@ -24,10 +26,13 @@ export function ReorderableLikedTracks({
         return;
       }
       const positions = new Map(saved.map((id, index) => [id, index]));
-      setTracks([...initialTracks].sort((a, b) =>
-        (positions.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
-        (positions.get(b.id) ?? Number.MAX_SAFE_INTEGER),
-      ));
+      setTracks(
+        [...initialTracks].sort(
+          (a, b) =>
+            (positions.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+            (positions.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+        ),
+      );
     } catch {
       setTracks(initialTracks);
     }
@@ -39,9 +44,17 @@ export function ReorderableLikedTracks({
     setTracks(next);
     try {
       window.localStorage.setItem(key, JSON.stringify(next.map((track) => track.id)));
-      setMessage(locale === 'ar' ? 'تم حفظ ترتيب الأغاني على الجهاز' : 'Liked song order saved on this device');
+      setMessage(
+        locale === 'ar'
+          ? 'تم حفظ ترتيب الأغاني على الجهاز'
+          : 'Liked song order saved on this device',
+      );
     } catch {
-      setMessage(locale === 'ar' ? 'الترتيب اتغير لكن المتصفح رفض حفظه' : 'Order changed, but browser storage is unavailable');
+      setMessage(
+        locale === 'ar'
+          ? 'الترتيب اتغير لكن المتصفح رفض حفظه'
+          : 'Order changed, but browser storage is unavailable',
+      );
     }
   }
 
@@ -52,9 +65,14 @@ export function ReorderableLikedTracks({
           ? 'اسحب العلامة بجانب الأغنية لترتيب المفضلة بنفسك. الترتيب بيتحفظ على الجهاز ده.'
           : 'Drag the handle next to a liked song to set a custom order. Saved on this device.'}
       </p>
-      <p className="min-h-4 text-xs text-muted" aria-live="polite" role="status">{message}</p>
-      <DragReorderList items={tracks} getId={(track) => track.id}
-        locale={locale} onMove={reorder}
+      <p className="min-h-4 text-xs text-muted" aria-live="polite" role="status">
+        {message}
+      </p>
+      <DragReorderList
+        items={tracks}
+        getId={(track) => track.id}
+        locale={locale}
+        onMove={reorder}
         className="card divide-y divide-white/5 p-2"
         renderItem={(track, index) => (
           <TrackRow track={track} queue={tracks} index={index} locale={locale} />

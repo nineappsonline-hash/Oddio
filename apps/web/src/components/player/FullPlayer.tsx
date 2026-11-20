@@ -115,7 +115,9 @@ export function FullPlayer() {
   const expanded = usePlayer((state) => state.expanded);
   const track = usePlayer((state) => state.track);
   const podcast = isPodcastPlayback(track);
-  useEffect(() => { if (track?.id) setSideTab('similar'); }, [track?.id]);
+  useEffect(() => {
+    if (track?.id) setSideTab('similar');
+  }, [track?.id]);
   const hasTrack = Boolean(track);
   const queue = usePlayer((state) => state.queue);
   const isPlaying = usePlayer((state) => state.isPlaying);
@@ -288,7 +290,8 @@ export function FullPlayer() {
       <div
         className="pointer-events-none fixed inset-0 opacity-70"
         style={{
-          background: 'radial-gradient(850px 620px at 22% 28%, rgba(255,255,255,0.075), transparent 72%), radial-gradient(700px 540px at 88% 85%, rgba(160,160,160,0.045), transparent 74%)',
+          background:
+            'radial-gradient(850px 620px at 22% 28%, rgba(255,255,255,0.075), transparent 72%), radial-gradient(700px 540px at 88% 85%, rgba(160,160,160,0.045), transparent 74%)',
         }}
       />
       {controlNotice ? (
@@ -304,8 +307,12 @@ export function FullPlayer() {
         <div className="mb-6 hidden items-center justify-between rounded-2xl lg:flex border border-white/[0.13] bg-white/[0.055] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] px-4 py-3 lg:mb-5 lg:px-5 lg:py-2">
           <div className="flex items-center gap-2 text-sm text-muted">
             <OddioPlayIcon size={36} />
-            <span className="text-base font-black tracking-tight text-white lg:text-xl">Oddio</span>
-            <span className="ms-3 hidden text-[11px] font-bold uppercase tracking-[.2em] text-[#bcbcbc] sm:inline">{t('player.nowPlaying')}</span>
+            <span className="text-base font-black tracking-tight text-white lg:text-xl">
+              Oddio
+            </span>
+            <span className="ms-3 hidden text-[11px] font-bold uppercase tracking-[.2em] text-[#bcbcbc] sm:inline">
+              {t('player.nowPlaying')}
+            </span>
           </div>
           <button
             type="button"
@@ -319,208 +326,262 @@ export function FullPlayer() {
         </div>
 
         <div className="mb-4 hidden lg:block">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#cacaca]">{rtl ? 'قيد التشغيل' : 'NOW PLAYING'}</span>
-          <h2 className="mt-1 text-2xl font-black tracking-tight text-white">{rtl ? 'مساحتك للاستماع' : 'Your listening space'}</h2>
-          <p className="mt-1 text-sm text-[#999999]">{rtl ? 'استمتع بالموسيقى والبودكاست في مكان واحد' : 'Immersive audio. Seamless control.'}</p>
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#cacaca]">
+            {rtl ? 'قيد التشغيل' : 'NOW PLAYING'}
+          </span>
+          <h2 className="mt-1 text-2xl font-black tracking-tight text-white">
+            {rtl ? 'مساحتك للاستماع' : 'Your listening space'}
+          </h2>
+          <p className="mt-1 text-sm text-[#999999]">
+            {rtl
+              ? 'استمتع بالموسيقى والبودكاست في مكان واحد'
+              : 'Immersive audio. Seamless control.'}
+          </p>
         </div>
         <div className="mb-3 flex items-center justify-end lg:hidden">
-          <button type="button" onClick={() => setSideTab(sideTab === 'queue' ? 'similar' : 'queue')}
-            aria-label={sideTab === 'queue' ? (rtl ? 'الرجوع للمشغل' : 'Back to player') : t('player.queue')}
+          <button
+            type="button"
+            onClick={() => setSideTab(sideTab === 'queue' ? 'similar' : 'queue')}
+            aria-label={
+              sideTab === 'queue'
+                ? rtl
+                  ? 'الرجوع للمشغل'
+                  : 'Back to player'
+                : t('player.queue')
+            }
             aria-expanded={sideTab === 'queue'}
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-4 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-4 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
             <ListMusic className="h-5 w-5" aria-hidden="true" />
-            {sideTab === 'queue' ? (rtl ? 'الرجوع للمشغل' : 'Back to player') : t('player.queue')}
+            {sideTab === 'queue'
+              ? rtl
+                ? 'الرجوع للمشغل'
+                : 'Back to player'
+              : t('player.queue')}
             {sideTab !== 'queue' ? ` (${queue.length})` : ''}
           </button>
         </div>
         <div className="grid w-full min-w-0 flex-1 grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(290px,0.9fr)] lg:items-start">
-          <div className={cn("oddio-mobile-player-card min-h-0 min-w-0 flex-col justify-between rounded-[24px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.20),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[28px] sm:rounded-[28px] sm:p-6 lg:block lg:p-5", sideTab === 'queue' ? 'hidden lg:block' : 'flex')}>
+          <div
+            className={cn(
+              'oddio-mobile-player-card min-h-0 min-w-0 flex-col justify-between rounded-[24px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.20),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[28px] sm:rounded-[28px] sm:p-6 lg:block lg:p-5',
+              sideTab === 'queue' ? 'hidden lg:block' : 'flex',
+            )}
+          >
             <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-evenly gap-3 sm:gap-5 lg:grid lg:flex-none lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:items-center lg:gap-5">
-            <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(78vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
-              <div
-                aria-hidden="true"
-                className="absolute -inset-2 rounded-[2.5rem] opacity-25 blur-2xl sm:-inset-4 sm:opacity-30 sm:blur-3xl"
-                style={{
-                  background: 'radial-gradient(circle, rgba(210,210,210,0.24), transparent 70%)',
-                }}
-              />
-              <div className="relative overflow-hidden rounded-[20px] border border-white/[0.16] bg-white/[0.055] p-1 shadow-[0_15px_45px_rgba(0,0,0,.35)] backdrop-blur-xl sm:rounded-[26px] sm:p-1.5">
-                <button
-                  type="button"
-                  onClick={() => setExpanded(false)}
-                  aria-label={t('player.minimize')}
-                  title={t('player.minimize')}
-                  className="absolute right-2 top-2 z-[55] grid h-11 w-11 place-items-center rounded-full border border-white/25 bg-[#111214]/75 text-white shadow-lg backdrop-blur-xl transition hover:bg-white/20 lg:hidden"
-                >
-                  <ChevronDown className="h-6 w-6" />
-                </button>
-                <Artwork
-                  title={track.title}
-                  animated={isPlaying && !track.artwork.url}
-                  url={track.artwork.url}
-                  accent={accent}
-                  className="aspect-square w-full shadow-glow"
-                  rounded="rounded-[1.35rem]"
-                />
+              <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(78vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute -inset-24 animate-spin-slow opacity-15 [background:conic-gradient(from_0deg,transparent_0deg,rgba(220,220,220,0.22)_70deg,transparent_140deg,rgba(255,255,255,0.16)_240deg,transparent_300deg)]"
-                />
-                {!podcast && mobileLyricsOpen ? (
-                  <div
-                    id="oddio-mobile-lyrics"
-                    className="absolute inset-1.5 z-40 flex flex-col rounded-[1.35rem] bg-[#121314]/95 p-4 backdrop-blur-xl lg:hidden"
-                  >
-                    <div className="mb-2 flex items-center justify-between text-sm font-bold text-white">
-                      <span>🎤 {rtl ? 'كلمات الأغنية' : 'Lyrics'}</span>
-                      <button
-                        type="button"
-                        onClick={() => setMobileLyricsOpen(false)}
-                        className="rounded-lg bg-white/10 px-3 py-1.5"
-                      >
-                        {rtl ? 'إغلاق' : 'Close'}
-                      </button>
-                    </div>
-                    <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
-                      {lyricsLoading ? (
-                        <p className="text-sm text-white/70">
-                          {rtl ? 'جاري التحميل…' : 'Loading…'}
-                        </p>
-                      ) : cues.length ? (
-                        <div
-                          aria-live="off"
-                          className="flex w-full flex-col items-center justify-center px-2 text-center"
-                        >
-                          <div className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-neutral-300/70">
-                            <Mic2 className="h-3.5 w-3.5" />{' '}
-                            {rtl ? 'كلمات متزامنة' : 'LIVE LYRICS'}
-                          </div>
-                          <p
-                            key={activeCue}
-                            dir="auto"
-                            className="transition-all duration-300 text-balance text-center text-xl font-extrabold leading-relaxed text-white drop-shadow-[0_0_20px_rgba(188,103,255,0.55)] sm:text-2xl"
-                          >
-                            {activeCue >= 0 ? cues[activeCue]?.text : '♪'}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-                          <p className="text-sm text-white/80">
-                            {rtl ? 'مفيش كلمات محفوظة للأغنية' : 'No saved lyrics yet'}
-                          </p>
-                          <button
-                            type="button"
-                            disabled={generatingLyrics}
-                            onClick={generateLyrics}
-                            className="rounded-xl bg-white/20 px-3 py-2 text-sm font-bold text-white disabled:opacity-50"
-                          >
-                            {generatingLyrics
-                              ? rtl
-                                ? 'جاري التوليد…'
-                                : 'Generating…'
-                              : '✨ Generate Lyrics'}
-                          </button>
-                          {lyricsMessage ? (
-                            <p role="status" className="text-xs text-white/80">
-                              {lyricsMessage}
-                            </p>
-                          ) : null}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-              {!podcast && <div className="relative z-30 mt-3 flex items-center justify-center lg:hidden">
-                <button
-                  type="button"
-                  aria-expanded={mobileLyricsOpen}
-                  aria-controls="oddio-mobile-lyrics"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    setMobileLyricsOpen((value) => !value);
+                  className="absolute -inset-2 rounded-[2.5rem] opacity-25 blur-2xl sm:-inset-4 sm:opacity-30 sm:blur-3xl"
+                  style={{
+                    background:
+                      'radial-gradient(circle, rgba(210,210,210,0.24), transparent 70%)',
                   }}
-                  className={cn(
-                    'relative z-30 inline-flex min-h-11 touch-manipulation cursor-pointer items-center justify-center gap-2.5 rounded-full border px-5 py-2.5 text-sm font-semibold shadow-lg backdrop-blur-md transition-all duration-200 active:scale-95',
-                    mobileLyricsOpen
-                      ? 'border-white/35 bg-white/20 text-white shadow-black/20'
-                      : 'border-white/15 bg-white/[0.08] text-white/90 hover:border-white/35 hover:bg-white/[0.14]',
-                  )}
-                >
-                  <Mic2 className="h-4 w-4 text-neutral-200" />
-                  <span>
-                    {mobileLyricsOpen
-                      ? rtl
-                        ? 'إخفاء الكلمات'
-                        : 'Hide lyrics'
-                      : rtl
-                        ? 'عرض الكلمات'
-                        : 'Show lyrics'}
-                  </span>
-                  <span
-                    className={cn(
-                      'h-1.5 w-1.5 rounded-full',
-                      mobileLyricsOpen ? 'bg-neutral-300' : 'bg-neutral-400/70',
-                    )}
-                  />
-                </button>
-              </div>}
-              <div className="mt-3 hidden h-8 items-end justify-center gap-1 sm:flex lg:hidden">
-                <Equalizer
-                  bars={28}
-                  paused={!isPlaying}
-                  className="h-full w-full max-w-xs text-neutral-300/70"
                 />
-              </div>
-            </div>
-            <div className="flex min-w-0 flex-col justify-center gap-2 sm:mt-6 sm:gap-5 lg:mt-0">
-              <div className="min-w-0">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[.17em] text-[#bdbdbd] sm:mb-3 sm:text-[11px]">{podcast ? (rtl ? 'حلقة بودكاست' : 'PODCAST EPISODE') : (rtl ? 'أغنية' : 'MUSIC / TRACK')}</span>
-                <h1 className="min-w-0 text-[clamp(19px,5.3vw,27px)] font-black tracking-tight text-white sm:text-3xl lg:text-[clamp(22px,1.9vw,32px)]">
-                  <AutoScrollTitle text={track.title} lines={2} />
-                </h1>
-                {track.artist ? (
-                  <Link
-                    href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}` : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
-                    className="mt-1 inline-block text-sm font-semibold text-[#c9c9c9] transition hover:text-white sm:mt-3 sm:text-base"
+                <div className="relative overflow-hidden rounded-[20px] border border-white/[0.16] bg-white/[0.055] p-1 shadow-[0_15px_45px_rgba(0,0,0,.35)] backdrop-blur-xl sm:rounded-[26px] sm:p-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(false)}
+                    aria-label={t('player.minimize')}
+                    title={t('player.minimize')}
+                    className="absolute right-2 top-2 z-[55] grid h-11 w-11 place-items-center rounded-full border border-white/25 bg-[#111214]/75 text-white shadow-lg backdrop-blur-xl transition hover:bg-white/20 lg:hidden"
                   >
-                    {track.artist.name}
-                  </Link>
-                ) : null}
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <Badge tone="cyan">{track.qualityLabel}</Badge>
-                  {!podcast && <Badge tone="primary">
-                    {track.productionType === 'fully_ai'
-                      ? t('track.fullyAi')
-                      : t('track.aiAssisted')}
-                  </Badge>}
-                  {track.genre ? <Badge tone="neutral">{track.genre.slug}</Badge> : null}
-                  <span className="ms-auto shrink-0">
-                    <ShareButton title={track.title} label={t('common.share')} url={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}` : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`} />
-                  </span>
+                    <ChevronDown className="h-6 w-6" />
+                  </button>
+                  <Artwork
+                    title={track.title}
+                    animated={isPlaying && !track.artwork.url}
+                    url={track.artwork.url}
+                    accent={accent}
+                    className="aspect-square w-full shadow-glow"
+                    rounded="rounded-[1.35rem]"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -inset-24 animate-spin-slow opacity-15 [background:conic-gradient(from_0deg,transparent_0deg,rgba(220,220,220,0.22)_70deg,transparent_140deg,rgba(255,255,255,0.16)_240deg,transparent_300deg)]"
+                  />
+                  {!podcast && mobileLyricsOpen ? (
+                    <div
+                      id="oddio-mobile-lyrics"
+                      className="absolute inset-1.5 z-40 flex flex-col rounded-[1.35rem] bg-[#121314]/95 p-4 backdrop-blur-xl lg:hidden"
+                    >
+                      <div className="mb-2 flex items-center justify-between text-sm font-bold text-white">
+                        <span>🎤 {rtl ? 'كلمات الأغنية' : 'Lyrics'}</span>
+                        <button
+                          type="button"
+                          onClick={() => setMobileLyricsOpen(false)}
+                          className="rounded-lg bg-white/10 px-3 py-1.5"
+                        >
+                          {rtl ? 'إغلاق' : 'Close'}
+                        </button>
+                      </div>
+                      <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+                        {lyricsLoading ? (
+                          <p className="text-sm text-white/70">
+                            {rtl ? 'جاري التحميل…' : 'Loading…'}
+                          </p>
+                        ) : cues.length ? (
+                          <div
+                            aria-live="off"
+                            className="flex w-full flex-col items-center justify-center px-2 text-center"
+                          >
+                            <div className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-neutral-300/70">
+                              <Mic2 className="h-3.5 w-3.5" />{' '}
+                              {rtl ? 'كلمات متزامنة' : 'LIVE LYRICS'}
+                            </div>
+                            <p
+                              key={activeCue}
+                              dir="auto"
+                              className="transition-all duration-300 text-balance text-center text-xl font-extrabold leading-relaxed text-white drop-shadow-[0_0_20px_rgba(188,103,255,0.55)] sm:text-2xl"
+                            >
+                              {activeCue >= 0 ? cues[activeCue]?.text : '♪'}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+                            <p className="text-sm text-white/80">
+                              {rtl ? 'مفيش كلمات محفوظة للأغنية' : 'No saved lyrics yet'}
+                            </p>
+                            <button
+                              type="button"
+                              disabled={generatingLyrics}
+                              onClick={generateLyrics}
+                              className="rounded-xl bg-white/20 px-3 py-2 text-sm font-bold text-white disabled:opacity-50"
+                            >
+                              {generatingLyrics
+                                ? rtl
+                                  ? 'جاري التوليد…'
+                                  : 'Generating…'
+                                : '✨ Generate Lyrics'}
+                            </button>
+                            {lyricsMessage ? (
+                              <p role="status" className="text-xs text-white/80">
+                                {lyricsMessage}
+                              </p>
+                            ) : null}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+                {!podcast && (
+                  <div className="relative z-30 mt-3 flex items-center justify-center lg:hidden">
+                    <button
+                      type="button"
+                      aria-expanded={mobileLyricsOpen}
+                      aria-controls="oddio-mobile-lyrics"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setMobileLyricsOpen((value) => !value);
+                      }}
+                      className={cn(
+                        'relative z-30 inline-flex min-h-11 touch-manipulation cursor-pointer items-center justify-center gap-2.5 rounded-full border px-5 py-2.5 text-sm font-semibold shadow-lg backdrop-blur-md transition-all duration-200 active:scale-95',
+                        mobileLyricsOpen
+                          ? 'border-white/35 bg-white/20 text-white shadow-black/20'
+                          : 'border-white/15 bg-white/[0.08] text-white/90 hover:border-white/35 hover:bg-white/[0.14]',
+                      )}
+                    >
+                      <Mic2 className="h-4 w-4 text-neutral-200" />
+                      <span>
+                        {mobileLyricsOpen
+                          ? rtl
+                            ? 'إخفاء الكلمات'
+                            : 'Hide lyrics'
+                          : rtl
+                            ? 'عرض الكلمات'
+                            : 'Show lyrics'}
+                      </span>
+                      <span
+                        className={cn(
+                          'h-1.5 w-1.5 rounded-full',
+                          mobileLyricsOpen ? 'bg-neutral-300' : 'bg-neutral-400/70',
+                        )}
+                      />
+                    </button>
+                  </div>
+                )}
+                <div className="mt-3 hidden h-8 items-end justify-center gap-1 sm:flex lg:hidden">
+                  <Equalizer
+                    bars={28}
+                    paused={!isPlaying}
+                    className="h-full w-full max-w-xs text-neutral-300/70"
+                  />
                 </div>
               </div>
-              {!podcast && <div className="flex flex-wrap items-center gap-3">
-                <AddToPlaylistButton
-                  trackId={track.id}
-                  label={t('track.addToPlaylist')}
-                />
-                <div className="flex items-center gap-2">
-                  <LikeButton
-                    trackId={track.id}
-                    initialLiked={track.isLiked}
-                    initialCount={track.likeCount}
-                    compact
-                  />
-                  <DislikeButton trackId={track.id} />
+              <div className="flex min-w-0 flex-col justify-center gap-2 sm:mt-6 sm:gap-5 lg:mt-0">
+                <div className="min-w-0">
+                  <span className="mb-1 block text-[10px] font-bold uppercase tracking-[.17em] text-[#bdbdbd] sm:mb-3 sm:text-[11px]">
+                    {podcast
+                      ? rtl
+                        ? 'حلقة بودكاست'
+                        : 'PODCAST EPISODE'
+                      : rtl
+                        ? 'أغنية'
+                        : 'MUSIC / TRACK'}
+                  </span>
+                  <h1 className="min-w-0 text-[clamp(19px,5.3vw,27px)] font-black tracking-tight text-white sm:text-3xl lg:text-[clamp(22px,1.9vw,32px)]">
+                    <AutoScrollTitle text={track.title} lines={2} />
+                  </h1>
+                  {track.artist ? (
+                    <Link
+                      href={
+                        podcast
+                          ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}`
+                          : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`
+                      }
+                      className="mt-1 inline-block text-sm font-semibold text-[#c9c9c9] transition hover:text-white sm:mt-3 sm:text-base"
+                    >
+                      {track.artist.name}
+                    </Link>
+                  ) : null}
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Badge tone="cyan">{track.qualityLabel}</Badge>
+                    {!podcast && (
+                      <Badge tone="primary">
+                        {track.productionType === 'fully_ai'
+                          ? t('track.fullyAi')
+                          : t('track.aiAssisted')}
+                      </Badge>
+                    )}
+                    {track.genre ? (
+                      <Badge tone="neutral">{track.genre.slug}</Badge>
+                    ) : null}
+                    <span className="ms-auto shrink-0">
+                      <ShareButton
+                        title={track.title}
+                        label={t('common.share')}
+                        url={
+                          podcast
+                            ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
+                            : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`
+                        }
+                      />
+                    </span>
+                  </div>
                 </div>
-                <span className="text-xs text-muted">
-                  {formatNumber(track.qualifiedPlays)} {t('common.plays')}
-                </span>
-              </div>}
-
-            </div>
+                {!podcast && (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <AddToPlaylistButton
+                      trackId={track.id}
+                      label={t('track.addToPlaylist')}
+                    />
+                    <div className="flex items-center gap-2">
+                      <LikeButton
+                        trackId={track.id}
+                        initialLiked={track.isLiked}
+                        initialCount={track.likeCount}
+                        compact
+                      />
+                      <DislikeButton trackId={track.id} />
+                    </div>
+                    <span className="text-xs text-muted">
+                      {formatNumber(track.qualifiedPlays)} {t('common.plays')}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {error ? (
@@ -558,164 +619,191 @@ export function FullPlayer() {
                 <span>{formatDuration(duration * 1000)}</span>
               </div>
 
-            <div className="oddio-mobile-playback-controls mt-2 grid min-w-0 grid-cols-5 items-center justify-items-center gap-1 sm:mt-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-4">
-              {podcast ? (
-                <button type="button" onClick={() => seek(Math.max(0, currentTime - 15))}
-                  aria-label={rtl ? 'ارجع 15 ثانية' : 'Rewind 15 seconds'}
-                  title={rtl ? 'ارجع 15 ثانية' : 'Rewind 15 seconds'}
-                  className="relative grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-                  <SkipBack className="h-5 w-5" aria-hidden="true" />
-                  <span className="absolute -bottom-0.5 text-[9px] font-bold tabular-nums">15</span>
-                </button>
-              ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  toggleShuffle();
-                  setControlNotice(
-                    rtl
-                      ? shuffle
-                        ? 'إيقاف التشغيل العشوائي'
-                        : 'تشغيل عشوائي'
-                      : shuffle
-                        ? 'Shuffle off'
-                        : 'Shuffle on',
-                  );
-                }}
-                aria-label={t('player.shuffle')}
-                title={
-                  shuffle
-                    ? rtl
-                      ? 'إيقاف التشغيل العشوائي'
-                      : 'Disable shuffle'
-                    : t('player.shuffle')
-                }
-                aria-pressed={shuffle}
-                className={cn(
-                  'grid h-11 w-11 place-items-center rounded-full transition hover:bg-white/10 sm:block sm:h-auto sm:w-auto sm:p-2.5',
-                  shuffle ? 'text-neutral-200' : 'text-muted',
-                )}
-              >
-                <Shuffle className="h-5 w-5" />
-              </button>
-              )}
-              <button
-                type="button"
-                onClick={previous}
-                aria-label={t('common.previous')}
-                title={t('common.previous')}
-                className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-              >
-                <SkipBack className="h-6 w-6" />
-              </button>
-              <button
-                type="button"
-                onClick={toggle}
-                aria-label={isPlaying ? t('common.pause') : t('common.play')}
-                title={isPlaying ? t('common.pause') : t('common.play')}
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-20 sm:w-20 lg:h-16 lg:w-16"
-              >
-                {isPlaying ? (
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#111111] shadow-[0_0_28px_rgba(255,255,255,.10)] sm:h-[70px] sm:w-[70px] lg:h-[56px] lg:w-[56px]">
-                    <Pause className="h-7 w-7 text-[#111111]" fill="currentColor" />
-                  </span>
+              <div className="oddio-mobile-playback-controls mt-2 grid min-w-0 grid-cols-5 items-center justify-items-center gap-1 sm:mt-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-4">
+                {podcast ? (
+                  <button
+                    type="button"
+                    onClick={() => seek(Math.max(0, currentTime - 15))}
+                    aria-label={rtl ? 'ارجع 15 ثانية' : 'Rewind 15 seconds'}
+                    title={rtl ? 'ارجع 15 ثانية' : 'Rewind 15 seconds'}
+                    className="relative grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <SkipBack className="h-5 w-5" aria-hidden="true" />
+                    <span className="absolute -bottom-0.5 text-[9px] font-bold tabular-nums">
+                      15
+                    </span>
+                  </button>
                 ) : (
-                  <>
-                    <OddioPlayIcon size={54} className="block sm:hidden" />
-                    <OddioPlayIcon size={78} className="hidden sm:block lg:hidden" />
-                    <OddioPlayIcon size={62} className="hidden lg:block" />
-                  </>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleShuffle();
+                      setControlNotice(
+                        rtl
+                          ? shuffle
+                            ? 'إيقاف التشغيل العشوائي'
+                            : 'تشغيل عشوائي'
+                          : shuffle
+                            ? 'Shuffle off'
+                            : 'Shuffle on',
+                      );
+                    }}
+                    aria-label={t('player.shuffle')}
+                    title={
+                      shuffle
+                        ? rtl
+                          ? 'إيقاف التشغيل العشوائي'
+                          : 'Disable shuffle'
+                        : t('player.shuffle')
+                    }
+                    aria-pressed={shuffle}
+                    className={cn(
+                      'grid h-11 w-11 place-items-center rounded-full transition hover:bg-white/10 sm:block sm:h-auto sm:w-auto sm:p-2.5',
+                      shuffle ? 'text-neutral-200' : 'text-muted',
+                    )}
+                  >
+                    <Shuffle className="h-5 w-5" />
+                  </button>
                 )}
-              </button>
-              <button
-                type="button"
-                onClick={() => next()}
-                aria-label={t('common.next')}
-                title={t('common.next')}
-                className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-              >
-                <SkipForward className="h-6 w-6" />
-              </button>
-              {podcast ? (
-                <button type="button" onClick={() => seek(Math.min(duration || currentTime + 30, currentTime + 30))}
-                  aria-label={rtl ? 'قدّم 30 ثانية' : 'Forward 30 seconds'}
-                  title={rtl ? 'قدّم 30 ثانية' : 'Forward 30 seconds'}
-                  className="relative grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-                  <SkipForward className="h-5 w-5" aria-hidden="true" />
-                  <span className="absolute -bottom-0.5 text-[9px] font-bold tabular-nums">30</span>
+                <button
+                  type="button"
+                  onClick={previous}
+                  aria-label={t('common.previous')}
+                  title={t('common.previous')}
+                  className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                >
+                  <SkipBack className="h-6 w-6" />
                 </button>
-              ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  cycleRepeat();
-                  const mode =
-                    repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off';
-                  setControlNotice(
-                    rtl
-                      ? mode === 'off'
-                        ? 'التكرار متوقف'
-                        : mode === 'all'
+                <button
+                  type="button"
+                  onClick={toggle}
+                  aria-label={isPlaying ? t('common.pause') : t('common.play')}
+                  title={isPlaying ? t('common.pause') : t('common.play')}
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-20 sm:w-20 lg:h-16 lg:w-16"
+                >
+                  {isPlaying ? (
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#111111] shadow-[0_0_28px_rgba(255,255,255,.10)] sm:h-[70px] sm:w-[70px] lg:h-[56px] lg:w-[56px]">
+                      <Pause className="h-7 w-7 text-[#111111]" fill="currentColor" />
+                    </span>
+                  ) : (
+                    <>
+                      <OddioPlayIcon size={54} className="block sm:hidden" />
+                      <OddioPlayIcon size={78} className="hidden sm:block lg:hidden" />
+                      <OddioPlayIcon size={62} className="hidden lg:block" />
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => next()}
+                  aria-label={t('common.next')}
+                  title={t('common.next')}
+                  className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                >
+                  <SkipForward className="h-6 w-6" />
+                </button>
+                {podcast ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      seek(Math.min(duration || currentTime + 30, currentTime + 30))
+                    }
+                    aria-label={rtl ? 'قدّم 30 ثانية' : 'Forward 30 seconds'}
+                    title={rtl ? 'قدّم 30 ثانية' : 'Forward 30 seconds'}
+                    className="relative grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <SkipForward className="h-5 w-5" aria-hidden="true" />
+                    <span className="absolute -bottom-0.5 text-[9px] font-bold tabular-nums">
+                      30
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      cycleRepeat();
+                      const mode =
+                        repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off';
+                      setControlNotice(
+                        rtl
+                          ? mode === 'off'
+                            ? 'التكرار متوقف'
+                            : mode === 'all'
+                              ? 'تكرار كل الأغاني'
+                              : 'تكرار الأغنية الحالية'
+                          : mode === 'off'
+                            ? 'Repeat off'
+                            : mode === 'all'
+                              ? 'Repeat all'
+                              : 'Repeat one',
+                      );
+                    }}
+                    aria-label={t('player.repeat')}
+                    aria-pressed={repeat !== 'off'}
+                    title={
+                      repeat === 'off'
+                        ? rtl
                           ? 'تكرار كل الأغاني'
-                          : 'تكرار الأغنية الحالية'
-                      : mode === 'off'
-                        ? 'Repeat off'
-                        : mode === 'all'
-                          ? 'Repeat all'
-                          : 'Repeat one',
-                  );
-                }}
-                aria-label={t('player.repeat')}
-                aria-pressed={repeat !== 'off'}
-                title={
-                  repeat === 'off'
-                    ? rtl
-                      ? 'تكرار كل الأغاني'
-                      : 'Repeat all'
-                    : repeat === 'all'
-                      ? rtl
-                        ? 'تكرار أغنية واحدة'
-                        : 'Repeat one'
-                      : rtl
-                        ? 'إيقاف التكرار'
-                        : 'Disable repeat'
-                }
-                className={cn(
-                  'rounded-full p-1.5 transition hover:bg-white/10 sm:p-2.5',
-                  repeat !== 'off' ? 'text-neutral-200' : 'text-muted',
+                          : 'Repeat all'
+                        : repeat === 'all'
+                          ? rtl
+                            ? 'تكرار أغنية واحدة'
+                            : 'Repeat one'
+                          : rtl
+                            ? 'إيقاف التكرار'
+                            : 'Disable repeat'
+                    }
+                    className={cn(
+                      'rounded-full p-1.5 transition hover:bg-white/10 sm:p-2.5',
+                      repeat !== 'off' ? 'text-neutral-200' : 'text-muted',
+                    )}
+                  >
+                    {repeat === 'one' ? (
+                      <Repeat1 className="h-5 w-5" />
+                    ) : (
+                      <Repeat className="h-5 w-5" />
+                    )}
+                  </button>
                 )}
-              >
-                {repeat === 'one' ? (
-                  <Repeat1 className="h-5 w-5" />
-                ) : (
-                  <Repeat className="h-5 w-5" />
-                )}
-              </button>
-              )}
-              <div className="hidden shrink-0 items-center justify-center gap-2 sm:ms-2 sm:flex sm:w-auto sm:border-s sm:border-white/15 sm:ps-3">
-                <PlayerVolumeControl rtl={rtl} label={t('player.volume')} />
+                <div className="hidden shrink-0 items-center justify-center gap-2 sm:ms-2 sm:flex sm:w-auto sm:border-s sm:border-white/15 sm:ps-3">
+                  <PlayerVolumeControl rtl={rtl} label={t('player.volume')} />
+                </div>
               </div>
-            </div>
-
             </div>
             <div className="mt-2 grid w-full min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 border-t border-white/10 pt-2.5 sm:hidden">
               <PlayerVolumeControl rtl={rtl} mobile label={t('player.volume')} />
               <label className="flex w-[110px] shrink-0 cursor-pointer items-center gap-1.5 text-[10px] leading-tight text-[#bdbdbd]">
-                <input type="checkbox" checked={autoplay} onChange={toggleAutoplay}
-                  className="h-4 w-4 shrink-0 rounded border-white/20 bg-black/30 accent-white" />
-                <span>{podcast ? (rtl ? 'تشغيل التالي تلقائيًا' : 'Autoplay next') : (rtl ? 'تشغيل مشابه تلقائيًا' : 'Autoplay similar')}</span>
+                <input
+                  type="checkbox"
+                  checked={autoplay}
+                  onChange={toggleAutoplay}
+                  className="h-4 w-4 shrink-0 rounded border-white/20 bg-black/30 accent-white"
+                />
+                <span>
+                  {podcast
+                    ? rtl
+                      ? 'تشغيل التالي تلقائيًا'
+                      : 'Autoplay next'
+                    : rtl
+                      ? 'تشغيل مشابه تلقائيًا'
+                      : 'Autoplay similar'}
+                </span>
               </label>
             </div>
             {podcast ? (
               <div className="mt-4 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3 sm:justify-end">
                 <label className="flex min-h-11 items-center gap-2 text-sm text-ink">
                   <span>{rtl ? 'السرعة' : 'Speed'}</span>
-                  <select value={playbackRate}
+                  <select
+                    value={playbackRate}
                     onChange={(event) => setPlaybackRate(Number(event.target.value))}
                     aria-label={rtl ? 'سرعة تشغيل البودكاست' : 'Podcast playback speed'}
-                    className="min-h-11 rounded-lg border border-white/20 bg-[#18191b] px-3 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                    className="min-h-11 rounded-lg border border-white/20 bg-[#18191b] px-3 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
                     {[0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                      <option key={rate} value={rate}>{rate}x</option>
+                      <option key={rate} value={rate}>
+                        {rate}x
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -723,11 +811,20 @@ export function FullPlayer() {
                   <span>{rtl ? 'مؤقت النوم' : 'Sleep timer'}</span>
                   <select
                     value={sleepUntil ? 'active' : 'off'}
-                    onChange={(event) => setSleepTimer(event.target.value === 'off' ? 0 : Number(event.target.value))}
+                    onChange={(event) =>
+                      setSleepTimer(
+                        event.target.value === 'off' ? 0 : Number(event.target.value),
+                      )
+                    }
                     aria-label={rtl ? 'مؤقت إيقاف التشغيل' : 'Sleep timer'}
-                    className="min-h-11 rounded-lg border border-white/20 bg-[#18191b] px-3 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                    className="min-h-11 rounded-lg border border-white/20 bg-[#18191b] px-3 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  >
                     <option value="off">{rtl ? 'متوقف' : 'Off'}</option>
-                    {sleepUntil ? <option value="active" disabled>{rtl ? 'المؤقت شغال' : 'Timer active'}</option> : null}
+                    {sleepUntil ? (
+                      <option value="active" disabled>
+                        {rtl ? 'المؤقت شغال' : 'Timer active'}
+                      </option>
+                    ) : null}
                     <option value="5">5 {rtl ? 'دقايق' : 'min'}</option>
                     <option value="15">15 {rtl ? 'دقيقة' : 'min'}</option>
                     <option value="30">30 {rtl ? 'دقيقة' : 'min'}</option>
@@ -737,7 +834,6 @@ export function FullPlayer() {
               </div>
             ) : null}
             <div className="mt-4 hidden flex-wrap items-center justify-end gap-4 sm:flex">
-
               <label className="flex cursor-pointer items-center gap-2 text-xs text-muted">
                 <input
                   type="checkbox"
@@ -747,52 +843,74 @@ export function FullPlayer() {
                 />
                 {t('player.autoplay')}
               </label>
-              {!podcast && <label className="flex min-h-11 items-center gap-2 text-xs text-muted">
-                <span>{rtl ? 'التداخل بين الأغاني' : 'Crossfade'}</span>
-                <select
-                  aria-label={rtl ? 'مدة تداخل الأغاني' : 'Crossfade duration'}
-                  className="rounded-lg border border-white/20 bg-[#18191b] px-2 py-2 text-white"
-                  value={crossfadeSeconds}
-                  onChange={(event) => setCrossfadeSeconds(Number(event.target.value))}
-                >
-                  <option value={0}>{rtl ? 'بدون تداخل' : 'Off'}</option>
-                  <option value={3}>3s</option>
-                  <option value={5}>5s</option>
-                  <option value={8}>8s</option>
-                </select>
-              </label>}
-              
+              {!podcast && (
+                <label className="flex min-h-11 items-center gap-2 text-xs text-muted">
+                  <span>{rtl ? 'التداخل بين الأغاني' : 'Crossfade'}</span>
+                  <select
+                    aria-label={rtl ? 'مدة تداخل الأغاني' : 'Crossfade duration'}
+                    className="rounded-lg border border-white/20 bg-[#18191b] px-2 py-2 text-white"
+                    value={crossfadeSeconds}
+                    onChange={(event) => setCrossfadeSeconds(Number(event.target.value))}
+                  >
+                    <option value={0}>{rtl ? 'بدون تداخل' : 'Off'}</option>
+                    <option value={3}>3s</option>
+                    <option value={5}>5s</option>
+                    <option value={8}>8s</option>
+                  </select>
+                </label>
+              )}
             </div>
-            {!podcast && <><p className="mt-4 text-center text-[11px] text-muted">{t('player.qualifiedHint')}</p>
-            <div className="mt-5"><TimedComments key={track.id} trackId={track.id} /></div></>}
+            {!podcast && (
+              <>
+                <p className="mt-4 text-center text-[11px] text-muted">
+                  {t('player.qualifiedHint')}
+                </p>
+                <div className="mt-5">
+                  <TimedComments key={track.id} trackId={track.id} />
+                </div>
+              </>
+            )}
           </div>
 
           <aside
-            className={cn("min-h-[55dvh] max-h-[calc(100dvh-110px)] flex-col overflow-hidden rounded-[28px] border border-white/[0.13] bg-white/[0.055] p-4 shadow-[0_24px_70px_rgba(0,0,0,.2)] backdrop-blur-[28px] lg:flex lg:min-h-[470px] lg:max-h-[calc(100vh-175px)]", sideTab === 'queue' ? 'flex' : 'hidden lg:flex')}
-            aria-label={sideTab === 'lyrics' ? 'Lyrics' : sideTab === 'queue' ? t('player.queue') : (rtl ? 'اقتراحات مشابهة' : 'Similar content')}
+            className={cn(
+              'min-h-[55dvh] max-h-[calc(100dvh-110px)] flex-col overflow-hidden rounded-[28px] border border-white/[0.13] bg-white/[0.055] p-4 shadow-[0_24px_70px_rgba(0,0,0,.2)] backdrop-blur-[28px] lg:flex lg:min-h-[470px] lg:max-h-[calc(100vh-175px)]',
+              sideTab === 'queue' ? 'flex' : 'hidden lg:flex',
+            )}
+            aria-label={
+              sideTab === 'lyrics'
+                ? 'Lyrics'
+                : sideTab === 'queue'
+                  ? t('player.queue')
+                  : rtl
+                    ? 'اقتراحات مشابهة'
+                    : 'Similar content'
+            }
           >
             <div
               className={cn(
-                  'mb-5 grid gap-1 rounded-2xl bg-white/[0.06] p-1.5',
-                  podcast ? 'grid-cols-2' : 'grid-cols-3',
-                )}
+                'mb-5 grid gap-1 rounded-2xl bg-white/[0.06] p-1.5',
+                podcast ? 'grid-cols-2' : 'grid-cols-3',
+              )}
               role="tablist"
               aria-label="Player panels"
             >
-              {!podcast && <button
-                type="button"
-                role="tab"
-                aria-selected={sideTab === 'lyrics'}
-                onClick={() => setSideTab('lyrics')}
-                className={cn(
-                  'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
-                  sideTab === 'lyrics'
-                    ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
-                    : 'text-muted hover:bg-white/5 hover:text-ink',
-                )}
-              >
-                <Mic2 className="h-4 w-4" /> {rtl ? 'الكلمات' : 'Lyrics'}
-              </button>}
+              {!podcast && (
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={sideTab === 'lyrics'}
+                  onClick={() => setSideTab('lyrics')}
+                  className={cn(
+                    'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-bold transition',
+                    sideTab === 'lyrics'
+                      ? 'bg-white/15 text-neutral-200 ring-1 ring-white/25'
+                      : 'text-muted hover:bg-white/5 hover:text-ink',
+                  )}
+                >
+                  <Mic2 className="h-4 w-4" /> {rtl ? 'الكلمات' : 'Lyrics'}
+                </button>
+              )}
               <button
                 type="button"
                 role="tab"
@@ -823,9 +941,24 @@ export function FullPlayer() {
                 {rtl ? 'مشابهة' : 'Similar'}
               </button>
             </div>
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[.15em] text-[#c7c7c7]">{sideTab === 'similar' ? (rtl ? 'محتوى يشبه اللي بتسمعه' : 'MORE LIKE THIS') : sideTab === 'queue' ? t('player.queue') : (rtl ? 'كلمات الأغنية' : 'LYRICS')}</p>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[.15em] text-[#c7c7c7]">
+              {sideTab === 'similar'
+                ? rtl
+                  ? 'محتوى يشبه اللي بتسمعه'
+                  : 'MORE LIKE THIS'
+                : sideTab === 'queue'
+                  ? t('player.queue')
+                  : rtl
+                    ? 'كلمات الأغنية'
+                    : 'LYRICS'}
+            </p>
             {sideTab === 'similar' ? (
-              <SimilarPlayerPanel trackId={track.id} podcast={podcast} rtl={rtl} active={expanded && sideTab === 'similar'} />
+              <SimilarPlayerPanel
+                trackId={track.id}
+                podcast={podcast}
+                rtl={rtl}
+                active={expanded && sideTab === 'similar'}
+              />
             ) : sideTab === 'lyrics' && !podcast ? (
               <div
                 role="tabpanel"
@@ -936,8 +1069,11 @@ export function FullPlayer() {
                     {t('player.emptyQueue')}
                   </p>
                 ) : (
-                  <DragReorderList items={queue} getId={(item) => item.id}
-                    locale={rtl ? 'ar' : 'en'} onMove={reorderQueue}
+                  <DragReorderList
+                    items={queue}
+                    getId={(item) => item.id}
+                    locale={rtl ? 'ar' : 'en'}
+                    onMove={reorderQueue}
                     className="scroll-thin -mx-1 min-h-0 flex-1 overflow-y-auto px-1"
                     renderItem={(item, index) => (
                       <div className="group flex min-w-0 items-center gap-1 rounded-xl px-1 py-1.5 hover:bg-white/5">
@@ -963,27 +1099,40 @@ export function FullPlayer() {
                           </span>
                         </button>
                         <div className="flex shrink-0 items-center gap-1">
-                          <button type="button" disabled={index === 0}
+                          <button
+                            type="button"
+                            disabled={index === 0}
                             onClick={() => moveInQueue(item.id, 'up')}
-                            aria-label={rtl ? `حرّك ${item.title} لفوق` : `Move ${item.title} up`}
+                            aria-label={
+                              rtl ? `حرّك ${item.title} لفوق` : `Move ${item.title} up`
+                            }
                             title={rtl ? 'لأعلى' : 'Move up'}
-                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-25">
+                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-25"
+                          >
                             <ChevronUp className="h-4 w-4" />
                           </button>
-                          <button type="button" disabled={index === queue.length - 1}
+                          <button
+                            type="button"
+                            disabled={index === queue.length - 1}
                             onClick={() => moveInQueue(item.id, 'down')}
-                            aria-label={rtl ? `حرّك ${item.title} لتحت` : `Move ${item.title} down`}
+                            aria-label={
+                              rtl ? `حرّك ${item.title} لتحت` : `Move ${item.title} down`
+                            }
                             title={rtl ? 'لأسفل' : 'Move down'}
-                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-25">
+                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-25"
+                          >
                             <ChevronDown className="h-4 w-4" />
                           </button>
-                          <button type="button" onClick={() => removeFromQueue(item.id)}
-                            aria-label={t('player.removeFromQueue')} title={t('player.removeFromQueue')}
-                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                          <button
+                            type="button"
+                            onClick={() => removeFromQueue(item.id)}
+                            aria-label={t('player.removeFromQueue')}
+                            title={t('player.removeFromQueue')}
+                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                          >
                             <X className="h-4 w-4" />
                           </button>
                         </div>
-
                       </div>
                     )}
                   />

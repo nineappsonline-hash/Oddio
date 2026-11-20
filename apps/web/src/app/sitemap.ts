@@ -47,21 +47,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         alternates: { languages: languages(path) },
       });
     }
-    const activePodcastCategoryIds = new Set(podcasts.shows.map((show) => show.categoryId));
-    for (const category of podcasts.categories.filter((item) => activePodcastCategoryIds.has(item.id))) {
+    const activePodcastCategoryIds = new Set(
+      podcasts.shows.map((show) => show.categoryId),
+    );
+    for (const category of podcasts.categories.filter((item) =>
+      activePodcastCategoryIds.has(item.id),
+    )) {
       const path = `/podcasts/categories/${category.slug}`;
-      items.push({ url: absoluteUrl(`/${locale}${path}`), changeFrequency: 'weekly', priority: 0.5,
-        alternates: { languages: languages(path) } });
+      items.push({
+        url: absoluteUrl(`/${locale}${path}`),
+        changeFrequency: 'weekly',
+        priority: 0.5,
+        alternates: { languages: languages(path) },
+      });
     }
     for (const show of podcasts.shows) {
       const path = `/podcasts/shows/${show.slug}`;
-      items.push({ url: absoluteUrl(`/${locale}${path}`), changeFrequency: 'weekly', priority: 0.7,
-        alternates: { languages: languages(path) } });
+      items.push({
+        url: absoluteUrl(`/${locale}${path}`),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+        alternates: { languages: languages(path) },
+      });
     }
     for (const episode of podcasts.episodes) {
       const path = `/podcasts/episodes/${episode.id}`;
-      items.push({ url: absoluteUrl(`/${locale}${path}`), lastModified: episode.publishedAt ? new Date(episode.publishedAt) : undefined,
-        changeFrequency: 'monthly', priority: 0.7, alternates: { languages: languages(path) } });
+      items.push({
+        url: absoluteUrl(`/${locale}${path}`),
+        lastModified: episode.publishedAt ? new Date(episode.publishedAt) : undefined,
+        changeFrequency: 'monthly',
+        priority: 0.7,
+        alternates: { languages: languages(path) },
+      });
     }
     for (const genre of entries.genres) {
       const path = `/genres/${genre.slug}`;

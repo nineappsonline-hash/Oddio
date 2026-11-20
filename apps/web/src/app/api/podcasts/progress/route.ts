@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { assertSameOrigin, jsonError, jsonOk, parseBody, rateLimit, requireUser } from '@/lib/api-helpers';
+import {
+  assertSameOrigin,
+  jsonError,
+  jsonOk,
+  parseBody,
+  rateLimit,
+  requireUser,
+} from '@/lib/api-helpers';
 import { demoMode } from '@/lib/env';
 import { serviceClient } from '@/lib/data/supabase-store';
 
@@ -17,9 +24,12 @@ const inputSchema = z.object({ entries: z.array(entrySchema).max(40) });
 async function getEntries(userId: string) {
   if (demoMode) return [];
   const db = serviceClient();
-  const { data, error } = await db.from('podcast_listening_progress')
+  const { data, error } = await db
+    .from('podcast_listening_progress')
     .select('episode_id,seconds,duration,updated_at,completed')
-    .eq('user_id', userId).order('updated_at', { ascending: false }).limit(40);
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+    .limit(40);
   if (error) throw new Error('Unable to retrieve synced podcast progress');
   return (data ?? []).map((row) => ({
     episodeId: row.episode_id as string,

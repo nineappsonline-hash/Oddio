@@ -31,16 +31,19 @@ export default function LocaleError({
           : 'The page failed to load. Try again or return to the homepage.'}
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-      <button
-        type="button"
-        onClick={reset}
-        className="min-h-11 rounded-pill bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-      >
-        {ar ? 'حاول تاني' : 'Try again'}
-      </button>
-      <Link href={ar ? '/ar' : '/en'} className="inline-flex min-h-11 items-center rounded-pill border border-white/20 px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-        {ar ? 'الصفحة الرئيسية' : 'Go home'}
-      </Link>
+        <button
+          type="button"
+          onClick={reset}
+          className="min-h-11 rounded-pill bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          {ar ? 'حاول تاني' : 'Try again'}
+        </button>
+        <Link
+          href={ar ? '/ar' : '/en'}
+          className="inline-flex min-h-11 items-center rounded-pill border border-white/20 px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          {ar ? 'الصفحة الرئيسية' : 'Go home'}
+        </Link>
       </div>
     </div>
   );

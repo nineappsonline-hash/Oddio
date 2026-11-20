@@ -50,7 +50,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   if (!track) {
     return (
       <div
-        className={`oddio-player-bar oddio-idle-player ${podcastMode ? "oddio-podcast-player-bar" : ""}`}
+        className={`oddio-player-bar oddio-idle-player ${podcastMode ? 'oddio-podcast-player-bar' : ''}`}
         role="region"
         aria-label={rtl ? 'مشغل أوديو' : 'Oddio music player'}
       >
@@ -84,7 +84,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
 
   return (
     <div
-      className={`oddio-player-bar fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-40 overflow-visible border-t border-white/10 bg-[#231b2b]/95 px-3 py-2 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-4 lg:py-1 ${podcastMode ? "oddio-podcast-player-bar" : ""}`}
+      className={`oddio-player-bar fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-40 overflow-visible border-t border-white/10 bg-[#231b2b]/95 px-3 py-2 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-4 lg:py-1 ${podcastMode ? 'oddio-podcast-player-bar' : ''}`}
       role="region"
       aria-label={t('player.miniPlayer')}
       title={t('player.miniPlayer')}
@@ -153,7 +153,15 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           className="relative z-10 flex min-w-0 flex-1 flex-col gap-0.5 text-start focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           aria-label={`${t('player.expand')}: ${track.title}`}
         >
-          <AutoScrollTitle text={track.title} lines={1} className={podcast ? "text-base font-extrabold text-white" : "text-sm font-bold text-white"} />
+          <AutoScrollTitle
+            text={track.title}
+            lines={1}
+            className={
+              podcast
+                ? 'text-base font-extrabold text-white'
+                : 'text-sm font-bold text-white'
+            }
+          />
           {track.artist ? (
             <span className="block w-full truncate text-xs leading-4 text-muted">
               {track.artist.name}
@@ -202,11 +210,25 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
             rounded="rounded-lg"
           />
         </button>
-        <div className={podcast ? "hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-64 lg:flex-col" : "hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-48 lg:flex-col"}>
+        <div
+          className={
+            podcast
+              ? 'hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-64 lg:flex-col'
+              : 'hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-48 lg:flex-col'
+          }
+        >
           <div className="flex items-center gap-1.5">
             <Link
-              href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}` : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
-              className={podcast ? "block min-w-0 text-lg font-extrabold text-white hover:underline" : "block min-w-0 text-sm font-semibold text-ink hover:underline"}
+              href={
+                podcast
+                  ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
+                  : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`
+              }
+              className={
+                podcast
+                  ? 'block min-w-0 text-lg font-extrabold text-white hover:underline'
+                  : 'block min-w-0 text-sm font-semibold text-ink hover:underline'
+              }
             >
               <AutoScrollTitle text={track.title} lines={1} />
             </Link>
@@ -218,7 +240,11 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           </div>
           {track.artist ? (
             <Link
-              href={podcast ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}` : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
+              href={
+                podcast
+                  ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}`
+                  : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`
+              }
               className="block truncate text-xs text-muted hover:text-ink"
             >
               {track.artist.name}
@@ -364,7 +390,9 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
         </div>
 
         <div className="hidden items-center gap-2 lg:flex">
-          {!podcast && <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />}
+          {!podcast && (
+            <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />
+          )}
           {buffering ? (
             <span className="text-[10px] uppercase tracking-wide text-muted">
               {t('player.buffering')}

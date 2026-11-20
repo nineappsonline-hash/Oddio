@@ -17,9 +17,12 @@ export async function POST(request: Request) {
   const rawReturnTo = form?.get('returnTo');
   const candidate = typeof rawReturnTo === 'string' ? rawReturnTo : '/en';
   // No external origins or redirect-to-server APIs.
-  const safePath = /^\/(?:en|ar)(?:\/(?:[^?#]*))?(?:\?[^#]*)?$/.test(candidate)
-    && !candidate.includes('\\') && !candidate.includes('//')
-    ? candidate : '/en';
+  const safePath =
+    /^\/(?:en|ar)(?:\/(?:[^?#]*))?(?:\?[^#]*)?$/.test(candidate) &&
+    !candidate.includes('\\') &&
+    !candidate.includes('//')
+      ? candidate
+      : '/en';
 
   const response = NextResponse.redirect(new URL(safePath, request.url), 303);
   response.cookies.set(CONTENT_LANGUAGE_COOKIE, value, {

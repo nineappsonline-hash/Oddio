@@ -31,12 +31,14 @@ export function AutoScrollTitle({
         const viewportSize = lines === 1 ? viewport.clientWidth : viewport.clientHeight;
         const contentSize = lines === 1 ? content.scrollWidth : content.scrollHeight;
         const distance = Math.max(0, Math.ceil(contentSize - viewportSize));
-        setMotion(current => {
+        setMotion((current) => {
           const next = {
             distance: distance > 2 ? distance : 0,
             duration: Math.max(9, Math.min(28, 7 + distance / 25)),
           };
-          return current.distance === next.distance && current.duration === next.duration ? current : next;
+          return current.distance === next.distance && current.duration === next.duration
+            ? current
+            : next;
         });
       });
     };

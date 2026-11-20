@@ -57,7 +57,10 @@ export default async function GenrePage({
   const ar = locale === 'ar';
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    contentLanguage,
+  );
   const page = getGenrePage(db, viewer, slug);
   if (!page) notFound();
 
@@ -172,7 +175,10 @@ export default async function GenrePage({
       </header>
 
       {editorial ? (
-        <section aria-labelledby="about-genre" className="max-w-4xl space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+        <section
+          aria-labelledby="about-genre"
+          className="max-w-4xl space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6"
+        >
           <h2 id="about-genre" className="text-lg font-bold text-ink sm:text-xl">
             {ar ? `تعرف على موسيقى ${label}` : `About ${label} music`}
           </h2>
@@ -183,7 +189,10 @@ export default async function GenrePage({
               {featuredArtists.slice(0, 3).map((artist, index) => (
                 <span key={artist.id}>
                   {index > 0 ? ' · ' : ''}
-                  <Link href={`/${locale}/artists/${artist.slug}`} className="font-semibold text-primary hover:underline">
+                  <Link
+                    href={`/${locale}/artists/${artist.slug}`}
+                    className="font-semibold text-primary hover:underline"
+                  >
                     {artist.name}
                   </Link>
                 </span>
@@ -193,40 +202,54 @@ export default async function GenrePage({
         </section>
       ) : null}
 
-      {all.length > 0 ? <nav
-        aria-label={ar ? 'أقسام النوع الموسيقي' : 'Genre sections'}
-        className="flex flex-wrap gap-2"
-      >
-        {[
-          ['trending', ar ? 'الرائج الآن' : 'Trending now'],
-          ['recent', ar ? 'أضيفت مؤخرًا' : 'Recently added'],
-          ['popular', ar ? 'الأكثر تشغيلًا' : 'Most played'],
-          ['artists', ar ? 'فنانون مميزون' : 'Featured artists'],
-          ['all-tracks', ar ? 'كل الأغاني' : 'All tracks'],
-        ].map(([id, title]) => (
-          <a
-            key={id}
-            href={`#${id}`}
-            className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-ink transition hover:border-primary/60 hover:bg-primary/15"
-          >
-            {title}
-          </a>
-        ))}
-      </nav> : null}
+      {all.length > 0 ? (
+        <nav
+          aria-label={ar ? 'أقسام النوع الموسيقي' : 'Genre sections'}
+          className="flex flex-wrap gap-2"
+        >
+          {[
+            ['trending', ar ? 'الرائج الآن' : 'Trending now'],
+            ['recent', ar ? 'أضيفت مؤخرًا' : 'Recently added'],
+            ['popular', ar ? 'الأكثر تشغيلًا' : 'Most played'],
+            ['artists', ar ? 'فنانون مميزون' : 'Featured artists'],
+            ['all-tracks', ar ? 'كل الأغاني' : 'All tracks'],
+          ].map(([id, title]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-ink transition hover:border-primary/60 hover:bg-primary/15"
+            >
+              {title}
+            </a>
+          ))}
+        </nav>
+      ) : null}
 
       {all.length === 0 ? (
         <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
           <EmptyState
-            title={ar ? 'مفيش أغاني متاحة في النوع ده لسه.' : 'No tracks available in this genre yet.'}
+            title={
+              ar
+                ? 'مفيش أغاني متاحة في النوع ده لسه.'
+                : 'No tracks available in this genre yet.'
+            }
           />
           <p className="mt-3 text-center text-sm text-muted">
-            {ar ? 'فيه موسيقى تانية تقدر تكتشفها دلوقتي.' : 'There is more music to discover right now.'}
+            {ar
+              ? 'فيه موسيقى تانية تقدر تكتشفها دلوقتي.'
+              : 'There is more music to discover right now.'}
           </p>
           <div className="mt-5 flex justify-center gap-3">
-            <Link href={`/${locale}/discover`} className="rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black hover:opacity-90">
+            <Link
+              href={`/${locale}/discover`}
+              className="rounded-xl bg-primary px-5 py-3 text-sm font-bold text-black hover:opacity-90"
+            >
               {ar ? 'اكتشف الأغاني' : 'Discover tracks'}
             </Link>
-            <Link href={`/${locale}/genres`} className="rounded-xl border border-white/20 px-5 py-3 text-sm font-bold text-ink hover:bg-white/10">
+            <Link
+              href={`/${locale}/genres`}
+              className="rounded-xl border border-white/20 px-5 py-3 text-sm font-bold text-ink hover:bg-white/10"
+            >
               {ar ? 'كل الأنواع' : 'All genres'}
             </Link>
           </div>

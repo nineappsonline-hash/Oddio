@@ -1,4 +1,7 @@
-import { getContentLanguagePreference, matchesContentLanguage } from '@/lib/content-language';
+import {
+  getContentLanguagePreference,
+  matchesContentLanguage,
+} from '@/lib/content-language';
 import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -74,7 +77,9 @@ export default async function TrackPage({
   if (!page) notFound();
   const { track, comments } = page;
   const preference = await getContentLanguagePreference();
-  const related = page.related.filter((item) => matchesContentLanguage(item.languageCode, preference));
+  const related = page.related.filter((item) =>
+    matchesContentLanguage(item.languageCode, preference),
+  );
   const artist = track.artist;
   const genreLabel = track.genre
     ? locale === 'ar'
@@ -105,11 +110,20 @@ export default async function TrackPage({
 
   return (
     <div>
-      <SeoBreadcrumbs items={[
-        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
-        ...(track.genre ? [{ label: genreLabel, href: `/${locale}/genres/${track.genre.slug}` }] : [{ label: locale === 'ar' ? 'اكتشف' : 'Discover', href: `/${locale}/discover` }]),
-        { label: track.title, href: `/${locale}/tracks/${track.id}-${track.slug}` },
-      ]} />
+      <SeoBreadcrumbs
+        items={[
+          { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+          ...(track.genre
+            ? [{ label: genreLabel, href: `/${locale}/genres/${track.genre.slug}` }]
+            : [
+                {
+                  label: locale === 'ar' ? 'اكتشف' : 'Discover',
+                  href: `/${locale}/discover`,
+                },
+              ]),
+          { label: track.title, href: `/${locale}/tracks/${track.id}-${track.slug}` },
+        ]}
+      />
       <JsonLd
         data={musicRecordingJsonLd({
           title: track.title,

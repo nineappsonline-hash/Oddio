@@ -52,12 +52,17 @@ export default async function LibraryPage({
   if (!user)
     redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/library`)}`);
   const viewer = { userId: user.id, roles: user.roles };
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), await getContentLanguagePreference());
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    await getContentLanguagePreference(),
+  );
   const library = getLibraryData(db, viewer);
   const history = getHistoryData(db, viewer);
   const { likedSort: requestedSort } = await searchParams;
   const likedSort =
-    requestedSort === 'title' || requestedSort === 'popular' || requestedSort === 'custom' ? requestedSort : 'recent';
+    requestedSort === 'title' || requestedSort === 'popular' || requestedSort === 'custom'
+      ? requestedSort
+      : 'recent';
   const likedTracks = [...library.likedTracks];
   if (likedSort === 'title')
     likedTracks.sort((a, b) => a.title.localeCompare(b.title, locale));
@@ -126,7 +131,11 @@ export default async function LibraryPage({
         {likedTracks.length === 0 ? (
           <EmptyState title={t('library.emptyLikes')} />
         ) : likedSort === 'custom' ? (
-          <ReorderableLikedTracks initialTracks={likedTracks} locale={locale} userId={user.id} />
+          <ReorderableLikedTracks
+            initialTracks={likedTracks}
+            locale={locale}
+            userId={user.id}
+          />
         ) : (
           <div className="card divide-y divide-white/5 p-2">
             {likedTracks.map((track, index) => (
@@ -164,15 +173,23 @@ export default async function LibraryPage({
             }
           />
         ) : (
-          <ReorderablePlaylistGrid playlists={library.playlists} locale={locale} userId={user.id} />
+          <ReorderablePlaylistGrid
+            playlists={library.playlists}
+            locale={locale}
+            userId={user.id}
+          />
         )}
         {library.followedPlaylists.length > 0 ? (
           <>
             <h3 className="mb-3 mt-8 text-sm font-bold uppercase tracking-wide text-muted">
               {t('common.following')}
             </h3>
-            <ReorderablePlaylistGrid playlists={library.followedPlaylists}
-              locale={locale} userId={user.id} section="followed" />
+            <ReorderablePlaylistGrid
+              playlists={library.followedPlaylists}
+              locale={locale}
+              userId={user.id}
+              section="followed"
+            />
           </>
         ) : null}
       </section>

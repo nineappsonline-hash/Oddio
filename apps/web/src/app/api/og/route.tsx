@@ -13,11 +13,19 @@ async function loadPublicCover(input: string | null): Promise<string | null> {
     const url = new URL(input);
     const host = url.hostname.toLowerCase();
     const trusted = [
-      'oddio.online', 'r2.dev', 'supabase.co', 'supabase.in',
-      'unsplash.com', 'cloudinary.com', 'imgix.net',
-      'cloudfront.net', 'vercel-storage.com', 'githubusercontent.com',
+      'oddio.online',
+      'r2.dev',
+      'supabase.co',
+      'supabase.in',
+      'unsplash.com',
+      'cloudinary.com',
+      'imgix.net',
+      'cloudfront.net',
+      'vercel-storage.com',
+      'githubusercontent.com',
     ].some((domain) => host === domain || host.endsWith(`.${domain}`));
-    if (url.protocol !== 'https:' || !trusted || url.username || url.password) return null;
+    if (url.protocol !== 'https:' || !trusted || url.username || url.password)
+      return null;
     const response = await fetch(url.toString(), {
       headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8' },
       signal: AbortSignal.timeout(6000),
@@ -25,8 +33,11 @@ async function loadPublicCover(input: string | null): Promise<string | null> {
       redirect: 'error',
     });
     if (!response.ok) return null;
-    const mime = (response.headers.get('content-type') ?? '').split(';')[0]?.trim().toLowerCase() ?? '';
-    if (!['image/png', 'image/jpeg', 'image/webp', 'image/avif'].includes(mime)) return null;
+    const mime =
+      (response.headers.get('content-type') ?? '').split(';')[0]?.trim().toLowerCase() ??
+      '';
+    if (!['image/png', 'image/jpeg', 'image/webp', 'image/avif'].includes(mime))
+      return null;
     if (Number(response.headers.get('content-length') ?? 0) > 5_000_000) return null;
     const bytes = Buffer.from(await response.arrayBuffer());
     if (!bytes.length || bytes.length > 5_000_000) return null;
@@ -47,7 +58,6 @@ export async function GET(request: Request) {
   // The original artwork already carries the Arabic cover design; the textual
   // OG title/description stay in Arabic outside the image.
   const graphicTitle = /[\u0600-\u06FF]/.test(title) ? 'LISTEN ON ODDIO' : title;
-
 
   return new ImageResponse(
     <div
@@ -86,18 +96,68 @@ export async function GET(request: Request) {
         </div>
       </div>
       {cover ? (
-        <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'space-between', gap: 48, marginTop: 22, marginBottom: 22 }}>
+        <div
+          style={{
+            display: 'flex',
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 48,
+            marginTop: 22,
+            marginBottom: 22,
+          }}
+        >
           {/* ImageResponse requires a regular img to embed fetched image bytes. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={cover} width={438} height={438} alt="" style={{ width: 438, height: 438, borderRadius: 28, objectFit: 'cover', border: '2px solid rgba(255,255,255,.2)' }} />
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1, overflow: 'hidden' }}>
-            <div style={{ fontSize: 26, letterSpacing: 3, color: '#cbcbcb', marginBottom: 18 }}>LISTEN ON ODDIO</div>
-            <div style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.25, wordBreak: 'break-word' }}>{graphicTitle.slice(0, 80)}</div>
+          <img
+            src={cover}
+            width={438}
+            height={438}
+            alt=""
+            style={{
+              width: 438,
+              height: 438,
+              borderRadius: 28,
+              objectFit: 'cover',
+              border: '2px solid rgba(255,255,255,.2)',
+            }}
+          />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              flex: 1,
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                fontSize: 26,
+                letterSpacing: 3,
+                color: '#cbcbcb',
+                marginBottom: 18,
+              }}
+            >
+              LISTEN ON ODDIO
+            </div>
+            <div
+              style={{
+                fontSize: 36,
+                fontWeight: 800,
+                lineHeight: 1.25,
+                wordBreak: 'break-word',
+              }}
+            >
+              {graphicTitle.slice(0, 80)}
+            </div>
           </div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 64, fontWeight: 900, lineHeight: 1.05 }}>{graphicTitle}</div>
+          <div style={{ fontSize: 64, fontWeight: 900, lineHeight: 1.05 }}>
+            {graphicTitle}
+          </div>
           <div style={{ marginTop: 20, fontSize: 28, color: '#A8A8BA', maxWidth: 900 }}>
             {subtitle}
           </div>
@@ -115,6 +175,10 @@ export async function GET(request: Request) {
         <span>oddio.online</span>
       </div>
     </div>,
-    { width: 1200, height: 630, headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } },
+    {
+      width: 1200,
+      height: 630,
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    },
   );
 }

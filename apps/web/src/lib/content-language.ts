@@ -30,7 +30,10 @@ export function matchesContentLanguage(
 /** Keep all other DB tables intact; only the browsing track catalog changes. */
 export function filterMusicDb(db: DemoDb, preference: ContentLanguagePreference): DemoDb {
   if (preference === 'all') return db;
-  return { ...db, tracks: db.tracks.filter((track: Track) => isArabicLanguage(track.languageCode)) };
+  return {
+    ...db,
+    tracks: db.tracks.filter((track: Track) => isArabicLanguage(track.languageCode)),
+  };
 }
 
 /**

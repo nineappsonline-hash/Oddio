@@ -40,9 +40,10 @@ export async function generateMetadata({
     });
   return buildMetadata({
     locale: safeLocale,
-    title: safeLocale === 'ar'
-      ? `قائمة تشغيل ${page.playlist.title}`
-      : `${page.playlist.title} — AI Music Playlist`,
+    title:
+      safeLocale === 'ar'
+        ? `قائمة تشغيل ${page.playlist.title}`
+        : `${page.playlist.title} — AI Music Playlist`,
     description: page.playlist.description
       ? `${page.playlist.description.slice(0, 145)} — Listen on Oddio.`
       : safeLocale === 'ar'
@@ -71,11 +72,16 @@ export default async function PlaylistPage({
 
   return (
     <div>
-      <SeoBreadcrumbs items={[
-        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
-        { label: locale === 'ar' ? 'اكتشف الموسيقى' : 'Discover music', href: `/${locale}/discover` },
-        { label: playlist.title, href: `/${locale}/playlists/${playlist.id}` },
-      ]} />
+      <SeoBreadcrumbs
+        items={[
+          { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+          {
+            label: locale === 'ar' ? 'اكتشف الموسيقى' : 'Discover music',
+            href: `/${locale}/discover`,
+          },
+          { label: playlist.title, href: `/${locale}/playlists/${playlist.id}` },
+        ]}
+      />
       {playlist.visibility === 'public' ? (
         <JsonLd
           data={musicPlaylistJsonLd({
@@ -153,7 +159,11 @@ export default async function PlaylistPage({
       {tracks.length === 0 ? (
         <EmptyState title={t('playlist.empty')} />
       ) : canEdit && tracks.length === playlist.trackIds.length ? (
-        <PlaylistReorderableTracks playlistId={playlist.id} initialTracks={tracks} locale={locale} />
+        <PlaylistReorderableTracks
+          playlistId={playlist.id}
+          initialTracks={tracks}
+          locale={locale}
+        />
       ) : (
         <div className="card divide-y divide-white/5 p-2">
           {tracks.map((track, index) => (
