@@ -92,15 +92,17 @@ export default async function StudioDashboard({
             },
             {
               title: locale === 'ar' ? 'سلاسل البودكاست' : 'Podcast Series',
-              description: locale === 'ar'
-                ? 'أنشئ سلسلة عن موضوع معين، وانشر حلقات مرقّمة داخلها باسم الفنان.'
-                : 'Create a themed podcast series under your artist identity and upload numbered episodes.',
+              description:
+                locale === 'ar'
+                  ? 'أنشئ سلسلة عن موضوع معين، وانشر حلقات مرقّمة داخلها باسم الفنان.'
+                  : 'Create a themed podcast series under your artist identity and upload numbered episodes.',
               href: `/${locale}/podcasts/manage`,
               icon: Mic2,
               label: 'YOUR PODCAST SERIES',
               glow: 'from-violet-500/25 via-purple-500/10 to-transparent',
               iconColor: 'text-violet-300',
-              status: locale === 'ar' ? 'سلاسل وحلقات البودكاست' : 'Create and publish series',
+              status:
+                locale === 'ar' ? 'سلاسل وحلقات البودكاست' : 'Create and publish series',
             },
             {
               title: 'Add / Manage Songs',

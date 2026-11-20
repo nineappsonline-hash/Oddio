@@ -55,27 +55,41 @@ export default async function MoodPage({
   const t = createTranslator(locale);
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    contentLanguage,
+  );
   const page = getMoodPage(db, viewer, slug);
   if (!page) notFound();
   const label = locale === 'ar' ? page.mood.labelAr : page.mood.labelEn;
   const editorial = categoryEditorial('mood', slug, locale);
-  const artists = Array.from(new Map(page.tracks.flatMap((track) => track.artist ? [[track.artist.id, track.artist] as const] : [])).values()).slice(0, 4);
+  const artists = Array.from(
+    new Map(
+      page.tracks.flatMap((track) =>
+        track.artist ? [[track.artist.id, track.artist] as const] : [],
+      ),
+    ).values(),
+  ).slice(0, 4);
 
   return (
     <div>
-      <SeoBreadcrumbs items={[
-        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
-        { label: 'Soundspace', href: `/${locale}/soundspace` },
-        { label, href: `/${locale}/moods/${slug}` },
-      ]} />
+      <SeoBreadcrumbs
+        items={[
+          { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+          { label: 'Soundspace', href: `/${locale}/soundspace` },
+          { label, href: `/${locale}/moods/${slug}` },
+        ]}
+      />
       <PageHeader
         eyebrow={t('discover.mood')}
         title={label}
         subtitle={t('discover.results', { count: String(page.tracks.length) })}
       />
       {editorial ? (
-        <section aria-label={locale === 'ar' ? 'عن المود الموسيقي' : 'About this listening mood'} className="mb-6 max-w-4xl space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <section
+          aria-label={locale === 'ar' ? 'عن المود الموسيقي' : 'About this listening mood'}
+          className="mb-6 max-w-4xl space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5"
+        >
           <p className="text-sm leading-8 text-muted">{editorial}</p>
           {artists.length > 0 ? (
             <p className="text-sm leading-7 text-muted">
@@ -83,15 +97,23 @@ export default async function MoodPage({
               {artists.map((artist, index) => (
                 <span key={artist.id}>
                   {index > 0 ? ' · ' : ''}
-                  <Link href={`/${locale}/artists/${artist.slug}`} className="font-semibold text-primary hover:underline">
+                  <Link
+                    href={`/${locale}/artists/${artist.slug}`}
+                    className="font-semibold text-primary hover:underline"
+                  >
                     {artist.name}
                   </Link>
                 </span>
               ))}
             </p>
           ) : null}
-          <Link href={`/${locale}/soundspace`} className="inline-block text-sm font-semibold text-primary hover:underline">
-            {locale === 'ar' ? 'جرّب اكتشاف موسيقى بمودك في Soundspace ←' : 'Explore more mood-based mixes in Soundspace →'}
+          <Link
+            href={`/${locale}/soundspace`}
+            className="inline-block text-sm font-semibold text-primary hover:underline"
+          >
+            {locale === 'ar'
+              ? 'جرّب اكتشاف موسيقى بمودك في Soundspace ←'
+              : 'Explore more mood-based mixes in Soundspace →'}
           </Link>
         </section>
       ) : null}

@@ -7,7 +7,13 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   // Some OAuth providers may return to the localized homepage instead of
   // the configured callback. Exchange the authorization code server-side.
-  if ((pathname === '/en' || pathname === '/ar' || pathname === '/en/' || pathname === '/ar/') && request.nextUrl.searchParams.has('code')) {
+  if (
+    (pathname === '/en' ||
+      pathname === '/ar' ||
+      pathname === '/en/' ||
+      pathname === '/ar/') &&
+    request.nextUrl.searchParams.has('code')
+  ) {
     const callback = request.nextUrl.clone();
     callback.pathname = '/auth/callback';
     callback.searchParams.set('next', pathname.startsWith('/ar') ? '/ar' : '/en');

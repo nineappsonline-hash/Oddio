@@ -81,7 +81,9 @@ export function TrackRow({
         <span
           className={cn(
             'absolute inset-0 z-10 m-auto flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white transition',
-            active ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100',
+            active
+              ? 'opacity-100'
+              : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100',
           )}
         >
           {active ? (

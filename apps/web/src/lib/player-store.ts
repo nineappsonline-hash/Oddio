@@ -89,9 +89,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   autoplay: true,
   crossfadeSeconds: 0,
   playbackRate: 1,
-  setPlaybackRate: (rate) => set({ playbackRate: [0.75, 1, 1.25, 1.5, 2].includes(rate) ? rate : 1 }),
+  setPlaybackRate: (rate) =>
+    set({ playbackRate: [0.75, 1, 1.25, 1.5, 2].includes(rate) ? rate : 1 }),
   sleepUntil: null,
-  setSleepTimer: (minutes) => set({ sleepUntil: minutes > 0 ? Date.now() + minutes * 60_000 : null }),
+  setSleepTimer: (minutes) =>
+    set({ sleepUntil: minutes > 0 ? Date.now() + minutes * 60_000 : null }),
   setCrossfadeSeconds: (seconds) =>
     set({ crossfadeSeconds: [0, 3, 5, 8].includes(seconds) ? seconds : 0 }),
   station: null,
@@ -330,8 +332,16 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   reorderQueue: (from, to) =>
     set((state) => {
-      if (!Number.isInteger(from) || !Number.isInteger(to) ||
-          from < 0 || to < 0 || from >= state.queue.length || to >= state.queue.length || from === to) return state;
+      if (
+        !Number.isInteger(from) ||
+        !Number.isInteger(to) ||
+        from < 0 ||
+        to < 0 ||
+        from >= state.queue.length ||
+        to >= state.queue.length ||
+        from === to
+      )
+        return state;
       return { queue: moveItem(state.queue, from, to) };
     }),
 

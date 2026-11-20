@@ -17,13 +17,38 @@ const GENRE_GROUPS = [
     key: 'arabic',
     en: 'Arabic Music',
     ar: 'موسيقى عربية',
-    keywords: ['arabic', 'shaabi', 'mahragan', 'tarab', 'khaleeji', 'khaliji', 'rai', 'dabke', 'baladi', 'oriental', 'egyptian', 'arab', 'nasheed'],
+    keywords: [
+      'arabic',
+      'shaabi',
+      'mahragan',
+      'tarab',
+      'khaleeji',
+      'khaliji',
+      'rai',
+      'dabke',
+      'baladi',
+      'oriental',
+      'egyptian',
+      'arab',
+      'nasheed',
+    ],
   },
   {
     key: 'pop',
     en: 'Pop & Contemporary',
     ar: 'بوب وموسيقى معاصرة',
-    keywords: ['pop', 'indie', 'r&b', 'rnb', 'soul', 'funk', 'disco', 'contemporary', 'afrobeat', 'reggaeton'],
+    keywords: [
+      'pop',
+      'indie',
+      'r&b',
+      'rnb',
+      'soul',
+      'funk',
+      'disco',
+      'contemporary',
+      'afrobeat',
+      'reggaeton',
+    ],
   },
   {
     key: 'hiphop',
@@ -35,7 +60,19 @@ const GENRE_GROUPS = [
     key: 'electronic',
     en: 'Electronic & Dance',
     ar: 'إلكترونية ورقص',
-    keywords: ['electronic', 'edm', 'house', 'techno', 'trance', 'dubstep', 'dance', 'dnb', 'drum and bass', 'garage', 'synthwave'],
+    keywords: [
+      'electronic',
+      'edm',
+      'house',
+      'techno',
+      'trance',
+      'dubstep',
+      'dance',
+      'dnb',
+      'drum and bass',
+      'garage',
+      'synthwave',
+    ],
   },
   {
     key: 'rock',
@@ -47,17 +84,33 @@ const GENRE_GROUPS = [
     key: 'chill',
     en: 'Chill & Instrumental',
     ar: 'هادية وموسيقى آلية',
-    keywords: ['chill', 'ambient', 'lo-fi', 'lofi', 'acoustic', 'classical', 'cinematic', 'instrumental', 'jazz', 'blues', 'folk', 'piano', 'meditation', 'sleep'],
+    keywords: [
+      'chill',
+      'ambient',
+      'lo-fi',
+      'lofi',
+      'acoustic',
+      'classical',
+      'cinematic',
+      'instrumental',
+      'jazz',
+      'blues',
+      'folk',
+      'piano',
+      'meditation',
+      'sleep',
+    ],
   },
 ] as const;
 
 function genreGroupKey(genre: { slug: string; labelEn: string }): string {
   const value = `${genre.slug.replace(/[-_]/g, ' ')} ${genre.labelEn}`.toLowerCase();
-  return GENRE_GROUPS.find(({ keywords }) =>
-    keywords.some((keyword) => value.includes(keyword)),
-  )?.key ?? 'other';
+  return (
+    GENRE_GROUPS.find(({ keywords }) =>
+      keywords.some((keyword) => value.includes(keyword)),
+    )?.key ?? 'other'
+  );
 }
-
 
 export async function generateMetadata({
   params,
@@ -86,12 +139,22 @@ export default async function GenresPage({
   if (!isLocale(locale)) notFound();
   const ar = locale === 'ar';
   const contentLanguage = await getContentLanguagePreference();
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    contentLanguage,
+  );
   const genres = db.genres
-    .filter((genre) => genre.active && (contentLanguage === 'all' || db.tracks.some((track) =>
-      track.publishStatus === 'published' && track.visibility === 'public' &&
-      (track.genreIds?.includes(genre.id) ?? track.genreId === genre.id)
-    )))
+    .filter(
+      (genre) =>
+        genre.active &&
+        (contentLanguage === 'all' ||
+          db.tracks.some(
+            (track) =>
+              track.publishStatus === 'published' &&
+              track.visibility === 'public' &&
+              (track.genreIds?.includes(genre.id) ?? track.genreId === genre.id),
+          )),
+    )
     .sort((a, b) =>
       (ar ? a.labelAr : a.labelEn).localeCompare(ar ? b.labelAr : b.labelEn),
     );
@@ -136,7 +199,10 @@ export default async function GenresPage({
 
       {genres.length ? (
         <div className="space-y-10">
-          <nav aria-label={ar ? 'مجموعات الأنواع الموسيقية' : 'Genre collections'} className="flex flex-wrap gap-2">
+          <nav
+            aria-label={ar ? 'مجموعات الأنواع الموسيقية' : 'Genre collections'}
+            className="flex flex-wrap gap-2"
+          >
             {groups.map((group) => (
               <a
                 key={group.key}

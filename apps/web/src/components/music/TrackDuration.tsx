@@ -88,7 +88,9 @@ export function TrackDuration({
 
     if (typeof IntersectionObserver === 'undefined') {
       load();
-      return () => { alive = false; };
+      return () => {
+        alive = false;
+      };
     }
 
     const observer = new IntersectionObserver(
@@ -101,7 +103,10 @@ export function TrackDuration({
       { rootMargin: '180px' },
     );
     observer.observe(node);
-    return () => { alive = false; observer.disconnect(); };
+    return () => {
+      alive = false;
+      observer.disconnect();
+    };
   }, [trackId, durationMs]);
 
   const liveMs =
@@ -110,7 +115,11 @@ export function TrackDuration({
       : 0;
   const value = durationMs > 0 ? durationMs : measured > 0 ? measured * 1000 : liveMs;
   return (
-    <span ref={ref} className="inline-block min-w-10 text-end" aria-label={value > 0 ? undefined : 'Duration not yet available'}>
+    <span
+      ref={ref}
+      className="inline-block min-w-10 text-end"
+      aria-label={value > 0 ? undefined : 'Duration not yet available'}
+    >
       {value > 0 ? formatDuration(value) : '—'}
     </span>
   );

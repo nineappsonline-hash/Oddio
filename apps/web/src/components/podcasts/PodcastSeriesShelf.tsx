@@ -24,19 +24,30 @@ export function PodcastSeriesShelf({ locale, count, children }: Props) {
     const travel = (card?.offsetWidth ?? 232) + 16;
     element.scrollBy({
       left: (ar ? -1 : 1) * direction * travel * 2,
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth',
     });
   }
 
   return (
-    <section id="series" aria-labelledby="podcast-series-heading" className="min-w-0 space-y-4">
+    <section
+      id="series"
+      aria-labelledby="podcast-series-heading"
+      className="min-w-0 space-y-4"
+    >
       <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
-          <h2 id="podcast-series-heading" className="text-2xl font-bold text-white sm:text-[27px]">
+          <h2
+            id="podcast-series-heading"
+            className="text-2xl font-bold text-white sm:text-[27px]"
+          >
             {ar ? 'سلاسل البودكاست' : 'Podcast Series'}
           </h2>
           <p className="text-sm leading-6 text-[#a3a3a3]">
-            {ar ? 'كل موضوع وحلقاته في سلسلة واحدة.' : 'Themed shows, all their episodes in one place.'}
+            {ar
+              ? 'كل موضوع وحلقاته في سلسلة واحدة.'
+              : 'Themed shows, all their episodes in one place.'}
           </p>
         </div>
         {count > 1 ? (
@@ -47,7 +58,11 @@ export function PodcastSeriesShelf({ locale, count, children }: Props) {
               aria-label={ar ? 'السلاسل السابقة' : 'Previous podcast series'}
               className="grid h-11 w-11 place-items-center rounded-xl border border-white/15 bg-white/[0.07] backdrop-blur-xl text-[#e9e9e9] transition hover:border-[#e9e9e9]/60 hover:bg-white/[0.13] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e9e9e9]"
             >
-              {ar ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+              {ar ? (
+                <ChevronRight className="h-5 w-5" />
+              ) : (
+                <ChevronLeft className="h-5 w-5" />
+              )}
             </button>
             <button
               type="button"
@@ -55,7 +70,11 @@ export function PodcastSeriesShelf({ locale, count, children }: Props) {
               aria-label={ar ? 'السلاسل التالية' : 'Next podcast series'}
               className="grid h-11 w-11 place-items-center rounded-xl border border-white/15 bg-white/[0.07] backdrop-blur-xl text-[#e9e9e9] transition hover:border-[#e9e9e9]/60 hover:bg-white/[0.13] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e9e9e9]"
             >
-              {ar ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+              {ar ? (
+                <ChevronLeft className="h-5 w-5" />
+              ) : (
+                <ChevronRight className="h-5 w-5" />
+              )}
             </button>
           </div>
         ) : null}
@@ -72,7 +91,10 @@ export function PodcastSeriesShelf({ locale, count, children }: Props) {
         </div>
       ) : (
         <div className="flex min-h-[126px] items-center gap-4 rounded-2xl border border-dashed border-white/20 bg-white/[0.07] backdrop-blur-xl/75 p-5">
-          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/[0.09] text-[#e9e9e9]" aria-hidden="true">
+          <span
+            className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/[0.09] text-[#e9e9e9]"
+            aria-hidden="true"
+          >
             <Layers3 className="h-7 w-7" />
           </span>
           <p className="text-sm leading-7 text-[#a3a3a3]">

@@ -815,14 +815,12 @@ export function getSitemapEntries(db: DemoDb) {
     genres: db.genres.filter(
       (genre) =>
         genre.active &&
-        listable.some((track) =>
-          track.genreIds?.includes(genre.id) ?? track.genreId === genre.id,
+        listable.some(
+          (track) => track.genreIds?.includes(genre.id) ?? track.genreId === genre.id,
         ),
     ),
     moods: db.moods.filter(
-      (mood) =>
-        mood.active &&
-        listable.some((track) => track.moodIds.includes(mood.id)),
+      (mood) => mood.active && listable.some((track) => track.moodIds.includes(mood.id)),
     ),
   };
 }

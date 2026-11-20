@@ -36,7 +36,10 @@ export function SeoBreadcrumbs({ items }: { items: SeoBreadcrumb[] }) {
           <span key={item.href} className="inline-flex max-w-full items-center gap-2">
             {index > 0 ? <span aria-hidden="true">/</span> : null}
             {index === safeItems.length - 1 ? (
-              <span aria-current="page" className="max-w-[65vw] truncate font-semibold text-ink">
+              <span
+                aria-current="page"
+                className="max-w-[65vw] truncate font-semibold text-ink"
+              >
                 {item.label}
               </span>
             ) : (

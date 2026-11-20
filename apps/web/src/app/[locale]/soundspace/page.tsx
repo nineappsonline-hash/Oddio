@@ -40,7 +40,10 @@ export default async function SoundspacePage({
   if (!isLocale(raw)) notFound();
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    contentLanguage,
+  );
   // Listable-track access checks must run before any client-side personalization.
   const tracks = listableTracks(db, viewer);
   return <SoundspaceStudio tracks={tracks} />;

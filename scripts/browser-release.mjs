@@ -135,9 +135,12 @@ try {
           name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
         });
         await mini.waitFor({ state: 'visible' });
+        // The mobile mini-player includes a full-size background hotspot
+        // under the title and controls; click its actual visible expand
+        // control, rather than the covered background hotspot.
         await mini
           .getByRole('button', { name: /expand|كبّر|توسيع|تكبير|فتح/i })
-          .first()
+          .last()
           .click();
         const dialog = page.getByRole('dialog', { name: /player|مشغل/i });
         await dialog.waitFor({ state: 'visible' });
@@ -153,11 +156,15 @@ try {
         );
         assert.ok(overflow <= 2, `full-player horizontal overflow: ${overflow}px`);
 
-        const tabs = dialog.getByRole('tab');
-        await tabs.last().click();
-        assert.equal(await tabs.last().getAttribute('aria-selected'), 'true');
-        await tabs.first().click();
-        assert.equal(await tabs.first().getAttribute('aria-selected'), 'true');
+        // Tabs live in the desktop side panel; mobile has its own lyrics
+        // disclosure and queue controls instead of those hidden tabs.
+        if (viewport.width >= 1024) {
+          const tabs = dialog.getByRole('tab');
+          await tabs.last().click();
+          assert.equal(await tabs.last().getAttribute('aria-selected'), 'true');
+          await tabs.first().click();
+          assert.equal(await tabs.first().getAttribute('aria-selected'), 'true');
+        }
 
         if (viewport.width === 390) {
           const lyricsButton = dialog.locator(
@@ -380,19 +387,25 @@ try {
         await test('demo listener login and library navigation', async () => {
           // Do not submit an SSR form until React has attached its handlers.
           // Slow WebKit hydration can otherwise swallow a user click.
-          await page.locator('form[data-login-hydrated="true"]').waitFor({
+          await page.goto(`${base}/en/login?next=%2Fen%2Flibrary`, {
+            waitUntil: 'domcontentloaded',
+          });
+          const loginForm = page.locator('form[data-login-hydrated="true"]');
+          await loginForm.waitFor({
             state: 'visible',
             timeout: 20_000,
           });
-          await page.locator('#login-email').fill('listener@demo.local');
-          await page.locator('#login-password').fill('demo1234');
+          await loginForm.locator('#login-email').fill('listener@demo.local');
+          await loginForm.locator('#login-password').fill('demo1234');
           const loginResponse = page.waitForResponse(
             (response) =>
-              response.url().endsWith('/api/auth/login') &&
+              new URL(response.url()).pathname === '/api/auth/login' &&
               response.request().method() === 'POST',
-            { timeout: 15_000 },
+            { timeout: 25_000 },
           );
-          await page.locator('form button[type="submit"]').first().click();
+          // Scope submit to the login form; the global first submit button
+          // can belong to the persistent header search form.
+          await loginForm.locator('button[type="submit"]').click();
           const loginResult = await loginResponse;
           assert.equal(loginResult.status(), 200, 'Demo credentials must authorize');
           const storedSession = (await context.cookies()).find(
@@ -420,30 +433,47 @@ try {
           await page.goto(`${base}/en/library?likedSort=custom#liked`, {
             waitUntil: 'domcontentloaded',
           });
+          await page.locator('[data-reorder-ready="true"]').waitFor();
           const list = page.locator('ul[aria-label="Reorderable list"]').first();
           await list.waitFor({ state: 'visible' });
           const rows = list.locator('[data-reorder-index]');
-          assert.ok((await rows.count()) >= 2, 'demo listener needs at least two liked songs');
+          assert.ok(
+            (await rows.count()) >= 2,
+            'demo listener needs at least two liked songs',
+          );
           const before = await rows.evaluateAll((items) =>
-            items.map((item) => item.textContent?.trim()),
+            items.map((item) => item.getAttribute('data-reorder-id')),
           );
           const handles = list.getByRole('button', { name: /Drag item/ });
-          const first = (await handles.nth(0).boundingBox());
-          const second = (await handles.nth(1).boundingBox());
+          const first = await handles.nth(0).boundingBox();
+          const second = await handles.nth(1).boundingBox();
           assert.ok(first && second, 'drag handles must have visible bounds');
           await page.mouse.move(first.x + first.width / 2, first.y + first.height / 2);
           await page.mouse.down();
-          await page.mouse.move(second.x + second.width / 2, second.y + second.height / 2, { steps: 10 });
+          await page.mouse.move(
+            second.x + second.width / 2,
+            second.y + second.height / 2,
+            { steps: 10 },
+          );
           await page.mouse.up();
           const after = await rows.evaluateAll((items) =>
-            items.map((item) => item.textContent?.trim()),
+            items.map((item) => item.getAttribute('data-reorder-id')),
           );
-          assert.equal(after[0], before[1], 'dragging should put the second liked item first');
-          assert.equal(after[1], before[0], 'dragging should move the first liked item second');
+          assert.equal(
+            after[0],
+            before[1],
+            'dragging should put the second liked item first',
+          );
+          assert.equal(
+            after[1],
+            before[0],
+            'dragging should move the first liked item second',
+          );
           await page.reload({ waitUntil: 'domcontentloaded' });
+          await page.locator('[data-reorder-ready="true"]').waitFor();
           await list.waitFor({ state: 'visible' });
           const restored = await rows.evaluateAll((items) =>
-            items.map((item) => item.textContent?.trim()),
+            items.map((item) => item.getAttribute('data-reorder-id')),
           );
           assert.equal(restored[0], after[0], 'custom sort must survive reload');
           assert.equal(restored[1], after[1], 'custom sort must survive reload');

@@ -14,9 +14,10 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     title: locale === 'ar' ? 'عن Oddio' : 'About Oddio',
-    description: locale === 'ar'
-      ? 'تعرّف على Oddio، منصة لاستكشاف وسماع الموسيقى بالذكاء الاصطناعي.'
-      : 'Learn about Oddio, a music discovery and listening platform for AI-generated songs.',
+    description:
+      locale === 'ar'
+        ? 'تعرّف على Oddio، منصة لاستكشاف وسماع الموسيقى بالذكاء الاصطناعي.'
+        : 'Learn about Oddio, a music discovery and listening platform for AI-generated songs.',
     path: '/about',
   });
 }
@@ -71,9 +72,13 @@ export default async function AboutPage({
   return (
     <div className="mx-auto max-w-4xl space-y-10 pb-16">
       <header className="space-y-4">
-        <p className="oddio-micro-label">{ar ? 'تعرّف على المنصة' : 'ABOUT THE PLATFORM'}</p>
+        <p className="oddio-micro-label">
+          {ar ? 'تعرّف على المنصة' : 'ABOUT THE PLATFORM'}
+        </p>
         <h1 className="text-3xl font-black tracking-tight text-ink sm:text-5xl">
-          {ar ? 'Oddio: عالم الموسيقى بالذكاء الاصطناعي' : 'Oddio: A Home for AI-Generated Music'}
+          {ar
+            ? 'Oddio: عالم الموسيقى بالذكاء الاصطناعي'
+            : 'Oddio: A Home for AI-Generated Music'}
         </h1>
         <p className="max-w-3xl text-base leading-8 text-muted">
           {ar
@@ -82,7 +87,10 @@ export default async function AboutPage({
         </p>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-3" aria-label={ar ? 'استكشف Oddio' : 'Explore Oddio'}>
+      <section
+        className="grid gap-4 sm:grid-cols-3"
+        aria-label={ar ? 'استكشف Oddio' : 'Explore Oddio'}
+      >
         {[
           {
             href: 'discover',
@@ -92,7 +100,9 @@ export default async function AboutPage({
           {
             href: 'genres',
             title: ar ? 'تصفح الأنواع' : 'Browse music genres',
-            detail: ar ? 'عربي وبوب وراب وإلكترونيك وأكثر.' : 'Arabic, pop, hip-hop, electronic and more.',
+            detail: ar
+              ? 'عربي وبوب وراب وإلكترونيك وأكثر.'
+              : 'Arabic, pop, hip-hop, electronic and more.',
           },
           {
             href: 'soundspace',
@@ -117,7 +127,10 @@ export default async function AboutPage({
         </h2>
         <div className="space-y-4">
           {questions.map((item) => (
-            <article key={item.q} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <article
+              key={item.q}
+              className="rounded-2xl border border-white/10 bg-white/[0.04] p-5"
+            >
               <h3 className="text-lg font-bold text-ink">{item.q}</h3>
               <p className="mt-2 text-sm leading-7 text-muted">{item.a}</p>
             </article>
@@ -126,7 +139,10 @@ export default async function AboutPage({
       </section>
       <p className="text-sm text-muted">
         {ar ? 'عاوز تنشر موسيقاك؟ ' : 'Want to publish your music? '}
-        <Link href={`/${locale}/for-artists`} className="font-semibold text-primary underline-offset-4 hover:underline">
+        <Link
+          href={`/${locale}/for-artists`}
+          className="font-semibold text-primary underline-offset-4 hover:underline"
+        >
           {ar ? 'قدّم كفنان على Oddio' : 'Apply to become an Oddio artist'}
         </Link>
       </p>

@@ -56,7 +56,10 @@ export default async function DiscoverPage({
   const sp = await searchParams;
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    contentLanguage,
+  );
   const home = getHomeData(db, viewer);
   const flow = recommendTracks(db, viewer, 20);
   const recommendations = flow;

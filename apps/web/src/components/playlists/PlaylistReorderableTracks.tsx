@@ -9,8 +9,14 @@ import { apiRequest } from '@/lib/client-api';
 import { moveItem } from '@/lib/reorder-items';
 
 export function PlaylistReorderableTracks({
-  playlistId, initialTracks, locale,
-}: { playlistId: string; initialTracks: CatalogTrack[]; locale: Locale }) {
+  playlistId,
+  initialTracks,
+  locale,
+}: {
+  playlistId: string;
+  initialTracks: CatalogTrack[];
+  locale: Locale;
+}) {
   const [tracks, setTracks] = useState(initialTracks);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -35,7 +41,13 @@ export function PlaylistReorderableTracks({
       setNeedsRefresh(false);
     } catch (error) {
       setTracks(tracks);
-      setMessage(error instanceof Error ? error.message : (ar ? 'تعذر حفظ الترتيب' : 'Could not save order'));
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : ar
+            ? 'تعذر حفظ الترتيب'
+            : 'Could not save order',
+      );
       // Block additional edits until authoritative state is loaded again.
       setNeedsRefresh(true);
     } finally {
@@ -46,20 +58,30 @@ export function PlaylistReorderableTracks({
   return (
     <div className="space-y-2">
       <p className="text-xs leading-6 text-muted">
-        {ar ? 'اسحب علامة الترتيب جنب الأغنية لمكانها الجديد. تقدر تستخدم أسهم الكيبورد كمان.'
+        {ar
+          ? 'اسحب علامة الترتيب جنب الأغنية لمكانها الجديد. تقدر تستخدم أسهم الكيبورد كمان.'
           : 'Drag the handle beside a track to move it. Arrow keys also work.'}
       </p>
       <div className="flex min-h-8 flex-wrap items-center gap-3">
-        <p role="status" aria-live="polite" className="text-xs text-muted">{message}</p>
+        <p role="status" aria-live="polite" className="text-xs text-muted">
+          {message}
+        </p>
         {needsRefresh ? (
-          <button type="button" onClick={() => window.location.reload()}
-            className="min-h-10 rounded-lg border border-primary/40 px-3 text-xs font-semibold text-ink transition-colors hover:bg-primary/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="min-h-10 rounded-lg border border-primary/40 px-3 text-xs font-semibold text-ink transition-colors hover:bg-primary/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
             {ar ? 'حدّث القائمة وحاول تاني' : 'Reload list and try again'}
           </button>
         ) : null}
       </div>
-      <DragReorderList items={tracks} getId={(track) => track.id}
-        locale={locale} disabled={saving || needsRefresh} onMove={(from, to) => void reorder(from, to)}
+      <DragReorderList
+        items={tracks}
+        getId={(track) => track.id}
+        locale={locale}
+        disabled={saving || needsRefresh}
+        onMove={(from, to) => void reorder(from, to)}
         className="card divide-y divide-white/5 p-2"
         renderItem={(track, index) => (
           <TrackRow track={track} queue={tracks} index={index} locale={locale} />

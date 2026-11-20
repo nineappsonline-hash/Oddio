@@ -40,21 +40,36 @@ function check(condition, message) {
 
 async function run() {
   const pages = [
-    '/en', '/ar',
-    '/en/about', '/ar/about',
-    '/en/for-artists', '/ar/for-artists',
-    '/en/discover', '/ar/discover',
-    '/en/genres', '/ar/genres',
-    '/en/charts', '/ar/charts',
+    '/en',
+    '/ar',
+    '/en/about',
+    '/ar/about',
+    '/en/for-artists',
+    '/ar/for-artists',
+    '/en/discover',
+    '/ar/discover',
+    '/en/genres',
+    '/ar/genres',
+    '/en/charts',
+    '/ar/charts',
   ];
 
   for (const path of pages) {
     try {
       const html = await fetchPage(path);
       const canonical = `${origin}${path}`;
-      check(/<title[^>]*>[^<]*Oddio[^<]*<\/title>/i.test(html), `${path} has Oddio page title`);
-      check(/<meta\s+[^>]*name="description"\s+[^>]*content="[^"]{40,}"/i.test(html), `${path} has informative description`);
-      check(html.includes(`href="${canonical}"`) && /rel="canonical"/i.test(html), `${path} has a matching canonical`);
+      check(
+        /<title[^>]*>[^<]*Oddio[^<]*<\/title>/i.test(html),
+        `${path} has Oddio page title`,
+      );
+      check(
+        /<meta\s+[^>]*name="description"\s+[^>]*content="[^"]{40,}"/i.test(html),
+        `${path} has informative description`,
+      );
+      check(
+        html.includes(`href="${canonical}"`) && /rel="canonical"/i.test(html),
+        `${path} has a matching canonical`,
+      );
       check(/hreflang="(ar|en)"/i.test(html), `${path} includes a language alternate`);
     } catch (error) {
       failures.push(`${path}: ${error instanceof Error ? error.message : String(error)}`);
@@ -63,17 +78,33 @@ async function run() {
 
   try {
     const sitemap = await fetchPage('/sitemap.xml');
-    check(sitemap.includes(`${origin}/en`) && sitemap.includes(`${origin}/ar`), 'Sitemap has both language homepages');
-    check(sitemap.includes(`${origin}/en/about`) && sitemap.includes(`${origin}/en/for-artists`), 'Sitemap has public explainers');
-    check(!/\/((en|ar)\/)?(search|studio|admin|library|login|signup)(<|\?)/i.test(sitemap), 'Sitemap excludes account/search routes');
+    check(
+      sitemap.includes(`${origin}/en`) && sitemap.includes(`${origin}/ar`),
+      'Sitemap has both language homepages',
+    );
+    check(
+      sitemap.includes(`${origin}/en/about`) &&
+        sitemap.includes(`${origin}/en/for-artists`),
+      'Sitemap has public explainers',
+    );
+    check(
+      !/\/((en|ar)\/)?(search|studio|admin|library|login|signup)(<|\?)/i.test(sitemap),
+      'Sitemap excludes account/search routes',
+    );
   } catch (error) {
     failures.push(`sitemap: ${error instanceof Error ? error.message : String(error)}`);
   }
 
   try {
     const robots = await fetchPage('/robots.txt');
-    check(robots.includes(`${origin}/sitemap.xml`), 'robots.txt points to canonical sitemap');
-    check(/User-agent:\s*\*/i.test(robots), 'robots.txt defines public crawler instructions');
+    check(
+      robots.includes(`${origin}/sitemap.xml`),
+      'robots.txt points to canonical sitemap',
+    );
+    check(
+      /User-agent:\s*\*/i.test(robots),
+      'robots.txt defines public crawler instructions',
+    );
   } catch (error) {
     failures.push(`robots: ${error instanceof Error ? error.message : String(error)}`);
   }

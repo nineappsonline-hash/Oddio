@@ -73,7 +73,11 @@ export async function generateMetadata({
     },
     alternates: {
       canonical: absoluteUrl(`/${safeLocale}`),
-      languages: { en: absoluteUrl('/en'), ar: absoluteUrl('/ar'), 'x-default': absoluteUrl('/en') },
+      languages: {
+        en: absoluteUrl('/en'),
+        ar: absoluteUrl('/ar'),
+        'x-default': absoluteUrl('/en'),
+      },
     },
     openGraph: { title, description, siteName: 'Oddio', type: 'website' },
     twitter: { card: 'summary_large_image', title, description },
@@ -89,7 +93,10 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const [user, contentLanguage] = await Promise.all([getSessionUser(), getContentLanguagePreference()]);
+  const [user, contentLanguage] = await Promise.all([
+    getSessionUser(),
+    getContentLanguagePreference(),
+  ]);
   return (
     <html
       lang={locale}
@@ -105,7 +112,8 @@ export default async function LocaleLayout({
             '@id': absoluteUrl('/#website'),
             url: absoluteUrl('/'),
             name: 'Oddio',
-            description: 'Listen to and discover original AI-generated music, artists and playlists.',
+            description:
+              'Listen to and discover original AI-generated music, artists and playlists.',
             inLanguage: ['en', 'ar'],
             publisher: { '@id': absoluteUrl('/#organization') },
           }}

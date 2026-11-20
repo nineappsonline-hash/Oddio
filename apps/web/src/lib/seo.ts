@@ -49,7 +49,13 @@ export function buildMetadata({
     }
   }
   const ogImage = absoluteUrl(`/api/og?${imageParams.toString()}`);
-  const imageInfo = { url: ogImage, width: 1200, height: 630, type: 'image/png', alt: imageAlt || socialTitle || pageTitle };
+  const imageInfo = {
+    url: ogImage,
+    width: 1200,
+    height: 630,
+    type: 'image/png',
+    alt: imageAlt || socialTitle || pageTitle,
+  };
   return {
     title: { absolute: fullTitle },
     description: pageDescription,
@@ -97,9 +103,13 @@ export function musicRecordingJsonLd(input: {
     '@context': 'https://schema.org',
     '@type': 'MusicRecording',
     name: input.title,
-    ...(input.artistName ? { byArtist: { '@type': 'MusicGroup', name: input.artistName } } : {}),
+    ...(input.artistName
+      ? { byArtist: { '@type': 'MusicGroup', name: input.artistName } }
+      : {}),
     url: new URL(input.url, absoluteUrl('/')).toString(),
-    ...(input.durationMs > 0 ? { duration: `PT${Math.round(input.durationMs / 1000)}S` } : {}),
+    ...(input.durationMs > 0
+      ? { duration: `PT${Math.round(input.durationMs / 1000)}S` }
+      : {}),
     datePublished: input.releaseAt,
     genre: input.genre,
     ...(input.languageCode ? { inLanguage: input.languageCode } : {}),

@@ -56,7 +56,10 @@ export default async function ChartsPage({
   const query = parsed.success ? parsed.data : chartQuery.parse({});
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), contentLanguage);
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    contentLanguage,
+  );
   const data = getCharts(db, viewer, query);
   const home = getHomeData(db, viewer);
   const queue = data.entries.map((entry) => entry.track);

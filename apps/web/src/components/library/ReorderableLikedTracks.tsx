@@ -7,7 +7,9 @@ import { DragReorderList } from '@/components/ui/DragReorderList';
 import { moveItem } from '@/lib/reorder-items';
 
 export function ReorderableLikedTracks({
-  initialTracks, locale, userId,
+  initialTracks,
+  locale,
+  userId,
 }: {
   initialTracks: CatalogTrack[];
   locale: 'ar' | 'en';
@@ -15,8 +17,10 @@ export function ReorderableLikedTracks({
 }) {
   const [tracks, setTracks] = useState(initialTracks);
   const [message, setMessage] = useState('');
+  const [ready, setReady] = useState(false);
   const key = `oddio-library-liked-order:${userId}`;
   useEffect(() => {
+    setReady(false);
     try {
       const saved = JSON.parse(window.localStorage.getItem(key) ?? '[]') as unknown;
       if (!Array.isArray(saved) || !saved.every((id) => typeof id === 'string')) {
@@ -24,12 +28,17 @@ export function ReorderableLikedTracks({
         return;
       }
       const positions = new Map(saved.map((id, index) => [id, index]));
-      setTracks([...initialTracks].sort((a, b) =>
-        (positions.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
-        (positions.get(b.id) ?? Number.MAX_SAFE_INTEGER),
-      ));
+      setTracks(
+        [...initialTracks].sort(
+          (a, b) =>
+            (positions.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+            (positions.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+        ),
+      );
     } catch {
       setTracks(initialTracks);
+    } finally {
+      setReady(true);
     }
   }, [initialTracks, key]);
 
@@ -39,22 +48,36 @@ export function ReorderableLikedTracks({
     setTracks(next);
     try {
       window.localStorage.setItem(key, JSON.stringify(next.map((track) => track.id)));
-      setMessage(locale === 'ar' ? 'تم حفظ ترتيب الأغاني على الجهاز' : 'Liked song order saved on this device');
+      setMessage(
+        locale === 'ar'
+          ? 'تم حفظ ترتيب الأغاني على الجهاز'
+          : 'Liked song order saved on this device',
+      );
     } catch {
-      setMessage(locale === 'ar' ? 'الترتيب اتغير لكن المتصفح رفض حفظه' : 'Order changed, but browser storage is unavailable');
+      setMessage(
+        locale === 'ar'
+          ? 'الترتيب اتغير لكن المتصفح رفض حفظه'
+          : 'Order changed, but browser storage is unavailable',
+      );
     }
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-reorder-ready={ready ? 'true' : 'false'}>
       <p className="text-xs leading-5 text-muted">
         {locale === 'ar'
           ? 'اسحب العلامة بجانب الأغنية لترتيب المفضلة بنفسك. الترتيب بيتحفظ على الجهاز ده.'
           : 'Drag the handle next to a liked song to set a custom order. Saved on this device.'}
       </p>
-      <p className="min-h-4 text-xs text-muted" aria-live="polite" role="status">{message}</p>
-      <DragReorderList items={tracks} getId={(track) => track.id}
-        locale={locale} onMove={reorder}
+      <p className="min-h-4 text-xs text-muted" aria-live="polite" role="status">
+        {message}
+      </p>
+      <DragReorderList
+        items={tracks}
+        getId={(track) => track.id}
+        locale={locale}
+        onMove={reorder}
+        disabled={!ready}
         className="card divide-y divide-white/5 p-2"
         renderItem={(track, index) => (
           <TrackRow track={track} queue={tracks} index={index} locale={locale} />

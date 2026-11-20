@@ -37,9 +37,10 @@ export async function generateMetadata({
     });
   return buildMetadata({
     locale: safeLocale,
-    title: safeLocale === 'ar'
-      ? `ألبوم ${page.album.title} — ${page.artist.name}`
-      : `${page.album.title} by ${page.artist.name} — AI Music Album`,
+    title:
+      safeLocale === 'ar'
+        ? `ألبوم ${page.album.title} — ${page.artist.name}`
+        : `${page.album.title} by ${page.artist.name} — AI Music Album`,
     description: page.album.description
       ? `${page.album.description.slice(0, 150)} — ${page.artist.name} on Oddio.`
       : safeLocale === 'ar'
@@ -60,7 +61,10 @@ export default async function AlbumPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = filterMusicDb(demoMode ? readDb() : await loadDbFromSupabase(), await getContentLanguagePreference());
+  const db = filterMusicDb(
+    demoMode ? readDb() : await loadDbFromSupabase(),
+    await getContentLanguagePreference(),
+  );
   const page = getAlbumPage(db, viewer, idFromSegment(id));
   if (!page) notFound();
   const { album, artist, tracks } = page;
@@ -68,11 +72,13 @@ export default async function AlbumPage({
 
   return (
     <div>
-      <SeoBreadcrumbs items={[
-        { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
-        { label: artist.name, href: `/${locale}/artists/${artist.slug}` },
-        { label: album.title, href: `/${locale}/albums/${album.id}` },
-      ]} />
+      <SeoBreadcrumbs
+        items={[
+          { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
+          { label: artist.name, href: `/${locale}/artists/${artist.slug}` },
+          { label: album.title, href: `/${locale}/albums/${album.id}` },
+        ]}
+      />
       <JsonLd
         data={musicAlbumJsonLd({
           title: album.title,

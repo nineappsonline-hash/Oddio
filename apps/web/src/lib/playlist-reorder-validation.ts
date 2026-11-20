@@ -8,11 +8,17 @@ export function isValidPlaylistReorder(
   expected: readonly string[],
   proposed: readonly string[],
 ): boolean {
-  if (existing.length !== expected.length || existing.length !== proposed.length) return false;
+  if (existing.length !== expected.length || existing.length !== proposed.length)
+    return false;
   const members = new Set(existing);
-  if (members.size !== existing.length ||
-      new Set(expected).size !== expected.length ||
-      new Set(proposed).size !== proposed.length) return false;
-  return existing.every((id, index) => id === expected[index]) &&
-    proposed.every((id) => members.has(id));
+  if (
+    members.size !== existing.length ||
+    new Set(expected).size !== expected.length ||
+    new Set(proposed).size !== proposed.length
+  )
+    return false;
+  return (
+    existing.every((id, index) => id === expected[index]) &&
+    proposed.every((id) => members.has(id))
+  );
 }

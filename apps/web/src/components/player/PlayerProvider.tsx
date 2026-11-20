@@ -18,8 +18,12 @@ import {
 import type { CatalogTrack, HomeData } from '@/lib/data/queries';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
 import {
-  readPodcastProgress, readPodcastSyncRecords, replacePodcastSyncRecords,
-  savePodcastProgress, clearPodcastProgress, PODCAST_PROGRESS_EVENT,
+  readPodcastProgress,
+  readPodcastSyncRecords,
+  replacePodcastSyncRecords,
+  savePodcastProgress,
+  clearPodcastProgress,
+  PODCAST_PROGRESS_EVENT,
   type SavedPodcastProgress,
 } from '@/lib/podcast-progress-store';
 import { useToast } from '@/components/providers/ToastProvider';
@@ -131,7 +135,12 @@ export function PlayerProvider({
     const unsubscribe = usePlayer.subscribe((state, previous) => {
       const changed = state.track?.id !== previous.track?.id;
       if (changed && isPodcastPlayback(previous.track)) {
-        savePodcastProgress(viewerId, previous.track, previous.currentTime, previous.duration);
+        savePodcastProgress(
+          viewerId,
+          previous.track,
+          previous.currentTime,
+          previous.duration,
+        );
       }
       if (!isPodcastPlayback(state.track)) return;
       const now = Date.now();
@@ -175,7 +184,8 @@ export function PlayerProvider({
         const entries = readPodcastSyncRecords(viewerId);
         if (!entries.length) return;
         const cloud = await apiRequest<{
-          entries: SavedPodcastProgress[]; saved: boolean;
+          entries: SavedPodcastProgress[];
+          saved: boolean;
         }>('/api/podcasts/progress', {
           method: 'PUT',
           body: JSON.stringify({ entries }),
@@ -235,8 +245,7 @@ export function PlayerProvider({
       // During an intentional crossfade the standby element already contains
       // the incoming track. Let it finish its handoff to the primary player.
       const incomingCrossfade =
-        crossfadingRef.current &&
-        crossfadeTargetRef.current === state.track?.id;
+        crossfadingRef.current && crossfadeTargetRef.current === state.track?.id;
       if (!incomingCrossfade) {
         const standby = standbyRef.current;
         if (standby) {
@@ -487,8 +496,9 @@ export function PlayerProvider({
         pendingRestoreTime.current = null;
         pendingRestoreTrackId.current = null;
         if (isPodcastPlayback(state.track)) {
-          const position = readPodcastProgress(viewerId)
-            .find((item) => item.episodeId === trackId)?.seconds;
+          const position = readPodcastProgress(viewerId).find(
+            (item) => item.episodeId === trackId,
+          )?.seconds;
           if (position && state.currentTime < 15) {
             pendingRestoreTime.current = position;
             pendingRestoreTrackId.current = trackId;
@@ -530,10 +540,10 @@ export function PlayerProvider({
       }
     } else if (isPodcastPlayback(state.track)) {
       sessionRef.current = null;
-      const url=`/api/podcasts/episodes/${encodeURIComponent(trackId)}/audio`;
-      streamRef.current=url;
+      const url = `/api/podcasts/episodes/${encodeURIComponent(trackId)}/audio`;
+      streamRef.current = url;
       setStream(url);
-      state.setDuration((state.track?.durationMs ?? 0)/1000);
+      state.setDuration((state.track?.durationMs ?? 0) / 1000);
     } else
       apiRequest<PlaybackAuthorization>(`/api/tracks/${trackId}/playback`, {
         method: 'POST',
@@ -671,7 +681,9 @@ export function PlayerProvider({
           repeatOne: state.repeat === 'one',
           queued: Boolean(queued),
         }) &&
-        queued && !isPodcastPlayback(state.track) && !isPodcastPlayback(queued)
+        queued &&
+        !isPodcastPlayback(state.track) &&
+        !isPodcastPlayback(queued)
       ) {
         const warmId = queued.id;
         if (warmedRef.current?.trackId !== warmId && warmingRef.current !== warmId) {
@@ -705,7 +717,9 @@ export function PlayerProvider({
         remaining <= state.crossfadeSeconds &&
         remaining > 0 &&
         state.isPlaying &&
-        state.repeat !== 'one' && !isPodcastPlayback(state.track) && !isPodcastPlayback(queued)
+        state.repeat !== 'one' &&
+        !isPodcastPlayback(state.track) &&
+        !isPodcastPlayback(queued)
       ) {
         if (
           !crossfadingRef.current &&
@@ -736,7 +750,12 @@ export function PlayerProvider({
       audible.lastTime = time;
       state.setCurrentTime(time);
       const threshold = Math.min(30_000, state.track?.durationMs ?? 30_000);
-      if (!isPodcastPlayback(state.track) && !audible.qualified && threshold > 0 && audible.accumulated >= threshold) {
+      if (
+        !isPodcastPlayback(state.track) &&
+        !audible.qualified &&
+        threshold > 0 &&
+        audible.accumulated >= threshold
+      ) {
         audible.qualified = true;
         sendEvent('qualified', audible.accumulated);
         toast('Play counted after 30 seconds of listening.', 'success');

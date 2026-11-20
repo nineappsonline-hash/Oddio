@@ -30,13 +30,20 @@ import type { ContentLanguagePreference } from '@/lib/content-language';
 import { cn } from '@/lib/utils';
 import { OddioGlyph, type OddioGlyphName } from '@/components/ui/OddioGlyph';
 
-export function MobileHeader({ user, contentLanguage }: { user: SessionUser | null; contentLanguage: ContentLanguagePreference }) {
+export function MobileHeader({
+  user,
+  contentLanguage,
+}: {
+  user: SessionUser | null;
+  contentLanguage: ContentLanguagePreference;
+}) {
   const t = useT();
   const { locale } = useLocalePath();
   const session = useSession();
   const currentUser = session.user ?? user;
   const { pathname } = useLocalePath();
-  const podcastMode = pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
+  const podcastMode =
+    pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
 
   return (
     <header
@@ -52,7 +59,9 @@ export function MobileHeader({ user, contentLanguage }: { user: SessionUser | nu
         >
           <Menu className="h-5 w-5" />
         </button>
-        <div className="shrink-0 max-[359px]:hidden [&_img]:!w-[82px]"><Logo locale={locale} compact /></div>
+        <div className="shrink-0 max-[359px]:hidden [&_img]:!w-[82px]">
+          <Logo locale={locale} compact />
+        </div>
         <div className="hidden sm:block">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-ink">Oddio</p>
           <div className="flex items-center gap-1.5">
@@ -111,7 +120,8 @@ export function MobileNav() {
   const { locale, pathname } = useLocalePath();
   const { user } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
-  const podcastMode = pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
+  const podcastMode =
+    pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
@@ -124,29 +134,49 @@ export function MobileNav() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [menuOpen]);
 
-  const items = podcastMode ? [
-    { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'بودكاست' : 'Podcasts', icon: 'home', exact: true },
-    { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'تصنيفات' : 'Categories', icon: 'discover' },
-    { href: `/${locale}/podcasts?q=`, label: locale === 'ar' ? 'بحث' : 'Search', icon: 'search' },
-    { href: `/${locale}`, label: locale === 'ar' ? 'موسيقى' : 'Music', icon: 'soundspace', exact: true },
-  ] : [
-    { href: `/${locale}`, label: t('nav.home'), icon: 'home', exact: true },
-    { href: `/${locale}/soundspace`, label: 'Soundspace', icon: 'soundspace' },
-    { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
-    user
-      ? {
-          href: `/${locale}/library`,
-          label: t('nav.library'),
-          icon: 'library',
-          exact: false,
-        }
-      : {
-          href: `/${locale}/charts`,
-          label: t('nav.charts'),
-          icon: 'library',
-          exact: false,
+  const items = podcastMode
+    ? [
+        {
+          href: `/${locale}/podcasts`,
+          label: locale === 'ar' ? 'بودكاست' : 'Podcasts',
+          icon: 'home',
+          exact: true,
         },
-  ];
+        {
+          href: `/${locale}/podcasts/categories`,
+          label: locale === 'ar' ? 'تصنيفات' : 'Categories',
+          icon: 'discover',
+        },
+        {
+          href: `/${locale}/podcasts?q=`,
+          label: locale === 'ar' ? 'بحث' : 'Search',
+          icon: 'search',
+        },
+        {
+          href: `/${locale}`,
+          label: locale === 'ar' ? 'موسيقى' : 'Music',
+          icon: 'soundspace',
+          exact: true,
+        },
+      ]
+    : [
+        { href: `/${locale}`, label: t('nav.home'), icon: 'home', exact: true },
+        { href: `/${locale}/soundspace`, label: 'Soundspace', icon: 'soundspace' },
+        { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
+        user
+          ? {
+              href: `/${locale}/library`,
+              label: t('nav.library'),
+              icon: 'library',
+              exact: false,
+            }
+          : {
+              href: `/${locale}/charts`,
+              label: t('nav.charts'),
+              icon: 'library',
+              exact: false,
+            },
+      ];
 
   return (
     <>
@@ -246,26 +276,97 @@ export function MobileNav() {
             ) : null}
             <div className="grid gap-2">
               {[
-                ...(podcastMode ? [
-                  { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'الرئيسية' : 'Podcasts home', icon: 'home' },
-                  { href: `/${locale}/podcasts/categories`, label: locale === 'ar' ? 'تصنيفات البودكاست' : 'Podcast categories', icon: 'discover' },
-                  { href: `/${locale}/podcasts#series`, label: locale === 'ar' ? 'سلاسل البودكاست' : 'Podcast series', icon: 'library' },
-                  { href: `/${locale}/podcasts/creators`, label: locale === 'ar' ? 'فنانو البودكاست' : 'Podcast creators', icon: 'studio' },
-                  ...((user?.isArtistManager || user?.roles.some(role => role === 'super_admin' || role === 'admin')) ? [
-                    { href: `/${locale}/podcasts/me`, label: locale === 'ar' ? 'صفحتي كفنان' : 'My podcast profile', icon: 'studio' },
-                    { href: `/${locale}/podcasts/manage`, label: locale === 'ar' ? 'استوديو البودكاست' : 'Podcast Studio', icon: 'studio' },
-                  ] : [{ href: user ? `/${locale}/apply/artist` : `/${locale}/signup`, label: locale === 'ar' ? 'ابدأ بودكاست كفنان' : 'Become a podcast creator', icon: 'studio' }]),
-                ] : []),
-                ...(!podcastMode ? [
-                  { href: `/${locale}`, label: t('nav.home'), icon: 'home' },
-                  { href: `/${locale}/discover`, label: t('nav.discover'), icon: 'discover' },
-                  { href: `/${locale}/soundspace`, label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace', icon: 'soundspace' },
-                  { href: `/${locale}/charts`, label: t('nav.charts'), icon: 'charts' },
-                  { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
-                  { href: `/${locale}/genres`, label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres', icon: 'discover' },
-                ] : [
-                  { href: `/${locale}`, label: locale === 'ar' ? 'الموسيقى' : 'Music', icon: 'soundspace' },
-                ]),
+                ...(podcastMode
+                  ? [
+                      {
+                        href: `/${locale}/podcasts`,
+                        label: locale === 'ar' ? 'الرئيسية' : 'Podcasts home',
+                        icon: 'home',
+                      },
+                      {
+                        href: `/${locale}/podcasts/categories`,
+                        label:
+                          locale === 'ar' ? 'تصنيفات البودكاست' : 'Podcast categories',
+                        icon: 'discover',
+                      },
+                      {
+                        href: `/${locale}/podcasts#series`,
+                        label: locale === 'ar' ? 'سلاسل البودكاست' : 'Podcast series',
+                        icon: 'library',
+                      },
+                      {
+                        href: `/${locale}/podcasts/creators`,
+                        label: locale === 'ar' ? 'فنانو البودكاست' : 'Podcast creators',
+                        icon: 'studio',
+                      },
+                      ...(user?.isArtistManager ||
+                      user?.roles.some(
+                        (role) => role === 'super_admin' || role === 'admin',
+                      )
+                        ? [
+                            {
+                              href: `/${locale}/podcasts/me`,
+                              label:
+                                locale === 'ar' ? 'صفحتي كفنان' : 'My podcast profile',
+                              icon: 'studio',
+                            },
+                            {
+                              href: `/${locale}/podcasts/manage`,
+                              label:
+                                locale === 'ar' ? 'استوديو البودكاست' : 'Podcast Studio',
+                              icon: 'studio',
+                            },
+                          ]
+                        : [
+                            {
+                              href: user
+                                ? `/${locale}/apply/artist`
+                                : `/${locale}/signup`,
+                              label:
+                                locale === 'ar'
+                                  ? 'ابدأ بودكاست كفنان'
+                                  : 'Become a podcast creator',
+                              icon: 'studio',
+                            },
+                          ]),
+                    ]
+                  : []),
+                ...(!podcastMode
+                  ? [
+                      { href: `/${locale}`, label: t('nav.home'), icon: 'home' },
+                      {
+                        href: `/${locale}/discover`,
+                        label: t('nav.discover'),
+                        icon: 'discover',
+                      },
+                      {
+                        href: `/${locale}/soundspace`,
+                        label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace',
+                        icon: 'soundspace',
+                      },
+                      {
+                        href: `/${locale}/charts`,
+                        label: t('nav.charts'),
+                        icon: 'charts',
+                      },
+                      {
+                        href: `/${locale}/search`,
+                        label: t('nav.search'),
+                        icon: 'search',
+                      },
+                      {
+                        href: `/${locale}/genres`,
+                        label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres',
+                        icon: 'discover',
+                      },
+                    ]
+                  : [
+                      {
+                        href: `/${locale}`,
+                        label: locale === 'ar' ? 'الموسيقى' : 'Music',
+                        icon: 'soundspace',
+                      },
+                    ]),
                 ...(user
                   ? [
                       {
