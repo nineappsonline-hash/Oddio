@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { Pin } from 'lucide-react';
 import type { Playlist } from '@ai-music/contracts';
 import { PlaylistCard } from '@/components/music/PlaylistCard';
 import { DragReorderList } from '@/components/ui/DragReorderList';
@@ -24,8 +25,25 @@ export function ReorderablePlaylistGrid({
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<'custom' | 'title' | 'recent'>('custom');
   const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [pinned, setPinned] = useState<string[]>([]);
   const key = `oddio-library-playlist-order:${userId}:${section}`;
   const displayKey = `oddio-library-playlist-view:${userId}:${section}`;
+  const pinKey = `oddio-library-playlist-pins:${userId}:${section}`;
+
+  useEffect(() => {
+    try {
+      const saved: unknown = JSON.parse(window.localStorage.getItem(pinKey) ?? '[]');
+      setPinned(Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string') : []);
+    } catch {
+      setPinned([]);
+    }
+  }, [pinKey]);
+
+  const togglePin = (id: string) => {
+    const next = pinned.includes(id) ? pinned.filter((item) => item !== id) : [...pinned, id];
+    setPinned(next);
+    try { window.localStorage.setItem(pinKey, JSON.stringify(next)); } catch { /* Optional preference. */ }
+  };
 
   useEffect(() => {
     try {
@@ -41,10 +59,11 @@ export function ReorderablePlaylistGrid({
     const filtered = items.filter((playlist) =>
       !needle || `${playlist.title} ${playlist.description} ${playlist.ownerName}`.toLocaleLowerCase().includes(needle),
     );
-    if (sort === 'title') return [...filtered].sort((a, b) => a.title.localeCompare(b.title, locale));
-    if (sort === 'recent') return [...filtered].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    return filtered;
-  }, [items, locale, query, sort]);
+    const ordered = [...filtered];
+    if (sort === 'title') ordered.sort((a, b) => a.title.localeCompare(b.title, locale));
+    if (sort === 'recent') ordered.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return ordered.sort((a, b) => Number(pinned.includes(b.id)) - Number(pinned.includes(a.id)));
+  }, [items, locale, query, sort, pinned]);
 
   const updateView = (next: 'grid' | 'list') => {
     setView(next);
@@ -70,7 +89,7 @@ export function ReorderablePlaylistGrid({
   }, [key, playlists]);
 
   function onMove(from: number, to: number) {
-    if (from === to || sort !== 'custom' || query.trim()) return;
+    if (from === to || sort !== 'custom' || query.trim() || pinned.length > 0) return;
     const next = moveItem(items, from, to);
     setItems(next);
     try {
@@ -135,13 +154,13 @@ export function ReorderablePlaylistGrid({
           ? locale === 'ar'
             ? `النتائج: ${shown.length} من ${items.length}`
             : `Showing ${shown.length} of ${items.length}`
-          : sort === 'custom'
+          : sort === 'custom' && pinned.length === 0
             ? locale === 'ar'
               ? 'اسحب علامة الترتيب لتغيير مكان القائمة. الترتيب بيتحفظ على الجهاز ده.'
               : 'Drag the handle to rearrange playlists. Order is saved on this device.'
             : locale === 'ar'
-              ? 'اختار «ترتيبي» علشان ترتب القوائم بنفسك.'
-              : 'Choose My order to rearrange playlists.'}
+              ? 'اختار «ترتيبي» وشيل التثبيت علشان ترتب القوائم بنفسك.'
+              : 'Choose My order and unpin playlists to rearrange them.'}
       </p>
       <p className="min-h-4 text-xs text-muted" role="status" aria-live="polite">
         {message}
@@ -155,10 +174,26 @@ export function ReorderablePlaylistGrid({
         getId={(playlist) => playlist.id}
         locale={locale}
         layout={view}
-        disabled={sort !== 'custom' || Boolean(query.trim())}
+        disabled={sort !== 'custom' || Boolean(query.trim()) || pinned.length > 0}
         onMove={onMove}
         className={view === 'grid' ? 'grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5' : 'space-y-3'}
-        renderItem={(playlist) => <PlaylistCard playlist={playlist} locale={locale} />}
+        renderItem={(playlist) => (
+          <div className="relative min-w-0 flex-1">
+            <PlaylistCard playlist={playlist} locale={locale} />
+            <button
+              type="button"
+              onClick={() => togglePin(playlist.id)}
+              aria-pressed={pinned.includes(playlist.id)}
+              aria-label={pinned.includes(playlist.id)
+                ? locale === 'ar' ? `إلغاء تثبيت ${playlist.title}` : `Unpin ${playlist.title}`
+                : locale === 'ar' ? `تثبيت ${playlist.title}` : `Pin ${playlist.title}`}
+              title={pinned.includes(playlist.id) ? (locale === 'ar' ? 'إلغاء التثبيت' : 'Unpin') : (locale === 'ar' ? 'تثبيت' : 'Pin')}
+              className={`absolute end-2 top-2 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-[#19131f]/90 transition hover:bg-[#382747] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${pinned.includes(playlist.id) ? 'text-primary' : 'text-white'}`}
+            >
+              <Pin className="h-4 w-4" fill={pinned.includes(playlist.id) ? 'currentColor' : 'none'} />
+            </button>
+          </div>
+        )}
       />}
     </div>
   );
