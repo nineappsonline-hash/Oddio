@@ -13,7 +13,6 @@ import { buildMetadata } from '@/lib/seo';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { TrackRow } from '@/components/music/TrackRow';
-import { PlaylistCard } from '@/components/music/PlaylistCard';
 import { ReorderablePlaylistGrid } from '@/components/library/ReorderablePlaylistGrid';
 import { ArtistListRow } from '@/components/music/ArtistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -168,11 +167,8 @@ export default async function LibraryPage({
             <h3 className="mb-3 mt-8 text-sm font-bold uppercase tracking-wide text-muted">
               {t('common.following')}
             </h3>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-              {library.followedPlaylists.map((playlist) => (
-                <PlaylistCard key={playlist.id} playlist={playlist} locale={locale} />
-              ))}
-            </div>
+            <ReorderablePlaylistGrid playlists={library.followedPlaylists}
+              locale={locale} userId={user.id} section="followed" />
           </>
         ) : null}
       </section>
