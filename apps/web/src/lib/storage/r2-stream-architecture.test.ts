@@ -53,6 +53,14 @@ describe('Cloudflare R2 streaming architecture guard', () => {
     expect(cacheGuards.length).toBeGreaterThanOrEqual(2);
   });
 
+  it('marks playback errors private so expired tokens cannot be cached', () => {
+    expect(streamRoute).toContain("const AUDIO_ERROR_HEADERS = {");
+    expect(streamRoute).toContain("'Cache-Control': 'private, no-store'");
+    expect(streamRoute).toContain("'Referrer-Policy': 'no-referrer'");
+    const protectedErrors = streamRoute.match(/headers: AUDIO_ERROR_HEADERS/g) ?? [];
+    expect(protectedErrors.length).toBeGreaterThanOrEqual(6);
+  });
+
   it('signs delete requests with the same canonical newline and AWS timestamp format', () => {
     const body = signing.slice(signing.indexOf('export function presignR2Delete('));
     expect(body).toContain(String.raw`/^[a-zA-Z0-9/_-]+\.[a-zA-Z0-9]+$/`);
