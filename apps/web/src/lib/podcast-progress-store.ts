@@ -83,7 +83,10 @@ export function replacePodcastSyncRecords(
   const storage = storageFor(viewerId);
   if (!storage) return;
   try {
-    const merged = mergePodcastProgress(readPodcastSyncRecords(viewerId), incoming);
+    const before = readPodcastSyncRecords(viewerId);
+    const merged = mergePodcastProgress(before, incoming);
+    // Avoid triggering a new upload on every successful cloud read-back.
+    if (JSON.stringify(merged) === JSON.stringify(before)) return;
     storage.setItem(keyFor(viewerId), JSON.stringify(merged));
     window.dispatchEvent(new Event(PODCAST_PROGRESS_EVENT));
   } catch { /* Storage is optional. */ }
