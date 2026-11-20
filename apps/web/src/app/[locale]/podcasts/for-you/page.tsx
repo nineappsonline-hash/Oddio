@@ -67,7 +67,7 @@ export default async function PodcastsForYou({
         .limit(500),
       db
         .from('podcast_listening_progress')
-        .select('episode_id')
+        .select('episode_id,seconds,completed')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false })
         .limit(40),
@@ -76,7 +76,9 @@ export default async function PodcastsForYou({
       profileUnavailable = true;
     } else {
       followedIds = (follows.data ?? []).map((row) => row.show_id as string);
-      listenedEpisodeIds = (history.data ?? []).map((row) => row.episode_id as string);
+      listenedEpisodeIds = (history.data ?? [])
+        .filter((row) => Number(row.seconds) > 0 || row.completed === true)
+        .map((row) => row.episode_id as string);
     }
   }
 
