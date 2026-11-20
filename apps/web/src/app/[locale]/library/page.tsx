@@ -15,6 +15,7 @@ import { SectionHeader } from '@/components/ui/SectionHeader';
 import { TrackRow } from '@/components/music/TrackRow';
 import { ReorderablePlaylistGrid } from '@/components/library/ReorderablePlaylistGrid';
 import { ReorderableLikedTracks } from '@/components/library/ReorderableLikedTracks';
+import { SearchableLikedTracks } from '@/components/library/SearchableLikedTracks';
 import { ArtistListRow } from '@/components/music/ArtistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ButtonLink } from '@/components/ui/Button';
@@ -137,18 +138,8 @@ export default async function LibraryPage({
             userId={user.id}
           />
         ) : (
-          <div className="card divide-y divide-white/5 p-2">
-            {likedTracks.map((track, index) => (
-              <TrackRow
-                key={track.id}
-                track={track}
-                queue={likedTracks}
-                index={index}
-                locale={locale}
-              />
-            ))}
-          </div>
-        )}
+          <SearchableLikedTracks tracks={likedTracks} locale={locale} />
+        )
       </section>
 
       <section id="playlists" className="scroll-mt-24">
