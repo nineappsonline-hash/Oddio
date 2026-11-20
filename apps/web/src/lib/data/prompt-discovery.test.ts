@@ -92,13 +92,22 @@ describe('prompt-generated playlists', () => {
 
   it('requires all explicit genre, mood and language facets together', () => {
     const db = dbFixture();
-    expect(promptDiscoveryTracks(db, viewer, 'calm Arabic pop').tracks.map((track) => track.id))
-      .toEqual(['arabic']);
-    expect(promptDiscoveryTracks(db, viewer, 'موسيقى عربي بوب هادية').tracks.map((track) => track.id))
-      .toEqual(['arabic']);
+    expect(
+      promptDiscoveryTracks(db, viewer, 'calm Arabic pop').tracks.map(
+        (track) => track.id,
+      ),
+    ).toEqual(['arabic']);
+    expect(
+      promptDiscoveryTracks(db, viewer, 'موسيقى عربي بوب هادية').tracks.map(
+        (track) => track.id,
+      ),
+    ).toEqual(['arabic']);
     expect(promptDiscoveryTracks(db, viewer, 'Arabic energetic rock').tracks).toEqual([]);
-    expect(promptDiscoveryTracks(db, viewer, 'English energetic rock').tracks.map((track) => track.id))
-      .toEqual(['english']);
+    expect(
+      promptDiscoveryTracks(db, viewer, 'English energetic rock').tracks.map(
+        (track) => track.id,
+      ),
+    ).toEqual(['english']);
   });
 
   it('never treats a language-only partial match as satisfying a conflicting genre', () => {
@@ -112,12 +121,20 @@ describe('prompt-generated playlists', () => {
     const arabic = db.tracks.find((track) => track.id === 'arabic')!;
     const english = db.tracks.find((track) => track.id === 'english')!;
     arabic.audioFeatures = {
-      schemaVersion: 1, tempoBpm: 120, tempoConfidence: 0.9,
-      rmsDbfs: -12, peakDbfs: -2, analyzedSeconds: 25,
+      schemaVersion: 1,
+      tempoBpm: 120,
+      tempoConfidence: 0.9,
+      rmsDbfs: -12,
+      peakDbfs: -2,
+      analyzedSeconds: 25,
     };
     english.audioFeatures = {
-      schemaVersion: 1, tempoBpm: 120, tempoConfidence: 0.2,
-      rmsDbfs: -12, peakDbfs: -2, analyzedSeconds: 25,
+      schemaVersion: 1,
+      tempoBpm: 120,
+      tempoConfidence: 0.2,
+      rmsDbfs: -12,
+      peakDbfs: -2,
+      analyzedSeconds: 25,
     };
     const matched = promptDiscoveryTracks(db, viewer, '120 bpm');
     expect(matched.tracks.map((track) => track.id)).toEqual(['arabic']);

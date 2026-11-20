@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { homePersonalizationKey, parseHomePersonalizationPreference } from '@/lib/home-personalization';
+import {
+  homePersonalizationKey,
+  parseHomePersonalizationPreference,
+} from '@/lib/home-personalization';
 import { favoriteGenresKey, normalizeFavoriteGenres } from '@/lib/favorite-genres';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { TrackCard } from '@/components/music/TrackCard';
@@ -49,7 +52,9 @@ export function DiscoveryMixShelf({
     }
     try {
       setPersonalizationEnabled(
-        parseHomePersonalizationPreference(window.localStorage.getItem(homePersonalizationKey(viewerId))),
+        parseHomePersonalizationPreference(
+          window.localStorage.getItem(homePersonalizationKey(viewerId)),
+        ),
       );
     } catch {
       setPersonalizationEnabled(true);
@@ -79,7 +84,10 @@ export function DiscoveryMixShelf({
 
   const updateFavoriteGenres = (next: string[]) => {
     if (!viewerId) return;
-    const cleaned = normalizeFavoriteGenres(next, genres.map((genre) => genre.id));
+    const cleaned = normalizeFavoriteGenres(
+      next,
+      genres.map((genre) => genre.id),
+    );
     setFavoriteGenreIds(cleaned);
     try {
       window.localStorage.setItem(favoriteGenresKey(viewerId), JSON.stringify(cleaned));
@@ -92,7 +100,10 @@ export function DiscoveryMixShelf({
     if (!viewerId) return;
     setPersonalizationEnabled(enabled);
     try {
-      window.localStorage.setItem(homePersonalizationKey(viewerId), enabled ? 'on' : 'off');
+      window.localStorage.setItem(
+        homePersonalizationKey(viewerId),
+        enabled ? 'on' : 'off',
+      );
       window.dispatchEvent(new Event('oddio-home-personalization-changed'));
     } catch {
       // Continue with the current session setting when browser storage is unavailable.
@@ -133,15 +144,19 @@ export function DiscoveryMixShelf({
       });
     }
   }
-  const showPersonalized = Boolean(viewerId && personalizationLoaded && personalized && personalizationEnabled);
-  const generalPicks = favoriteGenresLoaded && viewerId && personalizationEnabled && favoriteGenreIds.length
-    ? [...publicTracks].sort((a, b) => {
-        const match = (track: CatalogTrack) =>
-          (track.genreIds?.length ? track.genreIds : [track.genreId])
-            .filter((id) => favoriteGenreIds.includes(id)).length;
-        return match(b) - match(a);
-      })
-    : publicTracks;
+  const showPersonalized = Boolean(
+    viewerId && personalizationLoaded && personalized && personalizationEnabled,
+  );
+  const generalPicks =
+    favoriteGenresLoaded && viewerId && personalizationEnabled && favoriteGenreIds.length
+      ? [...publicTracks].sort((a, b) => {
+          const match = (track: CatalogTrack) =>
+            (track.genreIds?.length ? track.genreIds : [track.genreId]).filter((id) =>
+              favoriteGenreIds.includes(id),
+            ).length;
+          return match(b) - match(a);
+        })
+      : publicTracks;
   const sourceTracks = showPersonalized ? tracks : generalPicks;
   const visible = sourceTracks.filter(
     (track) =>
@@ -179,7 +194,12 @@ export function DiscoveryMixShelf({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <FlowButton tracks={visible} locale={locale} viewerId={viewerId} localOnly={!personalizationLoaded || !personalizationEnabled} />
+          <FlowButton
+            tracks={visible}
+            locale={locale}
+            viewerId={viewerId}
+            localOnly={!personalizationLoaded || !personalizationEnabled}
+          />
           {viewerId && personalizationLoaded && personalizationEnabled ? (
             <>
               <FlowButton kind="daily" locale={locale} viewerId={viewerId} />
@@ -216,22 +236,37 @@ export function DiscoveryMixShelf({
             className="min-h-11 shrink-0 rounded-full border border-primary/40 px-4 text-xs font-bold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           >
             {personalizationEnabled
-              ? ar ? 'إيقاف التخصيص' : 'Turn off'
-              : ar ? 'تشغيل التخصيص' : 'Turn on'}
+              ? ar
+                ? 'إيقاف التخصيص'
+                : 'Turn off'
+              : ar
+                ? 'تشغيل التخصيص'
+                : 'Turn on'}
           </button>
         </div>
       ) : null}
-      {viewerId && favoriteGenresLoaded && personalizationLoaded && personalizationEnabled && !personalized && genres.length > 0 ? (
+      {viewerId &&
+      favoriteGenresLoaded &&
+      personalizationLoaded &&
+      personalizationEnabled &&
+      !personalized &&
+      genres.length > 0 ? (
         <div className="mb-4 space-y-3 rounded-xl border border-primary/20 bg-primary/[0.04] p-4">
           <div>
-            <h3 className="text-sm font-bold text-ink">{ar ? 'اختار لحد 3 أنواع موسيقية بتحبها' : 'Pick up to 3 favorite genres'}</h3>
+            <h3 className="text-sm font-bold text-ink">
+              {ar ? 'اختار لحد 3 أنواع موسيقية بتحبها' : 'Pick up to 3 favorite genres'}
+            </h3>
             <p className="mt-1 text-xs leading-5 text-muted">
               {ar
                 ? 'اختياري. هنقدم الأنواع اللي اخترتها في الترشيحات العامة. تقدر تغيرها أو تمسحها في أي وقت.'
                 : 'Optional. We will prioritize these genres among general picks. Change or clear them anytime.'}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2" role="group" aria-label={ar ? 'أنواعك المفضلة' : 'Favorite genres'}>
+          <div
+            className="flex flex-wrap gap-2"
+            role="group"
+            aria-label={ar ? 'أنواعك المفضلة' : 'Favorite genres'}
+          >
             {genres.slice(0, 24).map((genre) => {
               const selected = favoriteGenreIds.includes(genre.id);
               return (
@@ -240,9 +275,13 @@ export function DiscoveryMixShelf({
                   type="button"
                   aria-pressed={selected}
                   disabled={!selected && favoriteGenreIds.length >= 3}
-                  onClick={() => updateFavoriteGenres(selected
-                    ? favoriteGenreIds.filter((id) => id !== genre.id)
-                    : [...favoriteGenreIds, genre.id])}
+                  onClick={() =>
+                    updateFavoriteGenres(
+                      selected
+                        ? favoriteGenreIds.filter((id) => id !== genre.id)
+                        : [...favoriteGenreIds, genre.id],
+                    )
+                  }
                   className={`min-h-11 rounded-full border px-3 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-35 ${selected ? 'border-primary/60 bg-primary/15 text-primary' : 'border-white/20 text-ink hover:bg-white/10'}`}
                 >
                   {genre.name}
@@ -251,10 +290,16 @@ export function DiscoveryMixShelf({
             })}
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-muted">{favoriteGenreIds.length}/3 · {ar ? 'محفوظة على الجهاز ده' : 'Saved on this device'}</p>
+            <p className="text-xs text-muted">
+              {favoriteGenreIds.length}/3 ·{' '}
+              {ar ? 'محفوظة على الجهاز ده' : 'Saved on this device'}
+            </p>
             {favoriteGenreIds.length > 0 ? (
-              <button type="button" onClick={() => updateFavoriteGenres([])}
-                className="min-h-11 rounded-lg px-3 text-xs font-semibold text-primary hover:bg-primary/10">
+              <button
+                type="button"
+                onClick={() => updateFavoriteGenres([])}
+                className="min-h-11 rounded-lg px-3 text-xs font-semibold text-primary hover:bg-primary/10"
+              >
                 {ar ? 'مسح الاختيارات' : 'Clear choices'}
               </button>
             ) : null}

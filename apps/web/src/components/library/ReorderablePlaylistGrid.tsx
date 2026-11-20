@@ -33,16 +33,26 @@ export function ReorderablePlaylistGrid({
   useEffect(() => {
     try {
       const saved: unknown = JSON.parse(window.localStorage.getItem(pinKey) ?? '[]');
-      setPinned(Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string') : []);
+      setPinned(
+        Array.isArray(saved)
+          ? saved.filter((id): id is string => typeof id === 'string')
+          : [],
+      );
     } catch {
       setPinned([]);
     }
   }, [pinKey]);
 
   const togglePin = (id: string) => {
-    const next = pinned.includes(id) ? pinned.filter((item) => item !== id) : [...pinned, id];
+    const next = pinned.includes(id)
+      ? pinned.filter((item) => item !== id)
+      : [...pinned, id];
     setPinned(next);
-    try { window.localStorage.setItem(pinKey, JSON.stringify(next)); } catch { /* Optional preference. */ }
+    try {
+      window.localStorage.setItem(pinKey, JSON.stringify(next));
+    } catch {
+      /* Optional preference. */
+    }
   };
 
   useEffect(() => {
@@ -56,18 +66,28 @@ export function ReorderablePlaylistGrid({
 
   const shown = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
-    const filtered = items.filter((playlist) =>
-      !needle || `${playlist.title} ${playlist.description} ${playlist.ownerName}`.toLocaleLowerCase().includes(needle),
+    const filtered = items.filter(
+      (playlist) =>
+        !needle ||
+        `${playlist.title} ${playlist.description} ${playlist.ownerName}`
+          .toLocaleLowerCase()
+          .includes(needle),
     );
     const ordered = [...filtered];
     if (sort === 'title') ordered.sort((a, b) => a.title.localeCompare(b.title, locale));
     if (sort === 'recent') ordered.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    return ordered.sort((a, b) => Number(pinned.includes(b.id)) - Number(pinned.includes(a.id)));
+    return ordered.sort(
+      (a, b) => Number(pinned.includes(b.id)) - Number(pinned.includes(a.id)),
+    );
   }, [items, locale, query, sort, pinned]);
 
   const updateView = (next: 'grid' | 'list') => {
     setView(next);
-    try { window.localStorage.setItem(displayKey, next); } catch { /* optional */ }
+    try {
+      window.localStorage.setItem(displayKey, next);
+    } catch {
+      /* optional */
+    }
   };
 
   useEffect(() => {
@@ -125,7 +145,9 @@ export function ReorderablePlaylistGrid({
           {locale === 'ar' ? 'ترتيب حسب' : 'Sort by'}
           <select
             value={sort}
-            onChange={(event) => setSort(event.target.value as 'custom' | 'recent' | 'title')}
+            onChange={(event) =>
+              setSort(event.target.value as 'custom' | 'recent' | 'title')
+            }
             className="mt-1 block min-h-11 rounded-xl border border-white/15 bg-[#28212f] px-3 text-sm text-ink"
           >
             <option value="custom">{locale === 'ar' ? 'ترتيبي' : 'My order'}</option>
@@ -133,7 +155,11 @@ export function ReorderablePlaylistGrid({
             <option value="title">{locale === 'ar' ? 'الاسم' : 'Name'}</option>
           </select>
         </label>
-        <div role="group" aria-label={locale === 'ar' ? 'طريقة العرض' : 'Display mode'} className="flex min-h-11 items-center rounded-xl border border-white/15 p-1">
+        <div
+          role="group"
+          aria-label={locale === 'ar' ? 'طريقة العرض' : 'Display mode'}
+          className="flex min-h-11 items-center rounded-xl border border-white/15 p-1"
+        >
           {(['grid', 'list'] as const).map((mode) => (
             <button
               key={mode}
@@ -143,8 +169,12 @@ export function ReorderablePlaylistGrid({
               className={`min-h-9 rounded-lg px-3 text-xs font-semibold ${view === mode ? 'bg-primary text-black' : 'text-muted hover:bg-white/10'}`}
             >
               {mode === 'grid'
-                ? locale === 'ar' ? 'شبكة' : 'Grid'
-                : locale === 'ar' ? 'قائمة' : 'List'}
+                ? locale === 'ar'
+                  ? 'شبكة'
+                  : 'Grid'
+                : locale === 'ar'
+                  ? 'قائمة'
+                  : 'List'}
             </button>
           ))}
         </div>
@@ -166,35 +196,63 @@ export function ReorderablePlaylistGrid({
         {message}
       </p>
       {shown.length === 0 ? (
-        <p role="status" className="rounded-xl border border-dashed border-white/15 p-5 text-sm text-muted">
-          {locale === 'ar' ? 'مفيش قوائم مطابقة للبحث.' : 'No playlists match your search.'}
+        <p
+          role="status"
+          className="rounded-xl border border-dashed border-white/15 p-5 text-sm text-muted"
+        >
+          {locale === 'ar'
+            ? 'مفيش قوائم مطابقة للبحث.'
+            : 'No playlists match your search.'}
         </p>
-      ) : <DragReorderList
-        items={shown}
-        getId={(playlist) => playlist.id}
-        locale={locale}
-        layout={view}
-        disabled={sort !== 'custom' || Boolean(query.trim()) || pinned.length > 0}
-        onMove={onMove}
-        className={view === 'grid' ? 'grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5' : 'space-y-3'}
-        renderItem={(playlist) => (
-          <div className="relative min-w-0 flex-1">
-            <PlaylistCard playlist={playlist} locale={locale} />
-            <button
-              type="button"
-              onClick={() => togglePin(playlist.id)}
-              aria-pressed={pinned.includes(playlist.id)}
-              aria-label={pinned.includes(playlist.id)
-                ? locale === 'ar' ? `إلغاء تثبيت ${playlist.title}` : `Unpin ${playlist.title}`
-                : locale === 'ar' ? `تثبيت ${playlist.title}` : `Pin ${playlist.title}`}
-              title={pinned.includes(playlist.id) ? (locale === 'ar' ? 'إلغاء التثبيت' : 'Unpin') : (locale === 'ar' ? 'تثبيت' : 'Pin')}
-              className={`absolute end-2 top-2 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-[#19131f]/90 transition hover:bg-[#382747] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${pinned.includes(playlist.id) ? 'text-primary' : 'text-white'}`}
-            >
-              <Pin className="h-4 w-4" fill={pinned.includes(playlist.id) ? 'currentColor' : 'none'} />
-            </button>
-          </div>
-        )}
-      />}
+      ) : (
+        <DragReorderList
+          items={shown}
+          getId={(playlist) => playlist.id}
+          locale={locale}
+          layout={view}
+          disabled={sort !== 'custom' || Boolean(query.trim()) || pinned.length > 0}
+          onMove={onMove}
+          className={
+            view === 'grid'
+              ? 'grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5'
+              : 'space-y-3'
+          }
+          renderItem={(playlist) => (
+            <div className="relative min-w-0 flex-1">
+              <PlaylistCard playlist={playlist} locale={locale} />
+              <button
+                type="button"
+                onClick={() => togglePin(playlist.id)}
+                aria-pressed={pinned.includes(playlist.id)}
+                aria-label={
+                  pinned.includes(playlist.id)
+                    ? locale === 'ar'
+                      ? `إلغاء تثبيت ${playlist.title}`
+                      : `Unpin ${playlist.title}`
+                    : locale === 'ar'
+                      ? `تثبيت ${playlist.title}`
+                      : `Pin ${playlist.title}`
+                }
+                title={
+                  pinned.includes(playlist.id)
+                    ? locale === 'ar'
+                      ? 'إلغاء التثبيت'
+                      : 'Unpin'
+                    : locale === 'ar'
+                      ? 'تثبيت'
+                      : 'Pin'
+                }
+                className={`absolute end-2 top-2 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-[#19131f]/90 transition hover:bg-[#382747] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${pinned.includes(playlist.id) ? 'text-primary' : 'text-white'}`}
+              >
+                <Pin
+                  className="h-4 w-4"
+                  fill={pinned.includes(playlist.id) ? 'currentColor' : 'none'}
+                />
+              </button>
+            </div>
+          )}
+        />
+      )}
     </div>
   );
 }

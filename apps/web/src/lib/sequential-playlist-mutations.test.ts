@@ -7,7 +7,9 @@ describe('sequential playlist mutations', () => {
     const progress: string[] = [];
     const result = await runSequentialPlaylistMutations(
       [2, 1, 3],
-      async (item) => { called.push(item); },
+      async (item) => {
+        called.push(item);
+      },
       (completed, total) => progress.push(`${completed}/${total}`),
     );
     expect(called).toEqual([2, 1, 3]);
@@ -20,7 +22,8 @@ describe('sequential playlist mutations', () => {
       if (id === 'second') throw new Error('network disconnected');
     });
     const result = await runSequentialPlaylistMutations(
-      ['first', 'second', 'third'], mutate,
+      ['first', 'second', 'third'],
+      mutate,
     );
     expect(mutate.mock.calls.map(([id]) => id)).toEqual(['first', 'second']);
     expect(result).toEqual({ completed: 1, total: 3, failed: true });
@@ -29,7 +32,9 @@ describe('sequential playlist mutations', () => {
   it('handles an empty selection without network calls', async () => {
     const mutate = vi.fn(async () => {});
     expect(await runSequentialPlaylistMutations([], mutate)).toEqual({
-      completed: 0, total: 0, failed: false,
+      completed: 0,
+      total: 0,
+      failed: false,
     });
     expect(mutate).not.toHaveBeenCalled();
   });

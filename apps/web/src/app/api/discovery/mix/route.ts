@@ -2,7 +2,11 @@ import { NextRequest } from 'next/server';
 import { getViewer } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
-import { buildDiscoveryMix, type MixKind, type RadioDiscoveryMode } from '@/lib/data/discovery-mixes';
+import {
+  buildDiscoveryMix,
+  type MixKind,
+  type RadioDiscoveryMode,
+} from '@/lib/data/discovery-mixes';
 import { evaluateDiscoveryQuality } from '@/lib/data/discovery-quality';
 import { listableTracks } from '@/lib/data/queries';
 import { demoMode } from '@/lib/env';
@@ -37,8 +41,10 @@ export async function GET(request: NextRequest) {
     const excludeIds = list(params.get('exclude'), 100);
     const blockedGenreIds = list(params.get('blockedGenres'), 50);
     const requestedMode = params.get('radioMode');
-    const radioMode: RadioDiscoveryMode = requestedMode === 'familiar' || requestedMode === 'explore'
-      ? requestedMode : 'balanced';
+    const radioMode: RadioDiscoveryMode =
+      requestedMode === 'familiar' || requestedMode === 'explore'
+        ? requestedMode
+        : 'balanced';
     const result = buildDiscoveryMix(db, viewer, {
       kind,
       seedId: params.get('seed') ?? undefined,

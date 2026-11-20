@@ -10,11 +10,15 @@ export function getRecentHomeTracks(
   if (!viewer.userId) return [];
   const available = new Map(
     listableTracks(db, viewer)
-      .filter((track) => Boolean(track.audio) && track.audio?.processingStatus === 'ready')
+      .filter(
+        (track) => Boolean(track.audio) && track.audio?.processingStatus === 'ready',
+      )
       .map((track) => [track.id, track]),
   );
   const sessions = new Set(
-    db.playbackSessions.filter((session) => session.userId === viewer.userId).map((session) => session.id),
+    db.playbackSessions
+      .filter((session) => session.userId === viewer.userId)
+      .map((session) => session.id),
   );
   const events = db.playbackEvents
     .filter((event) => sessions.has(event.sessionId) && event.eventType !== 'error')

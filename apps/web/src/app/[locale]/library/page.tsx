@@ -153,15 +153,24 @@ export default async function LibraryPage({
           userId={user.id}
           locale={locale}
           catalog={listableTracks(db, { userId: null, roles: [] })
-            .filter((track) => track.audio?.processingStatus === 'ready' && track.access.allowed)
+            .filter(
+              (track) =>
+                track.audio?.processingStatus === 'ready' && track.access.allowed,
+            )
             .slice(0, 1500)}
           likedIds={library.likedTracks.map((track) => track.id)}
-          genres={db.genres.filter((genre) => genre.active).map((genre) => ({
-            id: genre.id, name: locale === 'ar' ? genre.labelAr : genre.labelEn,
-          }))}
-          moods={db.moods.filter((mood) => mood.active).map((mood) => ({
-            id: mood.id, name: locale === 'ar' ? mood.labelAr : mood.labelEn,
-          }))}
+          genres={db.genres
+            .filter((genre) => genre.active)
+            .map((genre) => ({
+              id: genre.id,
+              name: locale === 'ar' ? genre.labelAr : genre.labelEn,
+            }))}
+          moods={db.moods
+            .filter((mood) => mood.active)
+            .map((mood) => ({
+              id: mood.id,
+              name: locale === 'ar' ? mood.labelAr : mood.labelEn,
+            }))}
         />
       </section>
 

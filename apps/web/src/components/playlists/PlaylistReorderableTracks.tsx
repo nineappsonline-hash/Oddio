@@ -22,7 +22,10 @@ export function PlaylistReorderableTracks({
   const [tracks, setTracks] = useState(initialTracks);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  const [removeProgress, setRemoveProgress] = useState<{ completed: number; total: number } | null>(null);
+  const [removeProgress, setRemoveProgress] = useState<{
+    completed: number;
+    total: number;
+  } | null>(null);
   const [needsRefresh, setNeedsRefresh] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
@@ -30,14 +33,15 @@ export function PlaylistReorderableTracks({
   const ar = locale === 'ar';
 
   const selectedTracks = tracks.filter((track) => selected.includes(track.id));
-  const allSelected = tracks.length > 0 && tracks.every((track) => selected.includes(track.id));
+  const allSelected =
+    tracks.length > 0 && tracks.every((track) => selected.includes(track.id));
 
-  const toggleSelection = (id: string) => setSelected((current) =>
-    current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
-  );
-  const toggleAll = () => setSelected((current) =>
-    allSelected ? [] : tracks.map((track) => track.id),
-  );
+  const toggleSelection = (id: string) =>
+    setSelected((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
+  const toggleAll = () =>
+    setSelected((current) => (allSelected ? [] : tracks.map((track) => track.id)));
 
   async function removeSelected() {
     if (saving || needsRefresh || selectedTracks.length === 0) return;
@@ -61,20 +65,30 @@ export function PlaylistReorderableTracks({
         // The failed request itself may have reached the server. Do not retry
         // automatically and do not claim an exact authoritative count.
         setNeedsRefresh(true);
-        setMessage(ar
-          ? `اتأكدنا من حذف ${result.completed} من ${result.total}. ممكن الطلب الأخير يكون وصل للسيرفر. حدّث القائمة قبل أي تعديل تاني.`
-          : `Confirmed ${result.completed} of ${result.total} removals. The last request may have reached the server. Reload before editing again.`);
+        setMessage(
+          ar
+            ? `اتأكدنا من حذف ${result.completed} من ${result.total}. ممكن الطلب الأخير يكون وصل للسيرفر. حدّث القائمة قبل أي تعديل تاني.`
+            : `Confirmed ${result.completed} of ${result.total} removals. The last request may have reached the server. Reload before editing again.`,
+        );
         return;
       }
       const removedIds = new Set(targets.map((track) => track.id));
       setTracks((current) => current.filter((track) => !removedIds.has(track.id)));
       setSelected([]);
-      setMessage(ar ? `اتحذفت ${result.completed} أغنية من القائمة.` : `Removed ${result.completed} tracks from playlist.`);
+      setMessage(
+        ar
+          ? `اتحذفت ${result.completed} أغنية من القائمة.`
+          : `Removed ${result.completed} tracks from playlist.`,
+      );
       router.refresh();
     } catch {
       setConfirmingRemove(false);
       setNeedsRefresh(true);
-      setMessage(ar ? 'حصل خطأ. حدّث القائمة قبل أي تعديل تاني.' : 'An error occurred. Reload before making further edits.');
+      setMessage(
+        ar
+          ? 'حصل خطأ. حدّث القائمة قبل أي تعديل تاني.'
+          : 'An error occurred. Reload before making further edits.',
+      );
     } finally {
       setSaving(false);
     }
@@ -127,8 +141,12 @@ export function PlaylistReorderableTracks({
           className="min-h-10 rounded-full border border-white/20 px-3 text-xs text-ink hover:bg-white/10 disabled:opacity-40"
         >
           {allSelected
-            ? ar ? 'إلغاء تحديد الكل' : 'Deselect all'
-            : ar ? 'حدد كل الأغاني' : 'Select all'}
+            ? ar
+              ? 'إلغاء تحديد الكل'
+              : 'Deselect all'
+            : ar
+              ? 'حدد كل الأغاني'
+              : 'Select all'}
         </button>
         {selectedTracks.length > 0 ? (
           <>
@@ -138,12 +156,17 @@ export function PlaylistReorderableTracks({
               onClick={() => setConfirmingRemove(true)}
               className="min-h-10 rounded-full border border-red-400/50 px-4 text-xs font-semibold text-red-300 hover:bg-red-400/10 disabled:opacity-40"
             >
-              {ar ? `احذف ${selectedTracks.length} من القائمة` : `Remove ${selectedTracks.length} from playlist`}
+              {ar
+                ? `احذف ${selectedTracks.length} من القائمة`
+                : `Remove ${selectedTracks.length} from playlist`}
             </button>
             <button
               type="button"
               disabled={saving}
-              onClick={() => { setSelected([]); setConfirmingRemove(false); }}
+              onClick={() => {
+                setSelected([]);
+                setConfirmingRemove(false);
+              }}
               className="min-h-10 rounded-full px-3 text-xs text-muted hover:text-ink"
             >
               {ar ? 'امسح التحديد' : 'Clear selection'}
@@ -152,20 +175,37 @@ export function PlaylistReorderableTracks({
         ) : null}
       </div>
       {confirmingRemove && selectedTracks.length > 0 ? (
-        <div role="group" aria-label={ar ? 'تأكيد الحذف' : 'Confirm removal'}
-          className="space-y-3 rounded-xl border border-red-400/35 bg-red-400/5 p-4">
+        <div
+          role="group"
+          aria-label={ar ? 'تأكيد الحذف' : 'Confirm removal'}
+          className="space-y-3 rounded-xl border border-red-400/35 bg-red-400/5 p-4"
+        >
           <p className="text-sm font-medium text-ink">
             {ar
               ? `متأكد إنك عاوز تشيل ${selectedTracks.length} أغنية من الـPlaylist؟ الأغاني نفسها مش هتتمسح من Oddio.`
               : `Remove ${selectedTracks.length} tracks from this playlist? The songs will remain on Oddio.`}
           </p>
           <div className="flex flex-wrap gap-2">
-            <button type="button" disabled={saving} onClick={() => void removeSelected()}
-              className="min-h-10 rounded-full bg-red-600 px-4 text-xs font-bold text-white disabled:opacity-50">
-              {saving ? (ar ? 'جاري الحذف…' : 'Removing…') : (ar ? 'تأكيد الحذف' : 'Confirm remove')}
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => void removeSelected()}
+              className="min-h-10 rounded-full bg-red-600 px-4 text-xs font-bold text-white disabled:opacity-50"
+            >
+              {saving
+                ? ar
+                  ? 'جاري الحذف…'
+                  : 'Removing…'
+                : ar
+                  ? 'تأكيد الحذف'
+                  : 'Confirm remove'}
             </button>
-            <button type="button" disabled={saving} onClick={() => setConfirmingRemove(false)}
-              className="min-h-10 rounded-full border border-white/20 px-4 text-xs text-ink disabled:opacity-50">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => setConfirmingRemove(false)}
+              className="min-h-10 rounded-full border border-white/20 px-4 text-xs text-ink disabled:opacity-50"
+            >
               {ar ? 'إلغاء' : 'Cancel'}
             </button>
           </div>
@@ -205,7 +245,10 @@ export function PlaylistReorderableTracks({
               <input
                 type="checkbox"
                 checked={selected.includes(track.id)}
-                onChange={() => { toggleSelection(track.id); setConfirmingRemove(false); }}
+                onChange={() => {
+                  toggleSelection(track.id);
+                  setConfirmingRemove(false);
+                }}
                 disabled={saving || needsRefresh}
                 aria-label={ar ? `حدد ${track.title}` : `Select ${track.title}`}
                 className="h-4 w-4 accent-primary"

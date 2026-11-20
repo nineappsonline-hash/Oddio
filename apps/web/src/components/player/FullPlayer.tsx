@@ -173,7 +173,9 @@ export function FullPlayer() {
       // the underlying full player.
       const nestedDialogOpen = Array.from(
         document.querySelectorAll<HTMLElement>('[role="dialog"][aria-modal="true"]'),
-      ).some((dialog) => dialog !== dialogRef.current && !dialogRef.current?.contains(dialog));
+      ).some(
+        (dialog) => dialog !== dialogRef.current && !dialogRef.current?.contains(dialog),
+      );
       if (nestedDialogOpen) return;
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -899,7 +901,9 @@ export function FullPlayer() {
             )}
             aria-label={
               sideTab === 'lyrics'
-                ? rtl ? 'كلمات الأغنية' : 'Lyrics'
+                ? rtl
+                  ? 'كلمات الأغنية'
+                  : 'Lyrics'
                 : sideTab === 'queue'
                   ? t('player.queue')
                   : rtl
@@ -915,13 +919,23 @@ export function FullPlayer() {
               role="tablist"
               aria-label={rtl ? 'أقسام المشغل' : 'Player panels'}
               onKeyDown={(event) => {
-                if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
-                const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
-                const position = tabs.indexOf(document.activeElement as HTMLButtonElement);
+                if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key))
+                  return;
+                const tabs = Array.from(
+                  event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+                );
+                const position = tabs.indexOf(
+                  document.activeElement as HTMLButtonElement,
+                );
                 if (position < 0 || !tabs.length) return;
                 event.preventDefault();
                 const delta = (event.key === 'ArrowRight' ? 1 : -1) * (rtl ? -1 : 1);
-                const target = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (position + delta + tabs.length) % tabs.length;
+                const target =
+                  event.key === 'Home'
+                    ? 0
+                    : event.key === 'End'
+                      ? tabs.length - 1
+                      : (position + delta + tabs.length) % tabs.length;
                 tabs[target]?.focus();
                 tabs[target]?.click();
               }}
@@ -993,13 +1007,18 @@ export function FullPlayer() {
                     : 'LYRICS'}
             </p>
             {sideTab === 'similar' ? (
-              <div id="oddio-player-panel" role="tabpanel" aria-labelledby="oddio-tab-similar" className="min-h-0 flex-1 overflow-y-auto">
-              <SimilarPlayerPanel
-                trackId={track.id}
-                podcast={podcast}
-                rtl={rtl}
-                active={expanded && sideTab === 'similar'}
-              />
+              <div
+                id="oddio-player-panel"
+                role="tabpanel"
+                aria-labelledby="oddio-tab-similar"
+                className="min-h-0 flex-1 overflow-y-auto"
+              >
+                <SimilarPlayerPanel
+                  trackId={track.id}
+                  podcast={podcast}
+                  rtl={rtl}
+                  active={expanded && sideTab === 'similar'}
+                />
               </div>
             ) : sideTab === 'lyrics' && !podcast ? (
               <div
@@ -1080,21 +1099,25 @@ export function FullPlayer() {
                         type="button"
                         onClick={undoQueue}
                         className="min-h-10 rounded-full border border-primary/40 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                        aria-label={rtl ? 'تراجع عن آخر تعديل في قائمة الانتظار' : 'Undo last queue edit'}
+                        aria-label={
+                          rtl
+                            ? 'تراجع عن آخر تعديل في قائمة الانتظار'
+                            : 'Undo last queue edit'
+                        }
                       >
                         {rtl ? 'تراجع' : 'Undo'}
                       </button>
                     ) : null}
                     {queue.length > 0 ? (
-                    <button
-                      type="button"
-                      onClick={clearQueue}
-                      className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                      aria-label={t('player.clearQueue')}
-                      title={t('player.clearQueue')}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                      <button
+                        type="button"
+                        onClick={clearQueue}
+                        className="grid h-11 w-11 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        aria-label={t('player.clearQueue')}
+                        title={t('player.clearQueue')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     ) : null}
                   </div>
                 </div>

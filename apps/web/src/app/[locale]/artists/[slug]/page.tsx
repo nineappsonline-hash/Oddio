@@ -118,7 +118,6 @@ export default async function ArtistPage({
     .filter((album) => album.trackCount > 0)
     .sort((a, b) => b.releaseAt.localeCompare(a.releaseAt));
 
-
   return (
     <div>
       <SeoBreadcrumbs

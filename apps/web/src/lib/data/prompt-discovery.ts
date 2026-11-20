@@ -14,7 +14,18 @@ function normalize(value: string): string {
     .trim();
 }
 const synonyms: Record<string, string[]> = {
-  chill: ['chill', 'relax', 'calm', 'هادئ', 'هادي', 'هادية', 'هادئه', 'استرخاء', 'رايق', 'رايقين'],
+  chill: [
+    'chill',
+    'relax',
+    'calm',
+    'هادئ',
+    'هادي',
+    'هادية',
+    'هادئه',
+    'استرخاء',
+    'رايق',
+    'رايقين',
+  ],
   happy: ['happy', 'joy', 'upbeat', 'سعيد', 'سعاده', 'فرح', 'مبهج'],
   sad: ['sad', 'melancholy', 'حزين', 'حزن', 'كئيب'],
   workout: ['workout', 'gym', 'energy', 'حماس', 'تمرين', 'جيم', 'طاقه'],
@@ -23,7 +34,10 @@ const synonyms: Record<string, string[]> = {
   english: ['english', 'انجليزي', 'إنجليزي'],
 };
 
-export type DiscoveryMatchReason = { kind: 'genre' | 'mood' | 'language' | 'artist' | 'title' | 'tempo'; value: string };
+export type DiscoveryMatchReason = {
+  kind: 'genre' | 'mood' | 'language' | 'artist' | 'title' | 'tempo';
+  value: string;
+};
 
 function containsTerm(text: string, term: string): boolean {
   const input = ' ' + normalize(text) + ' ';
@@ -36,7 +50,11 @@ export function promptDiscoveryTracks(
   viewer: Viewer,
   prompt: string,
   limit = 12,
-): { tracks: CatalogTrack[]; matched: boolean; reasons: Record<string, DiscoveryMatchReason[]> } {
+): {
+  tracks: CatalogTrack[];
+  matched: boolean;
+  reasons: Record<string, DiscoveryMatchReason[]>;
+} {
   const text = normalize(prompt).slice(0, 240);
   if (text.length < 3) return { tracks: [], matched: false, reasons: {} };
   const catalog = listableTracks(db, viewer).filter(
@@ -53,46 +71,59 @@ export function promptDiscoveryTracks(
   // catalog labels. Never invent BPM, vocals or language from a genre name.
   const requestedGenres = db.genres
     .filter((genre) => genre.active)
-    .filter((genre) => [genre.labelEn, genre.labelAr, genre.slug]
-      .some((label) => containsTerm(text, label)))
+    .filter((genre) =>
+      [genre.labelEn, genre.labelAr, genre.slug].some((label) =>
+        containsTerm(text, label),
+      ),
+    )
     .map((genre) => genre.id);
   const requestedMoods = db.moods
     .filter((mood) => mood.active)
     .filter((mood) => {
       const labels = [mood.labelEn, mood.labelAr, mood.slug];
-      return labels.some((label) => containsTerm(text, label)) ||
+      return (
+        labels.some((label) => containsTerm(text, label)) ||
         intents.some((intent) => {
           const words = synonyms[intent] ?? [];
-          return words.some((word) => containsTerm(text, word)) &&
-            words.some((word) => labels.some((label) => containsTerm(label, word)));
-        });
+          return (
+            words.some((word) => containsTerm(text, word)) &&
+            words.some((word) => labels.some((label) => containsTerm(label, word)))
+          );
+        })
+      );
     })
     .map((mood) => mood.id);
-  const requestedLanguage = intents.includes('arabic') && !intents.includes('english')
-    ? 'ar'
-    : intents.includes('english') && !intents.includes('arabic')
-      ? 'en'
-      : null;
+  const requestedLanguage =
+    intents.includes('arabic') && !intents.includes('english')
+      ? 'ar'
+      : intents.includes('english') && !intents.includes('arabic')
+        ? 'en'
+        : null;
   // Numeric tempo requests are honored only for validated worker measurements.
   // Unmeasured music is not presented as matching a specific BPM.
-  const tempoMatches = [...text.matchAll(/(?:^| )([6-9][0-9]|1[0-9][0-9]|2[0-2][0-9])\s*(?:bpm|بي بي ام)(?: |$)/g)];
+  const tempoMatches = [
+    ...text.matchAll(
+      /(?:^| )([6-9][0-9]|1[0-9][0-9]|2[0-2][0-9])\s*(?:bpm|بي بي ام)(?: |$)/g,
+    ),
+  ];
   const tempoTarget = tempoMatches.length === 1 ? Number(tempoMatches[0]?.[1]) : null;
   const hasTempoConflict = tempoMatches.length > 1;
-  const constrained = catalog.filter((track) =>
-    (!requestedGenres.length ||
-      (track.genreIds?.length ? track.genreIds : [track.genreId])
-        .some((genreId) => requestedGenres.includes(genreId))) &&
-    (!requestedMoods.length ||
-      track.moodIds.some((moodId) => requestedMoods.includes(moodId))) &&
-    (!requestedLanguage || track.languageCode === requestedLanguage) &&
-    !hasTempoConflict &&
-    (tempoTarget === null || (
-      track.audioFeatures?.tempoBpm != null &&
-      Number.isFinite(track.audioFeatures.tempoBpm) &&
-      track.audioFeatures.tempoConfidence >= 0.75 &&
-      track.audioFeatures.analyzedSeconds >= 15 &&
-      Math.abs(track.audioFeatures.tempoBpm - tempoTarget) <= 5
-    ))
+  const constrained = catalog.filter(
+    (track) =>
+      (!requestedGenres.length ||
+        (track.genreIds?.length ? track.genreIds : [track.genreId]).some((genreId) =>
+          requestedGenres.includes(genreId),
+        )) &&
+      (!requestedMoods.length ||
+        track.moodIds.some((moodId) => requestedMoods.includes(moodId))) &&
+      (!requestedLanguage || track.languageCode === requestedLanguage) &&
+      !hasTempoConflict &&
+      (tempoTarget === null ||
+        (track.audioFeatures?.tempoBpm != null &&
+          Number.isFinite(track.audioFeatures.tempoBpm) &&
+          track.audioFeatures.tempoConfidence >= 0.75 &&
+          track.audioFeatures.analyzedSeconds >= 15 &&
+          Math.abs(track.audioFeatures.tempoBpm - tempoTarget) <= 5)),
   );
   const ranked = constrained
     .map((track) => {
@@ -121,7 +152,9 @@ export function promptDiscoveryTracks(
         if (containsTerm(genreText, word)) {
           score += 6;
           for (const genre of genres) {
-            if (containsTerm(genre.labelEn + ' ' + genre.labelAr + ' ' + genre.slug, word))
+            if (
+              containsTerm(genre.labelEn + ' ' + genre.labelAr + ' ' + genre.slug, word)
+            )
               addReason('genre', genre.labelEn);
           }
         }
@@ -132,25 +165,43 @@ export function promptDiscoveryTracks(
               addReason('mood', mood.labelEn);
           }
         }
-        if (containsTerm(artistText, word)) { score += 4; addReason('artist', artistText); }
-        if (containsTerm(track.title, word)) { score += 2; addReason('title', track.title); }
+        if (containsTerm(artistText, word)) {
+          score += 4;
+          addReason('artist', artistText);
+        }
+        if (containsTerm(track.title, word)) {
+          score += 2;
+          addReason('title', track.title);
+        }
       }
       for (const intent of intents) {
         const terms = synonyms[intent] ?? [];
         if (intent === 'arabic' && track.languageCode === 'ar') {
-          score += 6; addReason('language', 'ar');
+          score += 6;
+          addReason('language', 'ar');
         }
         if (intent === 'english' && track.languageCode === 'en') {
-          score += 6; addReason('language', 'en');
+          score += 6;
+          addReason('language', 'en');
         }
         for (const genre of genres) {
-          if (terms.some((term) => containsTerm(genre.labelEn + ' ' + genre.labelAr + ' ' + genre.slug, term))) {
-            score += 5; addReason('genre', genre.labelEn);
+          if (
+            terms.some((term) =>
+              containsTerm(genre.labelEn + ' ' + genre.labelAr + ' ' + genre.slug, term),
+            )
+          ) {
+            score += 5;
+            addReason('genre', genre.labelEn);
           }
         }
         for (const mood of moods) {
-          if (terms.some((term) => containsTerm(mood.labelEn + ' ' + mood.labelAr + ' ' + mood.slug, term))) {
-            score += 5; addReason('mood', mood.labelEn);
+          if (
+            terms.some((term) =>
+              containsTerm(mood.labelEn + ' ' + mood.labelAr + ' ' + mood.slug, term),
+            )
+          ) {
+            score += 5;
+            addReason('mood', mood.labelEn);
           }
         }
       }
@@ -179,8 +230,11 @@ export function promptDiscoveryTracks(
     if (selected.length >= cap) break;
     if (!selected.some((track) => track.id === item.track.id)) selected.push(item.track);
   }
-  const reasons = Object.fromEntries(selected.map((track) => [
-    track.id, scored.find((item) => item.track.id === track.id)?.reasons ?? [],
-  ]));
+  const reasons = Object.fromEntries(
+    selected.map((track) => [
+      track.id,
+      scored.find((item) => item.track.id === track.id)?.reasons ?? [],
+    ]),
+  );
   return { tracks: selected, matched, reasons };
 }

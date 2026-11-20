@@ -50,10 +50,13 @@ export function SaveQueueAsPlaylist() {
     let added = 0;
     try {
       if (!playlistId) {
-        const response = await apiRequest<{ playlist: { id: string } }>('/api/playlists', {
-          method: 'POST',
-          body: JSON.stringify({ title: name, description: '', visibility }),
-        });
+        const response = await apiRequest<{ playlist: { id: string } }>(
+          '/api/playlists',
+          {
+            method: 'POST',
+            body: JSON.stringify({ title: name, description: '', visibility }),
+          },
+        );
         playlistId = response.playlist.id;
         setSavedPlaylistId(playlistId);
       }
@@ -100,7 +103,9 @@ export function SaveQueueAsPlaylist() {
       </button>
       <Modal
         open={open}
-        onClose={() => { if (!saving) setOpen(false); }}
+        onClose={() => {
+          if (!saving) setOpen(false);
+        }}
         title={rtl ? 'احفظ الأغاني في قائمة تشغيل' : 'Save queue as playlist'}
       >
         <div className="space-y-4">
@@ -111,7 +116,10 @@ export function SaveQueueAsPlaylist() {
           </p>
           {!savedPlaylistId ? (
             <>
-              <label className="block text-sm font-medium text-ink" htmlFor="oddio-queue-playlist-title">
+              <label
+                className="block text-sm font-medium text-ink"
+                htmlFor="oddio-queue-playlist-title"
+              >
                 {rtl ? 'اسم القائمة' : 'Playlist name'}
               </label>
               <input
@@ -122,13 +130,18 @@ export function SaveQueueAsPlaylist() {
                 placeholder={rtl ? 'قائمتي الجديدة' : 'My queue'}
                 className="w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-ink outline-none focus:border-primary"
               />
-              <label className="block text-sm font-medium text-ink" htmlFor="oddio-queue-playlist-visibility">
+              <label
+                className="block text-sm font-medium text-ink"
+                htmlFor="oddio-queue-playlist-visibility"
+              >
                 {rtl ? 'الخصوصية' : 'Visibility'}
               </label>
               <select
                 id="oddio-queue-playlist-visibility"
                 value={visibility}
-                onChange={(event) => setVisibility(event.target.value as 'public' | 'private')}
+                onChange={(event) =>
+                  setVisibility(event.target.value as 'public' | 'private')
+                }
                 className="w-full rounded-xl border border-white/20 bg-[#28212f] px-3 py-2.5 text-ink focus:border-primary"
               >
                 <option value="private">{rtl ? 'خاصة' : 'Private'}</option>
@@ -136,10 +149,16 @@ export function SaveQueueAsPlaylist() {
               </select>
             </>
           ) : null}
-          {saving ? <p role="status" className="text-xs text-muted">
-            {rtl ? `تمت إضافة ${savedCount} أغنية…` : `Added ${savedCount} tracks…`}
-          </p> : null}
-          {error ? <p role="alert" className="text-sm text-red-300">{error}</p> : null}
+          {saving ? (
+            <p role="status" className="text-xs text-muted">
+              {rtl ? `تمت إضافة ${savedCount} أغنية…` : `Added ${savedCount} tracks…`}
+            </p>
+          ) : null}
+          {error ? (
+            <p role="alert" className="text-sm text-red-300">
+              {error}
+            </p>
+          ) : null}
           {savedPlaylistId && error ? (
             <button
               type="button"

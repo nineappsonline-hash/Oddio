@@ -11,20 +11,34 @@ describe('safe live search suggestions', () => {
     const suggestions = projectSearchSuggestions(results);
     expect(suggestions.tracks.length).toBeLessThanOrEqual(5);
     expect(suggestions.artists.length).toBeLessThanOrEqual(3);
-    expect(suggestions.tracks.every((track) => track.id !== seedIds.tracks.privateSketch)).toBe(true);
-    expect(suggestions.tracks.every((track) =>
-      Object.keys(track).sort().join(',') === 'artistName,id,slug,title',
-    )).toBe(true);
+    expect(
+      suggestions.tracks.every((track) => track.id !== seedIds.tracks.privateSketch),
+    ).toBe(true);
+    expect(
+      suggestions.tracks.every(
+        (track) => Object.keys(track).sort().join(',') === 'artistName,id,slug,title',
+      ),
+    ).toBe(true);
   });
   it('does not expose a private track when searched by its title', () => {
     const db = createSeedDb();
-    const privateTrack = db.tracks.find((track) => track.id === seedIds.tracks.privateSketch);
+    const privateTrack = db.tracks.find(
+      (track) => track.id === seedIds.tracks.privateSketch,
+    );
     expect(privateTrack).toBeDefined();
-    const results = searchCatalog(db, { userId: seedIds.users.listener, roles: [] }, {
-      q: privateTrack!.title,
-      sort: 'relevant',
-      limit: 25,
-    });
-    expect(projectSearchSuggestions(results).tracks.some((track) => track.id === privateTrack!.id)).toBe(false);
+    const results = searchCatalog(
+      db,
+      { userId: seedIds.users.listener, roles: [] },
+      {
+        q: privateTrack!.title,
+        sort: 'relevant',
+        limit: 25,
+      },
+    );
+    expect(
+      projectSearchSuggestions(results).tracks.some(
+        (track) => track.id === privateTrack!.id,
+      ),
+    ).toBe(false);
   });
 });

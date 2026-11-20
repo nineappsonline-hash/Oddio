@@ -24,22 +24,32 @@ export function ReorderableLikedTracks({
   const addToQueue = usePlayer((state) => state.addToQueue);
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
-    return needle ? tracks.filter((track) =>
-      `${track.title} ${track.artist?.name ?? ''}`.toLocaleLowerCase().includes(needle),
-    ) : tracks;
+    return needle
+      ? tracks.filter((track) =>
+          `${track.title} ${track.artist?.name ?? ''}`
+            .toLocaleLowerCase()
+            .includes(needle),
+        )
+      : tracks;
   }, [tracks, query]);
   const selectedVisible = filtered.filter((track) => selected.includes(track.id));
-  const allVisibleSelected = filtered.length > 0 && filtered.every((track) => selected.includes(track.id));
-  const toggleSelected = (id: string) => setSelected((current) =>
-    current.includes(id) ? current.filter((value) => value !== id) : [...current, id],
-  );
-  const toggleVisible = () => setSelected((current) => allVisibleSelected
-    ? current.filter((id) => !filtered.some((track) => track.id === id))
-    : [...new Set([...current, ...filtered.map((track) => track.id)])],
-  );
+  const allVisibleSelected =
+    filtered.length > 0 && filtered.every((track) => selected.includes(track.id));
+  const toggleSelected = (id: string) =>
+    setSelected((current) =>
+      current.includes(id) ? current.filter((value) => value !== id) : [...current, id],
+    );
+  const toggleVisible = () =>
+    setSelected((current) =>
+      allVisibleSelected
+        ? current.filter((id) => !filtered.some((track) => track.id === id))
+        : [...new Set([...current, ...filtered.map((track) => track.id)])],
+    );
   const queueSelected = () => {
     selectedVisible.forEach((track) => addToQueue(track));
-    setSelected((current) => current.filter((id) => !selectedVisible.some((track) => track.id === id)));
+    setSelected((current) =>
+      current.filter((id) => !selectedVisible.some((track) => track.id === id)),
+    );
   };
   const [ready, setReady] = useState(false);
   const key = `oddio-library-liked-order:${userId}`;
@@ -104,21 +114,34 @@ export function ReorderableLikedTracks({
             ? `النتائج: ${filtered.length} من ${tracks.length} — امسح البحث عشان تقدر تغير الترتيب.`
             : `Showing ${filtered.length} of ${tracks.length} — clear search to reorder.`
           : locale === 'ar'
-          ? 'اسحب العلامة بجانب الأغنية لترتيب المفضلة بنفسك. الترتيب بيتحفظ على الجهاز ده.'
-          : 'Drag the handle next to a liked song to set a custom order. Saved on this device.'}
+            ? 'اسحب العلامة بجانب الأغنية لترتيب المفضلة بنفسك. الترتيب بيتحفظ على الجهاز ده.'
+            : 'Drag the handle next to a liked song to set a custom order. Saved on this device.'}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" disabled={!filtered.length} onClick={toggleVisible}
-          className="min-h-10 rounded-full border border-white/20 px-3 text-xs text-ink hover:bg-white/10 disabled:opacity-40">
+        <button
+          type="button"
+          disabled={!filtered.length}
+          onClick={toggleVisible}
+          className="min-h-10 rounded-full border border-white/20 px-3 text-xs text-ink hover:bg-white/10 disabled:opacity-40"
+        >
           {allVisibleSelected
-            ? locale === 'ar' ? 'إلغاء تحديد الظاهر' : 'Deselect visible'
-            : locale === 'ar' ? 'حدد كل الظاهر' : 'Select visible'}
+            ? locale === 'ar'
+              ? 'إلغاء تحديد الظاهر'
+              : 'Deselect visible'
+            : locale === 'ar'
+              ? 'حدد كل الظاهر'
+              : 'Select visible'}
         </button>
         {selectedVisible.length > 0 ? (
           <>
-            <button type="button" onClick={queueSelected}
-              className="min-h-10 rounded-full bg-primary px-4 text-xs font-semibold text-black">
-              {locale === 'ar' ? `ضيف ${selectedVisible.length} للانتظار` : `Add ${selectedVisible.length} to queue`}
+            <button
+              type="button"
+              onClick={queueSelected}
+              className="min-h-10 rounded-full bg-primary px-4 text-xs font-semibold text-black"
+            >
+              {locale === 'ar'
+                ? `ضيف ${selectedVisible.length} للانتظار`
+                : `Add ${selectedVisible.length} to queue`}
             </button>
             <BulkAddToPlaylistButton
               trackIds={selectedVisible.map((track) => track.id)}
@@ -128,8 +151,11 @@ export function ReorderableLikedTracks({
           </>
         ) : null}
         {selected.length > 0 ? (
-          <button type="button" onClick={() => setSelected([])}
-            className="min-h-10 rounded-full px-3 text-xs text-muted hover:text-ink">
+          <button
+            type="button"
+            onClick={() => setSelected([])}
+            className="min-h-10 rounded-full px-3 text-xs text-muted hover:text-ink"
+          >
             {locale === 'ar' ? 'امسح التحديد' : 'Clear selection'}
           </button>
         ) : null}
@@ -138,33 +164,42 @@ export function ReorderableLikedTracks({
         {message}
       </p>
       {filtered.length === 0 ? (
-        <p role="status" className="rounded-xl border border-dashed border-white/15 p-5 text-sm text-muted">
-          {locale === 'ar' ? 'مفيش أغاني مطابقة للبحث.' : 'No liked songs match your search.'}
+        <p
+          role="status"
+          className="rounded-xl border border-dashed border-white/15 p-5 text-sm text-muted"
+        >
+          {locale === 'ar'
+            ? 'مفيش أغاني مطابقة للبحث.'
+            : 'No liked songs match your search.'}
         </p>
-      ) : <DragReorderList
-        items={filtered}
-        getId={(track) => track.id}
-        locale={locale}
-        onMove={reorder}
-        disabled={!ready || Boolean(query.trim())}
-        className="card divide-y divide-white/5 p-2"
-        renderItem={(track, index) => (
-          <div className="flex min-w-0 items-center gap-1">
-            <label className="flex min-h-11 min-w-11 shrink-0 items-center justify-center">
-              <input
-                type="checkbox"
-                checked={selected.includes(track.id)}
-                onChange={() => toggleSelected(track.id)}
-                aria-label={locale === 'ar' ? `حدد ${track.title}` : `Select ${track.title}`}
-                className="h-4 w-4 accent-primary"
-              />
-            </label>
-            <div className="min-w-0 flex-1">
-              <TrackRow track={track} queue={filtered} index={index} locale={locale} />
+      ) : (
+        <DragReorderList
+          items={filtered}
+          getId={(track) => track.id}
+          locale={locale}
+          onMove={reorder}
+          disabled={!ready || Boolean(query.trim())}
+          className="card divide-y divide-white/5 p-2"
+          renderItem={(track, index) => (
+            <div className="flex min-w-0 items-center gap-1">
+              <label className="flex min-h-11 min-w-11 shrink-0 items-center justify-center">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(track.id)}
+                  onChange={() => toggleSelected(track.id)}
+                  aria-label={
+                    locale === 'ar' ? `حدد ${track.title}` : `Select ${track.title}`
+                  }
+                  className="h-4 w-4 accent-primary"
+                />
+              </label>
+              <div className="min-w-0 flex-1">
+                <TrackRow track={track} queue={filtered} index={index} locale={locale} />
+              </div>
             </div>
-          </div>
-        )}
-      />}
+          )}
+        />
+      )}
     </div>
   );
 }

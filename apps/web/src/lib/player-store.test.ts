@@ -3,7 +3,8 @@ import type { CatalogTrack } from '@/lib/data/queries';
 import { usePlayer } from './player-store';
 
 // Only the fields used by queue actions are required for these unit tests.
-const track = (id: string) => ({ id, title: id, durationMs: 60_000, artwork: { accent: '#000' } }) as CatalogTrack;
+const track = (id: string) =>
+  ({ id, title: id, durationMs: 60_000, artwork: { accent: '#000' } }) as CatalogTrack;
 const a = track('a');
 const b = track('b');
 const c = track('c');
@@ -13,8 +14,16 @@ const ids = () => usePlayer.getState().queue.map((item) => item.id);
 describe('reversible queue edits', () => {
   beforeEach(() => {
     usePlayer.setState({
-      track: a, queue: [b, c], history: [], queueUndo: null, isPlaying: false,
-      currentTime: 0, duration: 60, shuffle: false, repeat: 'off', station: null,
+      track: a,
+      queue: [b, c],
+      history: [],
+      queueUndo: null,
+      isPlaying: false,
+      currentTime: 0,
+      duration: 60,
+      shuffle: false,
+      repeat: 'off',
+      station: null,
     });
   });
 

@@ -171,11 +171,29 @@ export default async function SearchPage({
 
       {hasSearch ? (
         <div className="mb-6 flex flex-wrap items-center gap-2 text-xs text-muted">
-          <span className="font-semibold">{locale === 'ar' ? 'الفلاتر الحالية:' : 'Active filters:'}</span>
-          {query.q ? <span className="rounded-full border border-white/15 px-3 py-1.5">{query.q}</span> : null}
-          {query.genre ? <span className="rounded-full border border-white/15 px-3 py-1.5">{locale === 'ar' ? 'النوع:' : 'Genre:'} {query.genre}</span> : null}
-          {query.mood ? <span className="rounded-full border border-white/15 px-3 py-1.5">{locale === 'ar' ? 'المود:' : 'Mood:'} {query.mood}</span> : null}
-          {query.language ? <span className="rounded-full border border-white/15 px-3 py-1.5">{locale === 'ar' ? 'اللغة:' : 'Language:'} {query.language}</span> : null}
+          <span className="font-semibold">
+            {locale === 'ar' ? 'الفلاتر الحالية:' : 'Active filters:'}
+          </span>
+          {query.q ? (
+            <span className="rounded-full border border-white/15 px-3 py-1.5">
+              {query.q}
+            </span>
+          ) : null}
+          {query.genre ? (
+            <span className="rounded-full border border-white/15 px-3 py-1.5">
+              {locale === 'ar' ? 'النوع:' : 'Genre:'} {query.genre}
+            </span>
+          ) : null}
+          {query.mood ? (
+            <span className="rounded-full border border-white/15 px-3 py-1.5">
+              {locale === 'ar' ? 'المود:' : 'Mood:'} {query.mood}
+            </span>
+          ) : null}
+          {query.language ? (
+            <span className="rounded-full border border-white/15 px-3 py-1.5">
+              {locale === 'ar' ? 'اللغة:' : 'Language:'} {query.language}
+            </span>
+          ) : null}
           <Link
             href={`/${locale}/search`}
             className="inline-flex min-h-10 items-center rounded-full border border-primary/40 px-3 font-semibold text-primary hover:bg-primary/10"
@@ -195,7 +213,9 @@ export default async function SearchPage({
           <EmptyState title={t('common.noResults')} body={q} />
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
             <h2 className="text-base font-bold text-ink">
-              {locale === 'ar' ? 'نجرب طريقة تانية؟' : 'Try another way to discover music'}
+              {locale === 'ar'
+                ? 'نجرب طريقة تانية؟'
+                : 'Try another way to discover music'}
             </h2>
             <p className="mt-1 text-sm leading-6 text-muted">
               {locale === 'ar'
@@ -215,7 +235,9 @@ export default async function SearchPage({
                 href={`/${locale}/discover`}
                 className="inline-flex min-h-11 items-center rounded-full border border-primary/40 px-4 text-sm font-semibold text-primary hover:bg-primary/10"
               >
-                {locale === 'ar' ? 'استكشف الأغاني والتصنيفات' : 'Browse genres and moods'}
+                {locale === 'ar'
+                  ? 'استكشف الأغاني والتصنيفات'
+                  : 'Browse genres and moods'}
               </Link>
             </div>
             {genres.length > 0 ? (

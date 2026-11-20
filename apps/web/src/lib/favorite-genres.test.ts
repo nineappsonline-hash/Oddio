@@ -3,7 +3,12 @@ import { favoriteGenresKey, normalizeFavoriteGenres } from './favorite-genres';
 
 describe('favorite genre setup', () => {
   it('allows only three known, distinct genres', () => {
-    expect(normalizeFavoriteGenres(['g1', 'g2', 'g1', 'bad', 'g3', 'g4'], ['g1','g2','g3','g4'])).toEqual(['g1','g2','g3']);
+    expect(
+      normalizeFavoriteGenres(
+        ['g1', 'g2', 'g1', 'bad', 'g3', 'g4'],
+        ['g1', 'g2', 'g3', 'g4'],
+      ),
+    ).toEqual(['g1', 'g2', 'g3']);
   });
   it('ignores malformed storage values', () => {
     expect(normalizeFavoriteGenres('x', ['x'])).toEqual([]);

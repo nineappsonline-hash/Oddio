@@ -16,8 +16,16 @@ describe('home recent listening privacy', () => {
   it('removes private and inaccessible tracks from playback history', () => {
     const db = createSeedDb();
     db.history.push(
-      { userId: seedIds.users.listener, trackId: seedIds.tracks.cairoDawn, playedAt: '2026-11-18T14:00:00.000Z' },
-      { userId: seedIds.users.listener, trackId: seedIds.tracks.privateSketch, playedAt: '2026-11-19T14:00:00.000Z' },
+      {
+        userId: seedIds.users.listener,
+        trackId: seedIds.tracks.cairoDawn,
+        playedAt: '2026-11-18T14:00:00.000Z',
+      },
+      {
+        userId: seedIds.users.listener,
+        trackId: seedIds.tracks.privateSketch,
+        playedAt: '2026-11-19T14:00:00.000Z',
+      },
     );
     const recent = getRecentHomeTracks(db, { userId: seedIds.users.listener, roles: [] });
     expect(recent.some((track) => track.id === seedIds.tracks.cairoDawn)).toBe(true);

@@ -67,9 +67,7 @@ export function buildDiscoveryMix(
     viewer.userId
       ? [
           ...db.playbackEvents
-            .filter((event) =>
-              event.qualified && sessionIds.has(event.sessionId),
-            )
+            .filter((event) => event.qualified && sessionIds.has(event.sessionId))
             .map((event) => event.trackId),
           ...(db.history ?? [])
             .filter((item) => item.userId === viewer.userId)
@@ -81,18 +79,21 @@ export function buildDiscoveryMix(
   const ranked = base.tracks.filter((track) => allowed.has(track.id));
   // Artist radio is keyed by artist ID, not whichever song happened to be
   // featured on their profile. Accept a legacy track-ID seed for old stations.
-  const legacyArtistId = options.kind === 'artist'
-    ? playable.find((track) => track.id === options.seedId)?.artistId
-    : undefined;
+  const legacyArtistId =
+    options.kind === 'artist'
+      ? playable.find((track) => track.id === options.seedId)?.artistId
+      : undefined;
   const artistId = legacyArtistId ?? options.seedId;
-  const artistTracks = options.kind === 'artist'
-    ? playable.filter((track) => track.artistId === artistId)
-    : [];
-  const seed = options.kind === 'artist'
-    ? [...artistTracks].sort(
-        (a, b) => b.qualifiedPlays - a.qualifiedPlays || a.id.localeCompare(b.id),
-      )[0]
-    : playable.find((track) => track.id === options.seedId);
+  const artistTracks =
+    options.kind === 'artist'
+      ? playable.filter((track) => track.artistId === artistId)
+      : [];
+  const seed =
+    options.kind === 'artist'
+      ? [...artistTracks].sort(
+          (a, b) => b.qualifiedPlays - a.qualifiedPlays || a.id.localeCompare(b.id),
+        )[0]
+      : playable.find((track) => track.id === options.seedId);
   // Never convert an invalid/deleted radio target into an unrelated mix.
   if ((options.kind === 'song' || options.kind === 'artist') && !seed)
     return { tracks: [], personalized: false };
@@ -180,23 +181,34 @@ export function buildDiscoveryMix(
     const exploration = candidates.filter((track) => affinity(track) === 0);
     const mode = options.radioMode ?? 'balanced';
     const selected: CatalogTrack[] = [];
-    if (options.kind === 'song' && familiar.some((track) => track.id === seed.id) && limit > 0) {
+    if (
+      options.kind === 'song' &&
+      familiar.some((track) => track.id === seed.id) &&
+      limit > 0
+    ) {
       selected.push(seed);
     }
     const seenArtists = new Set(selected.map((track) => track.artistId));
     // Explore intentionally gives an early share of the queue to diverse,
     // otherwise unrelated music. Familiar keeps only real metadata matches.
     // Balanced retains the established matching-first behavior.
-    const groups = mode === 'familiar'
-      ? [familiar]
-      : mode === 'explore'
-        ? [familiar.slice(0, Math.max(1, Math.ceil(limit / 2))), exploration,
-           familiar.slice(Math.max(1, Math.ceil(limit / 2)))]
-        : [familiar, exploration];
+    const groups =
+      mode === 'familiar'
+        ? [familiar]
+        : mode === 'explore'
+          ? [
+              familiar.slice(0, Math.max(1, Math.ceil(limit / 2))),
+              exploration,
+              familiar.slice(Math.max(1, Math.ceil(limit / 2))),
+            ]
+          : [familiar, exploration];
     for (const group of groups) {
       for (const track of group) {
         if (selected.length >= limit) break;
-        if (selected.some((item) => item.id === track.id) || seenArtists.has(track.artistId))
+        if (
+          selected.some((item) => item.id === track.id) ||
+          seenArtists.has(track.artistId)
+        )
           continue;
         selected.push(track);
         seenArtists.add(track.artistId);

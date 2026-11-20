@@ -24,9 +24,11 @@ export function FollowedReleasesHome({
   useEffect(() => {
     const read = () => {
       try {
-        setEnabled(parseHomePersonalizationPreference(
-          window.localStorage.getItem(homePersonalizationKey(viewerId)),
-        ));
+        setEnabled(
+          parseHomePersonalizationPreference(
+            window.localStorage.getItem(homePersonalizationKey(viewerId)),
+          ),
+        );
       } catch {
         setEnabled(true);
       }
@@ -42,17 +44,25 @@ export function FollowedReleasesHome({
 
   if (!enabled || !tracks.length) return null;
   return (
-    <section className="oddio-dashboard-section" aria-label={ar ? 'جديد الفنانين اللي بتتابعهم' : 'New from followed artists'}>
+    <section
+      className="oddio-dashboard-section"
+      aria-label={ar ? 'جديد الفنانين اللي بتتابعهم' : 'New from followed artists'}
+    >
       <div className="oddio-section-title-row">
         <div>
-          <p className="oddio-micro-label">{ar ? 'من الفنانين اللي بتتابعهم' : 'FROM ARTISTS YOU FOLLOW'}</p>
+          <p className="oddio-micro-label">
+            {ar ? 'من الفنانين اللي بتتابعهم' : 'FROM ARTISTS YOU FOLLOW'}
+          </p>
           <h2>{ar ? 'أحدث أغاني الفنانين المفضلين' : 'New from your artists'}</h2>
           <p className="text-sm text-muted">
-            {ar ? 'آخر الأغاني المتاحة من الفنانين اللي اخترت تتابعهم.' : 'Fresh playable releases from artists you chose to follow.'}
+            {ar
+              ? 'آخر الأغاني المتاحة من الفنانين اللي اخترت تتابعهم.'
+              : 'Fresh playable releases from artists you chose to follow.'}
           </p>
         </div>
         <Link href={`/${locale}/discover`} className="oddio-section-action">
-          {ar ? 'اكتشف أكتر' : 'Discover more'} <ArrowRight size={16} className="rtl:-scale-x-100" />
+          {ar ? 'اكتشف أكتر' : 'Discover more'}{' '}
+          <ArrowRight size={16} className="rtl:-scale-x-100" />
         </Link>
       </div>
       <div className="oddio-explore-results-grid grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

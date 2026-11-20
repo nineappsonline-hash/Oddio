@@ -137,7 +137,9 @@ export default async function DiscoverPage({
         <DiscoveryMixShelf
           tracks={recommendations.tracks}
           publicTracks={publicRecommendations.tracks}
-          genres={db.genres.filter((genre) => genre.active).map((genre) => ({ id: genre.id, name: genreLabel(genre) }))}
+          genres={db.genres
+            .filter((genre) => genre.active)
+            .map((genre) => ({ id: genre.id, name: genreLabel(genre) }))}
           personalized={recommendations.personalized}
           locale={locale}
           viewerId={viewer.userId}

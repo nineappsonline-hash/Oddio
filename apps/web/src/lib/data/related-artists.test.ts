@@ -14,18 +14,26 @@ describe('artist sound similarity', () => {
         .map((track) => track.artistId),
     );
     const matches = getRelatedArtistsBySound(db, seedIds.artists.nova, guest);
-    expect(matches.every((artist) =>
-      artist.id !== seedIds.artists.nova && publicArtistIds.has(artist.id),
-    )).toBe(true);
+    expect(
+      matches.every(
+        (artist) => artist.id !== seedIds.artists.nova && publicArtistIds.has(artist.id),
+      ),
+    ).toBe(true);
     expect(new Set(matches.map((artist) => artist.id)).size).toBe(matches.length);
   });
 
   it('uses only public catalog for similarity, regardless of viewer privileges', () => {
     const db = createSeedDb();
     const a = getRelatedArtistsBySound(db, seedIds.artists.nova, guest, 4);
-    const b = getRelatedArtistsBySound(db, seedIds.artists.nova, {
-      userId: seedIds.users.admin, roles: ['super_admin'],
-    }, 4);
+    const b = getRelatedArtistsBySound(
+      db,
+      seedIds.artists.nova,
+      {
+        userId: seedIds.users.admin,
+        roles: ['super_admin'],
+      },
+      4,
+    );
     expect(a.map((artist) => artist.id)).toEqual(b.map((artist) => artist.id));
   });
 
@@ -33,6 +41,8 @@ describe('artist sound similarity', () => {
     const db = createSeedDb();
     expect(getRelatedArtistsBySound(db, 'unknown-artist', guest)).toEqual([]);
     expect(getRelatedArtistsBySound(db, seedIds.artists.nova, guest, 0)).toEqual([]);
-    expect(getRelatedArtistsBySound(db, seedIds.artists.nova, guest, 100).length).toBeLessThanOrEqual(12);
+    expect(
+      getRelatedArtistsBySound(db, seedIds.artists.nova, guest, 100).length,
+    ).toBeLessThanOrEqual(12);
   });
 });

@@ -121,11 +121,15 @@ try {
           await dialog.waitFor({ state: 'visible' });
           // Wait for the opening transform to settle before inspecting the
           // actual drawer geometry; visible does not imply animation finished.
-          await page.waitForFunction(() => {
-            const element = document.querySelector('[role="dialog"][aria-label]');
-            if (!element) return false;
-            return Math.abs(element.getBoundingClientRect().left) <= 2;
-          }, null, { timeout: 3000 });
+          await page.waitForFunction(
+            () => {
+              const element = document.querySelector('[role="dialog"][aria-label]');
+              if (!element) return false;
+              return Math.abs(element.getBoundingClientRect().left) <= 2;
+            },
+            null,
+            { timeout: 3000 },
+          );
           const left = await dialog.evaluate(
             (element) => element.getBoundingClientRect().left,
           );
@@ -258,9 +262,10 @@ try {
         // Submit by the visible button rather than racing an Enter keypress
         // against hydration and a potentially focused suggestion.
         await page.locator('main form[role="search"] button[type="submit"]').click();
-        await page.waitForURL((url) =>
-          url.pathname === `/${locale}/search` &&
-          url.searchParams.get('q') === 'zzzzunlikelyreleasequery123',
+        await page.waitForURL(
+          (url) =>
+            url.pathname === `/${locale}/search` &&
+            url.searchParams.get('q') === 'zzzzunlikelyreleasequery123',
           { timeout: 30_000 },
         );
         // Next.js may stream the route after the URL changes; wait for the
@@ -283,9 +288,11 @@ try {
         // Guest Flow intentionally uses the public server-rendered list
         // and does NOT make a personalized discovery API request.
         await start.click();
-        await page.getByRole('region', {
-          name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
-        }).waitFor({ state: 'visible', timeout: 15_000 });
+        await page
+          .getByRole('region', {
+            name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
+          })
+          .waitFor({ state: 'visible', timeout: 15_000 });
         const weeklyTitle =
           locale === 'ar' ? 'شغّل Discover Weekly' : 'Play Discover Weekly';
         // Daily and weekly mixes are intentionally hidden for guest visitors:

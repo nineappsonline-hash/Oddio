@@ -13,8 +13,8 @@ export function AlbumPlaybackActions({
 }) {
   const play = usePlayer((state) => state.play);
   const ar = locale === 'ar';
-  const playable = tracks.filter((track) =>
-    track.access.allowed && track.audio?.processingStatus === 'ready',
+  const playable = tracks.filter(
+    (track) => track.access.allowed && track.audio?.processingStatus === 'ready',
   );
   const disabled = playable.length === 0;
 
@@ -32,7 +32,11 @@ export function AlbumPlaybackActions({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2" role="group" aria-label={ar ? 'تشغيل الألبوم' : 'Album playback'}>
+    <div
+      className="flex flex-wrap items-center gap-2"
+      role="group"
+      aria-label={ar ? 'تشغيل الألبوم' : 'Album playback'}
+    >
       <button
         type="button"
         disabled={disabled}

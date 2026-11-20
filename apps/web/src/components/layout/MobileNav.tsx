@@ -131,11 +131,12 @@ export function MobileNav() {
     if (!menuOpen) return;
     previousFocusRef.current = document.activeElement as HTMLElement | null;
     const dialog = dialogRef.current;
-    const focusable = () => Array.from(
-      dialog?.querySelectorAll<HTMLElement>(
-        'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex="0"]',
-      ) ?? [],
-    ).filter((element) => element.getClientRects().length > 0);
+    const focusable = () =>
+      Array.from(
+        dialog?.querySelectorAll<HTMLElement>(
+          'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex="0"]',
+        ) ?? [],
+      ).filter((element) => element.getClientRects().length > 0);
     focusable()[0]?.focus();
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -258,7 +259,9 @@ export function MobileNav() {
           )}
         >
           <Menu className="h-5 w-5" />
-          <span className="w-full truncate px-0.5">{locale === 'ar' ? 'القائمة' : 'Menu'}</span>
+          <span className="w-full truncate px-0.5">
+            {locale === 'ar' ? 'القائمة' : 'Menu'}
+          </span>
         </button>
       </nav>
       {menuOpen ? (

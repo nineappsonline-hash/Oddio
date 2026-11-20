@@ -189,14 +189,20 @@ export default async function HomePage({
 
       <ContinueListeningHome locale={locale} />
       {viewer.userId && followedReleases.length > 0 ? (
-        <FollowedReleasesHome locale={locale} viewerId={viewer.userId} tracks={followedReleases} />
+        <FollowedReleasesHome
+          locale={locale}
+          viewerId={viewer.userId}
+          tracks={followedReleases}
+        />
       ) : null}
 
       {recommended.tracks.length > 0 ? (
         <DiscoveryMixShelf
           tracks={recommended.tracks}
           publicTracks={publicRecommended.tracks}
-          genres={db.genres.filter((genre) => genre.active).map((genre) => ({ id: genre.id, name: ar ? genre.labelAr : genre.labelEn }))}
+          genres={db.genres
+            .filter((genre) => genre.active)
+            .map((genre) => ({ id: genre.id, name: ar ? genre.labelAr : genre.labelEn }))}
           personalized={recommended.personalized}
           locale={locale}
           viewerId={viewer.userId}
@@ -204,17 +210,25 @@ export default async function HomePage({
       ) : null}
 
       {viewer.userId && recentTracks.length > 0 ? (
-        <section className="oddio-dashboard-section" aria-label={ar ? 'استمعت مؤخرًا' : 'Recently played'}>
+        <section
+          className="oddio-dashboard-section"
+          aria-label={ar ? 'استمعت مؤخرًا' : 'Recently played'}
+        >
           <div className="oddio-section-title-row">
             <div>
-              <p className="oddio-micro-label">{ar ? 'كمّل مع موسيقاك' : 'PICK UP WHERE YOU LEFT OFF'}</p>
+              <p className="oddio-micro-label">
+                {ar ? 'كمّل مع موسيقاك' : 'PICK UP WHERE YOU LEFT OFF'}
+              </p>
               <h2>{ar ? 'سمعتها مؤخرًا' : 'Recently played'}</h2>
               <p className="text-sm text-muted">
-                {ar ? 'أغاني من سجل استماعك، ظاهرة ليك إنت بس.' : 'From your own listening history, visible only to you.'}
+                {ar
+                  ? 'أغاني من سجل استماعك، ظاهرة ليك إنت بس.'
+                  : 'From your own listening history, visible only to you.'}
               </p>
             </div>
             <Link href={`/${locale}/library`} className="oddio-section-action">
-              {ar ? 'مكتبتك' : 'Your library'} <ArrowRight size={16} className="rtl:-scale-x-100" />
+              {ar ? 'مكتبتك' : 'Your library'}{' '}
+              <ArrowRight size={16} className="rtl:-scale-x-100" />
             </Link>
           </div>
           <div className="oddio-explore-results-grid grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

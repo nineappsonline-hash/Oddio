@@ -20,10 +20,11 @@ export function getFollowedArtistReleases(
   );
   if (!followed.size) return [];
   return listableTracks(db, { userId: null, roles: [] })
-    .filter((track) =>
-      followed.has(track.artistId) &&
-      Boolean(track.audio) &&
-      track.audio?.processingStatus === 'ready',
+    .filter(
+      (track) =>
+        followed.has(track.artistId) &&
+        Boolean(track.audio) &&
+        track.audio?.processingStatus === 'ready',
     )
     .sort((a, b) => b.releaseAt.localeCompare(a.releaseAt) || a.id.localeCompare(b.id))
     .slice(0, Math.max(0, Math.min(20, Math.floor(limit))));

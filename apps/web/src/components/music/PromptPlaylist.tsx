@@ -37,10 +37,14 @@ export function PromptPlaylist({
     setReasons({});
     setMessage('');
     try {
-      const result = await apiRequest<{ tracks: CatalogTrack[]; matched: boolean; reasons: Record<string, DiscoveryMatchReason[]> }>(
-        '/api/discovery/prompt',
-        { method: 'POST', body: JSON.stringify({ prompt: prompt.trim() }) },
-      );
+      const result = await apiRequest<{
+        tracks: CatalogTrack[];
+        matched: boolean;
+        reasons: Record<string, DiscoveryMatchReason[]>;
+      }>('/api/discovery/prompt', {
+        method: 'POST',
+        body: JSON.stringify({ prompt: prompt.trim() }),
+      });
       await hydrateDiscoveryExclusions(viewerId);
       const prefs = readDiscoveryExclusions(viewerId);
       const filtered = result.tracks.filter(
@@ -114,13 +118,21 @@ export function PromptPlaylist({
 
   const describeReason = (reason: DiscoveryMatchReason) => {
     switch (reason.kind) {
-      case 'genre': return (ar ? 'نوع: ' : 'Genre: ') + reason.value;
-      case 'mood': return (ar ? 'مود: ' : 'Mood: ') + reason.value;
-      case 'language': return (ar ? 'اللغة: ' : 'Language: ') +
-        (reason.value === 'ar' ? (ar ? 'عربي' : 'Arabic') : (ar ? 'إنجليزي' : 'English'));
-      case 'artist': return (ar ? 'الفنان: ' : 'Artist: ') + reason.value;
-      case 'title': return (ar ? 'اسم الأغنية: ' : 'Title: ') + reason.value;
-      case 'tempo': return (ar ? 'إيقاع مقاس: ' : 'Measured tempo: ') + reason.value;
+      case 'genre':
+        return (ar ? 'نوع: ' : 'Genre: ') + reason.value;
+      case 'mood':
+        return (ar ? 'مود: ' : 'Mood: ') + reason.value;
+      case 'language':
+        return (
+          (ar ? 'اللغة: ' : 'Language: ') +
+          (reason.value === 'ar' ? (ar ? 'عربي' : 'Arabic') : ar ? 'إنجليزي' : 'English')
+        );
+      case 'artist':
+        return (ar ? 'الفنان: ' : 'Artist: ') + reason.value;
+      case 'title':
+        return (ar ? 'اسم الأغنية: ' : 'Title: ') + reason.value;
+      case 'tempo':
+        return (ar ? 'إيقاع مقاس: ' : 'Measured tempo: ') + reason.value;
     }
   };
 

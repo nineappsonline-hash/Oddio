@@ -49,11 +49,12 @@ export function FlowButton({
       await hydrateDiscoveryExclusions(viewerId);
       const hidden = readDiscoveryExclusions(viewerId);
       if (localOnly) {
-        const fallback = tracks.filter((item) =>
-          !hidden.trackIds.includes(item.id) &&
-          !(item.genreIds?.length ? item.genreIds : [item.genreId]).some((id) =>
-            hidden.genreIds.includes(id),
-          ),
+        const fallback = tracks.filter(
+          (item) =>
+            !hidden.trackIds.includes(item.id) &&
+            !(item.genreIds?.length ? item.genreIds : [item.genreId]).some((id) =>
+              hidden.genreIds.includes(id),
+            ),
         );
         if (!fallback.length) throw new Error('No playable music available');
         startFlow(fallback, { kind, ...(seedId ? { seedId } : {}) });

@@ -19,7 +19,10 @@ export function sanitizeRecentMusicSearches(value: unknown): string[] {
   return terms;
 }
 
-export function addRecentMusicSearch(value: string, current: readonly string[]): string[] {
+export function addRecentMusicSearch(
+  value: string,
+  current: readonly string[],
+): string[] {
   const term = value.trim().slice(0, MAX_MUSIC_QUERY_LENGTH);
   if (!term) return [...current];
   return sanitizeRecentMusicSearches([term, ...current]);
