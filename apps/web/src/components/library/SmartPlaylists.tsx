@@ -70,7 +70,7 @@ export function SmartPlaylists({
         try {
           pendingLocalSave = window.localStorage.getItem(smartPlaylistStorageKey(userId) + ':pending') === '1';
         } catch { /* Sync can still work without storage. */ }
-        if ((pendingLocalSave || !remote.hasSavedState) && local.length) {
+        if (pendingLocalSave || (!remote.hasSavedState && local.length > 0)) {
           const result = await apiRequest<{ saved: boolean }>('/api/library/smart-playlists', {
             method: 'PUT', body: JSON.stringify({ rules: local }),
           });
