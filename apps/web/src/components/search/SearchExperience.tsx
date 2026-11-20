@@ -169,7 +169,15 @@ export function SearchExperience({
           onFocus={() => setFocused(true)}
           onBlur={(event) => {
             const next = event.relatedTarget as Node | null;
-            if (!suggestionRef.current?.contains(next)) setFocused(false);
+            if (suggestionRef.current?.contains(next)) return;
+            // On mobile, focusing an anchor may briefly report relatedTarget=null.
+            // Give taps time to activate before dismissing the suggestions.
+            window.setTimeout(() => {
+              const active = document.activeElement;
+              if (active !== inputRef.current && !suggestionRef.current?.contains(active)) {
+                setFocused(false);
+              }
+            }, 180);
           }}
           onKeyDown={(event) => {
             if (event.key === 'Escape') { setFocused(false); inputRef.current?.blur(); }
@@ -197,7 +205,13 @@ export function SearchExperience({
           onKeyDown={onSuggestionKeys}
           onBlurCapture={(event) => {
             const next = event.relatedTarget as Node | null;
-            if (!event.currentTarget.contains(next) && next !== inputRef.current) setFocused(false);
+            if (event.currentTarget.contains(next) || next === inputRef.current) return;
+            window.setTimeout(() => {
+              const active = document.activeElement;
+              if (active !== inputRef.current && !suggestionRef.current?.contains(active)) {
+                setFocused(false);
+              }
+            }, 180);
           }}
           aria-label={ar ? 'اقتراحات البحث' : 'Search suggestions'}
           className="max-h-[min(55dvh,400px)] min-w-0 overflow-y-auto overscroll-contain rounded-2xl border border-white/15 bg-[#1d1827] p-2 shadow-xl sm:p-3"
