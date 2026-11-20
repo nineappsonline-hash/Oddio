@@ -120,6 +120,8 @@ export function FullPlayer() {
   }, [track?.id]);
   const hasTrack = Boolean(track);
   const queue = usePlayer((state) => state.queue);
+  const canUndoQueue = usePlayer((state) => state.queueUndo !== null);
+  const undoQueue = usePlayer((state) => state.undoQueue);
   const isPlaying = usePlayer((state) => state.isPlaying);
   const error = usePlayer((state) => state.error);
   const retryPlayback = usePlayer((state) => state.retryPlayback);
@@ -1027,7 +1029,18 @@ export function FullPlayer() {
                       ({queue.length})
                     </span>
                   </h2>
-                  {queue.length > 0 ? (
+                  <div className="flex items-center gap-1">
+                    {canUndoQueue ? (
+                      <button
+                        type="button"
+                        onClick={undoQueue}
+                        className="rounded-full border border-primary/40 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        aria-label={rtl ? 'تراجع عن آخر تعديل في قائمة الانتظار' : 'Undo last queue edit'}
+                      >
+                        {rtl ? 'تراجع' : 'Undo'}
+                      </button>
+                    ) : null}
+                    {queue.length > 0 ? (
                     <button
                       type="button"
                       onClick={clearQueue}
@@ -1037,7 +1050,8 @@ export function FullPlayer() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
-                  ) : null}
+                    ) : null}
+                  </div>
                 </div>
                 <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/30 bg-white/15 p-3">
                   <Equalizer
