@@ -283,9 +283,11 @@ try {
         }).waitFor({ state: 'visible', timeout: 15_000 });
         const weeklyTitle =
           locale === 'ar' ? 'شغّل Discover Weekly' : 'Play Discover Weekly';
+        // Daily and weekly mixes are intentionally hidden for guest visitors:
+        // without a signed-in taste profile these would imply personalization.
         assert.equal(
           await page.getByRole('button', { name: weeklyTitle, exact: true }).count(),
-          1,
+          0,
         );
         const hidden = page.getByRole('button', {
           name: locale === 'ar' ? 'مش مهتم' : 'Not interested',
