@@ -172,7 +172,7 @@ export default async function ArtistPage({
             {queue.length > 0 ? (
               <FlowButton
                 kind="artist"
-                seedId={queue[0]!.id}
+                seedId={artist.id}
                 locale={locale}
                 viewerId={viewer.userId}
               />
