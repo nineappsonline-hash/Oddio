@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { getPodcastCatalog,podcastCategoryLabel } from '@/lib/podcasts/catalog';
-import { PodcastShowCard,PodcastEpisodeCard,PodcastEmpty } from '@/components/podcasts/PodcastUI';
+import { PodcastShowCard,PodcastEpisodeCard } from '@/components/podcasts/PodcastUI';
 
 export const dynamic='force-dynamic';
 export async function generateMetadata({params}:{params:Promise<{locale:string;slug:string}>}) {
@@ -27,9 +27,28 @@ export default async function PodcastCategoryPage({params}:{params:Promise<{loca
       <h1 className="text-3xl font-black text-white sm:text-5xl">{name}</h1>
       <p className="text-sm leading-7 text-[#d1d1d1]">{locale==='ar'?category.descriptionAr:category.descriptionEn}</p>
     </header>
-    <section className="space-y-4"><h2 className="text-2xl font-bold text-white">{locale==='ar'?'البرامج':'Shows'}</h2>
-      {shows.length?<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">{shows.map(s=><PodcastShowCard key={s.id} show={s} locale={locale}/>)}</div>:<PodcastEmpty locale={locale} what="shows"/>}
-    </section>
+    {shows.length ? (
+      <section className="space-y-4">
+        <h2 className="text-2xl font-bold text-white">{locale==='ar'?'البرامج':'Shows'}</h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {shows.map(s=><PodcastShowCard key={s.id} show={s} locale={locale}/>)}
+        </div>
+      </section>
+    ) : (
+      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-8" aria-live="polite">
+        <h2 className="text-xl font-bold text-white">
+          {locale==='ar'?'لسه مفيش برامج في التصنيف ده':'No shows in this category yet'}
+        </h2>
+        <p className="mt-2 text-sm leading-7 text-[#d1d1d1]">
+          {locale==='ar'
+            ? 'بدل ما تفضل في صفحة فاضية، تقدر تكتشف البرامج والحلقات المتاحة دلوقتي.'
+            : 'Explore available shows and episodes instead of reaching a dead end.'}
+        </p>
+        <Link href={`/${locale}/podcasts`} className="mt-5 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-bold text-black hover:bg-white/90">
+          {locale==='ar'?'اكتشف البودكاست المتاح':'Explore available podcasts'}
+        </Link>
+      </section>
+    )}
     {episodes.length?<section className="space-y-4"><h2 className="text-2xl font-bold text-white">{locale==='ar'?'الحلقات':'Episodes'}</h2>
       <div className="grid gap-3 sm:grid-cols-2">{episodes.map(e=><PodcastEpisodeCard key={e.id} episode={e} show={byId.get(e.showId)} locale={locale}/>)}</div>
     </section>:null}
