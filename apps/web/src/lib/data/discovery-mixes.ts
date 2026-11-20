@@ -77,7 +77,20 @@ export function buildDiscoveryMix(
   );
   const base = recommendTracks(db, viewer, 20);
   const ranked = base.tracks.filter((track) => allowed.has(track.id));
-  const seed = playable.find((track) => track.id === options.seedId);
+  // Artist radio is keyed by artist ID, not whichever song happened to be
+  // featured on their profile. Accept a legacy track-ID seed for old stations.
+  const artistTracks = options.kind === 'artist'
+    ? playable.filter((track) =>
+        track.artistId === options.seedId ||
+        (playable.some((item) => item.id === options.seedId) &&
+          track.artistId === playable.find((item) => item.id === options.seedId)?.artistId),
+      )
+    : [];
+  const seed = options.kind === 'artist'
+    ? [...artistTracks].sort(
+        (a, b) => b.qualifiedPlays - a.qualifiedPlays || a.id.localeCompare(b.id),
+      )[0]
+    : playable.find((track) => track.id === options.seedId);
   // Never convert an invalid/deleted radio target into an unrelated mix.
   if ((options.kind === 'song' || options.kind === 'artist') && !seed)
     return { tracks: [], personalized: false };
