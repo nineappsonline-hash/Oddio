@@ -27,6 +27,7 @@ export function SearchExperience({
   const router = useRouter();
   const ar = locale === 'ar';
   const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionRef = useRef<HTMLDivElement>(null);
   const storageKey = `oddio-recent-searches:${userId || 'guest'}`;
   const [query, setQuery] = useState(initialQuery);
   const [recent, setRecent] = useState<string[]>([]);
@@ -35,6 +36,28 @@ export function SearchExperience({
   const [suggestions, setSuggestions] = useState<Suggestions>({ tracks: [], artists: [] });
   const [suggestionLoading, setSuggestionLoading] = useState(false);
   const [suggestionError, setSuggestionError] = useState(false);
+
+  const suggestionLinks = () => Array.from(
+    suggestionRef.current?.querySelectorAll<HTMLAnchorElement>('a[data-suggestion-link]') ?? [],
+  );
+
+  const onSuggestionKeys = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setFocused(false);
+      inputRef.current?.focus();
+      inputRef.current?.blur();
+      return;
+    }
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    const links = suggestionLinks();
+    const index = links.indexOf(document.activeElement as HTMLAnchorElement);
+    if (index < 0) return;
+    event.preventDefault();
+    const next = index + (event.key === 'ArrowDown' ? 1 : -1);
+    if (next < 0) inputRef.current?.focus();
+    else links[Math.min(next, links.length - 1)]?.focus();
+  };
 
   useEffect(() => { setQuery(initialQuery); }, [initialQuery]);
 
@@ -143,9 +166,15 @@ export function SearchExperience({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onFocus={() => setFocused(true)}
-          onBlur={() => { window.setTimeout(() => setFocused(false), 150); }}
+          onBlur={(event) => {
+            if (!suggestionRef.current?.contains(event.relatedTarget as Node | null)) setFocused(false);
+          }}
           onKeyDown={(event) => {
             if (event.key === 'Escape') { setFocused(false); inputRef.current?.blur(); }
+            if (event.key === 'ArrowDown' && suggestionLinks().length > 0) {
+              event.preventDefault();
+              suggestionLinks()[0]?.focus();
+            }
           }}
           placeholder={placeholder}
           aria-label={searchLabel}
@@ -162,6 +191,12 @@ export function SearchExperience({
       </form>
       {focused && query.trim().length >= 2 ? (
         <div
+          ref={suggestionRef}
+          onKeyDown={onSuggestionKeys}
+          onBlurCapture={(event) => {
+            const next = event.relatedTarget as Node | null;
+            if (!event.currentTarget.contains(next) && next !== inputRef.current) setFocused(false);
+          }}
           aria-label={ar ? 'اقتراحات البحث' : 'Search suggestions'}
           className="rounded-2xl border border-white/15 bg-[#1d1827] p-3 shadow-xl"
         >
@@ -181,7 +216,8 @@ export function SearchExperience({
                       <li key={track.id}>
                         <Link
                           href={`/${locale}/tracks/${track.id}-${track.slug}`}
-                          onClick={() => saveRecent(query)}
+                          data-suggestion-link
+                          onClick={() => { saveRecent(query); setFocused(false); }}
                           className="flex min-h-11 items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-ink hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         >
                           <span className="min-w-0 truncate font-semibold">{track.title}</span>
@@ -219,7 +255,7 @@ export function SearchExperience({
         </div>
       ) : null}
       <p className="text-xs text-muted">
-        {ar ? 'اضغط / علشان تبدأ بحث، أو Ctrl+K' : 'Press / or Ctrl+K to focus search'}
+        {ar ? 'اضغط / أو Ctrl+K للبحث، واستخدم الأسهم للتنقل بين الاقتراحات.' : 'Press / or Ctrl+K to search. Use arrow keys to navigate suggestions.'}
       </p>
       {ready && recent.length > 0 ? (
         <div className="space-y-2">
