@@ -66,7 +66,10 @@ export function annualListeningDNA(
     tracks: songCounts.size,
     artists: artistCounts.size,
     activeMonths: months.size,
-    monthlyQualifiedListens: monthlyCounts.map((plays, month) => ({ month: month + 1, plays })),
+    monthlyQualifiedListens: monthlyCounts.map((plays, month) => ({
+      month: month + 1,
+      plays,
+    })),
     genres: sorted([...genreCounts.entries()]),
     topTracks: sorted([...songCounts.entries()]),
     topArtists: sorted([...artistCounts.entries()]),

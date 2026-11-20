@@ -148,7 +148,10 @@ export default async function RewindPage({
               </p>
             )}
           </section>
-          <section className="rounded-2xl border border-white/10 bg-white/[.035] p-5" aria-labelledby="year-months-title">
+          <section
+            className="rounded-2xl border border-white/10 bg-white/[.035] p-5"
+            aria-labelledby="year-months-title"
+          >
             <h2 id="year-months-title" className="text-xl font-bold">
               {ar ? 'رحلتك الموسيقية شهر بشهر' : 'Your listening year, month by month'}
             </h2>
@@ -157,22 +160,44 @@ export default async function RewindPage({
                 ? 'الأرقام تمثل الاستماعات المؤهلة المسجلة، مش دقائق استماع تقديرية.'
                 : 'Counts reflect recorded qualified listens, not estimated listening minutes.'}
             </p>
-            <ol className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6 lg:grid-cols-12" aria-label={ar ? 'الاستماعات حسب الشهر' : 'Qualified listens by month'}>
+            <ol
+              className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6 lg:grid-cols-12"
+              aria-label={ar ? 'الاستماعات حسب الشهر' : 'Qualified listens by month'}
+            >
               {report.monthlyQualifiedListens.map(({ month, plays }) => {
                 const monthLabel = new Intl.DateTimeFormat(ar ? 'ar-EG' : 'en-US', {
                   month: 'short',
                   timeZone: 'UTC',
                 }).format(new Date(Date.UTC(year, month - 1, 1)));
-                const peak = Math.max(1, ...report.monthlyQualifiedListens.map((item) => item.plays));
+                const peak = Math.max(
+                  1,
+                  ...report.monthlyQualifiedListens.map((item) => item.plays),
+                );
                 return (
-                  <li key={month} className="min-w-0 rounded-xl bg-black/20 px-2 py-3 text-center"
-                    aria-label={ar ? `${monthLabel}: ${format(plays)} استماع مؤهل` : `${monthLabel}: ${format(plays)} qualified listens`}>
-                    <div className="flex h-20 items-end justify-center" aria-hidden="true">
-                      <div className="w-6 rounded-t-md bg-gradient-to-t from-violet-600 to-cyan-400"
-                        style={{ height: plays ? `${Math.max(6, plays / peak * 100)}%` : '2px' }} />
+                  <li
+                    key={month}
+                    className="min-w-0 rounded-xl bg-black/20 px-2 py-3 text-center"
+                    aria-label={
+                      ar
+                        ? `${monthLabel}: ${format(plays)} استماع مؤهل`
+                        : `${monthLabel}: ${format(plays)} qualified listens`
+                    }
+                  >
+                    <div
+                      className="flex h-20 items-end justify-center"
+                      aria-hidden="true"
+                    >
+                      <div
+                        className="w-6 rounded-t-md bg-gradient-to-t from-violet-600 to-cyan-400"
+                        style={{
+                          height: plays ? `${Math.max(6, (plays / peak) * 100)}%` : '2px',
+                        }}
+                      />
                     </div>
                     <p className="mt-2 text-xs font-semibold text-ink">{monthLabel}</p>
-                    <p className="mt-1 text-xs tabular-nums text-muted">{format(plays)}</p>
+                    <p className="mt-1 text-xs tabular-nums text-muted">
+                      {format(plays)}
+                    </p>
                   </li>
                 );
               })}

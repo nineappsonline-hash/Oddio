@@ -390,6 +390,7 @@
 - Latest preview compilation and browser/verify jobs remain pending. Branch formatter run `44747184218` succeeded at formatting but could not push because newer commits advanced the branch during its execution; its rebase/push behavior needs hardening. No production or live database change.
 
 ### Phase 10 verification and Phase 11 Rewind sharing (2026-11-21)
+
 - Confirmed previous UX formatter workflow `44747462293` completed successfully and committed formatted files at `31843315`; prior cumulative PR CI `44747472030` had database and browser green but failed its formatter check because it ran before the bot's format commit. Its subsequent bot-commit CI was `action_required`, not green. No production deployment.
 - Phase 11 started by **extending existing** private `/library/rewind` annual Music DNA rather than duplicating stats. Introduced `ShareAnnualRewind` with responsive visual preview and manually triggered native share/clipboard fallback; initial output includes only aggregate counts. Optional top-artist and top-genre are off by default and only included upon explicit user selection. No shareable URL to private listening history and no auto-post. Includes AR/EN labels, 44px touch action, accessible status and confirmation copy.
 - Added `annualShareText` unit tests proving no track-level song titles appear, optional identity fields require user choice, and empty year cannot generate a sharing payload.

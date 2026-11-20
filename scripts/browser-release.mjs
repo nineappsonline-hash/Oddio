@@ -519,10 +519,14 @@ try {
         for (const privatePath of ['library/recap', 'library/rewind?year=2026']) {
           const url = `${base}/${locale}/${privatePath}`;
           const result = await page.request.get(url, { maxRedirects: 0 });
-          assert.ok([302, 303, 307, 308].includes(result.status()),
-            `Expected protected recap redirect, got ${result.status()} for ${url}`);
-          assert.ok((result.headers()['location'] ?? '').includes('/login'),
-            'Private recap must redirect anonymous visitor to sign-in');
+          assert.ok(
+            [302, 303, 307, 308].includes(result.status()),
+            `Expected protected recap redirect, got ${result.status()} for ${url}`,
+          );
+          assert.ok(
+            (result.headers()['location'] ?? '').includes('/login'),
+            'Private recap must redirect anonymous visitor to sign-in',
+          );
         }
         // WebKit may abort a stale speculative Next.js RSC prefetch when the
         // protected route redirects. The authenticated redirect is asserted
