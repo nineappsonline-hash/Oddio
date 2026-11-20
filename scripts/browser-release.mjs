@@ -433,6 +433,7 @@ try {
           await page.goto(`${base}/en/library?likedSort=custom#liked`, {
             waitUntil: 'domcontentloaded',
           });
+          await page.locator('[data-reorder-ready="true"]').waitFor();
           const list = page.locator('ul[aria-label="Reorderable list"]').first();
           await list.waitFor({ state: 'visible' });
           const rows = list.locator('[data-reorder-index]');
@@ -469,6 +470,7 @@ try {
             'dragging should move the first liked item second',
           );
           await page.reload({ waitUntil: 'domcontentloaded' });
+          await page.locator('[data-reorder-ready="true"]').waitFor();
           await list.waitFor({ state: 'visible' });
           const restored = await rows.evaluateAll((items) =>
             items.map((item) => item.getAttribute('data-reorder-id')),
