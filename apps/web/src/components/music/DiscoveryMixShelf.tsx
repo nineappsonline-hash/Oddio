@@ -96,7 +96,7 @@ export function DiscoveryMixShelf({
       });
     }
   }
-  const showPersonalized = Boolean(viewerId && personalized && personalizationEnabled);
+  const showPersonalized = Boolean(viewerId && personalizationLoaded && personalized && personalizationEnabled);
   const sourceTracks = showPersonalized ? tracks : publicTracks;
   const visible = sourceTracks.filter(
     (track) =>
