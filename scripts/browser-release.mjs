@@ -416,6 +416,41 @@ try {
       }
 
       if (locale === 'en' && viewport.width === 1366) {
+        await test('liked songs custom drag order survives a page reload', async () => {
+          await page.goto(`${base}/en/library?likedSort=custom#liked`, {
+            waitUntil: 'domcontentloaded',
+          });
+          const list = page.locator('ul[aria-label="Reorderable list"]').first();
+          await list.waitFor({ state: 'visible' });
+          const rows = list.locator('[data-reorder-index]');
+          assert.ok((await rows.count()) >= 2, 'demo listener needs at least two liked songs');
+          const before = await rows.evaluateAll((items) =>
+            items.map((item) => item.textContent?.trim()),
+          );
+          const handles = list.getByRole('button', { name: /Drag item/ });
+          const first = (await handles.nth(0).boundingBox());
+          const second = (await handles.nth(1).boundingBox());
+          assert.ok(first && second, 'drag handles must have visible bounds');
+          await page.mouse.move(first.x + first.width / 2, first.y + first.height / 2);
+          await page.mouse.down();
+          await page.mouse.move(second.x + second.width / 2, second.y + second.height / 2, { steps: 10 });
+          await page.mouse.up();
+          const after = await rows.evaluateAll((items) =>
+            items.map((item) => item.textContent?.trim()),
+          );
+          assert.equal(after[0], before[1], 'dragging should put the second liked item first');
+          assert.equal(after[1], before[0], 'dragging should move the first liked item second');
+          await page.reload({ waitUntil: 'domcontentloaded' });
+          await list.waitFor({ state: 'visible' });
+          const restored = await rows.evaluateAll((items) =>
+            items.map((item) => item.textContent?.trim()),
+          );
+          assert.equal(restored[0], after[0], 'custom sort must survive reload');
+          assert.equal(restored[1], after[1], 'custom sort must survive reload');
+        });
+      }
+
+      if (locale === 'en' && viewport.width === 1366) {
         await test('demo account discovery exclusions never claim cloud sync', async () => {
           const read = await page.request.get(`${base}/api/discovery/preferences`);
           assert.equal(read.status(), 200);
