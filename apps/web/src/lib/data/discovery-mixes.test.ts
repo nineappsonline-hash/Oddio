@@ -105,6 +105,36 @@ describe('Oddio discovery stations', () => {
     );
   });
 
+  it('uses the artist identity for Artist Radio, independent of a featured song', () => {
+    const db = fixture();
+    const station = buildDiscoveryMix(db, guest, {
+      kind: 'artist', seedId: 'artist-a', now: date,
+    });
+    expect(station.tracks.length).toBeGreaterThan(0);
+    expect(station.tracks[0]?.artistId).toBe('artist-a');
+    expect(new Set(station.tracks.map((track) => track.id)).size).toBe(station.tracks.length);
+  });
+
+  it('keeps legacy track-based artist stations working', () => {
+    const byArtist = buildDiscoveryMix(fixture(), guest, {
+      kind: 'artist', seedId: 'artist-a', now: date,
+    });
+    const byOldTrack = buildDiscoveryMix(fixture(), guest, {
+      kind: 'artist', seedId: 'a', now: date,
+    });
+    expect(byOldTrack.tracks.map((track) => track.id)).toEqual(
+      byArtist.tracks.map((track) => track.id),
+    );
+  });
+
+  it('never turns a missing or unavailable artist seed into a random station', () => {
+    const db = fixture();
+    expect(buildDiscoveryMix(db, guest, { kind: 'artist', seedId: 'missing', now: date }).tracks).toEqual([]);
+    db.tracks.filter((track) => track.artistId === 'artist-a')
+      .forEach((track) => { track.audio!.processingStatus = 'pending'; });
+    expect(buildDiscoveryMix(db, guest, { kind: 'artist', seedId: 'artist-a', now: date }).tracks).toEqual([]);
+  });
+
   it('genre radio selects only tracks in the chosen active genre', () => {
     const result = buildDiscoveryMix(fixture(), guest, {
       kind: 'genre',
