@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
  * ArrowUp/ArrowDown on the handle are an accessible keyboard alternative.
  */
 export function DragReorderList<T>({
-  items, getId, onMove, renderItem, locale, className, disabled = false,
+  items, getId, onMove, renderItem, locale, className, disabled = false, layout = 'list',
 }: {
   items: T[];
   getId: (item: T) => string;
@@ -18,6 +18,7 @@ export function DragReorderList<T>({
   locale: 'ar' | 'en';
   className?: string;
   disabled?: boolean;
+  layout?: 'list' | 'grid';
 }) {
   const ref = useRef<HTMLUListElement>(null);
   const pointer = useRef<{ id: number; from: number; target: number; startX: number; startY: number; moved: boolean } | null>(null);
@@ -72,7 +73,7 @@ export function DragReorderList<T>({
   return (
     <div className="min-h-0">
     <span className="sr-only" role="status" aria-live="polite">{announcement}</span>
-    <ul ref={ref} className={cn('space-y-1', className)} aria-label={ar ? 'قائمة قابلة لإعادة الترتيب' : 'Reorderable list'}>
+    <ul ref={ref} className={cn(layout === 'list' ? 'space-y-1' : 'grid', className)} aria-label={ar ? 'قائمة قابلة لإعادة الترتيب' : 'Reorderable list'}>
       {items.map((item, index) => (
         <li key={getId(item)} data-reorder-index={index}
           className={cn('flex min-w-0 items-center gap-1 rounded-xl transition-colors', dragging === index && 'bg-primary/15 opacity-70', over === index && dragging !== index && 'ring-2 ring-primary/60')}>
