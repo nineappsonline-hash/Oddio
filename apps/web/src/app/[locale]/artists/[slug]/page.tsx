@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/Badge';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { GenrePlayAllButton } from '@/components/music/GenrePlayAllButton';
 import { FlowButton } from '@/components/player/FlowButton';
+import { getRelatedArtistsBySound } from '@/lib/data/related-artists';
 import { FollowButton } from '@/components/community/FollowButton';
 import { ShareButton } from '@/components/community/ShareButton';
 import { ReportButton } from '@/components/community/ReportButton';
@@ -106,15 +107,7 @@ export default async function ArtistPage({
         .map((track) => [track.genre!.id, track.genre!]),
     ).values(),
   ].slice(0, 6);
-  const relatedArtists = listableTracks(db, viewer)
-    .flatMap((track) =>
-      track.artist && track.artist.id !== artist.id ? [track.artist] : [],
-    )
-    .filter(
-      (candidate, index, all) =>
-        all.findIndex((item) => item.id === candidate.id) === index,
-    )
-    .slice(0, 4);
+  const relatedArtists = getRelatedArtistsBySound(db, artist.id, viewer, 4);
 
   return (
     <div>
