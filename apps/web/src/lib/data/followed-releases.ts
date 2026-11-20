@@ -5,7 +5,7 @@ import { listableTracks, type CatalogTrack } from './queries';
 /**
  * Personal, newest-first releases by explicitly followed artists.
  * Always re-check current visibility and playable state on the server.
- * Never return another listener's followed artists or unlisted tracks.
+ * Never return another listener's followed artists or owner-only/unlisted tracks.
  */
 export function getFollowedArtistReleases(
   db: DemoDb,
@@ -19,7 +19,7 @@ export function getFollowedArtistReleases(
       .map((record) => record.artistId),
   );
   if (!followed.size) return [];
-  return listableTracks(db, viewer)
+  return listableTracks(db, { userId: null, roles: [] })
     .filter((track) =>
       followed.has(track.artistId) &&
       Boolean(track.audio) &&
