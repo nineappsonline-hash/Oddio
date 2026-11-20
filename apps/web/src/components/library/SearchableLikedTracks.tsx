@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { usePlayer } from '@/lib/player-store';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { TrackRow } from '@/components/music/TrackRow';
+import { BulkAddToPlaylistButton } from '@/components/library/BulkAddToPlaylistButton';
 
 export function SearchableLikedTracks({
   tracks,
@@ -62,6 +63,13 @@ export function SearchableLikedTracks({
             className="min-h-10 rounded-full bg-primary px-4 text-xs font-semibold text-black">
             {locale === 'ar' ? `ضيف ${visibleSelected.length} للانتظار` : `Add ${visibleSelected.length} to queue`}
           </button>
+        ) : null}
+        {visibleSelected.length > 0 ? (
+          <BulkAddToPlaylistButton
+            trackIds={visibleSelected.map((track) => track.id)}
+            locale={locale}
+            onComplete={() => setSelected([])}
+          />
         ) : null}
         {selected.length > 0 ? (
           <button type="button" onClick={() => setSelected([])}
