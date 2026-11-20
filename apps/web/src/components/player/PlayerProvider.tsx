@@ -318,6 +318,7 @@ export function PlayerProvider({
           track: session.track,
           station: null,
           queue: session.queue,
+          queueUndo: null,
           history: [],
           currentTime: session.currentTime,
           duration: session.track?.durationMs ? session.track.durationMs / 1000 : 0,
