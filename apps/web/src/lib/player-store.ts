@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import type { CatalogTrack } from '@/lib/data/queries';
+import { moveItem } from '@/lib/reorder-items';
 
 export type RepeatMode = 'off' | 'one' | 'all';
 export type StationMode =
@@ -331,11 +332,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set((state) => {
       if (!Number.isInteger(from) || !Number.isInteger(to) ||
           from < 0 || to < 0 || from >= state.queue.length || to >= state.queue.length || from === to) return state;
-      const queue = [...state.queue];
-      const [item] = queue.splice(from, 1);
-      if (!item) return state;
-      queue.splice(to, 0, item);
-      return { queue };
+      return { queue: moveItem(state.queue, from, to) };
     }),
 
   removeFromQueue: (trackId) =>
