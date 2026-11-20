@@ -36,8 +36,9 @@ jobs:
           if command -v ffmpeg >/dev/null && command -v ffprobe >/dev/null; then
             ffmpeg -version | head -n 1
           else
-            timeout 180s sudo apt-get update -qq
-            timeout 180s sudo apt-get install -y ffmpeg
+            # Hosted mirrors may be throttled; allow FFmpeg time to download.
+            timeout 600s sudo apt-get update -qq
+            timeout 600s sudo apt-get install -y --no-install-recommends ffmpeg
           fi
       - name: Check fingerprint similarity after actual MP3 re-encoding
         run: node --test scripts/audio-fingerprint-ffmpeg.test.mjs
