@@ -113,8 +113,10 @@ export function promptDiscoveryTracks(
         if (!reasons.some((reason) => reason.kind === kind && reason.value === value))
           reasons.push({ kind, value });
       };
-      if (tempoTarget !== null && track.audioFeatures?.tempoBpm != null)
+      if (tempoTarget !== null && track.audioFeatures?.tempoBpm != null) {
+        score += 8;
         addReason('tempo', Math.round(track.audioFeatures.tempoBpm) + ' BPM');
+      }
       for (const word of tokens) {
         if (containsTerm(genreText, word)) {
           score += 6;
