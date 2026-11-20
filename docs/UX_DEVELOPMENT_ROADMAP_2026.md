@@ -208,3 +208,9 @@
 - No merge, production rollout, or verified end-to-end tests. New commits remain on `feature/ux-roadmap-2026`.
 
 - Accessibility follow-up: `main#main` now has `tabIndex={-1}` so the skip link can reliably focus the main landmark for keyboard and assistive technology users. Preview build verification remains required.
+
+### Phase 4 continuation — mobile navigation and mini-player touch layout (2026-11-20)
+- Found that the previous Phase 4 builds had failed with TypeScript's `'last' is possibly 'undefined'` inside the mobile drawer focus-trap. Added explicit narrowing of both first/last focusable elements before calling `.focus()`; **latest build still requires confirmation**.
+- Increased the mobile header menu and guest login touch targets to 44x44px. Bottom navigation tab labels are now centered and truncated within their own slots instead of overflowing on 320px-wide layouts; maintained accessible labels and focus outlines.
+- Compressed mobile mini-player spacing on narrow screens, preserved its large artwork/transport touch surfaces, hid the redundant expand icon below `sm` since artwork/title/background already open the full player, and constrained toast notices to the mobile viewport width.
+- Pending: successful Vercel build for these commits, actual mobile viewport interactions, screen-reader verification, visual regression and controlled release. Production untouched.
