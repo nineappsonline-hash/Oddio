@@ -12,7 +12,7 @@ describe('moveItem', () => {
   });
   it('preserves items for out-of-range, fractional or unchanged indices', () => {
     const values = ['one', 'two'];
-    for (const [from, to] of [[-1, 0], [0, 2], [0.5, 1], [0, 0], [2, 0]]) {
+    for (const [from, to] of ([[-1, 0], [0, 2], [0.5, 1], [0, 0], [2, 0]] as Array<[number, number]>)) {
       expect(moveItem(values, from, to)).toEqual(values);
     }
   });
