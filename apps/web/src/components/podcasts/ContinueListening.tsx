@@ -3,8 +3,17 @@
 import { Pause, Play, RotateCcw } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
-import { formatPodcastTime } from '@/lib/podcasts/catalog';
 import { resumablePodcastProgress } from '@/lib/podcast-resume-progress';
+
+function formatTime(totalSeconds: number): string {
+  const total = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  return hours > 0
+    ? `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+    : `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
 
 /** Shows the last *unfinished* episode from the existing restored player state.
  * No new tracking or autoplay is introduced. Draft/private episode metadata is
@@ -53,7 +62,7 @@ export function ContinueListening({
           <p className="truncate text-xs font-medium text-white/60">{track.artist?.name}</p>
           <p className="mt-1 line-clamp-2 text-base font-bold leading-snug sm:text-lg">{track.title}</p>
           <p className="mt-1 text-xs text-white/65">
-            {ar ? 'فاضل' : 'Remaining'} {formatPodcastTime(remaining)}
+            {ar ? 'فاضل' : 'Remaining'} {formatTime(remaining)}
           </p>
         </div>
       </div>
