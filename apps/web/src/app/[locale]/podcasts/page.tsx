@@ -8,6 +8,7 @@ import { getPodcastCatalog } from '@/lib/podcasts/catalog';
 import { getSessionUser } from '@/lib/auth/session';
 import { PodcastCategoryCard, PodcastEpisodeCard, PodcastShowCard, PodcastEmpty } from '@/components/podcasts/PodcastUI';
 import { PodcastSeriesShelf } from '@/components/podcasts/PodcastSeriesShelf';
+import { ContinueListening } from '@/components/podcasts/ContinueListening';
 
 export const dynamic = 'force-dynamic';
 
@@ -79,6 +80,10 @@ export default async function PodcastsHome({
         <input name="q" defaultValue={rawQuery ?? ''} aria-label={ar ? 'البحث في البرامج والحلقات' : 'Search podcast shows and episodes'} placeholder={ar ? 'ابحث عن بودكاست أو حلقة...' : 'Search shows and episodes...'} className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-[#a3a3a3]" />
         <button className="min-h-10 shrink-0 rounded-lg bg-white/[0.13] px-4 text-xs font-semibold text-white hover:bg-white/20">{ar ? 'بحث' : 'Search'}</button>
       </form>
+
+      {!q && catalog.episodes.length > 0 ? (
+        <ContinueListening locale={locale} viewerId={user?.id ?? null} episodes={catalog.episodes} shows={catalog.shows} />
+      ) : null}
 
       {q ? (
         <>

@@ -13,7 +13,8 @@ import { buildMetadata } from '@/lib/seo';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { TrackRow } from '@/components/music/TrackRow';
-import { PlaylistCard } from '@/components/music/PlaylistCard';
+import { ReorderablePlaylistGrid } from '@/components/library/ReorderablePlaylistGrid';
+import { ReorderableLikedTracks } from '@/components/library/ReorderableLikedTracks';
 import { ArtistListRow } from '@/components/music/ArtistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ButtonLink } from '@/components/ui/Button';
@@ -56,7 +57,7 @@ export default async function LibraryPage({
   const history = getHistoryData(db, viewer);
   const { likedSort: requestedSort } = await searchParams;
   const likedSort =
-    requestedSort === 'title' || requestedSort === 'popular' ? requestedSort : 'recent';
+    requestedSort === 'title' || requestedSort === 'popular' || requestedSort === 'custom' ? requestedSort : 'recent';
   const likedTracks = [...library.likedTracks];
   if (likedSort === 'title')
     likedTracks.sort((a, b) => a.title.localeCompare(b.title, locale));
@@ -108,6 +109,7 @@ export default async function LibraryPage({
                 ['recent', locale === 'ar' ? 'المضافة مؤخرًا' : 'Recently added'],
                 ['title', locale === 'ar' ? 'الاسم' : 'Title'],
                 ['popular', locale === 'ar' ? 'الأكثر استماعًا' : 'Most played'],
+                ['custom', locale === 'ar' ? 'ترتيبي' : 'My order'],
               ] as const
             ).map(([value, label]) => (
               <Link
@@ -123,6 +125,8 @@ export default async function LibraryPage({
         ) : null}
         {likedTracks.length === 0 ? (
           <EmptyState title={t('library.emptyLikes')} />
+        ) : likedSort === 'custom' ? (
+          <ReorderableLikedTracks initialTracks={likedTracks} locale={locale} userId={user.id} />
         ) : (
           <div className="card divide-y divide-white/5 p-2">
             {likedTracks.map((track, index) => (
@@ -160,22 +164,15 @@ export default async function LibraryPage({
             }
           />
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {library.playlists.map((playlist) => (
-              <PlaylistCard key={playlist.id} playlist={playlist} locale={locale} />
-            ))}
-          </div>
+          <ReorderablePlaylistGrid playlists={library.playlists} locale={locale} userId={user.id} />
         )}
         {library.followedPlaylists.length > 0 ? (
           <>
             <h3 className="mb-3 mt-8 text-sm font-bold uppercase tracking-wide text-muted">
               {t('common.following')}
             </h3>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-              {library.followedPlaylists.map((playlist) => (
-                <PlaylistCard key={playlist.id} playlist={playlist} locale={locale} />
-              ))}
-            </div>
+            <ReorderablePlaylistGrid playlists={library.followedPlaylists}
+              locale={locale} userId={user.id} section="followed" />
           </>
         ) : null}
       </section>

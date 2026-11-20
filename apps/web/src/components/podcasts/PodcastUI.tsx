@@ -52,7 +52,7 @@ export function PodcastCategoryCard({ category, locale }: { category: PodcastCat
   const name = podcastCategoryLabel(category, locale);
   return (
     <Link prefetch={false} href={`/${locale}/podcasts/categories/${category.slug}`}
-      className="group relative flex h-full min-h-[185px] min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-2.5 shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-all duration-200 hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 sm:min-h-[215px] sm:p-3">
+      className="group relative flex h-full min-h-[185px] min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-2.5 shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-colors duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:min-h-[215px] sm:p-3">
       <span className="relative flex aspect-[5/6] w-full items-center justify-center overflow-hidden rounded-2xl border border-white/[0.12] bg-gradient-to-br from-[#343638] via-[#202123] to-[#111214]">
         <Radio className="absolute h-11 w-11 text-white/40" />
         {/* Category images are editorial illustrations of topics, not creator covers. */}
@@ -82,10 +82,10 @@ export function PodcastCategoryCard({ category, locale }: { category: PodcastCat
 export function PodcastShowCard({ show, locale }: { show: PodcastShow; locale: 'ar' | 'en' }) {
   return (
     <Link prefetch={false} href={`/${locale}/podcasts/shows/${show.slug}`}
-      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-all duration-200 hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60 sm:p-3.5">
+      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-colors duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.09] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:p-3.5">
       <PodcastArtwork title={show.title} coverUrl={show.coverUrl} className="w-full !rounded-2xl" />
       <h3 className="mt-3 min-w-0"><AutoScrollTitle text={show.title} lines={2} className="text-sm font-bold text-white sm:text-base" /></h3>
-      <p dir="auto" className="mt-auto truncate pt-2 text-xs text-[#aaaaaa]">{show.author}</p>
+      <p dir="auto" className="mt-auto w-full truncate pt-2 text-xs leading-5 text-[#c4c4c4]">{show.author}</p>
     </Link>
   );
 }
@@ -96,7 +96,7 @@ export function PodcastEpisodeCard({ episode, show, locale }: {
   if (!show) return null;
   return (
     <PodcastPlaySurface episode={episode} show={show} locale={locale}
-      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-3 text-start shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-all duration-200 hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.09] sm:p-3.5">
+      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-colors duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.09] sm:p-3.5">
       <span className="relative block w-full">
         <PodcastArtwork title={episode.title} coverUrl={show.coverUrl} className="w-full !rounded-2xl" />
         <span className="absolute bottom-2 end-2 grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-[#171819]/85 shadow-lg backdrop-blur-xl transition-transform group-hover:scale-110" aria-hidden="true">
@@ -104,8 +104,8 @@ export function PodcastEpisodeCard({ episode, show, locale }: {
         </span>
       </span>
       <AutoScrollTitle text={episode.title} lines={2} className="mt-3 text-sm font-bold text-white sm:text-base" />
-      <span dir="auto" className="mt-1 block w-full truncate text-xs text-[#b5b5b5]">{show.title}</span>
-      <span className="mt-auto flex w-full items-center gap-1.5 pt-3 text-xs text-[#aaaaaa]" dir="ltr">
+      <span dir="auto" className="mt-1 block w-full truncate text-xs leading-5 text-[#c4c4c4]">{show.title}</span>
+      <span className="mt-auto flex w-full items-center gap-1.5 pt-3 text-xs text-[#c4c4c4]" dir="ltr">
         <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
         {episode.durationSeconds > 0 ? formatPodcastTime(episode.durationSeconds) : (locale === 'ar' ? 'حلقة صوتية' : 'Audio episode')}
       </span>
@@ -129,7 +129,7 @@ export function PodcastEpisodeRow({ episode, show, locale, index, upcoming = [] 
   const duration = episode.durationSeconds > 0 ? formatPodcastTime(episode.durationSeconds) : null;
   return (
     <PodcastPlaySurface episode={episode} show={show} locale={locale} upcoming={upcoming}
-      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[20px] border border-white/[0.13] bg-white/[0.055] backdrop-blur-2xl p-3.5 text-start shadow-[0_12px_32px_rgba(0,0,0,0.15)] transition-all duration-200 hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.09] hover:shadow-[0_18px_42px_rgba(0,0,0,0.25)] sm:p-4"
+      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[20px] border border-white/[0.13] bg-white/[0.055] backdrop-blur-2xl p-3.5 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary shadow-[0_12px_32px_rgba(0,0,0,0.15)] transition-colors duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.09] hover:shadow-[0_18px_42px_rgba(0,0,0,0.25)] sm:p-4"
     >
       <span className="relative block w-full overflow-hidden rounded-2xl">
         <PodcastArtwork title={show.title} coverUrl={show.coverUrl} className="w-full !rounded-2xl" />
@@ -145,7 +145,7 @@ export function PodcastEpisodeRow({ episode, show, locale, index, upcoming = [] 
           ) : null}
         </span>
         <AutoScrollTitle text={episode.title} lines={2} className="text-base font-bold text-white sm:text-lg" />
-        <span className="mt-auto flex items-center justify-between gap-2 pt-2 text-xs text-[#aaaaaa]">
+        <span className="mt-auto flex items-center justify-between gap-2 pt-2 text-xs text-[#c4c4c4]">
           <span className="inline-flex items-center gap-1.5" dir="ltr">
             <Clock3 size={14} aria-hidden="true" />
             {duration ?? (ar ? 'حلقة صوتية' : 'Audio episode')}
@@ -165,9 +165,9 @@ export function PodcastEmpty({ locale, what = 'episodes' }: { locale: 'ar' | 'en
       ? (ar ? 'برامج البودكاست الجديدة هتظهر هنا أول ما تتنشر.' : 'New podcast shows will appear here as they are published.')
       : (ar ? 'الحلقات الجديدة هتظهر هنا أول ما تتنشر.' : 'New episodes will appear here as creators publish them.');
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/20 bg-white/[0.045] backdrop-blur-xl px-5 py-10 text-center text-[#b5b5b5]">
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/15 bg-white/[0.035] px-5 py-10 text-center text-[#c4c4c4] sm:px-8 sm:py-12">
       <Headphones className="h-9 w-9 text-[#dddddd]" aria-hidden="true" />
-      <p className="max-w-md text-sm leading-7">{copy}</p>
+      <p className="max-w-md text-sm leading-7" role="status">{copy}</p>
     </div>
   );
 }

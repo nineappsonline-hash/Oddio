@@ -47,7 +47,7 @@ export function TrackRow({
     <div
       dir="ltr"
       className={cn(
-        'group relative grid w-full min-w-0 items-center gap-2 overflow-hidden rounded-xl px-2 py-2 transition duration-300 sm:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] sm:gap-3',
+        'group relative grid w-full min-w-0 items-center gap-2 overflow-hidden rounded-xl px-2 py-2 transition-colors duration-200 focus-within:bg-white/[0.065] sm:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] sm:gap-3',
         rank !== undefined
           ? 'grid-cols-[auto_auto_minmax(0,1fr)_auto]'
           : 'grid-cols-[auto_minmax(0,1fr)_auto]',
@@ -69,7 +69,7 @@ export function TrackRow({
         type="button"
         onClick={onPlay}
         aria-label={active ? t('common.pause') : t('common.play')}
-        className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
+        className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         <Artwork
           title={track.title}
@@ -81,7 +81,7 @@ export function TrackRow({
         <span
           className={cn(
             'absolute inset-0 z-10 m-auto flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white transition',
-            active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+            active ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100',
           )}
         >
           {active ? (
@@ -118,7 +118,7 @@ export function TrackRow({
           <Link
             href={`/${locale}/artists/${track.artist.slug}`}
             dir="auto"
-            className="block truncate text-xs text-muted transition hover:text-ink"
+            className="block truncate rounded-sm text-xs text-muted transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           >
             {track.artist.name}
           </Link>
@@ -142,7 +142,7 @@ export function TrackRow({
             toast(t('player.addToQueue'), 'success');
           }}
           aria-label={t('player.addToQueue')}
-          className="hidden rounded-full p-2 text-muted opacity-0 transition hover:bg-white/10 hover:text-ink group-hover:opacity-100 sm:block"
+          className="hidden rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:block"
         >
           <ListPlus className="h-4 w-4" />
         </button>

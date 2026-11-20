@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import type { CatalogTrack } from '@/lib/data/queries';
+import { moveItem } from '@/lib/reorder-items';
 
 export type RepeatMode = 'off' | 'one' | 'all';
 export type StationMode =
@@ -20,6 +21,10 @@ interface PlayerState {
   shuffle: boolean;
   autoplay: boolean;
   crossfadeSeconds: number;
+  playbackRate: number;
+  setPlaybackRate: (rate: number) => void;
+  sleepUntil: number | null;
+  setSleepTimer: (minutes: number) => void;
   setCrossfadeSeconds: (seconds: number) => void;
   station: { kind: StationMode; seedId?: string } | null;
   expanded: boolean;
@@ -50,6 +55,8 @@ interface PlayerState {
   addToQueue: (track: CatalogTrack) => void;
   playNextInQueue: (track: CatalogTrack) => void;
   removeFromQueue: (trackId: string) => void;
+  moveInQueue: (trackId: string, direction: 'up' | 'down') => void;
+  reorderQueue: (from: number, to: number) => void;
   jumpTo: (trackId: string) => void;
   clearQueue: () => void;
   setExpanded: (expanded: boolean) => void;
@@ -81,6 +88,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   shuffle: false,
   autoplay: true,
   crossfadeSeconds: 0,
+  playbackRate: 1,
+  setPlaybackRate: (rate) => set({ playbackRate: [0.75, 1, 1.25, 1.5, 2].includes(rate) ? rate : 1 }),
+  sleepUntil: null,
+  setSleepTimer: (minutes) => set({ sleepUntil: minutes > 0 ? Date.now() + minutes * 60_000 : null }),
   setCrossfadeSeconds: (seconds) =>
     set({ crossfadeSeconds: [0, 3, 5, 8].includes(seconds) ? seconds : 0 }),
   station: null,
@@ -317,8 +328,24 @@ export const usePlayer = create<PlayerState>((set, get) => ({
           },
     ),
 
+  reorderQueue: (from, to) =>
+    set((state) => {
+      if (!Number.isInteger(from) || !Number.isInteger(to) ||
+          from < 0 || to < 0 || from >= state.queue.length || to >= state.queue.length || from === to) return state;
+      return { queue: moveItem(state.queue, from, to) };
+    }),
+
   removeFromQueue: (trackId) =>
     set((state) => ({ queue: state.queue.filter((item) => item.id !== trackId) })),
+  moveInQueue: (trackId, direction) =>
+    set((state) => {
+      const index = state.queue.findIndex((item) => item.id === trackId);
+      const target = index + (direction === 'up' ? -1 : 1);
+      if (index < 0 || target < 0 || target >= state.queue.length) return state;
+      const queue = [...state.queue];
+      [queue[index], queue[target]] = [queue[target]!, queue[index]!];
+      return { queue };
+    }),
 
   jumpTo: (trackId) =>
     set((state) => {

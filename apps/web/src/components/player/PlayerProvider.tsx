@@ -17,6 +17,11 @@ import {
 } from '@/lib/player-session';
 import type { CatalogTrack, HomeData } from '@/lib/data/queries';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
+import {
+  readPodcastProgress, readPodcastSyncRecords, replacePodcastSyncRecords,
+  savePodcastProgress, clearPodcastProgress, PODCAST_PROGRESS_EVENT,
+  type SavedPodcastProgress,
+} from '@/lib/podcast-progress-store';
 import { useToast } from '@/components/providers/ToastProvider';
 
 interface PlaybackAuthorization {
@@ -69,6 +74,8 @@ export function PlayerProvider({
   const startSentRef = useRef(false);
   const isPlaying = usePlayer((state) => state.isPlaying);
   const crossfadeSeconds = usePlayer((state) => state.crossfadeSeconds);
+  const playbackRate = usePlayer((state) => state.playbackRate);
+  const sleepUntil = usePlayer((state) => state.sleepUntil);
   const volume = usePlayer((state) => state.volume);
   const muted = usePlayer((state) => state.muted);
   const seekRequest = usePlayer((state) => state.seekRequest);
@@ -95,6 +102,120 @@ export function PlayerProvider({
     });
     return unsubscribe;
   }, []);
+
+  // Playback speed is a listener preference, not part of a signed stream URL.
+  // Restore it without changing the speed of regular music.
+  useEffect(() => {
+    const key = `oddio-podcast-speed:${viewerId ?? 'guest'}`;
+    try {
+      const saved = Number(window.localStorage.getItem(key));
+      usePlayer.getState().setPlaybackRate(saved || 1);
+    } catch {
+      usePlayer.getState().setPlaybackRate(1);
+    }
+    const unsubscribe = usePlayer.subscribe((state, previous) => {
+      if (state.playbackRate === previous.playbackRate) return;
+      try {
+        window.localStorage.setItem(key, String(state.playbackRate));
+      } catch {
+        // Playback still works when storage is blocked.
+      }
+    });
+    return unsubscribe;
+  }, [viewerId]);
+
+  // Remember each podcast episode independently, including the one we leave
+  // when switching to a different episode. No server writes or autoplay.
+  useEffect(() => {
+    let lastSavedAt = 0;
+    const unsubscribe = usePlayer.subscribe((state, previous) => {
+      const changed = state.track?.id !== previous.track?.id;
+      if (changed && isPodcastPlayback(previous.track)) {
+        savePodcastProgress(viewerId, previous.track, previous.currentTime, previous.duration);
+      }
+      if (!isPodcastPlayback(state.track)) return;
+      const now = Date.now();
+      if (changed || now - lastSavedAt >= 2500) {
+        lastSavedAt = now;
+        savePodcastProgress(viewerId, state.track, state.currentTime, state.duration);
+      }
+    });
+    const saveOnExit = () => {
+      const state = usePlayer.getState();
+      savePodcastProgress(viewerId, state.track, state.currentTime, state.duration);
+    };
+    window.addEventListener('pagehide', saveOnExit);
+    return () => {
+      saveOnExit();
+      unsubscribe();
+      window.removeEventListener('pagehide', saveOnExit);
+    };
+  }, [viewerId]);
+
+  // Sync multiple podcast positions across a signed-in listener's devices.
+  // Local saves work offline; reconnect/visibility triggers a best-effort merge.
+  useEffect(() => {
+    if (!viewerId) return;
+    let stopped = false;
+    let syncing = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let lastPulled = 0;
+    const send = async () => {
+      if (stopped || syncing || !navigator.onLine) return;
+      syncing = true;
+      try {
+        if (!lastPulled || Date.now() - lastPulled > 60_000) {
+          const cloud = await apiRequest<{ entries: SavedPodcastProgress[] }>(
+            '/api/podcasts/progress',
+          );
+          if (stopped) return;
+          replacePodcastSyncRecords(viewerId, cloud.entries);
+          lastPulled = Date.now();
+        }
+        const entries = readPodcastSyncRecords(viewerId);
+        if (!entries.length) return;
+        const cloud = await apiRequest<{
+          entries: SavedPodcastProgress[]; saved: boolean;
+        }>('/api/podcasts/progress', {
+          method: 'PUT',
+          body: JSON.stringify({ entries }),
+        });
+        if (!stopped) replacePodcastSyncRecords(viewerId, cloud.entries);
+      } catch {
+        // An offline listener keeps their local history and retries on reconnect.
+        lastPulled = 0;
+      } finally {
+        syncing = false;
+      }
+    };
+    const schedule = () => {
+      if (stopped || timer) return;
+      timer = setTimeout(() => {
+        timer = null;
+        void send();
+      }, 12_000);
+    };
+    const onFocus = () => {
+      lastPulled = 0;
+      schedule();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') onFocus();
+    };
+    void send();
+    window.addEventListener(PODCAST_PROGRESS_EVENT, schedule);
+    window.addEventListener('online', onFocus);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+      window.removeEventListener(PODCAST_PROGRESS_EVENT, schedule);
+      window.removeEventListener('online', onFocus);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [viewerId]);
 
   // A new selection must silence the outgoing media element synchronously.
   // Waiting for the trackId/stream React effects leaves the previous source
@@ -365,6 +486,15 @@ export function PlayerProvider({
       if (pendingRestoreTrackId.current !== trackId) {
         pendingRestoreTime.current = null;
         pendingRestoreTrackId.current = null;
+        if (isPodcastPlayback(state.track)) {
+          const position = readPodcastProgress(viewerId)
+            .find((item) => item.episodeId === trackId)?.seconds;
+          if (position && state.currentTime < 15) {
+            pendingRestoreTime.current = position;
+            pendingRestoreTrackId.current = trackId;
+            usePlayer.getState().setCurrentTime(position);
+          }
+        }
       }
       audibleRef.current = { accumulated: 0, lastTime: 0, qualified: false, lastSent: 0 };
       startSentRef.current = false;
@@ -446,6 +576,27 @@ export function PlayerProvider({
       });
     }
   }, [stream]);
+
+  // Apply speed directly to media elements; Spotify-like music remains at 1x.
+  useEffect(() => {
+    const rate = isPodcastPlayback(usePlayer.getState().track) ? playbackRate : 1;
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+    if (standbyRef.current) standbyRef.current.playbackRate = rate;
+  }, [playbackRate, trackId, stream]);
+
+  // A sleep timer pauses audio at its deadline, without clearing the queue or position.
+  useEffect(() => {
+    if (!sleepUntil) return;
+    const check = () => {
+      if (Date.now() >= sleepUntil) {
+        usePlayer.getState().setPlaying(false);
+        usePlayer.getState().setSleepTimer(0);
+      }
+    };
+    check();
+    const interval = window.setInterval(check, 1000);
+    return () => window.clearInterval(interval);
+  }, [sleepUntil]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -718,6 +869,7 @@ export function PlayerProvider({
     };
     const onEnded = () => {
       const state = usePlayer.getState();
+      if (isPodcastPlayback(state.track)) clearPodcastProgress(viewerId, state.track!.id);
       // Standby handoff is complete only after the next primary stream starts.
       // If the preauthorized stream expired, normal per-track playback recovery
       // still runs and the secondary source is discarded.
@@ -876,7 +1028,7 @@ export function PlayerProvider({
       try {
         mediaSession.setPositionState({
           duration: state.duration,
-          playbackRate: 1,
+          playbackRate: isPodcastPlayback(state.track) ? state.playbackRate : 1,
           position: Math.max(0, Math.min(state.currentTime, state.duration)),
         });
       } catch {

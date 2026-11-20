@@ -14,7 +14,7 @@ export function ArtistCard({
   return (
     <Link
       href={`/${locale}/artists/${artist.slug}`}
-      className="group card card-hover flex flex-col items-center p-4 text-center"
+      className="group card card-hover flex min-w-0 flex-col items-center p-4 text-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     >
       <div className="relative">
         <span
@@ -34,17 +34,17 @@ export function ArtistCard({
           </span>
         ) : null}
       </div>
-      <p className="mt-3 truncate text-sm font-semibold text-ink transition group-hover:text-primary">
+      <p className="mt-3 w-full truncate text-sm font-semibold text-ink transition group-hover:text-primary">
         {artist.name}
       </p>
-      <p className="text-xs text-muted">
-        {artist.trackCount ?? 0} tracks
-        {locale === 'ar' ? ' · ' : ' · '}
-        {artist.followerCount ?? 0} followers
+      <p className="mt-1 text-xs text-muted" dir="auto">
+        {artist.trackCount ?? 0} {locale === 'ar' ? 'أغنية' : 'tracks'}
+        {' · '}
+        {artist.followerCount ?? 0} {locale === 'ar' ? 'متابع' : 'followers'}
       </p>
       {artist.verificationStatus === 'approved' ? (
         <Badge tone="cyan" className="mt-2">
-          Verified
+          {locale === 'ar' ? 'موثّق' : 'Verified'}
         </Badge>
       ) : null}
     </Link>
@@ -55,7 +55,7 @@ export function ArtistListRow({ artist, locale }: { artist: Artist; locale: Loca
   return (
     <Link
       href={`/${locale}/artists/${artist.slug}`}
-      className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/5"
+      className="group flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
     >
       <Avatar name={artist.name} accent={artist.accent} className="h-11 w-11" />
       <div className="min-w-0">

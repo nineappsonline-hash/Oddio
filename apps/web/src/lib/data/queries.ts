@@ -187,6 +187,8 @@ export function getHomeData(db: DemoDb, viewer: Viewer, now = new Date()): HomeD
     .sort((a, b) => new Date(b.releaseAt).getTime() - new Date(a.releaseAt).getTime())
     .slice(0, 8);
 
+  // Only promote collections with something playable on the homepage.
+  // Empty catalog categories remain reachable through the full browse pages.
   const genres = db.genres
     .filter((genre) => genre.active)
     .map((genre) => ({
@@ -194,14 +196,18 @@ export function getHomeData(db: DemoDb, viewer: Viewer, now = new Date()): HomeD
       count: listable.filter(
         (track) => track.genreIds?.includes(genre.id) ?? track.genreId === genre.id,
       ).length,
-    }));
+    }))
+    .filter((genre) => genre.count > 0)
+    .sort((a, b) => b.count - a.count || a.labelEn.localeCompare(b.labelEn));
 
   const moods = db.moods
     .filter((mood) => mood.active)
     .map((mood) => ({
       ...mood,
       count: listable.filter((track) => track.moodIds.includes(mood.id)).length,
-    }));
+    }))
+    .filter((mood) => mood.count > 0)
+    .sort((a, b) => b.count - a.count || a.labelEn.localeCompare(b.labelEn));
 
   const artists = db.artists
     .map((artist) => {

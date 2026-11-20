@@ -59,34 +59,10 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
     { href: `/${locale}`, label: locale === 'ar' ? 'الموسيقى' : 'Music', icon: 'soundspace', exact: true },
   ] : [
     { href: `/${locale}`, label: t('nav.home'), icon: 'home', exact: true },
-    { href: `/${locale}/discover`, label: t('nav.discover'), icon: 'discover' },
-    {
-      href: `/${locale}/soundspace`,
-      label: locale === 'ar' ? 'مساحتك الموسيقية' : 'Soundspace',
-      icon: 'soundspace',
-    },
-    {
-      href: `/${locale}/rooms`,
-      label: locale === 'ar' ? 'غرف الاستماع' : 'Listening rooms',
-      icon: 'soundspace',
-    },
-    { href: `/${locale}/charts`, label: t('nav.charts'), icon: 'charts' },
     { href: `/${locale}/search`, label: t('nav.search'), icon: 'search' },
-    {
-      href: `/${locale}/install`,
-      label: locale === 'ar' ? 'ثبّت Oddio' : 'Install Oddio',
-      icon: 'soundspace',
-    },
-    {
-      href: `/${locale}/genres`,
-      label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Genres',
-      icon: 'discover',
-    },
-    {
-      href: `/${locale}/discover#artists`,
-      label: locale === 'ar' ? 'الفنانون' : 'Artists',
-      icon: 'studio',
-    },
+    { href: `/${locale}/discover`, label: t('nav.discover'), icon: 'discover' },
+    { href: `/${locale}/podcasts`, label: locale === 'ar' ? 'بودكاست' : 'Podcasts', icon: 'studio' },
+
   ];
 
   if (currentUser && !podcastMode) {
@@ -195,6 +171,24 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
             color: '#3c3c3c',
           },
           {
+            label: locale === 'ar' ? 'الأنواع الموسيقية' : 'Music genres',
+            href: `/${locale}/genres`,
+            symbol: 'discover',
+            color: '#292929',
+          },
+          {
+            label: locale === 'ar' ? 'الأكثر استماعًا' : 'Charts',
+            href: `/${locale}/charts`,
+            symbol: 'charts',
+            color: '#303030',
+          },
+          {
+            label: locale === 'ar' ? 'غرف الاستماع' : 'Listening rooms',
+            href: `/${locale}/rooms`,
+            symbol: 'soundspace',
+            color: '#3c3c3c',
+          },
+          {
             label: locale === 'ar' ? 'آخر الإصدارات' : 'New releases',
             href: `/${locale}/discover?sort=newest`,
             symbol: 'releases',
@@ -263,6 +257,10 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         >
           <Settings className="h-4 w-4" />
           {t('nav.settings')}
+        </Link>
+        <Link prefetch={false} href={`/${locale}/install`} className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink">
+          <OddioGlyph name="soundspace" size={17} />
+          {locale === 'ar' ? 'ثبّت Oddio' : 'Install Oddio'}
         </Link>
         <LocaleSwitcher />
       </div>
