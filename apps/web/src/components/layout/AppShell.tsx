@@ -45,7 +45,7 @@ export function AppShell({
           <AmbientBackground />
           <Sidebar user={user} />
           <div
-            className={`oddio-workspace relative z-10 lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}
+            className={`oddio-workspace relative z-10 w-full min-w-0 max-w-full overflow-x-clip lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}
           >
             <MobileHeader user={user} contentLanguage={contentLanguage} />
             <DesktopTopBar contentLanguage={contentLanguage} />
