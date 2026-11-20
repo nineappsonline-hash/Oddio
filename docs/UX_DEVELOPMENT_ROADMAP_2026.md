@@ -228,3 +228,11 @@
 - Added RTL-aware ArrowLeft/ArrowRight and Home/End navigation among Lyrics/Queue/Similar tabs, including roving `tabIndex`, `aria-controls`, tab IDs and a labeled active tabpanel. Kept the existing mouse/touch click behavior.
 - Improved the mobile artwork lyrics overlay: a 44px accessible Close control, contained scrolling on short viewports, and a localized Arabic landmark label.
 - **QA pending:** build completion for latest patches, keyboard focus transitions in an actual browser, mobile screen reader and landscape UI, nested modal interactions and visual checks. No production merge.
+
+### Phase 4 validation and Phase 5 personalized home start — 2026-11-20
+- Verified final Phase 4 preview commit `ad054cc5` is **Vercel READY**. This establishes successful build for the last mobile/full-player batch, not manual WCAG or device E2E acceptance. Remain on the development branch.
+- Phase 5 audit: home already has a recommendation engine based on likes/completed listens with popularity-based cold-start fallback, trending/release/genre/artist shelves and transparent text; avoided rebuilding them.
+- Added a signed-in listener control to switch the Home recommendations shelf between their ranked picks and a permission-safe **anonymous/public** fallback ranking. The opt-out is per-listener on this device using localStorage, has an AR/EN explanation, and uses aria-pressed. It does **not** erase listening history or disable play telemetry; UI says so explicitly.
+- Important privacy safeguard: initial server/client render shows public picks until the browser preference is loaded to avoid briefly displaying personalized picks to someone previously opted out. When disabled, Flow buttons and cards on that shelf use only public recommended tracks.
+- Added pure preference parsing and key-isolation Vitest regression tests; **test execution remains unverified**. Personalization preference is currently device-local only; no cross-device claim.
+- **Phase 5 pending:** optional genre/artist first-run setup, Continue Listening and Recently Played, follow-based new releases, ranking controls across more Home shelves, browser and API-level tests. New Phase 5 preview builds still pending at time of edit; no production merge.
