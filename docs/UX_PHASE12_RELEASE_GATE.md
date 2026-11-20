@@ -42,3 +42,10 @@
 - Database changes require reviewed backward-compatible migrations; do not assume a schema rollback is safe once live records exist.
 - Disable newly enabled flags and revert code deployment if auth, playback authorization, persistent queue/playlist editing, or privacy checks regress.
 - After rollback, verify login, a public stream, a private-stream denial, playlist reads, and user account isolation.
+
+## Phase 12 QA follow-up — 2026-11-21
+
+- Latest complete preview build before this check was `d1426ef0` **READY**, but its CI run was `action_required`. Previous code-level CI run `a9eca7f0` passed database tests but failed Prettier on six touched files and browser smoke reported **55/57**: desktop Arabic Rewind mobile-resize overflow by 154px and intermittent liked-songs pointer drag order.
+- Current branch constrains Rewind main/stat grids to the mobile viewport, permits Arabic labels to wrap, and adds a browser diagnostic reporting overflowing DOM elements if the overflow persists. Pointer drag smoke now targets the center of the intended list row and waits for the reorder to commit instead of assuming synchronous pointer state.
+- The scoped formatter has been triggered again (`44829307116`). All these changes are awaiting a **single same-SHA** full CI green run. Earlier mixed successes do not satisfy this gate.
+- Production promotion remains **NO-GO**, pending complete CI acceptance, real R2 playback, dedicated staging migrations, mobile iOS/Android testing, and performance baselines. No production database changes.
