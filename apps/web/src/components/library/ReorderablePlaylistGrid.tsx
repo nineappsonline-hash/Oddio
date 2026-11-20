@@ -9,15 +9,16 @@ import { moveItem } from '@/lib/reorder-items';
 /** Playlist shelves are user-personalized. This ordering is saved in this
  * browser, without modifying other listeners' public playlist rankings. */
 export function ReorderablePlaylistGrid({
-  playlists, locale, userId,
+  playlists, locale, userId, section = 'owned',
 }: {
   playlists: Playlist[];
   locale: 'ar' | 'en';
   userId: string;
+  section?: 'owned' | 'followed';
 }) {
   const [items, setItems] = useState(playlists);
   const [message, setMessage] = useState('');
-  const key = `oddio-library-playlist-order:${userId}`;
+  const key = `oddio-library-playlist-order:${userId}:${section}`;
 
   useEffect(() => {
     try {
@@ -29,10 +30,12 @@ export function ReorderablePlaylistGrid({
       ));
     } catch {
       // Browser privacy settings can block optional ordering preferences.
+      setItems(playlists);
     }
   }, [key, playlists]);
 
   function onMove(from: number, to: number) {
+    if (from === to) return;
     const next = moveItem(items, from, to);
     setItems(next);
     try {
