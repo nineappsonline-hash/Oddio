@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { apiRequest } from '@/lib/client-api';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { TrackRow } from '@/components/music/TrackRow';
 import { usePlayer } from '@/lib/player-store';
@@ -27,6 +28,8 @@ export function SmartPlaylists({
   const ar = locale === 'ar';
   const [rules, setRules] = useState<SmartPlaylistRule[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [syncState, setSyncState] = useState<'loading' | 'synced' | 'local'>('loading');
+  const modifiedDuringLoad = useRef(false);
   const [form, setForm] = useState(blank);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
@@ -36,31 +39,78 @@ export function SmartPlaylists({
   const likeSet = useMemo(() => new Set(likedIds), [likedIds]);
 
   useEffect(() => {
+    let cancelled = false;
+    modifiedDuringLoad.current = false;
     setLoaded(false);
+    setSyncState('loading');
+    let local: SmartPlaylistRule[] = [];
     try {
       const raw = window.localStorage.getItem(smartPlaylistStorageKey(userId));
       const parsed: unknown = JSON.parse(raw ?? '[]');
-      const saved = validateSmartPlaylistRules(parsed, validGenres, validMoods);
-      setRules(saved);
-      setActiveId(saved[0]?.id ?? null);
+      local = validateSmartPlaylistRules(parsed, validGenres, validMoods);
     } catch {
-      setRules([]);
-      setActiveId(null);
+      // Continue without device storage.
     }
+    setRules(local);
+    setActiveId(local[0]?.id ?? null);
     setLoaded(true);
+    void (async () => {
+      try {
+        const remote = await apiRequest<{
+          available: boolean; hasSavedState?: boolean; rules: SmartPlaylistRule[];
+        }>('/api/library/smart-playlists');
+        if (cancelled || modifiedDuringLoad.current) return;
+        if (!remote.available) {
+          setSyncState('local');
+          return;
+        }
+        if (!remote.hasSavedState && local.length) {
+          const result = await apiRequest<{ saved: boolean }>('/api/library/smart-playlists', {
+            method: 'PUT', body: JSON.stringify({ rules: local }),
+          });
+          if (!cancelled) setSyncState(result.saved ? 'synced' : 'local');
+          return;
+        }
+        const saved = validateSmartPlaylistRules(remote.rules, validGenres, validMoods);
+        if (cancelled || modifiedDuringLoad.current) return;
+        setRules(saved);
+        setActiveId(saved[0]?.id ?? null);
+        try {
+          window.localStorage.setItem(smartPlaylistStorageKey(userId), JSON.stringify(saved));
+        } catch { /* Account copy remains authoritative. */ }
+        setSyncState('synced');
+      } catch {
+        if (!cancelled) setSyncState('local');
+      }
+    })();
+    return () => { cancelled = true; };
   }, [userId, validGenres, validMoods]);
 
   const save = (next: SmartPlaylistRule[]) => {
     const clean = validateSmartPlaylistRules(next, validGenres, validMoods);
+    modifiedDuringLoad.current = true;
+    setRules(clean);
     try {
       window.localStorage.setItem(smartPlaylistStorageKey(userId), JSON.stringify(clean));
-      setRules(clean);
-      setMessage(ar ? 'اتحفظت على الجهاز ده.' : 'Saved on this device.');
-      return true;
     } catch {
-      setMessage(ar ? 'التخزين مش متاح على الجهاز ده. جرّب تاني.' : 'Device storage is unavailable. Try again.');
-      return false;
+      // Still attempt to persist to the signed-in account.
     }
+    setSyncState('loading');
+    setMessage(ar ? 'جاري حفظ التغييرات…' : 'Saving changes…');
+    void apiRequest<{ saved: boolean }>('/api/library/smart-playlists', {
+      method: 'PUT', body: JSON.stringify({ rules: clean }),
+    }).then((result) => {
+      setSyncState(result.saved ? 'synced' : 'local');
+      setMessage(result.saved
+        ? (ar ? 'اتحفظت على حسابك.' : 'Saved to your account.')
+        : (ar ? 'اتحفظت على الجهاز فقط.' : 'Saved on this device only.'));
+    }).catch(() => {
+      setSyncState('local');
+      setMessage(ar
+        ? 'المزامنة غير متاحة حاليًا. القواعد محفوظة محليًا لو التخزين متاح.'
+        : 'Account sync is unavailable. Rules remain locally saved if storage is enabled.');
+    });
+    return true;
   };
 
   const add = () => {
@@ -89,8 +139,15 @@ export function SmartPlaylists({
     <div className="space-y-4">
       <p className="text-xs leading-6 text-muted">
         {ar
-          ? 'كوّن قائمة تتحدث تلقائيًا من الأغاني المتاحة لما تتغير الأنواع أو المود أو الإعجابات. القواعد محفوظة على الجهاز ده فقط، مش قوائم عامة أو متزامنة بين الأجهزة.'
-          : 'Create an automatically updated selection based on available music, moods, genres or your likes. Rules stay on this device only; these are not public or cross-device playlists.'}
+          ? 'كوّن قائمة بتتحدث حسب النوع والمود والإعجابات. هنحفظ القواعد على حسابك لما المزامنة تكون متاحة، مع نسخة على الجهاز. القوائم مش عامة.'
+          : 'Create dynamic selections by genre, mood, and likes. Rules sync to your account when available, with an on-device copy. These playlists are private.'}
+      </p>
+      <p className="text-xs text-muted" role="status">
+        {syncState === 'synced'
+          ? (ar ? 'القواعد متزامنة مع حسابك.' : 'Rules synced to your account.')
+          : syncState === 'loading'
+            ? (ar ? 'جاري التحقق من المزامنة…' : 'Checking account sync…')
+            : (ar ? 'المزامنة غير متاحة. بنستخدم النسخة المحلية.' : 'Account sync unavailable; using local rules.')}
       </p>
       <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
         <h3 className="mb-3 text-sm font-bold text-ink">{ar ? 'قائمة ذكية جديدة' : 'New smart playlist'}</h3>
