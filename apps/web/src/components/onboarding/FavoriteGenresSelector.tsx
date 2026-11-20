@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { apiRequest } from '@/lib/client-api';
 import { favoriteGenresKey, normalizeFavoriteGenres } from '@/lib/favorite-genres';
 
@@ -25,6 +25,7 @@ export function FavoriteGenresSelector({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const dialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,7 +42,16 @@ export function FavoriteGenresSelector({
         if (cancelled) return;
         setAvailable(data.available);
         setGenres(data.genres);
-        const ids = normalizeFavoriteGenres(data.genreIds, data.genres.map((g) => g.id));
+        const availableIds = data.genres.map((g) => g.id);
+        let ids = normalizeFavoriteGenres(data.genreIds, availableIds);
+        if (!ids.length) {
+          try {
+            ids = normalizeFavoriteGenres(
+              JSON.parse(window.localStorage.getItem(favoriteGenresKey(userId)) ?? '[]'),
+              availableIds,
+            );
+          } catch { /* Device storage is optional. */ }
+        }
         setSelected(ids);
         if (ids.length) {
           try {
@@ -64,7 +74,12 @@ export function FavoriteGenresSelector({
     if (!open) return;
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = oldOverflow; };
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialogRef.current?.focus();
+    return () => {
+      document.body.style.overflow = oldOverflow;
+      previousFocus?.focus();
+    };
   }, [open]);
 
   const toggle = (id: string) => {
@@ -150,6 +165,26 @@ export function FavoriteGenresSelector({
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" role="presentation">
       <section
+        ref={dialogRef}
+        tabIndex={-1}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            void finish([]);
+          }
+          if (event.key !== 'Tab') return;
+          const buttons = Array.from(dialogRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
+          if (!buttons.length) return;
+          const first = buttons[0];
+          const last = buttons[buttons.length - 1];
+          if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
+            event.preventDefault();
+            last?.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first?.focus();
+          }
+        }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="oddio-genre-onboarding-title"
