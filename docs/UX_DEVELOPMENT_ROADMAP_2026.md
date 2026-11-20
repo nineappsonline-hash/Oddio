@@ -96,7 +96,7 @@
 |---|---|---|
 | 0 Baseline & risk audit | IN PROGRESS | Source review started; tests pending |
 | 1 Player & Queue | IN PROGRESS | Desktop volume wheel + Queue Undo + Save Queue code committed; browser/CI verification pending |
-| 2 Library & Playlists | NOT STARTED | Authorized saved ordering |
+| 2 Library & Playlists | IN PROGRESS | Quick search + playlist sort/view committed; QA and remaining actions pending |
 | 3 Search | NOT STARTED | Search-to-play measurement |
 | 4 Mobile & Accessibility | NOT STARTED | Cross-device QA |
 | 5 Personalized Home | NOT STARTED | Privacy / cold start |
@@ -134,3 +134,11 @@
 - Errors are surfaced; a partially created playlist is linked for inspection rather than silently claiming success or retrying duplicate writes. No bulk atomic playlist API exists yet; API-level transactional saves remain a future improvement.
 - Added action to full-player queue toolbar with responsive wrapping. Adjusted full-player Escape/Tab handler to yield to nested portaled dialog.
 - Pending validation: build/typecheck/unit and end-to-end tests including keyboard focus, network failures, RTL and private playlist permissions. No production merge.
+
+### Phase 2 start — Library browsing improvements (2026-11-20)
+- Audited existing Library server page, liked-track ordering, owned/followed playlist shelves and playlist-track reorder API. Existing drag/drop and browser-local manual ordering were retained rather than rebuilt.
+- Added in-library playlist search by title, owner and description; My order/Name/Newest sorts; Grid/List view toggle with device-local preference saved independently for owned/followed shelves.
+- Search and non-manual sort explicitly disable drag reordering to prevent moving hidden items or corrupting manual-order state.
+- Added instant liked-track search by title or artist across recent/title/popular/custom views, including an empty-results state and matching queue playback order.
+- This phase is **partially implemented**, not released: pinning, multi-select/bulk actions, server-persisted shelf order, and detailed playlist management remain pending. Existing shelf preferences are stored on the current device only.
+- Latest Vercel preview for these commits is BUILDING; no browser, lint, typecheck or unit-suite confirmation yet. No merge or production release.
