@@ -388,6 +388,22 @@ try {
         assert.ok(overflow <= 2, `history layout horizontal overflow: ${overflow}px`);
       });
 
+      await test(`${label} podcast For You discovery and responsive layout`, async () => {
+        const response = await page.goto(`${base}/${locale}/podcasts/for-you`, {
+          waitUntil: 'domcontentloaded',
+        });
+        assert.equal(response?.status(), 200);
+        await page.getByRole('heading', { level: 1 }).waitFor({ state: 'visible' });
+        const recommended = page.getByRole('region', {
+          name: locale === 'ar' ? 'برامج مقترحة' : 'Recommended shows',
+        });
+        await recommended.waitFor({ state: 'visible' });
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        assert.ok(overflow <= 2, `discovery page horizontal overflow: ${overflow}px`);
+      });
+
       await test(`${label} following shows page and anonymous follow privacy`, async () => {
         const response = await page.goto(`${base}/${locale}/podcasts/following`, {
           waitUntil: 'domcontentloaded',
