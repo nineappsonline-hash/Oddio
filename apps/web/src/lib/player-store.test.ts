@@ -56,7 +56,7 @@ describe('reversible queue edits', () => {
     usePlayer.getState().addToQueue(b);
     expect(usePlayer.getState().queueUndo).toBeNull();
 
-    usePlayer.getState().removeFromQueue('b');
+    usePlayer.getState().clearQueue();
     usePlayer.getState().addToQueue(b);
     usePlayer.getState().next();
     usePlayer.getState().undoQueue();
