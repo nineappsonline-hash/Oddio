@@ -412,6 +412,25 @@ try {
         assert.ok(overflow <= 2, `discovery page horizontal overflow: ${overflow}px`);
       });
 
+      await test(`${label} podcast notifications page and guest API privacy`, async () => {
+        const response = await page.goto(`${base}/${locale}/podcasts/notifications`, {
+          waitUntil: 'domcontentloaded',
+        });
+        assert.equal(response?.status(), 200);
+        await page.getByRole('heading', { level: 1 }).waitFor({ state: 'visible' });
+        const inbox = await page.request.get(`${base}/api/podcasts/notifications`);
+        assert.equal(inbox.status(), 401, 'notification inbox must require login');
+        const change = await page.request.patch(`${base}/api/podcasts/notifications`, {
+          headers: { origin: base },
+          data: { action: 'read_all' },
+        });
+        assert.equal(change.status(), 401, 'guests cannot change notification state');
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        assert.ok(overflow <= 2, `notification page horizontal overflow: ${overflow}px`);
+      });
+
       await test(`${label} following shows page and anonymous follow privacy`, async () => {
         const response = await page.goto(`${base}/${locale}/podcasts/following`, {
           waitUntil: 'domcontentloaded',
