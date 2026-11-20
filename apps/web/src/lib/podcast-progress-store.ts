@@ -176,3 +176,45 @@ export function clearPodcastProgress(viewerId: string | null, episodeId: string)
     /* Storage is optional. */
   }
 }
+
+/** Mark an episode as listened or unplayed without deleting its sync tombstone.
+ * A zero-position unplayed record is intentionally excluded from the history.
+ * The last-write-wins cloud merge can therefore propagate both actions.
+ */
+export function setPodcastEpisodePlayed(
+  viewerId: string | null,
+  episodeId: string,
+  durationSeconds: number,
+  played: boolean,
+): boolean {
+  const storage = storageFor(viewerId);
+  if (!storage || !episodeId || !Number.isFinite(durationSeconds) ||
+      durationSeconds <= 0 || durationSeconds > MAX_SECONDS) return false;
+  const existing = readPodcastSyncRecords(viewerId);
+  const old = existing.find((entry) => entry.episodeId === episodeId);
+  // Use a strictly newer timestamp so a same-device action always wins
+  // over its preceding saved playback position.
+  const updatedAt = Math.max(Date.now(), (old?.updatedAt ?? 0) + 1);
+  const next: SavedPodcastProgress = {
+    episodeId,
+    seconds: played ? durationSeconds : 0,
+    duration: durationSeconds,
+    completed: played,
+    updatedAt,
+  };
+  try {
+    storage.setItem(keyFor(viewerId), JSON.stringify([
+      next,
+      ...existing.filter((entry) => entry.episodeId !== episodeId),
+    ].slice(0, LIMIT)));
+    window.dispatchEvent(new Event(PODCAST_PROGRESS_EVENT));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Hide untouched records; display unfinished and fully listened episodes. */
+export function isVisiblePodcastHistoryEntry(entry: SavedPodcastProgress): boolean {
+  return Boolean(entry.completed || entry.seconds >= 15);
+}
