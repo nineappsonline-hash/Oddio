@@ -30,7 +30,8 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin feat/first-signup-genre-modal
             git reset --hard origin/feat/first-signup-genre-modal
-            npx prettier --write               apps/web/src/components/onboarding/FavoriteGenresSelector.tsx               apps/web/src/components/music/DiscoveryMixShelf.tsx               apps/web/src/components/layout/AppShell.tsx               apps/web/src/app/'[locale]'/settings/page.tsx               apps/web/src/app/api/onboarding/favorite-genres/route.ts
+            npx prettier --write               apps/web/src/components/onboarding/FavoriteGenresSelector.tsx               apps/web/src/components/music/DiscoveryMixShelf.tsx               apps/web/src/components/layout/AppShell.tsx               apps/web/src/app/'[locale]'/settings/page.tsx               apps/web/src/app/api/onboarding/favorite-genres/route.ts \
+              scripts/browser-release.mjs
             if git diff --quiet; then exit 0; fi
             git add --update
             git commit -m 'style(onboarding): format welcome dialog and preference API'
