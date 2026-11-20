@@ -94,6 +94,8 @@ describe('prompt-generated playlists', () => {
     const db = dbFixture();
     expect(promptDiscoveryTracks(db, viewer, 'calm Arabic pop').tracks.map((track) => track.id))
       .toEqual(['arabic']);
+    expect(promptDiscoveryTracks(db, viewer, 'موسيقى عربي بوب هادية').tracks.map((track) => track.id))
+      .toEqual(['arabic']);
     expect(promptDiscoveryTracks(db, viewer, 'Arabic energetic rock').tracks).toEqual([]);
     expect(promptDiscoveryTracks(db, viewer, 'English energetic rock').tracks.map((track) => track.id))
       .toEqual(['english']);
