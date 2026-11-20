@@ -270,3 +270,10 @@
 - Changed Song/Artist Radio selection to exhaust related matches (same artist/genre/mood affinity) before introducing unrelated fallbacks to fill a small catalog, preserving artist variety within each matching group and the song's seed-first behavior, while continuing to respect hidden tracks/genres and accessibility policies.
 - Added Vitest cases for artist identity, old seed compatibility, invalid/unplayable seeds, and Song Radio relevance priority. Tests are committed but not executed; newest Vercel builds still pending. No production merge.
 - Remaining Phase 6: interactive control for more familiar vs broader exploration, assess tiny catalogs and regeneration semantics, verified API/live playback E2E, and UX QA in AR/EN.
+
+### Phase 6 continuation — radio discovery-range controls (2026-11-20)
+- Verified previous cumulative Song/Artist radio preview `f0e7d1fe` is Vercel **READY** (successful build, not hands-on browser acceptance).
+- Added explicit **Stay close / Balanced / Explore more** selector to Song Radio and Artist Radio launch controls (Arabic/English, native accessible select with ≥44px touch target). Request passes a whitelisted `radioMode` query parameter; unrecognized values default to Balanced.
+- Radio algorithm: **familiar** only includes same-artist/genre/mood matches (no unrelated filler), **balanced** retains prior matching-first behavior, **explore** introduces some metadata-unrelated songs earlier for variety while preserving song seed first, and still uses authorized playable catalog with blocked tracks and genres enforced. Genre/Mood radio remain strictly constrained to their selected category and ignore the new setting.
+- Added Vitest regression tests for three modes and genre hard-boundary behavior. **Test execution and browser/device QA still pending**; recent preview builds were BUILDING/INITIALIZING at the latest status check. Production unchanged.
+- Follow-up priorities: run CI/unit suite, visually test small-screen/RTL and studio mixes, ensure stable stream authorization, measure discovery acceptance before Phase 7.
