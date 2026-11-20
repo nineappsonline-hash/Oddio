@@ -30,6 +30,8 @@ export function SmartPlaylists({
   const [loaded, setLoaded] = useState(false);
   const [syncState, setSyncState] = useState<'loading' | 'synced' | 'local'>('loading');
   const modifiedDuringLoad = useRef(false);
+  const syncSequence = useRef<Promise<unknown>>(Promise.resolve());
+  const revision = useRef(0);
   const [form, setForm] = useState(blank);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
@@ -64,11 +66,20 @@ export function SmartPlaylists({
           setSyncState('local');
           return;
         }
-        if (!remote.hasSavedState && local.length) {
+        let pendingLocalSave = false;
+        try {
+          pendingLocalSave = window.localStorage.getItem(smartPlaylistStorageKey(userId) + ':pending') === '1';
+        } catch { /* Sync can still work without storage. */ }
+        if ((pendingLocalSave || !remote.hasSavedState) && local.length) {
           const result = await apiRequest<{ saved: boolean }>('/api/library/smart-playlists', {
             method: 'PUT', body: JSON.stringify({ rules: local }),
           });
-          if (!cancelled) setSyncState(result.saved ? 'synced' : 'local');
+          if (!cancelled) {
+            if (result.saved) {
+              try { window.localStorage.removeItem(smartPlaylistStorageKey(userId) + ':pending'); } catch {}
+            }
+            setSyncState(result.saved ? 'synced' : 'local');
+          }
           return;
         }
         const saved = validateSmartPlaylistRules(remote.rules, validGenres, validMoods);
@@ -95,20 +106,32 @@ export function SmartPlaylists({
     } catch {
       // Still attempt to persist to the signed-in account.
     }
+    try { window.localStorage.setItem(smartPlaylistStorageKey(userId) + ':pending', '1'); } catch {}
+    const thisRevision = ++revision.current;
     setSyncState('loading');
     setMessage(ar ? 'جاري حفظ التغييرات…' : 'Saving changes…');
-    void apiRequest<{ saved: boolean }>('/api/library/smart-playlists', {
-      method: 'PUT', body: JSON.stringify({ rules: clean }),
-    }).then((result) => {
-      setSyncState(result.saved ? 'synced' : 'local');
-      setMessage(result.saved
-        ? (ar ? 'اتحفظت على حسابك.' : 'Saved to your account.')
-        : (ar ? 'اتحفظت على الجهاز فقط.' : 'Saved on this device only.'));
-    }).catch(() => {
-      setSyncState('local');
-      setMessage(ar
-        ? 'المزامنة غير متاحة حاليًا. القواعد محفوظة محليًا لو التخزين متاح.'
-        : 'Account sync is unavailable. Rules remain locally saved if storage is enabled.');
+    // Writes are serialized so a slower earlier request cannot undo a
+    // newer save or resurrect a deleted playlist on the account.
+    syncSequence.current = syncSequence.current.catch(() => undefined).then(async () => {
+      try {
+        const result = await apiRequest<{ saved: boolean }>('/api/library/smart-playlists', {
+          method: 'PUT', body: JSON.stringify({ rules: clean }),
+        });
+        if (thisRevision !== revision.current) return;
+        if (result.saved) {
+          try { window.localStorage.removeItem(smartPlaylistStorageKey(userId) + ':pending'); } catch {}
+        }
+        setSyncState(result.saved ? 'synced' : 'local');
+        setMessage(result.saved
+          ? (ar ? 'اتحفظت على حسابك.' : 'Saved to your account.')
+          : (ar ? 'اتحفظت على الجهاز فقط.' : 'Saved on this device only.'));
+      } catch {
+        if (thisRevision !== revision.current) return;
+        setSyncState('local');
+        setMessage(ar
+          ? 'المزامنة غير متاحة. التغييرات المحلية هتتجرّب تاني لما تفتح المكتبة.'
+          : 'Sync unavailable. Local changes will retry when you revisit the library.');
+      }
     });
     return true;
   };
