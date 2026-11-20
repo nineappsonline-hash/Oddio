@@ -159,6 +159,29 @@ describe('Oddio discovery stations', () => {
     expect(result.tracks).toHaveLength(0);
   });
 
+  it('prioritizes unheard songs in weekly mixes while still filling a small catalog', () => {
+    const db = fixture();
+    db.history = [
+      { userId: 'listener-1', trackId: 'a', playedAt: '2026-11-12T00:00:00.000Z' },
+      { userId: 'listener-1', trackId: 'b', playedAt: '2026-11-12T00:00:00.000Z' },
+      { userId: 'listener-1', trackId: 'd', playedAt: '2026-11-12T00:00:00.000Z' },
+    ];
+    const viewer = { userId: 'listener-1', roles: [] };
+    const result = buildDiscoveryMix(db, viewer, { kind: 'weekly', now: date, limit: 5 });
+    const ids = result.tracks.map((track) => track.id);
+    expect(ids.slice(0, 2).sort()).toEqual(['c', 'e']);
+    expect(ids).toHaveLength(5);
+    expect(new Set(ids).size).toBe(5);
+  });
+
+  it('keeps anonymous weekly discovery independent of another listener history', () => {
+    const db = fixture();
+    const before = buildDiscoveryMix(db, guest, { kind: 'weekly', now: date });
+    db.history = [{ userId: 'listener-1', trackId: 'a', playedAt: '2026-11-12T00:00:00.000Z' }];
+    const after = buildDiscoveryMix(db, guest, { kind: 'weekly', now: date });
+    expect(after.tracks.map((track) => track.id)).toEqual(before.tracks.map((track) => track.id));
+  });
+
   it('does not return unreleased or rejected songs', () => {
     const db = fixture();
     db.tracks.find((track) => track.id === 'b')!.reviewStatus = 'rejected';
