@@ -380,19 +380,25 @@ try {
         await test('demo listener login and library navigation', async () => {
           // Do not submit an SSR form until React has attached its handlers.
           // Slow WebKit hydration can otherwise swallow a user click.
-          await page.locator('form[data-login-hydrated="true"]').waitFor({
+          await page.goto(`${base}/en/login?next=%2Fen%2Flibrary`, {
+            waitUntil: 'domcontentloaded',
+          });
+          const loginForm = page.locator('form[data-login-hydrated="true"]');
+          await loginForm.waitFor({
             state: 'visible',
             timeout: 20_000,
           });
-          await page.locator('#login-email').fill('listener@demo.local');
-          await page.locator('#login-password').fill('demo1234');
+          await loginForm.locator('#login-email').fill('listener@demo.local');
+          await loginForm.locator('#login-password').fill('demo1234');
           const loginResponse = page.waitForResponse(
             (response) =>
-              response.url().endsWith('/api/auth/login') &&
+              new URL(response.url()).pathname === '/api/auth/login' &&
               response.request().method() === 'POST',
-            { timeout: 15_000 },
+            { timeout: 25_000 },
           );
-          await page.locator('form button[type="submit"]').first().click();
+          // Scope submit to the login form; the global first submit button
+          // can belong to the persistent header search form.
+          await loginForm.locator('button[type="submit"]').click();
           const loginResult = await loginResponse;
           assert.equal(loginResult.status(), 200, 'Demo credentials must authorize');
           const storedSession = (await context.cookies()).find(
