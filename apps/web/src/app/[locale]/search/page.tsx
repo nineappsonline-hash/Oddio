@@ -16,6 +16,7 @@ import { TrackRow } from '@/components/music/TrackRow';
 import { ArtistCard } from '@/components/music/ArtistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { formatDate } from '@/lib/utils';
+import { SearchExperience } from '@/components/search/SearchExperience';
 
 export async function generateMetadata({
   params,
@@ -94,26 +95,13 @@ export default async function SearchPage({
           <ArrowUpRight size={16} />
         </Link>
       </header>
-      <form
-        method="get"
-        action={`/${locale}/search`}
-        className="oddio-search-form mb-8 flex gap-2"
-      >
-        <input
-          type="search"
-          name="q"
-          defaultValue={q}
-          placeholder={t('search.placeholder')}
-          aria-label={t('search.title')}
-          className="input oddio-search-input h-12 flex-1 text-base"
-        />
-        <button
-          type="submit"
-          className="oddio-search-submit h-12 rounded-lg bg-primary px-6 text-sm font-semibold text-[#211518] hover:bg-primary-strong"
-        >
-          {t('common.search')}
-        </button>
-      </form>
+      <SearchExperience
+        locale={locale}
+        initialQuery={q}
+        userId={viewer.userId}
+        placeholder={t('search.placeholder')}
+        searchLabel={t('search.title')}
+      />
 
       <form
         method="get"
@@ -180,6 +168,22 @@ export default async function SearchPage({
           {locale === 'ar' ? 'تطبيق الفلاتر' : 'Apply filters'}
         </button>
       </form>
+
+      {hasSearch ? (
+        <div className="mb-6 flex flex-wrap items-center gap-2 text-xs text-muted">
+          <span className="font-semibold">{locale === 'ar' ? 'الفلاتر الحالية:' : 'Active filters:'}</span>
+          {query.q ? <span className="rounded-full border border-white/15 px-3 py-1.5">{query.q}</span> : null}
+          {query.genre ? <span className="rounded-full border border-white/15 px-3 py-1.5">{locale === 'ar' ? 'النوع:' : 'Genre:'} {query.genre}</span> : null}
+          {query.mood ? <span className="rounded-full border border-white/15 px-3 py-1.5">{locale === 'ar' ? 'المود:' : 'Mood:'} {query.mood}</span> : null}
+          {query.language ? <span className="rounded-full border border-white/15 px-3 py-1.5">{locale === 'ar' ? 'اللغة:' : 'Language:'} {query.language}</span> : null}
+          <Link
+            href={`/${locale}/search`}
+            className="inline-flex min-h-10 items-center rounded-full border border-primary/40 px-3 font-semibold text-primary hover:bg-primary/10"
+          >
+            {locale === 'ar' ? 'مسح كل الفلاتر' : 'Clear all'}
+          </Link>
+        </div>
+      ) : null}
 
       {!results ? (
         <EmptyState title={t('search.hint')} />
