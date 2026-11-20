@@ -1,4 +1,5 @@
 -- Run in disposable CI database only. RLS and one-time account completion.
+-- Production onboarding migration was validated with a non-destructive existing-account backfill.
 begin;
 
 do $$
