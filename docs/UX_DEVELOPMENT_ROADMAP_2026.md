@@ -206,3 +206,5 @@
 - Began Phase 4 mobile & accessibility work: the mobile drawer now focuses its first control when opened, cycles keyboard Tab/Shift+Tab inside the drawer, closes on Escape, restores prior keyboard focus on close, and prevents background scrolling while open. Drawer placement uses CSS logical `start-0` and `border-e` to support RTL. This requires actual mobile and keyboard browser QA.
 - The main-content skip link now has meaningful Arabic/English action text instead of a marketing tagline.
 - No merge, production rollout, or verified end-to-end tests. New commits remain on `feature/ux-roadmap-2026`.
+
+- Accessibility follow-up: `main#main` now has `tabIndex={-1}` so the skip link can reliably focus the main landmark for keyboard and assistive technology users. Preview build verification remains required.
