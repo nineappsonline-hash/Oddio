@@ -116,6 +116,7 @@ export async function GET(
     'Content-Type': contentTypeFor(track.audio.format),
     'Accept-Ranges': 'bytes',
     'Cache-Control': 'private, max-age=0, no-store',
+    'Referrer-Policy': 'no-referrer',
     'X-Content-Type-Options': 'nosniff',
   };
 
@@ -127,7 +128,11 @@ export async function GET(
     if (!match || (!match[1] && !match[2])) {
       return new NextResponse('Invalid range', {
         status: 416,
-        headers: { 'Content-Range': `bytes */${stat.size}` },
+        headers: {
+          'Content-Range': `bytes */${stat.size}`,
+          'Cache-Control': 'private, no-store',
+          'Referrer-Policy': 'no-referrer',
+        },
       });
     }
     const start = match[1]
@@ -146,7 +151,11 @@ export async function GET(
     ) {
       return new NextResponse('Range not satisfiable', {
         status: 416,
-        headers: { 'Content-Range': `bytes */${stat.size}` },
+        headers: {
+          'Content-Range': `bytes */${stat.size}`,
+          'Cache-Control': 'private, no-store',
+          'Referrer-Policy': 'no-referrer',
+        },
       });
     }
     const length = end - start + 1;
