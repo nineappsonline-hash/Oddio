@@ -154,6 +154,7 @@ export function MobileNav() {
       }
       const first = items[0];
       const last = items[items.length - 1];
+      if (!first || !last) return;
       const active = document.activeElement;
       if (event.shiftKey && (active === first || !dialog?.contains(active))) {
         event.preventDefault();
