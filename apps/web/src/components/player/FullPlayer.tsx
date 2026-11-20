@@ -25,6 +25,7 @@ import { Artwork } from '@/components/ui/Artwork';
 import { DragReorderList } from '@/components/ui/DragReorderList';
 import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
 import { PlayerVolumeControl } from '@/components/player/PlayerVolumeControl';
+import { SaveQueueAsPlaylist } from '@/components/player/SaveQueueAsPlaylist';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Badge } from '@/components/ui/Badge';
 import { LikeButton } from '@/components/community/LikeButton';
@@ -1030,6 +1031,7 @@ export function FullPlayer() {
                     </span>
                   </h2>
                   <div className="flex items-center gap-1">
+                    {queue.length > 0 ? <SaveQueueAsPlaylist /> : null}
                     {canUndoQueue ? (
                       <button
                         type="button"
