@@ -44,6 +44,15 @@ describe('Cloudflare R2 streaming architecture guard', () => {
     expect(streamRoute).not.toContain('await fetch(presignR2Get(');
   });
 
+  it('refuses to cache any demo audio Range reply, including invalid ranges', () => {
+    expect(streamRoute).toContain("'Cache-Control': 'private, max-age=0, no-store'");
+    expect(streamRoute).toContain("'Referrer-Policy': 'no-referrer'");
+    const invalidRanges = streamRoute.match(/status: 416/g) ?? [];
+    expect(invalidRanges).toHaveLength(2);
+    const cacheGuards = streamRoute.match(/'Cache-Control': 'private, no-store'/g) ?? [];
+    expect(cacheGuards.length).toBeGreaterThanOrEqual(2);
+  });
+
   it('signs delete requests with the same canonical newline and AWS timestamp format', () => {
     const body = signing.slice(signing.indexOf('export function presignR2Delete('));
     expect(body).toContain(String.raw`/^[a-zA-Z0-9/_-]+\.[a-zA-Z0-9]+$/`);
