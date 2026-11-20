@@ -18,6 +18,9 @@ describe('followed-artist home releases', () => {
 
   it('uses follow relationships, sorted newest, and never returns private music', () => {
     const db = createSeedDb();
+    // Seed listener already follows multiple artists. Isolate the explicit
+    // follow tested here rather than expecting all their follows to be Nova.
+    db.artistFollows = db.artistFollows.filter((follow) => follow.userId !== listener.userId);
     db.artistFollows.push({
       userId: listener.userId!,
       artistId: seedIds.artists.nova,
