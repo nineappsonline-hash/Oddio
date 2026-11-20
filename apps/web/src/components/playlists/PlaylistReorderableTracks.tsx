@@ -8,6 +8,7 @@ import { TrackRow } from '@/components/music/TrackRow';
 import { DragReorderList } from '@/components/ui/DragReorderList';
 import { apiRequest } from '@/lib/client-api';
 import { moveItem } from '@/lib/reorder-items';
+import { runSequentialPlaylistMutations } from '@/lib/sequential-playlist-mutations';
 
 export function PlaylistReorderableTracks({
   playlistId,
@@ -21,6 +22,7 @@ export function PlaylistReorderableTracks({
   const [tracks, setTracks] = useState(initialTracks);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [removeProgress, setRemoveProgress] = useState<{ completed: number; total: number } | null>(null);
   const [needsRefresh, setNeedsRefresh] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
@@ -41,31 +43,38 @@ export function PlaylistReorderableTracks({
     if (saving || needsRefresh || selectedTracks.length === 0) return;
     const targets = [...selectedTracks];
     setSaving(true);
+    setRemoveProgress(null);
     setMessage(ar ? 'جاري حذف الأغاني المختارة…' : 'Removing selected tracks…');
-    let removed = 0;
+    setRemoveProgress({ completed: 0, total: targets.length });
     try {
-      // Existing endpoint checks the user's edit permissions on every request.
-      // Sequential removal avoids racing individual position updates.
-      for (const track of targets) {
-        await apiRequest(
-          `/api/playlists/${encodeURIComponent(playlistId)}/tracks/${encodeURIComponent(track.id)}`,
-          { method: 'DELETE' },
-        );
-        removed += 1;
+      const result = await runSequentialPlaylistMutations(
+        targets,
+        (track) =>
+          apiRequest(
+            `/api/playlists/${encodeURIComponent(playlistId)}/tracks/${encodeURIComponent(track.id)}`,
+            { method: 'DELETE' },
+          ),
+        (completed, total) => setRemoveProgress({ completed, total }),
+      );
+      setConfirmingRemove(false);
+      if (result.failed) {
+        // The failed request itself may have reached the server. Do not retry
+        // automatically and do not claim an exact authoritative count.
+        setNeedsRefresh(true);
+        setMessage(ar
+          ? `اتأكدنا من حذف ${result.completed} من ${result.total}. ممكن الطلب الأخير يكون وصل للسيرفر. حدّث القائمة قبل أي تعديل تاني.`
+          : `Confirmed ${result.completed} of ${result.total} removals. The last request may have reached the server. Reload before editing again.`);
+        return;
       }
       const removedIds = new Set(targets.map((track) => track.id));
       setTracks((current) => current.filter((track) => !removedIds.has(track.id)));
       setSelected([]);
-      setConfirmingRemove(false);
-      setMessage(ar ? `اتحذفت ${removed} أغنية من القائمة.` : `Removed ${removed} tracks from playlist.`);
+      setMessage(ar ? `اتحذفت ${result.completed} أغنية من القائمة.` : `Removed ${result.completed} tracks from playlist.`);
       router.refresh();
     } catch {
       setConfirmingRemove(false);
       setNeedsRefresh(true);
-      setMessage(ar
-        ? `اتحذفت ${removed} من ${targets.length} أغنية. حدّث القائمة علشان تعرض الحالة الصحيحة قبل أي تعديل تاني.`
-        : `Removed ${removed} of ${targets.length} tracks. Reload to verify the playlist before editing further.`);
-      // Never blindly retry a partially successful multi-request mutation.
+      setMessage(ar ? 'حصل خطأ. حدّث القائمة قبل أي تعديل تاني.' : 'An error occurred. Reload before making further edits.');
     } finally {
       setSaving(false);
     }
@@ -161,6 +170,13 @@ export function PlaylistReorderableTracks({
             </button>
           </div>
         </div>
+      ) : null}
+      {saving && removeProgress ? (
+        <p role="status" aria-live="polite" className="text-xs text-muted">
+          {ar
+            ? `تم تأكيد ${removeProgress.completed} من ${removeProgress.total} عملية حذف…`
+            : `Confirmed ${removeProgress.completed} of ${removeProgress.total} removals…`}
+        </p>
       ) : null}
       <div className="flex min-h-8 flex-wrap items-center gap-3">
         <p role="status" aria-live="polite" className="text-xs text-muted">
