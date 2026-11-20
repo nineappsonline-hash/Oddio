@@ -93,7 +93,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
         <div
           role="status"
           aria-live="polite"
-          className="absolute bottom-full mb-3 left-1/2 z-[90] -translate-x-1/2 whitespace-nowrap rounded-full border border-primary/40 bg-[#242027] px-4 py-2 text-sm font-bold text-white shadow-xl"
+          className="absolute bottom-full left-1/2 z-[90] mb-3 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-full border border-primary/40 bg-[#242027] px-4 py-2 text-center text-sm font-bold text-white shadow-xl"
         >
           {controlNotice}
         </div>
@@ -123,7 +123,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           </button>
         </div>
       ) : null}
-      <div className="relative flex min-h-[60px] min-w-0 items-center gap-3 lg:hidden">
+      <div className="relative flex min-h-[56px] min-w-0 items-center gap-2 sm:gap-3 lg:hidden">
         {/* The whole mobile mini-player opens Full Player, including the gaps
             around its artwork and metadata. Dedicated transport controls stay
             above this background button and keep their own actions. */}
@@ -136,7 +136,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="relative z-10 shrink-0"
+          className="relative z-10 min-h-11 min-w-11 shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           aria-label={t('player.expand')}
         >
           <Artwork
@@ -150,7 +150,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="relative z-10 flex min-w-0 flex-1 flex-col gap-0.5 text-start focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="relative z-10 flex min-h-11 min-w-0 flex-1 flex-col justify-center gap-0.5 text-start focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           aria-label={`${t('player.expand')}: ${track.title}`}
         >
           <AutoScrollTitle
@@ -184,7 +184,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-muted transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-muted transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:flex"
           aria-label={t('player.expand')}
           title={t('player.expand')}
         >
