@@ -179,3 +179,9 @@
 - Added visible active-search filter chips and Clear All shortcut. Existing advanced filters remain available.
 - Added pure helper and Vitest tests for history deduplication, size limits, blank terms and corrupted storage. No online search or personalized external data sharing introduced.
 - **QA pending:** new commits' Vercel preview BUILDING at last check; run the new Vitest suite, keyboard/mobile/RTL flows, session switching, browser storage disabled and advanced-filter interactions before production merge.
+
+### Phase 3 continuation — live search suggestions
+- Added `GET /api/search/suggestions?q=...` with a **small** projection (up to 5 tracks and 3 artists) built from the existing `searchCatalog` visibility/release-aware query and the listener's content-language preference. Invalid or short terms fail safely; no raw database objects are returned.
+- Added a 260ms debounced, abortable suggestion request while the search input is focused and has at least two characters. Displays tracks and artists as direct links; supports normal Enter search and a link to all results. Loading/error/empty states are localized; errors do not block ordinary search.
+- Existing recent-search history, keyboard shortcuts and explicit-submit semantics remain. New requests use the current user session's permission-aware catalog.
+- **Verification:** earlier Phase 3 preview `2d3cac46` is Vercel READY; latest autocomplete commits are still BUILDING at last check. Browser keyboard/RTL/mobile testing and tests for this endpoint remain open. Do not merge to production without successful preview and QA.
