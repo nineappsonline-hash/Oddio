@@ -45,16 +45,14 @@ export async function PATCH(request: Request) {
     const db = serviceClient();
 
     if (body.action === 'preferences') {
-      const { error } = await db
-        .from('podcast_notification_preferences')
-        .upsert(
-          {
-            user_id: user.id,
-            in_app_enabled: body.enabled,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'user_id' },
-        );
+      const { error } = await db.from('podcast_notification_preferences').upsert(
+        {
+          user_id: user.id,
+          in_app_enabled: body.enabled,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' },
+      );
       if (error) throw error;
       return jsonOk(await podcastInbox(user.id));
     }
@@ -67,16 +65,14 @@ export async function PATCH(request: Request) {
         throw Errors.notFound('Podcast notification not found');
       }
       const { error } = body.read
-        ? await db
-            .from('podcast_notification_reads')
-            .upsert(
-              {
-                user_id: user.id,
-                episode_id: body.episodeId,
-                read_at: new Date().toISOString(),
-              },
-              { onConflict: 'user_id,episode_id' },
-            )
+        ? await db.from('podcast_notification_reads').upsert(
+            {
+              user_id: user.id,
+              episode_id: body.episodeId,
+              read_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id,episode_id' },
+          )
         : await db
             .from('podcast_notification_reads')
             .delete()

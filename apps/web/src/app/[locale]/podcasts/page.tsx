@@ -136,7 +136,11 @@ export default async function PodcastsHome({
               {podcastUnreadCount > 0 ? (
                 <span
                   className="rounded-full bg-[#d4b0f4] px-2 py-0.5 text-xs font-bold text-[#211527]"
-                  aria-label={ar ? `${podcastUnreadCount} إشعارات غير مقروءة` : `${podcastUnreadCount} unread alerts`}
+                  aria-label={
+                    ar
+                      ? `${podcastUnreadCount} إشعارات غير مقروءة`
+                      : `${podcastUnreadCount} unread alerts`
+                  }
                 >
                   {podcastUnreadCount > 99 ? '99+' : podcastUnreadCount}
                 </span>
