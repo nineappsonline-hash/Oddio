@@ -293,3 +293,10 @@
 - Added clear AR/EN explanation that per-track AI production metadata does not prove whether the artist identity is a real person or an AI/virtual persona. This avoids presenting generated bios as verified real-world facts.
 - Fixed artist-page AlbumCard routing to include the current locale when provided; existing callers without locale retain prior routing behavior.
 - Updated Phase 7 preview builds still pending at time of check; browser E2E, RTL, data access controls, and full test suite not yet executed. No production merge.
+
+### Phase 7 build closure and Phase 8 Smart Playlists start — 2026-11-20
+- Verified cumulative Phase 7 artist discography + locale fixes commit `93df4b2d` reached Vercel **READY**; some earlier intermediate builds were transiently ERROR. Browser E2E and unit-suite acceptance remain pending, so the phase is not production approved.
+- Audited existing listening insights: signed-in Library already links to private monthly recap and annual Rewind / Music DNA; avoided duplicating them. Existing playlists are manual snapshots, not rule-driven lists.
+- Added Phase 8 **device-local Smart Playlists** in authenticated Library with opt-in genre, mood and liked-only filters, combinations of rules, up to 12 named playlists and 80 live results per list, playable preview, and explicit deletion confirmation. Results are evaluated against at most 1,500 currently publicly listable/ready catalog songs so no private/owner-only tracks get exposed. Saved rules are validated and names/IDs bounded, scoped by user ID to browser localStorage. No server-side or cross-device persistence and no public playlist sharing are claimed.
+- Added Vitest rules tests for invalid/duplicate IDs, unknown genre/mood, per-user key isolation and exclusion of private tracks; execution and browser QA pending. Existing recap / rewind features still require privacy audits and correct opt-out linkage before Phase 8 is considered complete.
+- Latest preview builds for Smart Playlists are BUILDING; production has not been merged.
