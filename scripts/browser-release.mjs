@@ -617,10 +617,24 @@ try {
           assert.equal(await page.locator('html').getAttribute('dir'), 'rtl');
           await page.getByRole('heading', { level: 1 }).waitFor();
           await page.setViewportSize({ width: 390, height: 844 });
-          const overflow = await page.evaluate(
-            () => document.documentElement.scrollWidth - window.innerWidth,
-          );
-          assert.ok(overflow <= 2, `Arabic Rewind overflow: ${overflow}px`);
+          const layout = await page.evaluate(() => ({
+            overflow: document.documentElement.scrollWidth - window.innerWidth,
+            offenders: Array.from(document.querySelectorAll('body *'))
+              .filter((element) => {
+                const rect = element.getBoundingClientRect();
+                return rect.width > 1 && (rect.right > innerWidth + 2 || rect.left < -2) &&
+                  getComputedStyle(element).position !== 'fixed';
+              })
+              .slice(0, 8)
+              .map((element) => ({
+                tag: element.tagName,
+                className: typeof element.className === 'string' ? element.className.slice(0, 100) : '',
+                width: Math.round(element.getBoundingClientRect().width),
+                left: Math.round(element.getBoundingClientRect().left),
+              })),
+          }));
+          assert.ok(layout.overflow <= 2,
+            `Arabic Rewind overflow: ${layout.overflow}px; offenders: ${JSON.stringify(layout.offenders)}`);
           await page.setViewportSize({ width: 1366, height: 900 });
           assert.equal(pageErrors.length, 0, pageErrors.join('; '));
         });
@@ -644,16 +658,23 @@ try {
           );
           const handles = list.getByRole('button', { name: /Drag item/ });
           const first = await handles.nth(0).boundingBox();
-          const second = await handles.nth(1).boundingBox();
-          assert.ok(first && second, 'drag handles must have visible bounds');
+          const second = await rows.nth(1).boundingBox();
+          assert.ok(first && second, 'drag handles and rows must have visible bounds');
+          // Aim for the body of the target row, not its narrow handle:
+          // browsers can shift a focused handle when a drag begins.
           await page.mouse.move(first.x + first.width / 2, first.y + first.height / 2);
           await page.mouse.down();
+          await page.mouse.move(first.x + first.width / 2, first.y + first.height / 2 + 10, { steps: 4 });
           await page.mouse.move(
-            second.x + second.width / 2,
+            second.x + Math.min(second.width - 8, 45),
             second.y + second.height / 2,
-            { steps: 10 },
+            { steps: 14 },
           );
           await page.mouse.up();
+          await page.waitForFunction((expected) => {
+            const firstRow = document.querySelector('ul[aria-label="Reorderable list"] [data-reorder-id]');
+            return firstRow?.getAttribute('data-reorder-id') === expected;
+          }, before[1], { timeout: 4000 });
           const after = await rows.evaluateAll((items) =>
             items.map((item) => item.getAttribute('data-reorder-id')),
           );
