@@ -55,7 +55,7 @@ export function MobileHeader({
           type="button"
           aria-label={locale === 'ar' ? 'افتح القائمة' : 'Open menu'}
           onClick={() => document.getElementById('oddio-mobile-menu-trigger')?.click()}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#4c395f] bg-[#1e1925] text-[#eeeaf5] transition hover:border-[#a88ae7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7]"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#4c395f] bg-[#1e1925] text-[#eeeaf5] transition hover:border-[#a88ae7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7]"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -97,14 +97,14 @@ export function MobileHeader({
               href={`/${locale}/settings`}
               aria-label={t('nav.settings')}
             >
-              <Avatar name={currentUser.displayName} className="h-8 w-8" />
+              <Avatar name={currentUser.displayName} className="h-9 w-9" />
             </Link>
           </>
         ) : (
           <Link
             prefetch={false}
             href={`/${locale}/login`}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#4c395f] bg-[#1e1925] text-[#ddd4e8] transition hover:border-[#a88ae7] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7] sm:w-auto sm:gap-2 sm:px-3"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#4c395f] bg-[#1e1925] text-[#ddd4e8] transition hover:border-[#a88ae7] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a88ae7] sm:w-auto sm:gap-2 sm:px-3"
           >
             <LogIn className="h-4 w-4" />
             <span className="hidden sm:inline">{t('nav.login')}</span>
@@ -234,7 +234,7 @@ export function MobileNav() {
               href={item.href}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'group/mnav relative flex min-w-0 flex-col items-center justify-center gap-1 px-1 py-2.5 text-[10px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
+                'group/mnav relative flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden px-1 py-2 text-center text-[10px] font-semibold leading-tight transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
                 active ? 'text-primary' : 'text-muted hover:text-ink',
               )}
             >
@@ -242,7 +242,7 @@ export function MobileNav() {
                 <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-primary" />
               ) : null}
               <OddioGlyph name={glyph} size={22} className="oddio-glyph shrink-0" />
-              {item.label}
+              <span className="w-full truncate px-0.5">{item.label}</span>
             </Link>
           );
         })}
@@ -253,12 +253,12 @@ export function MobileNav() {
           aria-label={locale === 'ar' ? 'القائمة' : 'Menu'}
           aria-expanded={menuOpen}
           className={cn(
-            'flex min-w-0 flex-col items-center justify-center gap-1 px-1 py-2.5 text-[10px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
+            'flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden px-1 py-2 text-[10px] font-semibold leading-tight transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
             menuOpen ? 'text-[#eab997]' : 'text-muted hover:text-ink',
           )}
         >
           <Menu className="h-5 w-5" />
-          {locale === 'ar' ? 'القائمة' : 'Menu'}
+          <span className="w-full truncate px-0.5">{locale === 'ar' ? 'القائمة' : 'Menu'}</span>
         </button>
       </nav>
       {menuOpen ? (
