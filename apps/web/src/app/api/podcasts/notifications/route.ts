@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import {
-  assertSameOrigin, jsonError, jsonOk, parseBody, rateLimit, requireUser,
+  assertSameOrigin,
+  jsonError,
+  jsonOk,
+  parseBody,
+  rateLimit,
+  requireUser,
 } from '@/lib/api-helpers';
 import { demoMode } from '@/lib/env';
 import { Errors } from '@/lib/errors';
@@ -10,7 +15,11 @@ import { podcastInbox } from '@/lib/podcasts/notification-inbox';
 export const runtime = 'nodejs';
 
 const actions = z.discriminatedUnion('action', [
-  z.object({ action: z.literal('read'), episodeId: z.string().uuid(), read: z.boolean() }),
+  z.object({
+    action: z.literal('read'),
+    episodeId: z.string().uuid(),
+    read: z.boolean(),
+  }),
   z.object({ action: z.literal('read_all') }),
   z.object({ action: z.literal('preferences'), enabled: z.boolean() }),
 ]);
@@ -31,14 +40,21 @@ export async function PATCH(request: Request) {
     const user = await requireUser();
     rateLimit(`podcast-notifications:write:${user.id}`, 30, 60_000);
     const body = await parseBody(request, actions);
-    if (demoMode) throw Errors.invalid('Podcast notifications are unavailable in demo mode.');
+    if (demoMode)
+      throw Errors.invalid('Podcast notifications are unavailable in demo mode.');
     const db = serviceClient();
 
     if (body.action === 'preferences') {
-      const { error } = await db.from('podcast_notification_preferences').upsert(
-        { user_id: user.id, in_app_enabled: body.enabled, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id' },
-      );
+      const { error } = await db
+        .from('podcast_notification_preferences')
+        .upsert(
+          {
+            user_id: user.id,
+            in_app_enabled: body.enabled,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id' },
+        );
       if (error) throw error;
       return jsonOk(await podcastInbox(user.id));
     }
@@ -51,11 +67,18 @@ export async function PATCH(request: Request) {
         throw Errors.notFound('Podcast notification not found');
       }
       const { error } = body.read
-        ? await db.from('podcast_notification_reads').upsert(
-            { user_id: user.id, episode_id: body.episodeId, read_at: new Date().toISOString() },
-            { onConflict: 'user_id,episode_id' },
-          )
-        : await db.from('podcast_notification_reads')
+        ? await db
+            .from('podcast_notification_reads')
+            .upsert(
+              {
+                user_id: user.id,
+                episode_id: body.episodeId,
+                read_at: new Date().toISOString(),
+              },
+              { onConflict: 'user_id,episode_id' },
+            )
+        : await db
+            .from('podcast_notification_reads')
             .delete()
             .eq('user_id', user.id)
             .eq('episode_id', body.episodeId);

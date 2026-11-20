@@ -21,9 +21,10 @@ export async function generateMetadata({
     path: '/podcasts/notifications',
     noindex: true,
     title: locale === 'ar' ? 'إشعارات البودكاست' : 'Podcast notifications',
-    description: locale === 'ar'
-      ? 'أحدث الحلقات من البرامج اللي بتتابعها، وتحكم في إشعارات البودكاست.'
-      : 'New episodes from followed shows, read states and notification settings.',
+    description:
+      locale === 'ar'
+        ? 'أحدث الحلقات من البرامج اللي بتتابعها، وتحكم في إشعارات البودكاست.'
+        : 'New episodes from followed shows, read states and notification settings.',
   });
 }
 
@@ -68,7 +69,9 @@ export default async function PodcastNotifications({
             {ar ? 'سجّل دخول عشان تشوف إشعاراتك' : 'Sign in to see your notifications'}
           </h2>
           <p className="mt-2 text-sm text-white/70">
-            {ar ? 'إشعاراتك مرتبطة بحسابك ومش بتظهر لحد تاني.' : 'Your private alerts are linked to your account.'}
+            {ar
+              ? 'إشعاراتك مرتبطة بحسابك ومش بتظهر لحد تاني.'
+              : 'Your private alerts are linked to your account.'}
           </p>
           <Link
             href={`/${locale}/login?next=${encodeURIComponent(`/${locale}/podcasts/notifications`)}`}
@@ -81,7 +84,9 @@ export default async function PodcastNotifications({
         <>
           {inbox.demo ? (
             <p className="rounded-xl border border-white/15 bg-white/10 p-3 text-sm text-white/70">
-              {ar ? 'الإشعارات مش متاحة في وضع العرض التجريبي.' : 'Notifications are unavailable in demo mode.'}
+              {ar
+                ? 'الإشعارات مش متاحة في وضع العرض التجريبي.'
+                : 'Notifications are unavailable in demo mode.'}
             </p>
           ) : null}
           <PodcastNotificationCenter locale={locale} initial={inbox} />

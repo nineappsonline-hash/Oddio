@@ -36,11 +36,16 @@ export function podcastNotificationCandidates(
     .filter((episode) => {
       const publishedAt = Date.parse(episode.publishedAt);
       const followedAt = followTimes.get(episode.showId);
-      return followedAt !== undefined && Number.isFinite(publishedAt) &&
-        publishedAt > followedAt && publishedAt <= now && publishedAt >= cutoff;
+      return (
+        followedAt !== undefined &&
+        Number.isFinite(publishedAt) &&
+        publishedAt > followedAt &&
+        publishedAt <= now &&
+        publishedAt >= cutoff
+      );
     })
-    .sort((a, b) =>
-      b.publishedAt.localeCompare(a.publishedAt) || a.id.localeCompare(b.id),
+    .sort(
+      (a, b) => b.publishedAt.localeCompare(a.publishedAt) || a.id.localeCompare(b.id),
     )
     .slice(0, 75)
     .map((episode) => ({
