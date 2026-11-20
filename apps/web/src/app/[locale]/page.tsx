@@ -7,6 +7,7 @@ import { recommendTracks } from '@/lib/data/recommendations';
 import { getRecentHomeTracks } from '@/lib/data/home-recent';
 import { getDiscoveryArtists } from '@/lib/data/discovery-artists';
 import { DiscoveryMixShelf } from '@/components/music/DiscoveryMixShelf';
+import { ContinueListeningHome } from '@/components/music/ContinueListeningHome';
 import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
@@ -182,6 +183,8 @@ export default async function HomePage({
           </div>
         </Link>
       </div>
+
+      <ContinueListeningHome locale={locale} />
 
       {recommended.tracks.length > 0 ? (
         <DiscoveryMixShelf
