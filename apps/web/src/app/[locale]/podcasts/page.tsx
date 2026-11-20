@@ -82,7 +82,7 @@ export default async function PodcastsHome({
       </form>
 
       {!q && catalog.episodes.length > 0 ? (
-        <ContinueListening locale={locale} publishedEpisodeIds={catalog.episodes.map((episode) => episode.id)} />
+        <ContinueListening locale={locale} viewerId={user?.id ?? null} episodes={catalog.episodes} shows={catalog.shows} />
       ) : null}
 
       {q ? (
