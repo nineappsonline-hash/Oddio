@@ -1,5 +1,5 @@
 name: Format UX roadmap branch
-# Phase 10 follow-up pass for sharing, collaboration and browser QA.
+# Phase 11 Rewind format pass for annual sharing and timeline.
 
 on:
   push:
