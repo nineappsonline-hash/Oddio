@@ -55,6 +55,7 @@ interface PlayerState {
   playNextInQueue: (track: CatalogTrack) => void;
   removeFromQueue: (trackId: string) => void;
   moveInQueue: (trackId: string, direction: 'up' | 'down') => void;
+  reorderQueue: (from: number, to: number) => void;
   jumpTo: (trackId: string) => void;
   clearQueue: () => void;
   setExpanded: (expanded: boolean) => void;
@@ -325,6 +326,17 @@ export const usePlayer = create<PlayerState>((set, get) => ({
             queue: [track, ...state.queue.filter((item) => item.id !== track.id)],
           },
     ),
+
+  reorderQueue: (from, to) =>
+    set((state) => {
+      if (!Number.isInteger(from) || !Number.isInteger(to) ||
+          from < 0 || to < 0 || from >= state.queue.length || to >= state.queue.length || from === to) return state;
+      const queue = [...state.queue];
+      const [item] = queue.splice(from, 1);
+      if (!item) return state;
+      queue.splice(to, 0, item);
+      return { queue };
+    }),
 
   removeFromQueue: (trackId) =>
     set((state) => ({ queue: state.queue.filter((item) => item.id !== trackId) })),
