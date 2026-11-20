@@ -135,9 +135,12 @@ try {
           name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
         });
         await mini.waitFor({ state: 'visible' });
+        // The mobile mini-player includes a full-size background hotspot
+        // under the title and controls; click its actual visible expand
+        // control, rather than the covered background hotspot.
         await mini
           .getByRole('button', { name: /expand|كبّر|توسيع|تكبير|فتح/i })
-          .first()
+          .last()
           .click();
         const dialog = page.getByRole('dialog', { name: /player|مشغل/i });
         await dialog.waitFor({ state: 'visible' });
