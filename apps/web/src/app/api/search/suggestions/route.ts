@@ -4,6 +4,7 @@ import { getViewer } from '@/lib/auth/session';
 import { readDb } from '@/lib/data/db';
 import { loadDbFromSupabase } from '@/lib/data/supabase-store';
 import { searchCatalog } from '@/lib/data/queries';
+import { projectSearchSuggestions } from '@/lib/search-suggestions';
 import { demoMode } from '@/lib/env';
 import { jsonError, jsonOk } from '@/lib/api-helpers';
 
@@ -22,19 +23,7 @@ export async function GET(request: Request) {
     );
     // SearchCatalog enforces visibility and release rules before ranking.
     const result = searchCatalog(db, viewer, query);
-    return jsonOk({
-      tracks: result.tracks.slice(0, 5).map((track) => ({
-        id: track.id,
-        title: track.title,
-        slug: track.slug,
-        artistName: track.artist?.name ?? '',
-      })),
-      artists: result.artists.slice(0, 3).map((artist) => ({
-        id: artist.id,
-        name: artist.name,
-        slug: artist.slug,
-      })),
-    });
+    return jsonOk(projectSearchSuggestions(result));
   } catch (error) {
     return jsonError(error);
   }
