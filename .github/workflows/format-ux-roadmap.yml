@@ -1,5 +1,5 @@
 name: Format UX roadmap branch
-# Phase 11 Rewind format pass for annual sharing and timeline.
+# Phase 12 final scoped formatting pass for Rewind, artwork and protected media.
 
 on:
   push:
