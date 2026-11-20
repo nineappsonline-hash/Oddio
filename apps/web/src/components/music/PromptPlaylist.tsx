@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Sparkles, Save, Play } from 'lucide-react';
 import type { CatalogTrack } from '@/lib/data/queries';
+import type { DiscoveryMatchReason } from '@/lib/data/prompt-discovery';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
 import {
@@ -23,6 +24,7 @@ export function PromptPlaylist({
   const ar = locale === 'ar';
   const [prompt, setPrompt] = useState('');
   const [tracks, setTracks] = useState<CatalogTrack[]>([]);
+  const [reasons, setReasons] = useState<Record<string, DiscoveryMatchReason[]>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -32,9 +34,10 @@ export function PromptPlaylist({
     event.preventDefault();
     setLoading(true);
     setTracks([]);
+    setReasons({});
     setMessage('');
     try {
-      const result = await apiRequest<{ tracks: CatalogTrack[]; matched: boolean }>(
+      const result = await apiRequest<{ tracks: CatalogTrack[]; matched: boolean; reasons: Record<string, DiscoveryMatchReason[]> }>(
         '/api/discovery/prompt',
         { method: 'POST', body: JSON.stringify({ prompt: prompt.trim() }) },
       );
@@ -48,6 +51,7 @@ export function PromptPlaylist({
           ),
       );
       setTracks(filtered);
+      setReasons(result.reasons ?? {});
       if (!filtered.length)
         setMessage(
           ar
@@ -107,6 +111,17 @@ export function PromptPlaylist({
       setSaving(false);
     }
   }
+
+  const describeReason = (reason: DiscoveryMatchReason) => {
+    switch (reason.kind) {
+      case 'genre': return (ar ? 'نوع: ' : 'Genre: ') + reason.value;
+      case 'mood': return (ar ? 'مود: ' : 'Mood: ') + reason.value;
+      case 'language': return (ar ? 'اللغة: ' : 'Language: ') +
+        (reason.value === 'ar' ? (ar ? 'عربي' : 'Arabic') : (ar ? 'إنجليزي' : 'English'));
+      case 'artist': return (ar ? 'الفنان: ' : 'Artist: ') + reason.value;
+      case 'title': return (ar ? 'اسم الأغنية: ' : 'Title: ') + reason.value;
+    }
+  };
 
   return (
     <section
@@ -198,8 +213,14 @@ export function PromptPlaylist({
                 key={track.id}
                 className="truncate rounded-lg border border-white/10 px-3 py-2 text-sm text-ink"
               >
-                {track.title}{' '}
+                <span dir="auto">{track.title}</span>{' '}
                 <span className="text-muted">· {track.artist?.name ?? ''}</span>
+                {(reasons[track.id] ?? []).length > 0 ? (
+                  <span className="mt-1 block whitespace-normal text-xs text-muted">
+                    {ar ? 'سبب الاختيار: ' : 'Matched: '}
+                    {(reasons[track.id] ?? []).map(describeReason).join(' · ')}
+                  </span>
+                ) : null
               </li>
             ))}
           </ul>
