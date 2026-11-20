@@ -53,7 +53,8 @@ export function PlaylistReorderableTracks({
         );
         removed += 1;
       }
-      setTracks((current) => current.filter((track) => !selected.includes(track.id)));
+      const removedIds = new Set(targets.map((track) => track.id));
+      setTracks((current) => current.filter((track) => !removedIds.has(track.id)));
       setSelected([]);
       setConfirmingRemove(false);
       setMessage(ar ? `اتحذفت ${removed} أغنية من القائمة.` : `Removed ${removed} tracks from playlist.`);
@@ -179,7 +180,7 @@ export function PlaylistReorderableTracks({
         items={tracks}
         getId={(track) => track.id}
         locale={locale}
-        disabled={saving || needsRefresh}
+        disabled={saving || needsRefresh || confirmingRemove}
         onMove={(from, to) => void reorder(from, to)}
         className="card divide-y divide-white/5 p-2"
         renderItem={(track, index) => (
