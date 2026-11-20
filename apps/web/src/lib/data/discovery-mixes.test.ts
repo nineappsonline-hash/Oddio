@@ -148,6 +148,32 @@ describe('Oddio discovery stations', () => {
     expect(ids).not.toContain('c');
   });
 
+  it('lets familiar radio stay entirely within related songs', () => {
+    const station = buildDiscoveryMix(fixture(), guest, {
+      kind: 'song', seedId: 'a', radioMode: 'familiar', now: date,
+    });
+    expect(station.tracks.map((track) => track.id).sort()).toEqual(['a', 'b', 'd', 'e']);
+  });
+
+  it('explore mode introduces unrelated music earlier while preserving song seed', () => {
+    const balanced = buildDiscoveryMix(fixture(), guest, {
+      kind: 'song', seedId: 'a', radioMode: 'balanced', limit: 4, now: date,
+    });
+    const explore = buildDiscoveryMix(fixture(), guest, {
+      kind: 'song', seedId: 'a', radioMode: 'explore', limit: 4, now: date,
+    });
+    expect(balanced.tracks.map((track) => track.id)).not.toContain('c');
+    expect(explore.tracks[0]?.id).toBe('a');
+    expect(explore.tracks.map((track) => track.id)).toContain('c');
+  });
+
+  it('keeps genre radio within genre regardless of radio discovery preference', () => {
+    const result = buildDiscoveryMix(fixture(), guest, {
+      kind: 'genre', seedId: 'pop', radioMode: 'explore', now: date,
+    });
+    expect(result.tracks.every((track) => track.genreId === 'pop')).toBe(true);
+  });
+
   it('genre radio selects only tracks in the chosen active genre', () => {
     const result = buildDiscoveryMix(fixture(), guest, {
       kind: 'genre',
