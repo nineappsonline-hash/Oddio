@@ -69,7 +69,7 @@ export function buildDiscoveryMix(
               event.qualified && sessionIds.has(event.sessionId),
             )
             .map((event) => event.trackId),
-          ...db.history
+          ...(db.history ?? [])
             .filter((item) => item.userId === viewer.userId)
             .map((item) => item.trackId),
         ]
