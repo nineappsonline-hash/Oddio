@@ -395,9 +395,8 @@ try {
         assert.equal(response?.status(), 200);
         await page.getByRole('heading', { level: 1 }).waitFor({ state: 'visible' });
         const noShows = page.getByRole('heading', {
-          name: locale === 'ar'
-            ? 'مفيش برامج متاحة دلوقتي'
-            : 'No shows available right now',
+          name:
+            locale === 'ar' ? 'مفيش برامج متاحة دلوقتي' : 'No shows available right now',
         });
         if (await noShows.count()) {
           await noShows.waitFor({ state: 'visible' });
