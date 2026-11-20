@@ -51,6 +51,7 @@ export function AppShell({
             <DesktopTopBar contentLanguage={contentLanguage} />
             <main
               id="main"
+              tabIndex={-1}
               className={`oddio-main-content mx-auto w-full max-w-[1720px] px-4 pt-6 sm:px-6 lg:px-7 2xl:px-8 pb-48 lg:pb-36`}
             >
               {children}
