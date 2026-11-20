@@ -679,7 +679,11 @@ try {
             { id: '00000000-0000-4000-8000-000000000011', nameEn: 'Pop', nameAr: 'بوب' },
             { id: '00000000-0000-4000-8000-000000000012', nameEn: 'Rock', nameAr: 'روك' },
             { id: '00000000-0000-4000-8000-000000000013', nameEn: 'Jazz', nameAr: 'جاز' },
-            { id: '00000000-0000-4000-8000-000000000014', nameEn: 'Ambient', nameAr: 'أمبيانت' },
+            {
+              id: '00000000-0000-4000-8000-000000000014',
+              nameEn: 'Ambient',
+              nameAr: 'أمبيانت',
+            },
           ];
           let completed = false;
           let saved = [];
@@ -689,13 +693,23 @@ try {
               assert.ok(body.genreIds.length <= 3);
               saved = body.genreIds;
               completed = true;
-              await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
-                data: { saved: true, genreIds: saved }, error: null,
-              }) });
+              await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                  data: { saved: true, genreIds: saved },
+                  error: null,
+                }),
+              });
             } else {
-              await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
-                data: { available: true, show: !completed, genreIds: saved, genres }, error: null,
-              }) });
+              await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                  data: { available: true, show: !completed, genreIds: saved, genres },
+                  error: null,
+                }),
+              });
             }
           });
           try {
@@ -705,12 +719,18 @@ try {
             await dialog.getByRole('button', { name: 'Pop' }).click();
             await dialog.getByRole('button', { name: 'Rock' }).click();
             await dialog.getByRole('button', { name: 'Jazz' }).click();
-            assert.equal(await dialog.getByRole('button', { name: 'Ambient' }).isDisabled(), true);
+            assert.equal(
+              await dialog.getByRole('button', { name: 'Ambient' }).isDisabled(),
+              true,
+            );
             await dialog.getByRole('button', { name: 'Start listening' }).click();
             await dialog.waitFor({ state: 'hidden' });
             assert.equal(saved.length, 3);
             await page.reload({ waitUntil: 'domcontentloaded' });
-            assert.equal(await page.getByRole('dialog', { name: /What music do you love/i }).count(), 0);
+            assert.equal(
+              await page.getByRole('dialog', { name: /What music do you love/i }).count(),
+              0,
+            );
           } finally {
             await page.unroute('**/api/onboarding/favorite-genres');
           }
