@@ -69,6 +69,8 @@ export function PlayerProvider({
   const startSentRef = useRef(false);
   const isPlaying = usePlayer((state) => state.isPlaying);
   const crossfadeSeconds = usePlayer((state) => state.crossfadeSeconds);
+  const playbackRate = usePlayer((state) => state.playbackRate);
+  const sleepUntil = usePlayer((state) => state.sleepUntil);
   const volume = usePlayer((state) => state.volume);
   const muted = usePlayer((state) => state.muted);
   const seekRequest = usePlayer((state) => state.seekRequest);
@@ -446,6 +448,27 @@ export function PlayerProvider({
       });
     }
   }, [stream]);
+
+  // Apply speed directly to media elements; Spotify-like music remains at 1x.
+  useEffect(() => {
+    const rate = isPodcastPlayback(usePlayer.getState().track) ? playbackRate : 1;
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+    if (standbyRef.current) standbyRef.current.playbackRate = rate;
+  }, [playbackRate, trackId, stream]);
+
+  // A sleep timer pauses audio at its deadline, without clearing the queue or position.
+  useEffect(() => {
+    if (!sleepUntil) return;
+    const check = () => {
+      if (Date.now() >= sleepUntil) {
+        usePlayer.getState().setPlaying(false);
+        usePlayer.getState().setSleepTimer(0);
+      }
+    };
+    check();
+    const interval = window.setInterval(check, 1000);
+    return () => window.clearInterval(interval);
+  }, [sleepUntil]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -876,7 +899,7 @@ export function PlayerProvider({
       try {
         mediaSession.setPositionState({
           duration: state.duration,
-          playbackRate: 1,
+          playbackRate: isPodcastPlayback(state.track) ? state.playbackRate : 1,
           position: Math.max(0, Math.min(state.currentTime, state.duration)),
         });
       } catch {
