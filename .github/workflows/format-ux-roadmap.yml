@@ -1,5 +1,5 @@
 name: Format UX roadmap branch
-# Phase 12 acceptance formatting pass: responsive Rewind and drag regression fixes.
+# Phase 12 final smoke formatting pass: WebKit bootstrap navigation assertions.
 
 on:
   push:
