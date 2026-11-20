@@ -139,6 +139,7 @@ export function DragReorderList<T>({
         {items.map((item, index) => (
           <li
             key={getId(item)}
+            data-reorder-id={getId(item)}
             data-reorder-index={index}
             className={cn(
               'flex min-w-0 items-center gap-1 rounded-xl transition-colors',
