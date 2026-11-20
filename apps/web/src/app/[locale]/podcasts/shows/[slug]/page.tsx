@@ -12,6 +12,9 @@ import {
 import { JsonLd } from '@/components/seo/JsonLd';
 import { seoAbsoluteUrl } from '@/lib/seo-origin';
 import { serviceClient } from '@/lib/data/supabase-store';
+import { getSessionUser } from '@/lib/auth/session';
+import { demoMode } from '@/lib/env';
+import { PodcastFollowButton } from '@/components/podcasts/PodcastFollowButton';
 
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({
@@ -49,6 +52,15 @@ export default async function PodcastShowPage({
   const catalog = await getPodcastCatalog(),
     show = catalog.shows.find((s) => s.slug === slug);
   if (!show) notFound();
+  const user = await getSessionUser();
+  const { data: followed } = user && !demoMode
+    ? await serviceClient()
+        .from('podcast_show_follows')
+        .select('show_id')
+        .eq('user_id', user.id)
+        .eq('show_id', show.id)
+        .maybeSingle()
+    : { data: null };
   const creator = show.artistId
     ? (
         await serviceClient()
@@ -114,6 +126,22 @@ export default async function PodcastShowPage({
           ) : (
             <p className="text-sm text-[#a3a3a3]">{show.author}</p>
           )}
+          <div className="flex flex-wrap items-center gap-3">
+            <PodcastFollowButton
+              key={show.id}
+              showId={show.id}
+              locale={locale}
+              signedIn={Boolean(user)}
+              initialFollowing={Boolean(followed)}
+              demo={demoMode}
+            />
+            <Link
+              href={`/${locale}/podcasts/following`}
+              className="inline-flex min-h-11 items-center rounded-xl border border-white/20 px-4 text-sm font-semibold text-white hover:bg-white/10"
+            >
+              {locale === 'ar' ? 'برامجي المتابَعة' : 'Following'}
+            </Link>
+          </div>
           <ShareButton
             title={show.title}
             label={locale === 'ar' ? 'مشاركة' : 'Share'}
