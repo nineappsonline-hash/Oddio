@@ -111,6 +111,13 @@ export default async function PodcastsHome({
               <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
             </Link>
             <Link
+              href={`/${locale}/podcasts/following`}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/[0.10] px-5 text-sm font-semibold text-white transition hover:bg-white/[0.17]"
+            >
+              {ar ? 'برامجي المتابَعة' : 'Following'}
+              <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
+            </Link>
+            <Link
               href={`/${locale}/podcasts/history`}
               className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/[0.10] px-5 text-sm font-semibold text-white transition hover:bg-white/[0.17]"
             >
