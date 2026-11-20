@@ -26,12 +26,26 @@ export function Artwork({
       )}
       style={{
         backgroundImage: url
-          ? `linear-gradient(135deg, rgba(9,9,18,0.05), rgba(9,9,18,0.55)), url(${url})`
+          ? 'linear-gradient(135deg, #17112e, #090912)'
           : `linear-gradient(135deg, ${accent} 0%, #2a1a4d 55%, #090912 100%)`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
       }}
     >
+      {url ? (
+        <>
+          <img
+            src={url}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#090912]/5 to-[#090912]/55"
+          />
+        </>
+      ) : null}
       {!url ? (
         <div
           aria-hidden="true"
