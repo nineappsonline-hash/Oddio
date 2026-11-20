@@ -255,9 +255,11 @@ try {
         const input = page.locator('main input[type="search"][name="q"]');
         await input.fill('zzzzunlikelyreleasequery123');
         await input.press('Enter');
-        await page.waitForURL(new RegExp(`/\\${locale}/search\\?q=`), {
-          timeout: 15_000,
-        });
+        await page.waitForURL((url) =>
+          url.pathname === `/${locale}/search` &&
+          url.searchParams.get('q') === 'zzzzunlikelyreleasequery123',
+          { timeout: 15_000 },
+        );
         // Next.js may stream the route after the URL changes; wait for the
         // actual no-results state rather than racing the navigation shell.
         await page
