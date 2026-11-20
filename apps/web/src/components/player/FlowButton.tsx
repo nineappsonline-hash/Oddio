@@ -15,12 +15,15 @@ export function FlowButton({
   kind = 'flow',
   seedId,
   viewerId = null,
+  localOnly = false,
 }: {
   tracks?: CatalogTrack[];
   locale: 'ar' | 'en';
   kind?: StationMode;
   seedId?: string;
   viewerId?: string | null;
+  /** Start only the supplied curated track list; do not call personalized mix API. */
+  localOnly?: boolean;
 }) {
   const startFlow = usePlayer((state) => state.startFlow);
   const [busy, setBusy] = useState(false);
@@ -42,6 +45,17 @@ export function FlowButton({
     try {
       await hydrateDiscoveryExclusions(viewerId);
       const hidden = readDiscoveryExclusions(viewerId);
+      if (localOnly) {
+        const fallback = tracks.filter((item) =>
+          !hidden.trackIds.includes(item.id) &&
+          !(item.genreIds?.length ? item.genreIds : [item.genreId]).some((id) =>
+            hidden.genreIds.includes(id),
+          ),
+        );
+        if (!fallback.length) throw new Error('No playable music available');
+        startFlow(fallback, { kind, ...(seedId ? { seedId } : {}) });
+        return;
+      }
       const params = new URLSearchParams({ kind });
       if (seedId) params.set('seed', seedId);
       if (hidden.trackIds.length) params.set('exclude', hidden.trackIds.join(','));
