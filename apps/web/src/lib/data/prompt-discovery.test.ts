@@ -78,6 +78,18 @@ describe('prompt-generated playlists', () => {
     expect(result.tracks.map((track) => track.id)).toEqual(['arabic']);
   });
 
+  it('explains matches only with catalog-backed language and genre labels', () => {
+    const result = promptDiscoveryTracks(dbFixture(), viewer, 'موسيقى عربي بوب');
+    expect(result.reasons.arabic).toContainEqual({ kind: 'language', value: 'ar' });
+    expect(result.reasons.arabic).toContainEqual({ kind: 'genre', value: 'Pop' });
+    expect(result.reasons.hidden).toBeUndefined();
+  });
+
+  it('never manufactures reasons when no music matched', () => {
+    const result = promptDiscoveryTracks(dbFixture(), viewer, 'zebra outerspace');
+    expect(result.reasons).toEqual({});
+  });
+
   it('matches English genre words', () => {
     const result = promptDiscoveryTracks(dbFixture(), viewer, 'energetic rock');
     expect(result.matched).toBe(true);
