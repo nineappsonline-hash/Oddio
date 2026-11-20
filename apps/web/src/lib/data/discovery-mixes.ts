@@ -4,9 +4,11 @@ import { listableTracks, type CatalogTrack } from './queries';
 import { recommendTracks } from './recommendations';
 
 export type MixKind = 'flow' | 'daily' | 'weekly' | 'song' | 'artist' | 'genre' | 'mood';
+export type RadioDiscoveryMode = 'familiar' | 'balanced' | 'explore';
 export interface MixOptions {
   kind: MixKind;
   seedId?: string;
+  radioMode?: RadioDiscoveryMode;
   excludeIds?: string[];
   blockedGenreIds?: string[];
   now?: Date;
@@ -176,12 +178,22 @@ export function buildDiscoveryMix(
   if ((options.kind === 'song' || options.kind === 'artist') && seed) {
     const familiar = candidates.filter((track) => affinity(track) > 0);
     const exploration = candidates.filter((track) => affinity(track) === 0);
+    const mode = options.radioMode ?? 'balanced';
     const selected: CatalogTrack[] = [];
-    if (options.kind === 'song' && familiar.some((track) => track.id === seed.id)) {
+    if (options.kind === 'song' && familiar.some((track) => track.id === seed.id) && limit > 0) {
       selected.push(seed);
     }
     const seenArtists = new Set(selected.map((track) => track.artistId));
-    for (const group of [familiar, exploration]) {
+    // Explore intentionally gives an early share of the queue to diverse,
+    // otherwise unrelated music. Familiar keeps only real metadata matches.
+    // Balanced retains the established matching-first behavior.
+    const groups = mode === 'familiar'
+      ? [familiar]
+      : mode === 'explore'
+        ? [familiar.slice(0, Math.max(1, Math.ceil(limit / 2))), exploration,
+           familiar.slice(Math.max(1, Math.ceil(limit / 2)))]
+        : [familiar, exploration];
+    for (const group of groups) {
       for (const track of group) {
         if (selected.length >= limit) break;
         if (selected.some((item) => item.id === track.id) || seenArtists.has(track.artistId))
