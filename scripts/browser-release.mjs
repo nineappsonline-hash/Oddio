@@ -257,11 +257,28 @@ try {
         });
         assert.equal(search?.status(), 200);
         const input = page.locator('main input[type="search"][name="q"]');
-        await input.fill('zzzzunlikelyreleasequery123');
-        // The SSR fallback works even if React hydration is delayed on mobile.
-        // Submit by the visible button rather than racing an Enter keypress
-        // against hydration and a potentially focused suggestion.
-        await page.locator('main form[role="search"] button[type="submit"]').click();
+        const query = 'zzzzunlikelyreleasequery123';
+        const submit = page.locator('main form[role="search"] button[type="submit"]');
+        // Hydration may reset a value filled before React attaches the
+        // controlled input, especially in Firefox. Retry the real input
+        // interaction after hydration; never force-click a disabled button.
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+          await input.fill(query);
+          try {
+            await submit.waitFor({ state: 'visible', timeout: 3000 });
+            await page.waitForFunction(() => {
+              const form = document.querySelector('main form[role="search"]');
+              const field = form?.querySelector('input[name="q"]');
+              const button = form?.querySelector('button[type="submit"]');
+              return field?.value === 'zzzzunlikelyreleasequery123' &&
+                button && !button.disabled;
+            }, null, { timeout: 3000 });
+            break;
+          } catch (error) {
+            if (attempt === 4) throw error;
+          }
+        }
+        await submit.click();
         await page.waitForURL(
           (url) =>
             url.pathname === `/${locale}/search` &&
