@@ -6,6 +6,7 @@ import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SettingsForm } from '@/components/settings/SettingsForm';
+import { FavoriteGenresSelector } from '@/components/onboarding/FavoriteGenresSelector';
 
 export async function generateMetadata({
   params,

@@ -661,7 +661,9 @@ try {
                 engine === 'webkit' &&
                 message.includes('due to access control checks') &&
                 (message.includes('/api/podcasts/progress') ||
-                  message.includes('/api/player/resume'))
+                  message.includes('/api/player/resume') ||
+                  message.includes('/api/library/smart-playlists') ||
+                  message.includes('/api/onboarding/favorite-genres'))
               ),
           );
           assert.equal(
@@ -669,6 +671,71 @@ try {
             0,
             unexpectedRewindErrors.join('; '),
           );
+        });
+      }
+
+      if (engine === 'chromium' && locale === 'en' && viewport.width === 1366) {
+        await test('new account picks favorite genres once and old account does not repeat', async () => {
+          // Stub ONLY the onboarding API; all other pages and auth are real.
+          const genres = [
+            { id: '00000000-0000-4000-8000-000000000011', nameEn: 'Pop', nameAr: 'بوب' },
+            { id: '00000000-0000-4000-8000-000000000012', nameEn: 'Rock', nameAr: 'روك' },
+            { id: '00000000-0000-4000-8000-000000000013', nameEn: 'Jazz', nameAr: 'جاز' },
+            {
+              id: '00000000-0000-4000-8000-000000000014',
+              nameEn: 'Ambient',
+              nameAr: 'أمبيانت',
+            },
+          ];
+          let completed = false;
+          let saved = [];
+          await page.route('**/api/onboarding/favorite-genres', async (route) => {
+            if (route.request().method() === 'PUT') {
+              const body = route.request().postDataJSON();
+              assert.ok(body.genreIds.length <= 3);
+              saved = body.genreIds;
+              completed = true;
+              await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                  data: { saved: true, genreIds: saved },
+                  error: null,
+                }),
+              });
+            } else {
+              await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                  data: { available: true, show: !completed, genreIds: saved, genres },
+                  error: null,
+                }),
+              });
+            }
+          });
+          try {
+            await page.goto(`${base}/en`, { waitUntil: 'domcontentloaded' });
+            const dialog = page.getByRole('dialog', { name: /What music do you love/i });
+            await dialog.waitFor({ state: 'visible', timeout: 15000 });
+            await dialog.getByRole('button', { name: 'Pop' }).click();
+            await dialog.getByRole('button', { name: 'Rock' }).click();
+            await dialog.getByRole('button', { name: 'Jazz' }).click();
+            assert.equal(
+              await dialog.getByRole('button', { name: 'Ambient' }).isDisabled(),
+              true,
+            );
+            await dialog.getByRole('button', { name: 'Start listening' }).click();
+            await dialog.waitFor({ state: 'hidden' });
+            assert.equal(saved.length, 3);
+            await page.reload({ waitUntil: 'domcontentloaded' });
+            assert.equal(
+              await page.getByRole('dialog', { name: /What music do you love/i }).count(),
+              0,
+            );
+          } finally {
+            await page.unroute('**/api/onboarding/favorite-genres');
+          }
         });
       }
 
