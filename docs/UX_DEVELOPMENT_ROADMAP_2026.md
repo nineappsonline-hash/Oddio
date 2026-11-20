@@ -96,7 +96,7 @@
 |---|---|---|
 | 0 Baseline & risk audit | IN PROGRESS | Source review started; tests pending |
 | 1 Player & Queue | IN PROGRESS | Desktop volume wheel + Queue Undo + Save Queue code committed; browser/CI verification pending |
-| 2 Library & Playlists | IN PROGRESS | Quick search + playlist sort/view committed; QA and remaining actions pending |
+| 2 Library & Playlists | IN PROGRESS | Pinning, search, sort/view, multi-select and playlist bulk-add coded; new preview QA pending |
 | 3 Search | NOT STARTED | Search-to-play measurement |
 | 4 Mobile & Accessibility | NOT STARTED | Cross-device QA |
 | 5 Personalized Home | NOT STARTED | Privacy / cold start |
@@ -149,3 +149,11 @@
 - Added **Select visible / Deselect visible** and **Add selected to queue** on liked-song search results. Bulk queue action only affects the local player queue, and intentionally does not touch liked-song or playlist membership server-side.
 - Unfinished: multi-select in custom liked-song ordering, bulk playlist mutations, cross-device pinned state, authoritative E2E and accessibility testing.
 - Build for the latest commits was still in progress at last observation. Retain production isolation until a passing preview and browser QA are available.
+
+### Phase 2 continuation — bulk additions to playlists
+- Confirmed the previous corrected preview commit `a7d73eec` reached **Vercel READY**; this confirms the build, not end-to-end behavior.
+- Added `BulkAddToPlaylistButton` to select an existing editable playlist and add a user's selected liked songs using the existing authenticated, same-origin playlist-track POST endpoint. Previously present tracks are skipped, duplicate selections are removed, and requests run sequentially to preserve order.
+- Added the bulk action to both ordinary liked-song search and custom-order liked-song view. Custom-order liked songs also gained visible-item selection and bulk add-to-queue.
+- Partial server failures surface a count and a link to review the playlist; automatic retries are deliberately disabled because prior writes might have succeeded.
+- **Remaining:** atomic bulk add API with idempotency/concurrency, bulk removals with explicit confirmation/undo, cross-device settings, and browser-level accessibility/RTL tests.
+- Most recent deployment for new additions was BUILDING at last check, so it has NOT been released to production.
