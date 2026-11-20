@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/client-api';
@@ -42,11 +42,10 @@ export function SearchExperience({
     suggestionRef.current?.querySelectorAll<HTMLAnchorElement>('a[data-suggestion-link]') ?? [],
   );
 
-  const onSuggestionKeys = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const onSuggestionKeys = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape') {
       event.preventDefault();
       setFocused(false);
-      inputRef.current?.focus();
       inputRef.current?.blur();
       return;
     }
@@ -114,6 +113,7 @@ export function SearchExperience({
         event.preventDefault();
         inputRef.current?.focus();
       } else if (event.key === 'Escape' && document.activeElement === inputRef.current) {
+        setFocused(false);
         inputRef.current?.blur();
       }
     };
@@ -157,8 +157,8 @@ export function SearchExperience({
   };
 
   return (
-    <section aria-label={searchLabel} className="mb-8 space-y-3">
-      <form role="search" onSubmit={submit} className="oddio-search-form flex gap-2">
+    <section aria-label={searchLabel} dir={ar ? "rtl" : "ltr"} className="mb-8 min-w-0 space-y-3">
+      <form role="search" onSubmit={submit} className="oddio-search-form flex min-w-0 gap-2">
         <input
           ref={inputRef}
           type="search"
@@ -168,7 +168,8 @@ export function SearchExperience({
           onChange={(event) => setQuery(event.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={(event) => {
-            if (!suggestionRef.current?.contains(event.relatedTarget as Node | null)) setFocused(false);
+            const next = event.relatedTarget as Node | null;
+            if (!suggestionRef.current?.contains(next)) setFocused(false);
           }}
           onKeyDown={(event) => {
             if (event.key === 'Escape') { setFocused(false); inputRef.current?.blur(); }
@@ -184,7 +185,7 @@ export function SearchExperience({
         <button
           type="submit"
           disabled={!query.trim()}
-          className="oddio-search-submit flex h-12 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-[#211518] hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
+          className="oddio-search-submit flex h-12 shrink-0 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-[#211518] hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
         >
           <Search className="h-4 w-4" aria-hidden="true" />
           {ar ? 'بحث' : 'Search'}
@@ -199,7 +200,7 @@ export function SearchExperience({
             if (!event.currentTarget.contains(next) && next !== inputRef.current) setFocused(false);
           }}
           aria-label={ar ? 'اقتراحات البحث' : 'Search suggestions'}
-          className="rounded-2xl border border-white/15 bg-[#1d1827] p-3 shadow-xl"
+          className="max-h-[min(55dvh,400px)] min-w-0 overflow-y-auto overscroll-contain rounded-2xl border border-white/15 bg-[#1d1827] p-2 shadow-xl sm:p-3"
         >
           {suggestionLoading ? (
             <p role="status" className="px-2 py-3 text-xs text-muted">{ar ? 'بندور على نتائج…' : 'Finding matches…'}</p>
@@ -219,7 +220,7 @@ export function SearchExperience({
                           href={`/${locale}/tracks/${track.id}-${track.slug}`}
                           data-suggestion-link
                           onClick={() => { saveRecent(query); setFocused(false); }}
-                          className="flex min-h-11 items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-ink hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                          className="flex min-h-11 min-w-0 items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-ink hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         >
                           <span className="min-w-0 truncate font-semibold">{track.title}</span>
                           <span className="max-w-[35%] shrink-0 truncate text-xs text-muted">{track.artistName}</span>
@@ -237,7 +238,8 @@ export function SearchExperience({
                       <li key={artist.id}>
                         <Link
                           href={`/${locale}/artists/${artist.slug}`}
-                          onClick={() => saveRecent(query)}
+                          data-suggestion-link
+                          onClick={() => { saveRecent(query); setFocused(false); }}
                           className="block min-h-11 rounded-lg px-3 py-2 text-sm text-ink hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         >
                           {artist.name}
@@ -250,7 +252,7 @@ export function SearchExperience({
             </div>
           )}
           <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => openSearch(query)}
-            className="mt-2 min-h-10 w-full rounded-xl border border-primary/30 px-3 text-start text-xs font-semibold text-primary hover:bg-primary/10">
+            className="mt-2 min-h-11 w-full rounded-xl border border-primary/30 px-3 text-start text-xs font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
             {ar ? `عرض كل نتائج «${query.trim()}»` : `See all results for “${query.trim()}”`}
           </button>
         </div>
