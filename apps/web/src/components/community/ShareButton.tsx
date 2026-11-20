@@ -1,6 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
 import { Check, Copy, Facebook, Instagram, MessageCircle, Share2, X } from 'lucide-react';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
@@ -38,10 +43,14 @@ export function ShareButton({
     if (!items.length) return;
     event.preventDefault();
     const index = items.indexOf(document.activeElement as HTMLButtonElement);
-    const next = event.key === 'Home' ? 0
-      : event.key === 'End' ? items.length - 1
-      : event.key === 'ArrowDown' ? (index + 1 + items.length) % items.length
-      : (index - 1 + items.length) % items.length;
+    const next =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? items.length - 1
+          : event.key === 'ArrowDown'
+            ? (index + 1 + items.length) % items.length
+            : (index - 1 + items.length) % items.length;
     items[next]?.focus();
   }
 

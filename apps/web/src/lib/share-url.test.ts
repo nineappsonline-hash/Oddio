@@ -4,14 +4,18 @@ import { canonicalOddioShareUrl } from './share-url';
 describe('public Oddio sharing links', () => {
   const base = 'https://oddio.online/ar/discover';
   it('keeps a canonical song link and drops arbitrary query or fragments', () => {
-    expect(canonicalOddioShareUrl(
-      '/ar/tracks/track-1?token=secret&campaign=test#lyrics', base,
-    )).toBe('https://oddio.online/ar/tracks/track-1?preview=v2');
+    expect(
+      canonicalOddioShareUrl(
+        '/ar/tracks/track-1?token=secret&campaign=test#lyrics',
+        base,
+      ),
+    ).toBe('https://oddio.online/ar/tracks/track-1?preview=v2');
   });
 
   it('never copies invitation codes or session credentials', () => {
     const link = canonicalOddioShareUrl(
-      '/ar/playlists/playlist?invite_code=abcdef&state=other&utm_source=shared#editor', base,
+      '/ar/playlists/playlist?invite_code=abcdef&state=other&utm_source=shared#editor',
+      base,
     );
     expect(link).toContain('utm_source=shared');
     expect(link).not.toContain('invite_code');
@@ -27,7 +31,8 @@ describe('public Oddio sharing links', () => {
 
   it('supports the current same-origin page and canonical podcast share links', () => {
     expect(canonicalOddioShareUrl(undefined, base)).toBe(base);
-    expect(canonicalOddioShareUrl('/en/podcasts/shows/show-1?secret=abc', base))
-      .toBe('https://oddio.online/en/podcasts/shows/show-1?preview=v2');
+    expect(canonicalOddioShareUrl('/en/podcasts/shows/show-1?secret=abc', base)).toBe(
+      'https://oddio.online/en/podcasts/shows/show-1?preview=v2',
+    );
   });
 });
