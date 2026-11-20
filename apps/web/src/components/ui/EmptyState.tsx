@@ -15,7 +15,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center rounded-card border border-dashed border-white/15 bg-surface/40 px-6 py-12 text-center',
+        'flex flex-col items-center justify-center rounded-2xl border border-white/15 bg-white/[0.035] px-5 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.035)] sm:px-8 sm:py-12',
         className,
       )}
     >
@@ -32,9 +32,9 @@ export function EmptyState({
           <circle cx="18" cy="16" r="3" stroke="currentColor" strokeWidth="1.6" />
         </svg>
       </div>
-      <h3 className="text-base font-semibold text-ink">{title}</h3>
-      {body ? <p className="mt-1 max-w-md text-sm text-muted">{body}</p> : null}
-      {action ? <div className="mt-5">{action}</div> : null}
+      <h3 className="max-w-lg text-base font-bold leading-7 text-ink sm:text-lg">{title}</h3>
+      {body ? <p className="mt-2 max-w-md text-sm leading-7 text-muted">{body}</p> : null}
+      {action ? <div className="mt-6 flex flex-wrap items-center justify-center gap-3">{action}</div> : null}
     </div>
   );
 }
