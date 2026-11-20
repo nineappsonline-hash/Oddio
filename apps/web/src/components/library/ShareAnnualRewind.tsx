@@ -40,6 +40,73 @@ export function ShareAnnualRewind({
     }
   }
 
+  async function exportImage() {
+    if (!text) return;
+    setStatus('');
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1350;
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('Canvas unavailable');
+      const gradient = context.createLinearGradient(0, 0, 1080, 1350);
+      gradient.addColorStop(0, '#49316a');
+      gradient.addColorStop(0.55, '#1c203d');
+      gradient.addColorStop(1, '#12434b');
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.textAlign = ar ? 'right' : 'left';
+      context.direction = ar ? 'rtl' : 'ltr';
+      const x = ar ? 965 : 115;
+      context.fillStyle = '#d8b4fe';
+      context.font = 'bold 42px sans-serif';
+      context.fillText('ODDIO  /  REWIND', x, 155);
+      context.fillStyle = '#ffffff';
+      context.font = 'bold 112px sans-serif';
+      context.fillText(String(report.year), x, 315);
+      context.font = 'bold 58px sans-serif';
+      context.fillText(ar ? 'حصادي الموسيقي' : 'My listening year', x, 420);
+      const lines = text.split('\\n').slice(1);
+      context.font = '37px sans-serif';
+      context.fillStyle = '#e5e7eb';
+      let y = 560;
+      for (const line of lines) {
+        // Wrap long rows by measured words without truncation.
+        const words = line.split(/\\s+/);
+        let row = '';
+        for (const word of words) {
+          const candidate = row ? row + ' ' + word : word;
+          if (context.measureText(candidate).width > 850 && row) {
+            context.fillText(row, x, y);
+            y += 76;
+            row = word;
+          } else {
+            row = candidate;
+          }
+        }
+        if (row) {
+          context.fillText(row, x, y);
+          y += 100;
+        }
+      }
+      context.fillStyle = '#c4b5fd';
+      context.font = '30px sans-serif';
+      context.fillText('oddio.online', x, 1260);
+      const image = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('PNG unavailable')), 'image/png');
+      });
+      const url = URL.createObjectURL(image);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `oddio-rewind-${report.year}.png`;
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+      setStatus(ar ? 'الصورة اتحفظت على جهازك. مفيش بيانات اترفعت للسيرفر.' : 'PNG saved to your device. No listening data was uploaded.');
+    } catch {
+      setStatus(ar ? 'مش قادرين نحفظ الصورة على الجهاز ده.' : 'Image export is unavailable on this device.');
+    }
+  }
+
   if (!text) return null;
 
   return (
@@ -70,6 +137,10 @@ export function ShareAnnualRewind({
       <button type="button" onClick={() => void share()}
         className="mt-4 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-bold text-[#211518] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
         {ar ? 'شارك البطاقة' : 'Share card'}
+      </button>
+      <button type="button" onClick={() => void exportImage()}
+        className="mt-4 ms-2 inline-flex min-h-11 items-center justify-center rounded-full border border-white/30 px-5 text-sm font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+        {ar ? 'احفظ صورة PNG' : 'Save PNG image'}
       </button>
       {status ? <p role="status" className="mt-2 text-xs text-white/75">{status}</p> : null}
     </section>
