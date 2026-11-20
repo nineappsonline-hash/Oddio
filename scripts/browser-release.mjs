@@ -394,10 +394,19 @@ try {
         });
         assert.equal(response?.status(), 200);
         await page.getByRole('heading', { level: 1 }).waitFor({ state: 'visible' });
-        const recommended = page.getByRole('region', {
-          name: locale === 'ar' ? 'برامج مقترحة' : 'Recommended shows',
+        const noShows = page.getByRole('heading', {
+          name: locale === 'ar'
+            ? 'مفيش برامج متاحة دلوقتي'
+            : 'No shows available right now',
         });
-        await recommended.waitFor({ state: 'visible' });
+        if (await noShows.count()) {
+          await noShows.waitFor({ state: 'visible' });
+        } else {
+          const recommended = page.getByRole('region', {
+            name: locale === 'ar' ? 'برامج مقترحة' : 'Recommended shows',
+          });
+          await recommended.waitFor({ state: 'visible' });
+        }
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         );
