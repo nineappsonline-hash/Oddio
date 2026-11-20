@@ -7,6 +7,7 @@ import { PlayerProvider } from '@/components/player/PlayerProvider';
 import { PlayerBar } from '@/components/player/PlayerBar';
 import { DeferredFullPlayer } from '@/components/player/DeferredFullPlayer';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { FavoriteGenresSelector } from '@/components/onboarding/FavoriteGenresSelector';
 import { DesktopTopBar } from '@/components/layout/DesktopTopBar';
 import { ListeningRail } from '@/components/layout/ListeningRail';
 import { MobileHeader, MobileNav } from '@/components/layout/MobileNav';
@@ -62,6 +63,7 @@ export function AppShell({
           <PlayerBar podcastMode={podcastMode} />
           <DeferredFullPlayer />
           <MobileNav />
+          <FavoriteGenresSelector mode="welcome" locale={locale} userId={user?.id ?? null} />
         </PlayerProvider>
       </ToastProvider>
     </SessionProvider>
