@@ -14,7 +14,7 @@ function normalize(value: string): string {
     .trim();
 }
 const synonyms: Record<string, string[]> = {
-  chill: ['chill', 'relax', 'calm', 'هادئ', 'هادي', 'استرخاء', 'رايق', 'رايقين'],
+  chill: ['chill', 'relax', 'calm', 'هادئ', 'هادي', 'هادية', 'هادئه', 'استرخاء', 'رايق', 'رايقين'],
   happy: ['happy', 'joy', 'upbeat', 'سعيد', 'سعاده', 'فرح', 'مبهج'],
   sad: ['sad', 'melancholy', 'حزين', 'حزن', 'كئيب'],
   workout: ['workout', 'gym', 'energy', 'حماس', 'تمرين', 'جيم', 'طاقه'],
@@ -58,8 +58,15 @@ export function promptDiscoveryTracks(
     .map((genre) => genre.id);
   const requestedMoods = db.moods
     .filter((mood) => mood.active)
-    .filter((mood) => [mood.labelEn, mood.labelAr, mood.slug]
-      .some((label) => containsTerm(text, label)))
+    .filter((mood) => {
+      const labels = [mood.labelEn, mood.labelAr, mood.slug];
+      return labels.some((label) => containsTerm(text, label)) ||
+        intents.some((intent) => {
+          const words = synonyms[intent] ?? [];
+          return words.some((word) => containsTerm(text, word)) &&
+            words.some((word) => labels.some((label) => containsTerm(label, word)));
+        });
+    })
     .map((mood) => mood.id);
   const requestedLanguage = intents.includes('arabic') && !intents.includes('english')
     ? 'ar'
