@@ -4,6 +4,7 @@ import { Pause, Play, RotateCcw } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
 import { formatPodcastTime } from '@/lib/podcasts/catalog';
+import { resumablePodcastProgress } from '@/lib/podcast-resume-progress';
 
 /** Shows the last *unfinished* episode from the existing restored player state.
  * No new tracking or autoplay is introduced. Draft/private episode metadata is
@@ -25,11 +26,9 @@ export function ContinueListening({
 
   if (!track || !isPodcastPlayback(track) || !publishedEpisodeIds.includes(track.id)) return null;
   const length = Number.isFinite(duration) && duration > 0 ? duration : track.durationMs / 1000;
-  const position = Math.max(0, Math.min(currentTime, length));
-  // Hide an episode when no meaningful progress exists or it is almost complete.
-  if (length <= 0 || position < 15 || length - position <= 20) return null;
-  const percent = Math.max(0, Math.min(100, Math.round((position / length) * 100)));
-  const remaining = Math.max(0, Math.round(length - position));
+  const progress = resumablePodcastProgress(currentTime, length);
+  if (!progress) return null;
+  const { percent, remaining } = progress;
 
   return (
     <section aria-label={ar ? 'كمّل استماع' : 'Continue listening'}
