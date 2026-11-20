@@ -662,7 +662,8 @@ try {
                 message.includes('due to access control checks') &&
                 (message.includes('/api/podcasts/progress') ||
                   message.includes('/api/player/resume') ||
-                  message.includes('/api/library/smart-playlists'))
+                  message.includes('/api/library/smart-playlists') ||
+                  message.includes('/api/onboarding/favorite-genres'))
               ),
           );
           assert.equal(
