@@ -95,7 +95,7 @@
 | Phase | State | Gate |
 |---|---|---|
 | 0 Baseline & risk audit | IN PROGRESS | Source review started; tests pending |
-| 1 Player & Queue | IN PROGRESS | Desktop volume wheel + Queue Undo code and unit tests committed; browser and CI tests pending |
+| 1 Player & Queue | IN PROGRESS | Desktop volume wheel + Queue Undo + Save Queue code committed; browser/CI verification pending |
 | 2 Library & Playlists | NOT STARTED | Authorized saved ordering |
 | 3 Search | NOT STARTED | Search-to-play measurement |
 | 4 Mobile & Accessibility | NOT STARTED | Cross-device QA |
@@ -127,3 +127,10 @@
 - Reset queue Undo snapshot during restored listener sessions to avoid cross-session stale edits.
 - Added Vitest regression coverage in `apps/web/src/lib/player-store.test.ts` for remove/clear/reorder/advance/invalidation.
 - **Validation pending:** Vercel commit status was `pending` at check; GitHub returned no associated PR workflow runs. Tests were committed but not executed in this tool environment. No merge or production deploy.
+
+### Phase 1 continuation — queue saving and interaction polish
+- Fixed desktop wheel volume input to use a native **non-passive** wheel listener; React synthetic wheel handlers can be passive in browsers and fail to prevent background scroll.
+- Implemented `SaveQueueAsPlaylist`: authenticated listener can enter title, choose private (default) or public, and sequentially save upcoming queue tracks through existing playlist API; duplicates are removed while preserving order. The currently playing track is explicitly excluded.
+- Errors are surfaced; a partially created playlist is linked for inspection rather than silently claiming success or retrying duplicate writes. No bulk atomic playlist API exists yet; API-level transactional saves remain a future improvement.
+- Added action to full-player queue toolbar with responsive wrapping. Adjusted full-player Escape/Tab handler to yield to nested portaled dialog.
+- Pending validation: build/typecheck/unit and end-to-end tests including keyboard focus, network failures, RTL and private playlist permissions. No production merge.
