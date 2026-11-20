@@ -185,3 +185,5 @@
 - Added a 260ms debounced, abortable suggestion request while the search input is focused and has at least two characters. Displays tracks and artists as direct links; supports normal Enter search and a link to all results. Loading/error/empty states are localized; errors do not block ordinary search.
 - Existing recent-search history, keyboard shortcuts and explicit-submit semantics remain. New requests use the current user session's permission-aware catalog.
 - **Verification:** earlier Phase 3 preview `2d3cac46` is Vercel READY; latest autocomplete commits are still BUILDING at last check. Browser keyboard/RTL/mobile testing and tests for this endpoint remain open. Do not merge to production without successful preview and QA.
+
+- Follow-up Phase 3 safety regression: extracted a minimal `projectSearchSuggestions` response mapper and added Vitest cases for field allowlisting and rejection of another listener's private track in suggestion results. These are committed tests; their execution is not yet confirmed. The live API now uses this projection.
