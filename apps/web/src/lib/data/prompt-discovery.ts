@@ -23,7 +23,7 @@ const synonyms: Record<string, string[]> = {
   english: ['english', 'انجليزي', 'إنجليزي'],
 };
 
-export type DiscoveryMatchReason = { kind: 'genre' | 'mood' | 'language' | 'artist' | 'title'; value: string };
+export type DiscoveryMatchReason = { kind: 'genre' | 'mood' | 'language' | 'artist' | 'title' | 'tempo'; value: string };
 
 function containsTerm(text: string, term: string): boolean {
   const input = ' ' + normalize(text) + ' ';
@@ -73,13 +73,26 @@ export function promptDiscoveryTracks(
     : intents.includes('english') && !intents.includes('arabic')
       ? 'en'
       : null;
+  // Numeric tempo requests are honored only for validated worker measurements.
+  // Unmeasured music is not presented as matching a specific BPM.
+  const tempoMatches = [...text.matchAll(/(?:^| )([6-9][0-9]|1[0-9][0-9]|2[0-2][0-9])\s*(?:bpm|بي بي ام)(?: |$)/g)];
+  const tempoTarget = tempoMatches.length === 1 ? Number(tempoMatches[0]?.[1]) : null;
+  const hasTempoConflict = tempoMatches.length > 1;
   const constrained = catalog.filter((track) =>
     (!requestedGenres.length ||
       (track.genreIds?.length ? track.genreIds : [track.genreId])
         .some((genreId) => requestedGenres.includes(genreId))) &&
     (!requestedMoods.length ||
       track.moodIds.some((moodId) => requestedMoods.includes(moodId))) &&
-    (!requestedLanguage || track.languageCode === requestedLanguage)
+    (!requestedLanguage || track.languageCode === requestedLanguage) &&
+    !hasTempoConflict &&
+    (tempoTarget === null || (
+      track.audioFeatures?.tempoBpm != null &&
+      Number.isFinite(track.audioFeatures.tempoBpm) &&
+      track.audioFeatures.tempoConfidence >= 0.75 &&
+      track.audioFeatures.analyzedSeconds >= 15 &&
+      Math.abs(track.audioFeatures.tempoBpm - tempoTarget) <= 5
+    ))
   );
   const ranked = constrained
     .map((track) => {
@@ -100,6 +113,8 @@ export function promptDiscoveryTracks(
         if (!reasons.some((reason) => reason.kind === kind && reason.value === value))
           reasons.push({ kind, value });
       };
+      if (tempoTarget !== null && track.audioFeatures?.tempoBpm != null)
+        addReason('tempo', Math.round(track.audioFeatures.tempoBpm) + ' BPM');
       for (const word of tokens) {
         if (containsTerm(genreText, word)) {
           score += 6;
