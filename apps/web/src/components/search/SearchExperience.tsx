@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiRequest } from '@/lib/client-api';
@@ -42,7 +42,7 @@ export function SearchExperience({
     suggestionRef.current?.querySelectorAll<HTMLAnchorElement>('a[data-suggestion-link]') ?? [],
   );
 
-  const onSuggestionKeys = (event: KeyboardEvent<HTMLDivElement>) => {
+  const onSuggestionKeys = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape') {
       event.preventDefault();
       setFocused(false);
