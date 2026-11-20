@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { homePersonalizationKey, parseHomePersonalizationPreference } from '@/lib/home-personalization';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { TrackCard } from '@/components/music/TrackCard';
 import { FlowButton } from '@/components/player/FlowButton';
@@ -15,21 +16,52 @@ import {
 
 export function DiscoveryMixShelf({
   tracks,
+  publicTracks,
   personalized,
   locale,
   viewerId,
 }: {
   tracks: CatalogTrack[];
+  publicTracks: CatalogTrack[];
   personalized: boolean;
   locale: 'ar' | 'en';
   viewerId: string | null;
 }) {
   const ar = locale === 'ar';
   const [cloudSynced, setCloudSynced] = useState(false);
+  const [personalizationEnabled, setPersonalizationEnabled] = useState(true);
+  const [personalizationLoaded, setPersonalizationLoaded] = useState(false);
   const [prefs, setPrefs] = useState<DiscoveryExclusions>({
     trackIds: [],
     genreIds: [],
   });
+  useEffect(() => {
+    setPersonalizationLoaded(false);
+    if (!viewerId) {
+      setPersonalizationEnabled(false);
+      setPersonalizationLoaded(true);
+      return;
+    }
+    try {
+      setPersonalizationEnabled(
+        parseHomePersonalizationPreference(window.localStorage.getItem(homePersonalizationKey(viewerId))),
+      );
+    } catch {
+      setPersonalizationEnabled(true);
+    }
+    setPersonalizationLoaded(true);
+  }, [viewerId]);
+
+  const turnPersonalization = (enabled: boolean) => {
+    if (!viewerId) return;
+    setPersonalizationEnabled(enabled);
+    try {
+      window.localStorage.setItem(homePersonalizationKey(viewerId), enabled ? 'on' : 'off');
+    } catch {
+      // Continue with the current session setting when browser storage is unavailable.
+    }
+  };
+
   useEffect(() => {
     setPrefs(readDiscoveryExclusions(viewerId));
     let mounted = true;
@@ -64,7 +96,9 @@ export function DiscoveryMixShelf({
       });
     }
   }
-  const visible = tracks.filter(
+  const showPersonalized = Boolean(viewerId && personalized && personalizationEnabled);
+  const sourceTracks = showPersonalized ? tracks : publicTracks;
+  const visible = sourceTracks.filter(
     (track) =>
       !prefs.trackIds.includes(track.id) &&
       !(track.genreIds?.length ? track.genreIds : [track.genreId]).some((id) =>
@@ -81,7 +115,7 @@ export function DiscoveryMixShelf({
         <div>
           <p className="oddio-micro-label">ODDIO PICKS</p>
           <h2>
-            {personalized
+            {showPersonalized
               ? ar
                 ? 'مختارة على ذوقك'
                 : 'Picked for your taste'
@@ -90,7 +124,7 @@ export function DiscoveryMixShelf({
                 : 'Start listening here'}
           </h2>
           <p className="text-sm text-muted">
-            {personalized
+            {showPersonalized
               ? ar
                 ? 'حسب إعجاباتك واستماعك المكتمل.'
                 : 'Inspired by your likes and completed listens.'
@@ -105,6 +139,39 @@ export function DiscoveryMixShelf({
           <FlowButton kind="weekly" locale={locale} viewerId={viewerId} />
         </div>
       </div>
+      {viewerId && personalizationLoaded ? (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-ink">
+              {ar ? 'اختيارات على ذوقك' : 'Personalized picks'}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              {personalizationEnabled
+                ? ar
+                  ? 'الاقتراحات بتعتمد على الأغاني اللي عجبتك والاستماع المكتمل. اقفلها لو تفضل اختيارات عامة.'
+                  : 'Suggestions use your likes and completed listens. Turn them off to browse general picks.'
+                : ar
+                  ? 'بتشوف اختيارات عامة مش مبنية على نشاط استماعك.'
+                  : 'You are seeing general picks, not based on your listening activity.'}
+            </p>
+            <p className="mt-1 text-[11px] text-muted">
+              {ar
+                ? 'الإعداد محفوظ على الجهاز ده. مش بيمسح سجل الاستماع.'
+                : 'Saved on this device. This does not delete listening history.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            aria-pressed={personalizationEnabled}
+            onClick={() => turnPersonalization(!personalizationEnabled)}
+            className="min-h-11 shrink-0 rounded-full border border-primary/40 px-4 text-xs font-bold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            {personalizationEnabled
+              ? ar ? 'إيقاف التخصيص' : 'Turn off'
+              : ar ? 'تشغيل التخصيص' : 'Turn on'}
+          </button>
+        </div>
+      ) : null}
       <p className="mb-3 text-xs text-muted" role="status">
         {viewerId
           ? cloudSynced
