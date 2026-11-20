@@ -168,6 +168,13 @@ export function FullPlayer() {
   useEffect(() => {
     if (!expanded || !hasTrack) return;
     const onKeyDown = (event: KeyboardEvent) => {
+      // Child actions can open their own portaled dialog. Let that topmost
+      // dialog handle Escape and Tab rather than stealing focus or closing
+      // the underlying full player.
+      const nestedDialogOpen = Array.from(
+        document.querySelectorAll<HTMLElement>('[role="dialog"][aria-modal="true"]'),
+      ).some((dialog) => dialog !== dialogRef.current && !dialogRef.current?.contains(dialog));
+      if (nestedDialogOpen) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         if (mobileLyricsOpen) setMobileLyricsOpen(false);
