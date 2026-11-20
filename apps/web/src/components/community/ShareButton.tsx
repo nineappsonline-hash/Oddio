@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Check, Copy, Facebook, Instagram, MessageCircle, Share2, X } from 'lucide-react';
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
+import { canonicalOddioShareUrl } from '@/lib/share-url';
 
 export function ShareButton({
   title,
@@ -21,15 +22,28 @@ export function ShareButton({
 
   // Prefer a content-specific address over the current page, especially
   // when the full-screen player is open on an unrelated route.
-  const shareUrl = () => {
-    const link = new URL(url || window.location.href, window.location.origin);
-    // Social apps aggressively cache previews for a URL. Keep the canonical
-    // destination unchanged while forcing a fresh fetch for revised share cards.
-    if (/\/(tracks\/|podcasts\/(episodes|shows)\/)/.test(link.pathname)) {
-      link.searchParams.set('preview', 'v2');
+  const shareUrl = () => canonicalOddioShareUrl(url, window.location.href);
+
+  useEffect(() => {
+    if (open) {
+      root.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
     }
-    return link.toString();
-  };
+  }, [open]);
+
+  function handleMenuKeys(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+    const items = Array.from(
+      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'),
+    );
+    if (!items.length) return;
+    event.preventDefault();
+    const index = items.indexOf(document.activeElement as HTMLButtonElement);
+    const next = event.key === 'Home' ? 0
+      : event.key === 'End' ? items.length - 1
+      : event.key === 'ArrowDown' ? (index + 1 + items.length) % items.length
+      : (index - 1 + items.length) % items.length;
+    items[next]?.focus();
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -112,6 +126,7 @@ export function ShareButton({
         <div
           role="menu"
           aria-label="Share options"
+          onKeyDown={handleMenuKeys}
           className="absolute bottom-full end-0 z-[100] mb-2 w-56 overflow-hidden rounded-2xl border border-[#665078] bg-[#211a2b] p-1.5 text-sm text-white shadow-[0_15px_45px_rgba(0,0,0,0.55)]"
         >
           <button
