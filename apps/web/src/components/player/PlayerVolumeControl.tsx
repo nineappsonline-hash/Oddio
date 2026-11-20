@@ -62,6 +62,29 @@ export function PlayerVolumeControl({
     });
   };
 
+  // Desktop convenience: adjust volume while hovering the slider without
+  // grabbing its thumb. Keep normal page scrolling everywhere else.
+  const adjustWithWheel = (event: React.WheelEvent<HTMLInputElement>) => {
+    if (mobile || event.ctrlKey || event.deltaY === 0) return;
+    event.preventDefault();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    const slider = event.currentTarget;
+    const current = Number(slider.value);
+    const next = Math.max(0, Math.min(100, current + direction * 5));
+    if (next === current) return;
+    slider.value = String(next);
+    updateFromInput(slider);
+    finishWheel(next);
+  };
+
+  const finishWheel = (value: number) => {
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+    setVolume(value / 100);
+  };
+
   const finishDrag = () => {
     if (frameRef.current !== null) {
       cancelAnimationFrame(frameRef.current);
@@ -143,6 +166,7 @@ export function PlayerVolumeControl({
           max="100"
           step="1"
           defaultValue={pct}
+          onWheel={adjustWithWheel}
           onInput={(event) => updateFromInput(event.currentTarget)}
           onChange={(event) => updateFromInput(event.currentTarget)}
           onPointerUp={finishDrag}
