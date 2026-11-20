@@ -41,6 +41,17 @@ describe('annual Rewind explicit share fields', () => {
     expect(text).not.toContain('artist-ids');
   });
 
+  it('does not expose an annual card below five qualified listens', () => {
+    for (const listens of [0, 1, 4]) {
+      expect(annualShareText({ ...report, qualifiedListens: listens }, 'en', {
+        includeTopArtist: true, includeTopGenre: true,
+      })).toBe('');
+    }
+    expect(annualShareText({ ...report, qualifiedListens: 5 }, 'en', {
+      includeTopArtist: false, includeTopGenre: false,
+    })).toContain('5 qualified listens');
+  });
+
   it('does not provide a share payload when there are no qualified listens', () => {
     expect(
       annualShareText({ ...report, qualifiedListens: 0 }, 'en', {
