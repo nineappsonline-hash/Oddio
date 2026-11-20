@@ -321,8 +321,18 @@ export function FullPlayer() {
           <h2 className="mt-1 text-2xl font-black tracking-tight text-white">{rtl ? 'مساحتك للاستماع' : 'Your listening space'}</h2>
           <p className="mt-1 text-sm text-[#999999]">{rtl ? 'استمتع بالموسيقى والبودكاست في مكان واحد' : 'Immersive audio. Seamless control.'}</p>
         </div>
+        <div className="mb-3 flex items-center justify-end lg:hidden">
+          <button type="button" onClick={() => setSideTab(sideTab === 'queue' ? 'similar' : 'queue')}
+            aria-label={sideTab === 'queue' ? (rtl ? 'الرجوع للمشغل' : 'Back to player') : t('player.queue')}
+            aria-expanded={sideTab === 'queue'}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-4 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+            <ListMusic className="h-5 w-5" aria-hidden="true" />
+            {sideTab === 'queue' ? (rtl ? 'الرجوع للمشغل' : 'Back to player') : t('player.queue')}
+            {sideTab !== 'queue' ? ` (${queue.length})` : ''}
+          </button>
+        </div>
         <div className="grid w-full min-w-0 flex-1 grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(290px,0.9fr)] lg:items-start">
-          <div className="oddio-mobile-player-card flex min-h-0 min-w-0 flex-col justify-between rounded-[24px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.20),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[28px] sm:rounded-[28px] sm:p-6 lg:block lg:p-5">
+          <div className={cn("oddio-mobile-player-card min-h-0 min-w-0 flex-col justify-between rounded-[24px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.20),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[28px] sm:rounded-[28px] sm:p-6 lg:block lg:p-5", sideTab === 'queue' ? 'hidden lg:block' : 'flex')}>
             <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-evenly gap-3 sm:gap-5 lg:grid lg:flex-none lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:items-center lg:gap-5">
             <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(78vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
               <div
@@ -756,7 +766,7 @@ export function FullPlayer() {
           </div>
 
           <aside
-            className="hidden min-h-[470px] max-h-[calc(100vh-175px)] flex-col rounded-[28px] border border-white/[0.13] bg-white/[0.055] backdrop-blur-[28px] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] p-4 shadow-[0_24px_70px_rgba(0,0,0,.2)] lg:flex"
+            className={cn("min-h-[55dvh] max-h-[calc(100dvh-110px)] flex-col overflow-hidden rounded-[28px] border border-white/[0.13] bg-white/[0.055] p-4 shadow-[0_24px_70px_rgba(0,0,0,.2)] backdrop-blur-[28px] lg:flex lg:min-h-[470px] lg:max-h-[calc(100vh-175px)]", sideTab === 'queue' ? 'flex' : 'hidden lg:flex')}
             aria-label={sideTab === 'lyrics' ? 'Lyrics' : sideTab === 'queue' ? t('player.queue') : (rtl ? 'اقتراحات مشابهة' : 'Similar content')}
           >
             <div
