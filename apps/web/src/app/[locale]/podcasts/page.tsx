@@ -4,7 +4,7 @@ import {
 } from '@/lib/content-language';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowUpRight, Mic2, Search } from 'lucide-react';
+import { ArrowUpRight, Bell, Mic2, Search } from 'lucide-react';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { getPodcastCatalog } from '@/lib/podcasts/catalog';
@@ -116,6 +116,13 @@ export default async function PodcastsHome({
             >
               {ar ? 'مقترحات ليك' : 'For you'}
               <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
+            </Link>
+            <Link
+              href={`/${locale}/podcasts/notifications`}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#d4b0f4]/50 bg-[#d4b0f4]/10 px-5 text-sm font-semibold text-white transition hover:bg-[#d4b0f4]/20"
+            >
+              <Bell className="h-4 w-4" aria-hidden="true" />
+              {ar ? 'إشعارات البودكاست' : 'Notifications'}
             </Link>
             <Link
               href={`/${locale}/podcasts/following`}
