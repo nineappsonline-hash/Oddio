@@ -25,12 +25,16 @@ export function PlaylistReorderableTracks({
     try {
       await apiRequest(`/api/playlists/${encodeURIComponent(playlistId)}/reorder`, {
         method: 'PATCH',
-        body: JSON.stringify({ trackIds: next.map((track) => track.id) }),
+        body: JSON.stringify({
+          trackIds: next.map((track) => track.id),
+          expectedTrackIds: tracks.map((track) => track.id),
+        }),
       });
       setMessage(ar ? 'اتحفظ الترتيب الجديد' : 'Order saved');
     } catch (error) {
       setTracks(tracks);
       setMessage(error instanceof Error ? error.message : (ar ? 'تعذر حفظ الترتيب' : 'Could not save order'));
+      // The server may have changed while this page was open; reload it before retrying.
     } finally {
       setSaving(false);
     }
