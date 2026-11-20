@@ -107,6 +107,26 @@ describe('prompt-generated playlists', () => {
     expect(result.reasons).toEqual({});
   });
 
+  it('only accepts BPM requests when analysis confidence and duration are adequate', () => {
+    const db = dbFixture();
+    const arabic = db.tracks.find((track) => track.id === 'arabic')!;
+    const english = db.tracks.find((track) => track.id === 'english')!;
+    arabic.audioFeatures = {
+      schemaVersion: 1, tempoBpm: 120, tempoConfidence: 0.9,
+      rmsDbfs: -12, peakDbfs: -2, analyzedSeconds: 25,
+    };
+    english.audioFeatures = {
+      schemaVersion: 1, tempoBpm: 120, tempoConfidence: 0.2,
+      rmsDbfs: -12, peakDbfs: -2, analyzedSeconds: 25,
+    };
+    const matched = promptDiscoveryTracks(db, viewer, '120 bpm');
+    expect(matched.tracks.map((track) => track.id)).toEqual(['arabic']);
+    expect(matched.reasons.arabic).toContainEqual({ kind: 'tempo', value: '120 BPM' });
+    expect(promptDiscoveryTracks(db, viewer, 'English 120 bpm').tracks).toEqual([]);
+    arabic.audioFeatures = { ...arabic.audioFeatures, analyzedSeconds: 4 };
+    expect(promptDiscoveryTracks(db, viewer, '120 bpm').tracks).toEqual([]);
+  });
+
   it('matches English genre words', () => {
     const result = promptDiscoveryTracks(dbFixture(), viewer, 'energetic rock');
     expect(result.matched).toBe(true);
