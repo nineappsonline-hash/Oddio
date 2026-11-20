@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type WheelEvent } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 
@@ -64,7 +64,7 @@ export function PlayerVolumeControl({
 
   // Desktop convenience: adjust volume while hovering the slider without
   // grabbing its thumb. Keep normal page scrolling everywhere else.
-  const adjustWithWheel = (event: React.WheelEvent<HTMLInputElement>) => {
+  const adjustWithWheel = (event: WheelEvent<HTMLInputElement>) => {
     if (mobile || event.ctrlKey || event.deltaY === 0) return;
     event.preventDefault();
     const direction = event.deltaY < 0 ? 1 : -1;
