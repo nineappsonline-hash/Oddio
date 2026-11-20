@@ -51,3 +51,7 @@
 - Current branch constrains Rewind main/stat grids to the mobile viewport, permits Arabic labels to wrap, and adds a browser diagnostic reporting overflowing DOM elements if the overflow persists. Pointer drag smoke now targets the center of the intended list row and waits for the reorder to commit instead of assuming synchronous pointer state.
 - The scoped formatter has been triggered again (`44829307116`). All these changes are awaiting a **single same-SHA** full CI green run. Earlier mixed successes do not satisfy this gate.
 - Production promotion remains **NO-GO**, pending complete CI acceptance, real R2 playback, dedicated staging migrations, mobile iOS/Android testing, and performance baselines. No production database changes.
+
+## Final mobile regression follow-up
+
+Latest mobile viewport correction: constrain the HTML and body inline width to the device viewport while clipping overflow. The browser regression now records HTML, body and workspace widths if RTL overflow persists. This must pass Chromium, Firefox and WebKit before release.
