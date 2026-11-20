@@ -354,6 +354,32 @@ try {
         assert.equal(await filters.locator('select[name="sort"]').inputValue(), 'newest');
       });
 
+      await test(`${label} podcast listening history navigation and controls`, async () => {
+        const response = await page.goto(`${base}/${locale}/podcasts/history`, {
+          waitUntil: 'domcontentloaded',
+        });
+        assert.equal(response?.status(), 200);
+        await page.getByRole('heading', { level: 1 }).waitFor();
+        const history = page.getByRole('region', {
+          name: locale === 'ar' ? 'سجل استماع البودكاست' : 'Podcast listening history',
+        });
+        await history.waitFor({ state: 'visible' });
+        const filter = history.getByRole('button', {
+          name: locale === 'ar' ? /لسه مكملتهاش/ : /In progress/,
+        });
+        await filter.click();
+        assert.equal(await filter.getAttribute('aria-pressed'), 'true');
+        const input = history.getByRole('textbox', {
+          name: locale === 'ar' ? 'ابحث في سجل الاستماع' : 'Search listening history',
+        });
+        await input.fill('no-such-episode');
+        assert.equal(await input.inputValue(), 'no-such-episode');
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        assert.ok(overflow <= 2, `history layout horizontal overflow: ${overflow}px`);
+      });
+
       await test(`${label} anonymous discovery preference sync is protected`, async () => {
         const read = await page.request.get(`${base}/api/discovery/preferences`);
         assert.equal(read.status(), 401);
