@@ -94,8 +94,8 @@
 ## Phase tracking
 | Phase | State | Gate |
 |---|---|---|
-| 0 Baseline & risk audit | IN PROGRESS | Inventory and test evidence |
-| 1 Player & Queue | NOT STARTED | E2E + persistence |
+| 0 Baseline & risk audit | IN PROGRESS | Source review started; tests pending |
+| 1 Player & Queue | IN PROGRESS | Desktop volume-wheel code committed; browser and CI tests pending |
 | 2 Library & Playlists | NOT STARTED | Authorized saved ordering |
 | 3 Search | NOT STARTED | Search-to-play measurement |
 | 4 Mobile & Accessibility | NOT STARTED | Cross-device QA |
@@ -113,3 +113,10 @@
 - Production data path is described as incomplete for some social and playlist mutations; treat drag-sort persistence as a correctness/security task, not merely a UI task.
 - R2 authenticated streaming and development-branch migration gates are explicitly flagged as unresolved. Production must remain unaffected pending validation.
 - Next investigation: read the actual player/queue components and state store, playlist mutation APIs and Supabase adapter before editing interactions.
+
+## Implementation log — 2026-11-20
+- Located `apps/web/src/components/player/{PlayerProvider,PlayerBar,PlayerVolumeControl}.tsx`, `apps/web/src/lib/{player-store,player-session,reorder-items}.ts`.
+- Verified in code: queue move/reorder methods, next-in-queue, queue restore, dedicated playback retry and volume persistence already exist. Avoid duplicating them.
+- **First feature commit:** mouse-wheel volume adjustment when the pointer is over the desktop volume slider, with 5% steps and clamping to 0–100%. Excludes mobile UI. Requires browser regression testing (especially scrolling/trackpads) before release.
+- Tests/build were **not run** because this connector provides repository file access, not an executable checkout. No production deployment or merge was performed.
+- Next: inspect `FullPlayer.tsx` queue interactions and playlist save APIs; add reversible queue edits and verify with test suite + browser.
