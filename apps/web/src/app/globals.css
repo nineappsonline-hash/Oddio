@@ -2578,3 +2578,22 @@ body {
     animation: none !important;
   }
 }
+
+
+/* The active mini player lives directly under the workspace header, instead
+   of the legacy fixed bottom dock. Keep the idle dock unchanged. */
+.oddio-player-bar.oddio-top-mini-player {
+  position: sticky !important;
+  inset: auto !important;
+  top: 64px !important;
+  bottom: auto !important;
+  width: auto;
+  z-index: 40;
+  background: rgba(23, 21, 29, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+@media (min-width: 1024px) {
+  .oddio-player-bar.oddio-top-mini-player {
+    top: 83px !important;
+  }
+}
