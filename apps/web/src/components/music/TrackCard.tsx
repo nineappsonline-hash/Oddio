@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
+import { cn } from '@/lib/utils';
 
 export function TrackCard({
   track,
@@ -25,7 +26,13 @@ export function TrackCard({
   const isPlaying = usePlayer((state) => state.track?.id === track.id && state.isPlaying);
 
   return (
-    <article className="group card card-hover relative min-w-0 overflow-hidden p-3 transition-colors duration-200 focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20">
+    <article
+      data-playback-state={isCurrent ? (isPlaying ? 'playing' : 'paused') : undefined}
+      className={cn(
+        'group card card-hover relative min-w-0 overflow-hidden p-3 transition-colors duration-200 focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20',
+        isCurrent && 'border-[#bd73f0] bg-[#a953e7]/[0.12] ring-2 ring-[#ab60e2]/50 shadow-[0_12px_36px_rgba(119,57,174,0.2)]',
+      )}
+    >
       <div className="art-frame relative rounded-xl">
         <Artwork
           title={track.title}
@@ -45,7 +52,7 @@ export function TrackCard({
           </Badge>
         ) : null}
         {isCurrent ? (
-          <span className="glass-pill absolute start-2 bottom-2 inline-flex items-center gap-1.5 rounded-pill px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-ink">
+          <span className="glass-pill absolute start-2 top-2 z-20 inline-flex items-center gap-1.5 rounded-full border border-[#c78bf4]/70 bg-[#22142d]/95 px-2.5 py-1.5 text-[10px] font-bold text-white shadow-lg backdrop-blur-md">
             <Equalizer bars={3} paused={!isPlaying} className="h-2.5 text-primary" />
             {isPlaying ? t('player.live') : t('player.paused')}
           </span>
