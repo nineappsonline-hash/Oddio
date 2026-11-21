@@ -9,6 +9,7 @@ import {
   ChevronUp,
   ListMusic,
   Moon,
+  MoreHorizontal,
   Mic2,
   Pause,
   Play,
@@ -84,6 +85,8 @@ export function FullPlayer() {
   const [generatingLyrics, setGeneratingLyrics] = useState(false);
   const [lyricsMessage, setLyricsMessage] = useState('');
   const [mobileLyricsOpen, setMobileLyricsOpen] = useState(false);
+  const [mobileOptionsOpen, setMobileOptionsOpen] = useState(false);
+  const mobileOptionsRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [controlNotice, setControlNotice] = useState('');
   useEffect(() => {
@@ -98,6 +101,22 @@ export function FullPlayer() {
     return () => window.removeEventListener('oddio:open-queue', showQueue);
   }, []);
   const rtl = useLocale() === 'ar';
+  useEffect(() => {
+    if (!mobileOptionsOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!mobileOptionsRef.current?.contains(event.target as Node)) setMobileOptionsOpen(false);
+    };
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOptionsOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onEscape);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onEscape);
+    };
+  }, [mobileOptionsOpen]);
+
   // A browser Back from the overlay's same-URL history entry should only
   // minimize the full player, leaving playback and the underlying page intact.
   // Forward can reopen the overlay if the audio item is still available.
@@ -371,7 +390,16 @@ export function FullPlayer() {
               sideTab === 'queue' ? 'hidden lg:block' : 'flex',
             )}
           >
-        <div className="mb-3 flex items-center justify-end gap-2 lg:hidden">
+        <div className="mb-3 flex items-center justify-between gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            aria-label={t('player.minimize')}
+            title={t('player.minimize')}
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            <ChevronDown className="h-5 w-5" aria-hidden="true" />
+          </button>
           <button
             type="button"
             onClick={() => setSideTab(sideTab === 'queue' ? 'similar' : 'queue')}
@@ -395,16 +423,7 @@ export function FullPlayer() {
           </button>
         </div>
             <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-evenly gap-3 sm:gap-5 lg:grid lg:flex-none lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:items-center lg:gap-5">
-              <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(72vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
-                <button
-                  type="button"
-                  onClick={() => setExpanded(false)}
-                  aria-label={t('player.minimize')}
-                  title={t('player.minimize')}
-                  className="absolute -start-11 top-2 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary lg:hidden"
-                >
-                  <ChevronDown className="h-5 w-5" aria-hidden="true" />
-                </button>
+              <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(78vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
                 <div
                   aria-hidden="true"
                   className="absolute -inset-2 rounded-[2.5rem] opacity-25 blur-2xl sm:-inset-4 sm:opacity-30 sm:blur-3xl"
@@ -576,7 +595,24 @@ export function FullPlayer() {
                     {track.genre ? (
                       <Badge tone="neutral">{track.genre.slug}</Badge>
                     ) : null}
-                    <span className="ms-auto shrink-0">
+                    <span className="ms-auto flex shrink-0 items-center gap-1.5">
+                      {!podcast ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            toggleShuffle();
+                            setControlNotice(rtl
+                              ? (shuffle ? 'إيقاف التشغيل العشوائي' : 'تشغيل عشوائي')
+                              : (shuffle ? 'Shuffle off' : 'Shuffle on'));
+                          }}
+                          aria-label={t('player.shuffle')}
+                          title={t('player.shuffle')}
+                          aria-pressed={shuffle}
+                          className={cn('inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 transition hover:bg-white/10 lg:hidden', shuffle ? 'bg-primary/20 text-primary' : 'text-muted')}
+                        >
+                          <Shuffle className="h-4 w-4" />
+                        </button>
+                      ) : null}
                       <ShareButton
                         title={track.title}
                         label={t('common.share')}
@@ -591,10 +627,72 @@ export function FullPlayer() {
                 </div>
                 {!podcast && (
                   <div className="flex flex-wrap items-center gap-3">
+                    <div className="hidden sm:block">
                     <AddToPlaylistButton
                       trackId={track.id}
                       label={t('track.addToPlaylist')}
                     />
+                    </div>
+                    <div className="relative sm:hidden" ref={mobileOptionsRef}>
+                      <button
+                        type="button"
+                        onClick={() => setMobileOptionsOpen((open) => !open)}
+                        aria-label={rtl ? 'خيارات الأغنية' : 'Track options'}
+                        aria-expanded={mobileOptionsOpen}
+                        aria-haspopup="menu"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+                      >
+                        <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                      {mobileOptionsOpen ? (
+                        <div role="menu" className="absolute bottom-full start-0 z-[80] mb-2 flex min-w-[210px] flex-col gap-1 rounded-xl border border-white/20 bg-[#242129] p-2 shadow-2xl">
+                          <div role="none" className="[&_button]:w-full [&_button]:justify-start">
+                            <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />
+                          </div>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              usePlayer.setState((state) => ({
+                                queue: state.track && !state.queue.some((item) => item.id === state.track?.id)
+                                  ? [...state.queue, state.track]
+                                  : state.queue,
+                              }));
+                              setMobileOptionsOpen(false);
+                              setControlNotice(rtl ? 'اتضاف لقائمة الانتظار' : 'Added to queue');
+                            }}
+                            className="flex min-h-11 items-center gap-2 rounded-lg px-3 text-start text-sm text-white hover:bg-white/10"
+                          >
+                            <ListMusic className="h-4 w-4" />
+                            {rtl ? 'أضف لقائمة الانتظار' : 'Add to queue'}
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setMobileOptionsOpen(false);
+                              setSideTab('queue');
+                            }}
+                            className="flex min-h-11 items-center gap-2 rounded-lg px-3 text-start text-sm text-white hover:bg-white/10"
+                          >
+                            <ListMusic className="h-4 w-4" />
+                            {t('player.queue')}
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setMobileOptionsOpen(false);
+                              setSideTab('similar');
+                            }}
+                            className="flex min-h-11 items-center gap-2 rounded-lg px-3 text-start text-sm text-white hover:bg-white/10"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                            {rtl ? 'محتوى مشابه' : 'Similar tracks'}
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
                     <div className="flex items-center gap-2">
                       <LikeButton
                         trackId={track.id}
@@ -839,28 +937,6 @@ export function FullPlayer() {
                 </div>
               </div>
             </div>
-            {!podcast ? (
-              <div className="mt-2 flex w-full items-center justify-start border-t border-white/10 pt-2 sm:hidden">
-                <button
-                  type="button"
-                  onClick={() => {
-                    toggleShuffle();
-                    setControlNotice(rtl
-                      ? (shuffle ? 'إيقاف التشغيل العشوائي' : 'تشغيل عشوائي')
-                      : (shuffle ? 'Shuffle off' : 'Shuffle on'));
-                  }}
-                  aria-label={t('player.shuffle')}
-                  aria-pressed={shuffle}
-                  className={cn(
-                    'inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-xs font-semibold transition hover:bg-white/10',
-                    shuffle ? 'bg-primary/15 text-primary' : 'text-muted',
-                  )}
-                >
-                  <Shuffle className="h-4 w-4" aria-hidden="true" />
-                  {rtl ? 'تشغيل عشوائي' : 'Shuffle'}
-                </button>
-              </div>
-            ) : null}
             <div className="mt-2 flex w-full min-w-0 shrink-0 items-center justify-end border-t border-white/10 pt-2.5 sm:hidden">
               <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-[10px] leading-tight text-[#bdbdbd]">
                 <input
