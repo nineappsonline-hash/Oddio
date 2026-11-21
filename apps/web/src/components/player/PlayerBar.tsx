@@ -3,12 +3,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
-import { ChevronDown, ChevronUp, MoreHorizontal, Pause, Play, SkipForward, ListMusic, Expand } from 'lucide-react';
+import { ChevronDown, ChevronUp, MoreHorizontal, Pause, Play, SkipForward, ListMusic, Expand, ListPlus, Share2, Heart, HeartCrack } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
 import { formatDuration } from '@/lib/utils';
 import { OddioGlyph } from '@/components/ui/OddioGlyph';
+import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
+import { LikeButton } from '@/components/community/LikeButton';
+import { DislikeButton } from '@/components/community/DislikeButton';
+import { ShareButton } from '@/components/community/ShareButton';
 
 export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   const t = useT();
@@ -176,21 +180,65 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
             className="grid h-10 w-10 place-items-center rounded-full text-white/80 transition hover:bg-white/10">
             <MoreHorizontal className="h-5 w-5" />
           </button>
-          {optionsOpen ? (
-            <div role="menu" className="absolute end-0 top-full z-50 mt-2 min-w-[170px] rounded-xl border border-white/20 bg-[#24202d] p-1.5 shadow-2xl">
-              <button role="menuitem" type="button" onClick={() => { setOptionsOpen(false); setExpanded(true); }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm text-white hover:bg-white/10">
-                <Expand className="h-4 w-4" /> {rtl ? 'المشغّل الكامل' : 'Full player'}
-              </button>
-              <button role="menuitem" type="button" onClick={showQueue}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm text-white hover:bg-white/10">
-                <ListMusic className="h-4 w-4" /> {t('player.queue')}
-              </button>
+          <div
+            role="menu"
+            aria-label={rtl ? 'خيارات الأغنية' : 'Track options'}
+            className={`absolute end-0 top-full z-[100] mt-2 w-[235px] rounded-xl border border-white/20 bg-[#24202d] p-2 shadow-2xl ${optionsOpen ? 'block' : 'hidden'}`}
+          >
+            <button role="menuitem" type="button" onClick={() => { setOptionsOpen(false); setExpanded(true); }}
+              className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+              <Expand className="h-4 w-4" /> {rtl ? 'المشغّل الكامل' : 'Full player'}
+            </button>
+            <button role="menuitem" type="button" onClick={showQueue}
+              className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+              <ListMusic className="h-4 w-4" /> {t('player.queue')}
+            </button>
+            {!podcast ? (
+              <>
+                <div role="none" className="w-full [&_button]:min-h-10 [&_button]:w-full [&_button]:justify-start [&_button]:border-0 [&_button]:bg-transparent [&_button]:px-3 [&_button]:py-2 [&_button]:text-sm [&_button]:text-white [&_button:hover]:bg-white/10">
+                  <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />
+                </div>
+                <button role="menuitem" type="button"
+                  onClick={() => {
+                    const state = usePlayer.getState();
+                    if (state.track?.id === track.id) {
+                      setControlNotice(rtl ? 'الأغنية دي شغالة دلوقتي' : 'This track is already playing');
+                    } else {
+                      state.addToQueue(track);
+                      setControlNotice(rtl ? 'اتضافت لقائمة الانتظار' : 'Added to queue');
+                    }
+                    setOptionsOpen(false);
+                  }}
+                  className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+                  <ListPlus className="h-4 w-4" /> {rtl ? 'إضافة لقائمة الانتظار' : 'Add to queue'}
+                </button>
+                <div className="my-1 border-t border-white/10" />
+                <div role="none" className="flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-sm text-white">
+                  <span className="inline-flex items-center gap-2"><Heart className="h-4 w-4" /> {rtl ? 'إعجاب' : 'Like'}</span>
+                  <LikeButton key={track.id} trackId={track.id} initialLiked={track.isLiked} initialCount={track.likeCount} compact />
+                </div>
+                <div role="none" className="flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-sm text-white">
+                  <span className="inline-flex items-center gap-2"><HeartCrack className="h-4 w-4" /> {rtl ? 'عدم إعجاب' : 'Dislike'}</span>
+                  <DislikeButton key={track.id} trackId={track.id} />
+                </div>
+              </>
+            ) : null}
+            <div role="none" className="flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-sm text-white">
+              <span className="inline-flex items-center gap-2"><Share2 className="h-4 w-4" /> {t('common.share')}</span>
+              <div className="[&_button]:!text-xs [&_button]:!px-2">
+                <ShareButton
+                  title={track.title}
+                  label={t('common.share')}
+                  url={podcast
+                    ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
+                    : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
+                />
+              </div>
             </div>
-          ) : null}
+          </div>
         </div>
-        <button type="button" onClick={() => { setOptionsOpen(false); setMinimized(true); }}
-          aria-label={t('player.minimize')} title={t('player.minimize')}
+        <button type="button" onClick={() => { setOptionsOpen(false); setExpanded(true); }}
+          aria-label={t('player.expand')} title={t('player.expand')}
           className="grid h-10 w-10 place-items-center rounded-full border border-white/20 text-white/85 transition hover:bg-white/10">
           <ChevronDown className="h-5 w-5" />
         </button>
