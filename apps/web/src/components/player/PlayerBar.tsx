@@ -202,7 +202,11 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
                   onClick={() => {
                     const state = usePlayer.getState();
                     if (state.track?.id === track.id) {
-                      setControlNotice(rtl ? 'الأغنية دي شغالة دلوقتي' : 'This track is already playing');
+                      usePlayer.setState((current) => ({
+                        queue: [...current.queue, track],
+                        queueUndo: null,
+                      }));
+                      setControlNotice(rtl ? 'اتضافت لإعادة التشغيل في قائمة الانتظار' : 'Added to queue for replay');
                     } else {
                       state.addToQueue(track);
                       setControlNotice(rtl ? 'اتضافت لقائمة الانتظار' : 'Added to queue');
