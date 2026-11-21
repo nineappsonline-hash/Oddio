@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
-import { ChevronDown, ChevronUp, MoreHorizontal, Pause, Play, SkipForward, ListMusic, Expand, ListPlus, Heart, HeartCrack } from 'lucide-react';
+import { ChevronDown, ChevronUp, MoreHorizontal, Pause, Play, SkipForward, ListMusic, Expand, ListPlus, Heart, HeartCrack, Moon, Shuffle, Repeat, Gauge, ExternalLink } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
@@ -30,6 +31,14 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   const next = usePlayer((state) => state.next);
   const seek = usePlayer((state) => state.seek);
   const setExpanded = usePlayer((state) => state.setExpanded);
+  const shuffle = usePlayer((state) => state.shuffle);
+  const toggleShuffle = usePlayer((state) => state.toggleShuffle);
+  const repeat = usePlayer((state) => state.repeat);
+  const cycleRepeat = usePlayer((state) => state.cycleRepeat);
+  const playbackRate = usePlayer((state) => state.playbackRate);
+  const setPlaybackRate = usePlayer((state) => state.setPlaybackRate);
+  const sleepUntil = usePlayer((state) => state.sleepUntil);
+  const setSleepTimer = usePlayer((state) => state.setSleepTimer);
   const [minimized, setMinimized] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [controlNotice, setControlNotice] = useState('');
@@ -197,7 +206,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           <div
             role="menu"
             aria-label={rtl ? 'خيارات الأغنية' : 'Track options'}
-            className={`absolute end-0 top-full z-[100] mt-2 w-[235px] rounded-xl border border-white/20 bg-[#24202d] p-2 shadow-2xl ${optionsOpen ? 'block' : 'hidden'}`}
+            className={`absolute end-0 top-full z-[100] mt-2 max-h-[min(70vh,560px)] w-[260px] overflow-y-auto rounded-xl border border-white/20 bg-[#24202d] p-2 shadow-2xl ${optionsOpen ? 'block' : 'hidden'}`}
           >
             <button role="menuitem" type="button" onClick={() => { setOptionsOpen(false); setExpanded(true); }}
               className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
@@ -207,29 +216,24 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
               className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
               <ListMusic className="h-4 w-4" /> {t('player.queue')}
             </button>
+            <button role="menuitem" type="button"
+              onClick={() => {
+                usePlayer.setState((state) => ({
+                  queue: state.track ? [...state.queue, state.track] : state.queue,
+                  queueUndo: null,
+                }));
+                setOptionsOpen(false);
+                setControlNotice(rtl ? 'اتضاف لقائمة الانتظار' : 'Added to queue');
+              }}
+              className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+              <ListPlus className="h-4 w-4" />
+              {rtl ? 'إضافة لقائمة الانتظار' : 'Add to queue'}
+            </button>
             {!podcast ? (
               <>
                 <div role="none" className="w-full [&_button]:min-h-10 [&_button]:w-full [&_button]:justify-start [&_button]:border-0 [&_button]:bg-transparent [&_button]:px-3 [&_button]:py-2 [&_button]:text-sm [&_button]:text-white [&_button:hover]:bg-white/10">
-                  <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />
+                  <AddToPlaylistButton key={track.id} trackId={track.id} label={t('track.addToPlaylist')} />
                 </div>
-                <button role="menuitem" type="button"
-                  onClick={() => {
-                    const state = usePlayer.getState();
-                    if (state.track?.id === track.id) {
-                      usePlayer.setState((current) => ({
-                        queue: [...current.queue, track],
-                        queueUndo: null,
-                      }));
-                      setControlNotice(rtl ? 'اتضافت لإعادة التشغيل في قائمة الانتظار' : 'Added to queue for replay');
-                    } else {
-                      state.addToQueue(track);
-                      setControlNotice(rtl ? 'اتضافت لقائمة الانتظار' : 'Added to queue');
-                    }
-                    setOptionsOpen(false);
-                  }}
-                  className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
-                  <ListPlus className="h-4 w-4" /> {rtl ? 'إضافة لقائمة الانتظار' : 'Add to queue'}
-                </button>
                 <div className="my-1 border-t border-white/10" />
                 <div role="none" className="flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-sm text-white">
                   <span className="inline-flex items-center gap-2"><Heart className="h-4 w-4" /> {rtl ? 'إعجاب' : 'Like'}</span>
@@ -239,8 +243,54 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
                   <span className="inline-flex items-center gap-2"><HeartCrack className="h-4 w-4" /> {rtl ? 'عدم إعجاب' : 'Dislike'}</span>
                   <DislikeButton key={track.id} trackId={track.id} />
                 </div>
+                <button role="menuitem" type="button" onClick={() => toggleShuffle()}
+                  aria-pressed={shuffle}
+                  className="flex min-h-10 w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+                  <span className="inline-flex items-center gap-2"><Shuffle className="h-4 w-4" /> {rtl ? 'تشغيل عشوائي' : 'Shuffle'}</span>
+                  <span className="text-xs text-white/60">{shuffle ? (rtl ? 'يعمل' : 'On') : (rtl ? 'متوقف' : 'Off')}</span>
+                </button>
+                <button role="menuitem" type="button" onClick={() => cycleRepeat()}
+                  className="flex min-h-10 w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+                  <span className="inline-flex items-center gap-2"><Repeat className="h-4 w-4" /> {rtl ? 'التكرار' : 'Repeat'}</span>
+                  <span className="text-xs text-white/60">{repeat}</span>
+                </button>
               </>
+            ) : (
+              <Link
+                role="menuitem"
+                href={`/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`}
+                onClick={() => setOptionsOpen(false)}
+                className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+                <ExternalLink className="h-4 w-4" /> {rtl ? 'صفحة الحلقة' : 'Episode details'}
+              </Link>
+            )}
+            <div className="my-1 border-t border-white/10" />
+            {podcast ? (
+              <label role="none" className="flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-sm text-white">
+                <span className="inline-flex items-center gap-2"><Gauge className="h-4 w-4" /> {rtl ? 'السرعة' : 'Speed'}</span>
+                <select aria-label={rtl ? 'سرعة التشغيل' : 'Playback speed'}
+                  value={playbackRate} onChange={(event) => setPlaybackRate(Number(event.target.value))}
+                  className="rounded-md border border-white/20 bg-[#292332] px-2 py-1 text-xs text-white">
+                  {[0.75, 1, 1.25, 1.5, 2].map((rate) =>
+                    <option key={rate} value={rate}>{rate}x</option>
+                  )}
+                </select>
+              </label>
             ) : null}
+            <label role="none" className="flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-sm text-white">
+              <span className="inline-flex items-center gap-2"><Moon className="h-4 w-4" /> {rtl ? 'مؤقت النوم' : 'Sleep timer'}</span>
+              <select
+                aria-label={rtl ? 'مؤقت النوم' : 'Sleep timer'}
+                value={sleepUntil ? 'active' : 'off'}
+                onChange={(event) => setSleepTimer(event.target.value === 'off' ? 0 : Number(event.target.value))}
+                className="max-w-24 rounded-md border border-white/20 bg-[#292332] px-1 py-1 text-xs text-white">
+                <option value="off">{rtl ? 'إيقاف' : 'Off'}</option>
+                {sleepUntil ? <option value="active" disabled>{rtl ? 'يعمل' : 'On'}</option> : null}
+                {[5, 15, 30, 60].map((minutes) =>
+                  <option key={minutes} value={minutes}>{minutes} {rtl ? 'د' : 'min'}</option>
+                )}
+              </select>
+            </label>
             <div role="none" className="rounded-lg px-1 py-1 text-sm text-white [&_button]:!min-h-10 [&_button]:!w-full [&_button]:!justify-start [&_button]:!border-0 [&_button]:!bg-transparent [&_button]:!px-2 [&_button]:!text-sm [&_button:hover]:!bg-white/10">
               <ShareButton
                 title={track.title}
