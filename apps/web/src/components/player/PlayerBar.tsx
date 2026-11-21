@@ -134,12 +134,12 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="flex min-w-0 flex-1 items-center gap-2 text-start lg:max-w-[320px] lg:gap-3"
+        className="flex min-w-0 flex-1 items-center justify-start gap-2 text-start lg:w-auto lg:max-w-[310px] lg:flex-none lg:gap-2.5"
         aria-label={`${t('player.expand')}: ${track.title}`}
         title={t('player.expand')}
       >
         <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" rounded="rounded-lg" />
-        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5 lg:w-auto lg:max-w-[245px] lg:flex-none">
           <span dir="auto" className="truncate text-sm font-extrabold text-white">{track.title}</span>
           <span dir="auto" className="truncate text-[11px] text-white/60">
             {track.artist?.name || (rtl ? 'فنان غير معروف' : 'Unknown artist')}
