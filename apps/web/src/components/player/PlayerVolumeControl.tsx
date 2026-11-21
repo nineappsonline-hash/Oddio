@@ -189,3 +189,88 @@ export function PlayerVolumeControl({
     </div>
   );
 }
+
+
+/** Compact mobile volume: the transport row only shows a speaker icon.
+ * The slider opens on demand rather than taking a permanent extra row.
+ */
+export function CompactPlayerVolumeControl({ rtl, label }: { rtl: boolean; label: string }) {
+  const [open, setOpen] = useState(false);
+  const [ios, setIos] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const volume = usePlayer((state) => state.volume);
+  const muted = usePlayer((state) => state.muted);
+  const setVolume = usePlayer((state) => state.setVolume);
+  const toggleMute = usePlayer((state) => state.toggleMute);
+
+  useEffect(() => {
+    setIos(
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!wrapRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative flex shrink-0 items-center" ref={wrapRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-label={label}
+        aria-expanded={open}
+        title={label}
+        className="grid h-10 w-10 place-items-center rounded-full text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+      >
+        {muted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+      </button>
+      {open ? (
+        <div
+          role="group"
+          aria-label={label}
+          className="absolute bottom-full end-0 z-[70] mb-3 flex min-w-[190px] items-center gap-2 rounded-xl border border-white/20 bg-[#202026] px-3 py-2.5 shadow-2xl"
+        >
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-label={muted ? (rtl ? 'تشغيل الصوت' : 'Unmute') : rtl ? 'كتم الصوت' : 'Mute'}
+            aria-pressed={muted}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full hover:bg-white/10"
+          >
+            {muted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
+          {ios ? (
+            <span className="max-w-40 text-xs leading-relaxed text-white/75">
+              {rtl ? 'تحكم في مستوى الصوت من أزرار الموبايل' : 'Use your phone volume buttons'}
+            </span>
+          ) : (
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={Math.round((muted ? 0 : volume) * 100)}
+              onChange={(event) => setVolume(Number(event.target.value) / 100)}
+              className="h-2 w-28 cursor-pointer accent-primary"
+              aria-label={rtl ? 'مستوى الصوت' : 'Volume level'}
+            />
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
