@@ -25,7 +25,7 @@ import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
 import { DragReorderList } from '@/components/ui/DragReorderList';
 import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
-import { PlayerVolumeControl } from '@/components/player/PlayerVolumeControl';
+import { CompactPlayerVolumeControl, PlayerVolumeControl } from '@/components/player/PlayerVolumeControl';
 import { SaveQueueAsPlaylist } from '@/components/player/SaveQueueAsPlaylist';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Badge } from '@/components/ui/Badge';
@@ -647,7 +647,7 @@ export function FullPlayer() {
                 <span>{formatDuration(duration * 1000)}</span>
               </div>
 
-              <div className="oddio-mobile-playback-controls mt-2 flex min-w-0 items-center justify-center gap-0.5 overflow-x-auto sm:mt-2 sm:flex-wrap sm:gap-x-3 lg:gap-x-4">
+              <div className="oddio-mobile-playback-controls relative mt-2 flex min-w-0 items-center justify-center gap-0.5 overflow-visible sm:mt-2 sm:flex-wrap sm:gap-x-3 lg:gap-x-4">
                 {podcast ? (
                   <button
                     type="button"
@@ -831,6 +831,9 @@ export function FullPlayer() {
                     </select>
                   </label>
                 </div>
+                <div className="flex shrink-0 items-center sm:hidden">
+                  <CompactPlayerVolumeControl rtl={rtl} label={t('player.volume')} />
+                </div>
                 <div className="hidden shrink-0 items-center justify-center gap-2 sm:ms-2 sm:flex sm:w-auto sm:border-s sm:border-white/15 sm:ps-3">
                   <PlayerVolumeControl rtl={rtl} label={t('player.volume')} />
                 </div>
@@ -858,9 +861,8 @@ export function FullPlayer() {
                 </button>
               </div>
             ) : null}
-            <div className="mt-2 grid w-full min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 border-t border-white/10 pt-2.5 sm:hidden">
-              <PlayerVolumeControl rtl={rtl} mobile label={t('player.volume')} />
-              <label className="flex w-[110px] shrink-0 cursor-pointer items-center gap-1.5 text-[10px] leading-tight text-[#bdbdbd]">
+            <div className="mt-2 flex w-full min-w-0 shrink-0 items-center justify-end border-t border-white/10 pt-2.5 sm:hidden">
+              <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-[10px] leading-tight text-[#bdbdbd]">
                 <input
                   type="checkbox"
                   checked={autoplay}
