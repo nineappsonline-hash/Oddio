@@ -31,7 +31,14 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   const setExpanded = usePlayer((state) => state.setExpanded);
   const [minimized, setMinimized] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [controlNotice, setControlNotice] = useState('');
   const optionsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!controlNotice) return;
+    const timeout = window.setTimeout(() => setControlNotice(''), 2500);
+    return () => window.clearTimeout(timeout);
+  }, [controlNotice]);
+
 
   useEffect(() => {
     if (!optionsOpen) return;
@@ -247,6 +254,11 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           <ChevronDown className="h-5 w-5" />
         </button>
       </div>
+      {controlNotice ? (
+        <span role="status" className="absolute end-2 top-full z-40 mt-2 rounded-lg border border-white/20 bg-[#24202d] px-3 py-2 text-xs text-white shadow-lg">
+          {controlNotice}
+        </span>
+      ) : null}
       {error ? (
         <button type="button" onClick={retryPlayback} className="absolute -bottom-9 end-0 rounded-lg bg-danger px-3 py-1 text-xs text-white">
           {t('common.retry')}
