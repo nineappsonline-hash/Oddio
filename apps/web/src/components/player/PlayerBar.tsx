@@ -42,6 +42,34 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   const [minimized, setMinimized] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [controlNotice, setControlNotice] = useState('');
+  const [podcastReaction, setPodcastReaction] = useState<'like' | 'dislike' | null>(null);
+  useEffect(() => {
+    if (!podcast || !track?.id) {
+      setPodcastReaction(null);
+      return;
+    }
+    try {
+      const value = window.localStorage.getItem(`oddio:podcast-reaction:${track.id}`);
+      setPodcastReaction(value === 'like' || value === 'dislike' ? value : null);
+    } catch {
+      setPodcastReaction(null);
+    }
+  }, [podcast, track?.id]);
+  const savePodcastReaction = (reaction: 'like' | 'dislike') => {
+    if (!track) return;
+    const next = podcastReaction === reaction ? null : reaction;
+    try {
+      const key = `oddio:podcast-reaction:${track.id}`;
+      if (next) window.localStorage.setItem(key, next);
+      else window.localStorage.removeItem(key);
+      setPodcastReaction(next);
+      setControlNotice(rtl
+        ? 'تم حفظ رأيك على الجهاز ده'
+        : 'Your feedback was saved on this device');
+    } catch {
+      setControlNotice(rtl ? 'تعذر حفظ التفاعل' : 'Could not save feedback');
+    }
+  };
   const optionsRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!controlNotice) return;
@@ -256,13 +284,37 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
                 </button>
               </>
             ) : (
-              <Link
-                role="menuitem"
-                href={`/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`}
-                onClick={() => setOptionsOpen(false)}
-                className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
-                <ExternalLink className="h-4 w-4" /> {rtl ? 'صفحة الحلقة' : 'Episode details'}
-              </Link>
+              <>
+                <button role="menuitem" type="button" onClick={() => savePodcastReaction('like')}
+                  aria-pressed={podcastReaction === 'like'}
+                  className="flex min-h-10 w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+                  <span className="inline-flex items-center gap-2"><Heart className="h-4 w-4" /> {rtl ? 'إعجاب بالحلقة' : 'Like episode'}</span>
+                  {podcastReaction === 'like' ? <span className="text-xs text-primary">✓</span> : null}
+                </button>
+                <button role="menuitem" type="button" onClick={() => savePodcastReaction('dislike')}
+                  aria-pressed={podcastReaction === 'dislike'}
+                  className="flex min-h-10 w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+                  <span className="inline-flex items-center gap-2"><HeartCrack className="h-4 w-4" /> {rtl ? 'عدم إعجاب بالحلقة' : 'Dislike episode'}</span>
+                  {podcastReaction === 'dislike' ? <span className="text-xs text-primary">✓</span> : null}
+                </button>
+                <p className="px-3 pb-1 text-[10px] leading-4 text-white/45">{rtl ? 'تفاعل الحلقات محفوظ على الجهاز ده فقط' : 'Episode reactions are saved on this device only'}</p>
+                <Link
+                  role="menuitem"
+                  href={`/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`}
+                  onClick={() => setOptionsOpen(false)}
+                  className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+                  <ExternalLink className="h-4 w-4" /> {rtl ? 'صفحة الحلقة' : 'Episode details'}
+                </Link>
+                {track.artist?.slug ? (
+                  <Link
+                    role="menuitem"
+                    href={`/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}`}
+                    onClick={() => setOptionsOpen(false)}
+                    className="flex min-h-10 w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10">
+                    <ExternalLink className="h-4 w-4" /> {rtl ? 'صفحة البودكاست' : 'Podcast show'}
+                  </Link>
+                ) : null}
+              </>
             )}
             <div className="my-1 border-t border-white/10" />
             {podcast ? (
