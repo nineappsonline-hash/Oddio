@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
-import { ChevronDown, ChevronUp, MoreHorizontal, Pause, Play, SkipForward, ListMusic, Expand, ListPlus, Share2, Heart, HeartCrack } from 'lucide-react';
+import { ChevronDown, ChevronUp, MoreHorizontal, Pause, Play, SkipForward, ListMusic, Expand, ListPlus, Heart, HeartCrack } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
@@ -241,17 +241,14 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
                 </div>
               </>
             ) : null}
-            <div role="none" className="flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-sm text-white">
-              <span className="inline-flex items-center gap-2"><Share2 className="h-4 w-4" /> {t('common.share')}</span>
-              <div className="[&_button]:!text-xs [&_button]:!px-2">
-                <ShareButton
-                  title={track.title}
-                  label={t('common.share')}
-                  url={podcast
-                    ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
-                    : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
-                />
-              </div>
+            <div role="none" className="rounded-lg px-1 py-1 text-sm text-white [&_button]:!min-h-10 [&_button]:!w-full [&_button]:!justify-start [&_button]:!border-0 [&_button]:!bg-transparent [&_button]:!px-2 [&_button]:!text-sm [&_button:hover]:!bg-white/10">
+              <ShareButton
+                title={track.title}
+                label={t('common.share')}
+                url={podcast
+                  ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
+                  : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`}
+              />
             </div>
           </div>
         </div>
