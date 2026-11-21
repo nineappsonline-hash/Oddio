@@ -35,7 +35,7 @@ export function TrackRow({
   const toggle = usePlayer((state) => state.toggle);
   const addToQueue = usePlayer((state) => state.addToQueue);
   const isCurrent = usePlayer((state) => state.track?.id === track.id);
-  const isPlaying = usePlayer((state) => state.isPlaying);
+  const isPlaying = usePlayer((state) => state.track?.id === track.id && state.isPlaying);
   const active = isCurrent && isPlaying;
 
   function onPlay() {
@@ -52,7 +52,7 @@ export function TrackRow({
           ? 'grid-cols-[auto_auto_minmax(0,1fr)_auto]'
           : 'grid-cols-[auto_minmax(0,1fr)_auto]',
         isCurrent
-          ? 'bg-[linear-gradient(90deg,rgba(157,92,255,0.16),rgba(65,217,255,0.04))] shadow-[inset_0_0_0_1px_rgba(157,92,255,0.2)]'
+          ? 'bg-[linear-gradient(90deg,rgba(157,92,255,0.20),rgba(65,217,255,0.05))] ring-1 ring-[#b36deb]/70 shadow-[0_6px_24px_rgba(119,57,174,0.16)]'
           : 'hover:bg-white/[0.05]',
       )}
     >
@@ -109,11 +109,10 @@ export function TrackRow({
             />
           </div>
           {isCurrent ? (
-            <Equalizer
-              bars={4}
-              paused={!isPlaying}
-              className="h-3 shrink-0 text-primary"
-            />
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/50 bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary sm:px-2">
+              <Equalizer bars={4} paused={!isPlaying} className="h-3 shrink-0" />
+              <span className="hidden sm:inline">{isPlaying ? (locale === 'ar' ? 'شغّال' : 'Playing') : (locale === 'ar' ? 'متوقف' : 'Paused')}</span>
+            </span>
           ) : null}
         </span>
         {showArtist && track.artist ? (
