@@ -13,6 +13,7 @@ import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton'
 import { LikeButton } from '@/components/community/LikeButton';
 import { DislikeButton } from '@/components/community/DislikeButton';
 import { ShareButton } from '@/components/community/ShareButton';
+import { CompactPlayerVolumeControl, PlayerVolumeControl } from '@/components/player/PlayerVolumeControl';
 
 export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   const t = useT();
@@ -173,6 +174,12 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           className="hidden h-10 w-10 place-items-center rounded-full text-white/80 transition hover:bg-white/10 sm:grid">
           <SkipForward className="h-5 w-5" />
         </button>
+        <div className="flex shrink-0 items-center lg:hidden">
+          <CompactPlayerVolumeControl rtl={rtl} label={t('player.volume')} />
+        </div>
+        <div className="hidden shrink-0 items-center border-s border-white/15 ps-2 lg:flex">
+          <PlayerVolumeControl rtl={rtl} label={t('player.volume')} />
+        </div>
         <button
           type="button" onClick={showQueue}
           aria-label={t('player.queue')} title={t('player.queue')}
