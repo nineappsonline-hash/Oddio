@@ -1,50 +1,28 @@
 'use client';
 
-import Link from 'next/link';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
-import { useEffect, useState } from 'react';
-import { Maximize2, Repeat, Repeat1, Shuffle, VolumeX } from 'lucide-react';
+import { ChevronDown, MoreHorizontal, Pause, Play, SkipForward, ListMusic } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
-import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
-import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
-import { Equalizer } from '@/components/visuals/Equalizer';
-import { cn, formatDuration } from '@/lib/utils';
+import { formatDuration } from '@/lib/utils';
 import { OddioGlyph } from '@/components/ui/OddioGlyph';
 
 export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   const t = useT();
-  const [controlNotice, setControlNotice] = useState('');
-  useEffect(() => {
-    if (!controlNotice) return;
-    const timer = window.setTimeout(() => setControlNotice(''), 2000);
-    return () => window.clearTimeout(timer);
-  }, [controlNotice]);
-
   const rtl = useLocale() === 'ar';
   const track = usePlayer((state) => state.track);
   const podcast = isPodcastPlayback(track);
   const isPlaying = usePlayer((state) => state.isPlaying);
   const currentTime = usePlayer((state) => state.currentTime);
   const duration = usePlayer((state) => state.duration);
-  const volume = usePlayer((state) => state.volume);
-  const muted = usePlayer((state) => state.muted);
-  const repeat = usePlayer((state) => state.repeat);
-  const shuffle = usePlayer((state) => state.shuffle);
-  const queueLength = usePlayer((state) => state.queue.length);
   const buffering = usePlayer((state) => state.buffering);
   const error = usePlayer((state) => state.error);
   const retryPlayback = usePlayer((state) => state.retryPlayback);
   const toggle = usePlayer((state) => state.toggle);
   const next = usePlayer((state) => state.next);
-  const previous = usePlayer((state) => state.previous);
   const seek = usePlayer((state) => state.seek);
-  const setVolume = usePlayer((state) => state.setVolume);
-  const toggleMute = usePlayer((state) => state.toggleMute);
-  const cycleRepeat = usePlayer((state) => state.cycleRepeat);
-  const toggleShuffle = usePlayer((state) => state.toggleShuffle);
   const setExpanded = usePlayer((state) => state.setExpanded);
 
   if (!track) {
@@ -81,399 +59,94 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   }
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const albumValue = (track as typeof track & { album?: string | { name?: string; title?: string } }).album;
+  const albumName = typeof albumValue === 'string' ? albumValue : (albumValue?.title || albumValue?.name);
 
   return (
-    <div
-      className={`oddio-player-bar fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-40 overflow-visible border-t border-white/10 bg-[#231b2b]/95 px-3 py-2 shadow-[0_-20px_60px_-30px_rgba(0,0,0,0.6)] backdrop-blur-2xl lg:bottom-0 lg:start-64 lg:end-0 lg:px-4 lg:py-1 ${podcastMode ? 'oddio-podcast-player-bar' : ''}`}
+    <section
+      className={`oddio-player-bar oddio-top-mini-player relative z-40 mx-3 my-3 flex min-w-0 items-center gap-2 rounded-[20px] border border-white/[0.14] bg-[#17151d]/95 px-3 py-2.5 text-white shadow-[0_12px_35px_rgba(0,0,0,.28)] backdrop-blur-2xl sm:mx-5 lg:mx-7 lg:gap-4 lg:px-5 ${podcastMode ? 'oddio-podcast-player-bar' : ''}`}
       role="region"
       aria-label={t('player.miniPlayer')}
-      title={t('player.miniPlayer')}
     >
-      {controlNotice ? (
-        <div
-          role="status"
-          aria-live="polite"
-          className="absolute bottom-full left-1/2 z-[90] mb-3 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-full border border-primary/40 bg-[#242027] px-4 py-2 text-center text-sm font-bold text-white shadow-xl"
-        >
-          {controlNotice}
-        </div>
-      ) : null}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/80 to-transparent" />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-24 start-1/4 h-40 w-80 opacity-30 blur-3xl"
-        style={{
-          background: `radial-gradient(circle, ${track.artwork.accent}, transparent 70%)`,
-        }}
-      />
-      {error ? (
-        <div
-          role="alert"
-          className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-danger/25 bg-danger/10 px-3 py-2 text-xs text-ink"
-        >
-          <span>
-            {rtl ? 'تعذّر تشغيل الأغنية. جرّب مرة تانية.' : 'Unable to play this track.'}
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        aria-label={t('player.expand')}
+        title={t('player.expand')}
+        className="hidden shrink-0 items-center gap-2 border-e border-white/20 pe-4 text-lg font-black transition hover:opacity-80 lg:flex"
+      >
+        <OddioPlayIcon size={34} />
+        <span>Oddio</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        className="flex min-w-0 flex-1 items-center gap-2 text-start lg:max-w-[320px] lg:gap-3"
+        aria-label={`${t('player.expand')}: ${track.title}`}
+        title={t('player.expand')}
+      >
+        <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="h-11 w-11 shrink-0 sm:h-12 sm:w-12" rounded="rounded-lg" />
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span dir="auto" className="truncate text-sm font-extrabold text-white">{track.title}</span>
+          <span dir="auto" className="truncate text-[11px] text-white/60">
+            {track.artist?.name || (rtl ? 'فنان غير معروف' : 'Unknown artist')}
+            {albumName ? ` · ${albumName}` : ''}
           </span>
-          <button
-            type="button"
-            onClick={retryPlayback}
-            className="shrink-0 rounded-full border border-primary/50 px-3 py-1.5 font-semibold text-primary hover:bg-primary/10"
-          >
-            {t('common.retry')}
-          </button>
-        </div>
-      ) : null}
-      <div className="relative flex min-h-[56px] min-w-0 items-center gap-2 sm:gap-3 lg:hidden">
-        {/* The whole mobile mini-player opens Full Player, including the gaps
-            around its artwork and metadata. Dedicated transport controls stay
-            above this background button and keep their own actions. */}
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="absolute inset-0 z-0 cursor-pointer rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          aria-label={t('player.expand')}
+        </span>
+      </button>
+      <div className="hidden min-w-0 flex-1 items-center gap-3 lg:flex">
+        <span className="shrink-0 text-xs tabular-nums text-white/75">
+          {formatDuration(currentTime * 1000)} / {formatDuration(duration * 1000)}
+        </span>
+        <input
+          type="range" min={0} max={Math.max(duration, 0.1)} step={0.1}
+          value={Math.min(currentTime, duration || 0)}
+          onChange={(event) => seek(Number(event.target.value))}
+          aria-label={t('player.seek')}
+          className="h-1 w-full min-w-0 cursor-pointer accent-[#b048eb]"
+          style={{ background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #b048eb ${progress}%, rgba(255,255,255,0.2) ${progress}%)` }}
         />
+      </div>
+      <div className="flex shrink-0 items-center gap-1 sm:gap-2">
         <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="relative z-10 min-h-11 min-w-11 shrink-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          aria-label={t('player.expand')}
-        >
-          <Artwork
-            title={track.title}
-            url={track.artwork.url}
-            accent={track.artwork.accent}
-            className="h-12 w-12"
-            rounded="rounded-lg"
-          />
-        </button>
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="relative z-10 flex min-h-11 min-w-0 flex-1 flex-col justify-center gap-0.5 text-start focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          aria-label={`${t('player.expand')}: ${track.title}`}
-        >
-          <AutoScrollTitle
-            text={track.title}
-            lines={1}
-            className={
-              podcast
-                ? 'text-base font-extrabold text-white'
-                : 'text-sm font-bold text-white'
-            }
-          />
-          {track.artist ? (
-            <span className="block w-full truncate text-xs leading-4 text-muted">
-              {track.artist.name}
-            </span>
-          ) : null}
-        </button>
-        <button
-          type="button"
-          onClick={toggle}
+          type="button" onClick={toggle}
           aria-label={isPlaying ? t('common.pause') : t('common.play')}
           title={isPlaying ? t('common.pause') : t('common.play')}
-          className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 transition hover:bg-primary/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="grid h-10 w-10 place-items-center rounded-full text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
         >
-          {isPlaying ? (
-            <OddioGlyph name="pause" size={24} className="oddio-glyph text-primary" />
-          ) : (
-            <OddioPlayIcon size={46} />
-          )}
+          {isPlaying ? <Pause className="h-5 w-5" fill="currentColor" /> : <Play className="h-5 w-5" fill="currentColor" />}
+        </button>
+        <button type="button" onClick={() => next()} aria-label={t('common.next')} title={t('common.next')}
+          className="hidden h-10 w-10 place-items-center rounded-full text-white/80 transition hover:bg-white/10 sm:grid">
+          <SkipForward className="h-5 w-5" />
         </button>
         <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-muted transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:flex"
-          aria-label={t('player.expand')}
-          title={t('player.expand')}
+          type="button" onClick={() => { window.dispatchEvent(new Event('oddio:open-queue')); setExpanded(true); }}
+          aria-label={t('player.queue')} title={t('player.queue')}
+          className="hidden h-10 w-10 place-items-center rounded-full text-white/80 transition hover:bg-white/10 lg:grid"
         >
-          <Maximize2 className="h-4 w-4" />
+          <ListMusic className="h-5 w-5" />
+        </button>
+        <button type="button" onClick={() => setExpanded(true)}
+          aria-label={t('player.expand')} title={t('player.expand')}
+          className="hidden h-10 w-10 place-items-center rounded-full text-white/80 transition hover:bg-white/10 lg:grid">
+          <MoreHorizontal className="h-5 w-5" />
+        </button>
+        <button type="button" onClick={() => setExpanded(true)}
+          aria-label={t('player.expand')} title={t('player.expand')}
+          className="grid h-10 w-10 place-items-center rounded-full border border-white/20 text-white/85 transition hover:bg-white/10">
+          <ChevronDown className="h-5 w-5" />
         </button>
       </div>
-      <div className="hidden min-w-0 items-center justify-center gap-1 lg:flex lg:gap-2">
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="group/art relative hidden shrink-0 lg:block"
-          aria-label={t('player.expand')}
-          title={t('player.expand')}
-        >
-          {isPlaying ? (
-            <span className="absolute -inset-1 animate-pulse-ring rounded-xl border border-primary/50" />
-          ) : null}
-          <Artwork
-            title={track.title}
-            url={track.artwork.url}
-            accent={track.artwork.accent}
-            className="h-12 w-12 transition duration-500 group-hover/art:scale-105 lg:h-10 lg:w-10"
-            rounded="rounded-lg"
-          />
+      {error ? (
+        <button type="button" onClick={retryPlayback} className="absolute -bottom-9 end-0 rounded-lg bg-danger px-3 py-1 text-xs text-white">
+          {t('common.retry')}
         </button>
-        <div
-          className={
-            podcast
-              ? 'hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-64 lg:flex-col'
-              : 'hidden min-w-0 flex-1 lg:flex lg:flex-none lg:basis-48 lg:flex-col'
-          }
-        >
-          <div className="flex items-center gap-1.5">
-            <Link
-              href={
-                podcast
-                  ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
-                  : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`
-              }
-              className={
-                podcast
-                  ? 'block min-w-0 text-lg font-extrabold text-white hover:underline'
-                  : 'block min-w-0 text-sm font-semibold text-ink hover:underline'
-              }
-            >
-              <AutoScrollTitle text={track.title} lines={1} />
-            </Link>
-            <Equalizer
-              bars={3}
-              paused={!isPlaying}
-              className="h-3 shrink-0 text-primary"
-            />
-          </div>
-          {track.artist ? (
-            <Link
-              href={
-                podcast
-                  ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}`
-                  : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`
-              }
-              className="block truncate text-xs text-muted hover:text-ink"
-            >
-              {track.artist.name}
-            </Link>
-          ) : null}
-        </div>
-
-        <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
-          <div className="flex w-full items-center justify-between gap-1 sm:justify-center sm:gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                toggleShuffle();
-                setControlNotice(
-                  rtl
-                    ? shuffle
-                      ? 'إيقاف التشغيل العشوائي'
-                      : 'تشغيل عشوائي'
-                    : shuffle
-                      ? 'Shuffle off'
-                      : 'Shuffle on',
-                );
-              }}
-              aria-label={t('player.shuffle')}
-              title={
-                shuffle
-                  ? rtl
-                    ? 'إيقاف التشغيل العشوائي'
-                    : 'Disable shuffle'
-                  : t('player.shuffle')
-              }
-              aria-pressed={shuffle}
-              className={cn(
-                'rounded-full p-1.5 transition hover:bg-white/10 sm:p-2',
-                shuffle ? 'text-primary' : 'text-muted',
-              )}
-            >
-              <Shuffle className="h-[18px] w-[18px]" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={previous}
-              aria-label={t('common.previous')}
-              title={t('common.previous')}
-              className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
-            >
-              <OddioGlyph name="previous" size={19} className="oddio-glyph" />
-            </button>
-            <button
-              type="button"
-              onClick={toggle}
-              aria-label={isPlaying ? t('common.pause') : t('common.play')}
-              title={isPlaying ? t('common.pause') : t('common.play')}
-              className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-transparent transition-transform hover:scale-105 sm:h-[88px] sm:w-[88px] lg:h-[58px] lg:w-[58px]"
-            >
-              {isPlaying ? (
-                <span className="flex h-[56px] w-[56px] items-center justify-center rounded-full bg-[#f2f2f2] text-[#101010] sm:h-[72px] sm:w-[72px] lg:h-[50px] lg:w-[50px]">
-                  <OddioGlyph name="pause" size={21} className="oddio-glyph" />
-                </span>
-              ) : (
-                <span className="scale-[0.72] sm:scale-100 lg:scale-[0.67]">
-                  <OddioPlayIcon size={78} />
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => next()}
-              aria-label={t('common.next')}
-              title={t('common.next')}
-              className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
-            >
-              <OddioGlyph name="next" size={19} className="oddio-glyph" />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                cycleRepeat();
-                const mode = repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off';
-                setControlNotice(
-                  rtl
-                    ? mode === 'off'
-                      ? 'التكرار متوقف'
-                      : mode === 'all'
-                        ? 'تكرار كل الأغاني'
-                        : 'تكرار الأغنية الحالية'
-                    : mode === 'off'
-                      ? 'Repeat off'
-                      : mode === 'all'
-                        ? 'Repeat all'
-                        : 'Repeat one',
-                );
-              }}
-              aria-label={t('player.repeat')}
-              aria-pressed={repeat !== 'off'}
-              title={
-                repeat === 'off'
-                  ? rtl
-                    ? 'تكرار كل الأغاني'
-                    : 'Repeat all'
-                  : repeat === 'all'
-                    ? rtl
-                      ? 'تكرار أغنية واحدة'
-                      : 'Repeat one'
-                    : rtl
-                      ? 'إيقاف التكرار'
-                      : 'Disable repeat'
-              }
-              className={cn(
-                'rounded-full p-1.5 transition hover:bg-white/10 sm:p-2',
-                repeat !== 'off' ? 'text-primary' : 'text-muted',
-              )}
-            >
-              {repeat === 'one' ? (
-                <Repeat1 className="h-4 w-4" />
-              ) : (
-                <Repeat className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-          <div className="hidden w-full max-w-lg items-center gap-2 sm:flex">
-            <span className="w-10 text-end text-[10px] tabular-nums text-muted">
-              {formatDuration(currentTime * 1000)}
-            </span>
-            <input
-              type="range"
-              min={0}
-              max={Math.max(duration, 0.1)}
-              step={0.1}
-              value={Math.min(currentTime, duration || 0)}
-              onChange={(event) => seek(Number(event.target.value))}
-              className="h-1 flex-1 shadow-[0_0_14px_rgba(157,92,255,0.45)]"
-              aria-label={t('player.seek')}
-              title={t('player.seek')}
-              style={{
-                background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #F2F2F2 ${progress}%, rgba(255,255,255,0.18) ${progress}%)`,
-              }}
-            />
-            <span className="w-10 text-[10px] tabular-nums text-muted">
-              {formatDuration(duration * 1000)}
-            </span>
-          </div>
-        </div>
-
-        <div className="hidden items-center gap-2 lg:flex">
-          {!podcast && (
-            <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />
-          )}
-          {buffering ? (
-            <span className="text-[10px] uppercase tracking-wide text-muted">
-              {t('player.buffering')}
-            </span>
-          ) : null}
-          <button
-            type="button"
-            onClick={toggleMute}
-            aria-label={t('player.volume')}
-            title={t('player.volume')}
-            className="rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
-          >
-            {muted || volume === 0 ? (
-              <VolumeX className="h-4 w-4" />
-            ) : (
-              <OddioGlyph name="volume" size={18} className="oddio-glyph" />
-            )}
-          </button>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={muted ? 0 : volume}
-            onChange={(event) => setVolume(Number(event.target.value))}
-            className="w-20"
-            aria-label={t('player.volume')}
-            title={t('player.volume')}
-            style={{
-              background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #F2F2F2 ${
-                (muted ? 0 : volume) * 100
-              }%, rgba(255,255,255,0.18) ${(muted ? 0 : volume) * 100}%)`,
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => {
-              window.dispatchEvent(new Event('oddio:open-queue'));
-              setExpanded(true);
-            }}
-            aria-label={t('player.queue')}
-            title={t('player.queue')}
-            className="relative rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink"
-          >
-            <OddioGlyph name="queue" size={19} className="oddio-glyph" />
-            {queueLength > 0 ? (
-              <span className="absolute -end-0.5 -top-0.5 rounded-full bg-primary px-1 text-[9px] font-bold text-white">
-                {queueLength}
-              </span>
-            ) : null}
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            window.dispatchEvent(new Event('oddio:open-queue'));
-            setExpanded(true);
-          }}
-          className="relative hidden shrink-0 rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink lg:hidden"
-          aria-label={t('player.queue')}
-          title={t('player.queue')}
-        >
-          <OddioGlyph name="queue" size={20} className="oddio-glyph" />
-          {queueLength > 0 ? (
-            <span className="absolute -end-0.5 -top-0.5 rounded-full bg-primary px-1 text-[9px] font-bold text-white">
-              {queueLength}
-            </span>
-          ) : null}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="hidden rounded-full p-2 text-muted transition hover:bg-white/10 hover:text-ink lg:hidden"
-          aria-label={t('player.expand')}
-          title={t('player.expand')}
-        >
-          <Maximize2 className="h-4 w-4" />
-        </button>
+      ) : null}
+      {buffering ? <span className="sr-only">{t('player.buffering')}</span> : null}
+      <div className="pointer-events-none absolute inset-x-3 bottom-0 h-[2px] overflow-hidden rounded-full bg-white/10 lg:hidden">
+        <div className="h-full bg-[#b048eb]" style={{ width: `${progress}%` }} />
       </div>
-    </div>
+    </section>
   );
 }
