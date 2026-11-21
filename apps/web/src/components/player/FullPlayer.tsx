@@ -390,7 +390,7 @@ export function FullPlayer() {
               sideTab === 'queue' ? 'hidden lg:block' : 'flex',
             )}
           >
-        <div className="mb-3 flex items-center justify-between gap-2 lg:hidden">
+        <div className="mb-3 flex items-center justify-start gap-2 lg:hidden">
           <button
             type="button"
             onClick={() => setExpanded(false)}
@@ -400,27 +400,7 @@ export function FullPlayer() {
           >
             <ChevronDown className="h-5 w-5" aria-hidden="true" />
           </button>
-          <button
-            type="button"
-            onClick={() => setSideTab(sideTab === 'queue' ? 'similar' : 'queue')}
-            aria-label={
-              sideTab === 'queue'
-                ? rtl
-                  ? 'الرجوع للمشغل'
-                  : 'Back to player'
-                : t('player.queue')
-            }
-            aria-expanded={sideTab === 'queue'}
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-4 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            <ListMusic className="h-5 w-5" aria-hidden="true" />
-            {sideTab === 'queue'
-              ? rtl
-                ? 'الرجوع للمشغل'
-                : 'Back to player'
-              : t('player.queue')}
-            {sideTab !== 'queue' ? ` (${queue.length})` : ''}
-          </button>
+
         </div>
             <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-evenly gap-3 sm:gap-5 lg:grid lg:flex-none lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:items-center lg:gap-5">
               <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(78vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
@@ -596,23 +576,17 @@ export function FullPlayer() {
                       <Badge tone="neutral">{track.genre.slug}</Badge>
                     ) : null}
                     <span className="ms-auto flex shrink-0 items-center gap-1.5">
-                      {!podcast ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            toggleShuffle();
-                            setControlNotice(rtl
-                              ? (shuffle ? 'إيقاف التشغيل العشوائي' : 'تشغيل عشوائي')
-                              : (shuffle ? 'Shuffle off' : 'Shuffle on'));
-                          }}
-                          aria-label={t('player.shuffle')}
-                          title={t('player.shuffle')}
-                          aria-pressed={shuffle}
-                          className={cn('inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 transition hover:bg-white/10 lg:hidden', shuffle ? 'bg-primary/20 text-primary' : 'text-muted')}
-                        >
-                          <Shuffle className="h-4 w-4" />
-                        </button>
-                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => setSideTab('queue')}
+                        aria-label={t('player.queue')}
+                        title={t('player.queue')}
+                        className="inline-flex h-10 items-center gap-1.5 rounded-full border border-white/20 px-2.5 text-xs font-semibold text-white transition hover:bg-white/10 lg:hidden"
+                      >
+                        <ListMusic className="h-4 w-4" aria-hidden="true" />
+                        <span>{t('player.queue')}</span>
+                        <span className="text-white/60">({queue.length})</span>
+                      </button>
                       <ShareButton
                         title={track.title}
                         label={t('common.share')}
@@ -760,7 +734,7 @@ export function FullPlayer() {
                     </span>
                   </button>
                 ) : (
-                  <div className="hidden sm:block">
+                  <div className="shrink-0">
                   <button
                     type="button"
                     onClick={() => {
