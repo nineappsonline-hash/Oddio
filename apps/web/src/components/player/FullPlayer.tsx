@@ -413,15 +413,7 @@ export function FullPlayer() {
                   }}
                 />
                 <div className="relative overflow-hidden rounded-[20px] border border-white/[0.16] bg-white/[0.055] p-1 shadow-[0_15px_45px_rgba(0,0,0,.35)] backdrop-blur-xl sm:rounded-[26px] sm:p-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setExpanded(false)}
-                    aria-label={t('player.minimize')}
-                    title={t('player.minimize')}
-                    className="absolute right-2 top-2 z-[55] grid h-11 w-11 place-items-center rounded-full border border-white/25 bg-[#111214]/75 text-white shadow-lg backdrop-blur-xl transition hover:bg-white/20 lg:hidden"
-                  >
-                    <ChevronDown className="h-6 w-6" />
-                  </button>
+
                   <Artwork
                     title={track.title}
                     animated={isPlaying && !track.artwork.url}
