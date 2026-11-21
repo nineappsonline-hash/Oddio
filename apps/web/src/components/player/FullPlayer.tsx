@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
   ListMusic,
+  Moon,
   Mic2,
   Pause,
   Play,
@@ -370,16 +371,7 @@ export function FullPlayer() {
               sideTab === 'queue' ? 'hidden lg:block' : 'flex',
             )}
           >
-        <div className="mb-3 flex items-center justify-between gap-2 lg:hidden">
-          <button
-            type="button"
-            onClick={() => setExpanded(false)}
-            aria-label={t('player.minimize')}
-            title={t('player.minimize')}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            <ChevronDown className="h-5 w-5" aria-hidden="true" />
-          </button>
+        <div className="mb-3 flex items-center justify-end gap-2 lg:hidden">
           <button
             type="button"
             onClick={() => setSideTab(sideTab === 'queue' ? 'similar' : 'queue')}
@@ -403,7 +395,16 @@ export function FullPlayer() {
           </button>
         </div>
             <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-evenly gap-3 sm:gap-5 lg:grid lg:flex-none lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:items-center lg:gap-5">
-              <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(78vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
+              <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(72vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
+                <button
+                  type="button"
+                  onClick={() => setExpanded(false)}
+                  aria-label={t('player.minimize')}
+                  title={t('player.minimize')}
+                  className="absolute -start-11 top-2 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary lg:hidden"
+                >
+                  <ChevronDown className="h-5 w-5" aria-hidden="true" />
+                </button>
                 <div
                   aria-hidden="true"
                   className="absolute -inset-2 rounded-[2.5rem] opacity-25 blur-2xl sm:-inset-4 sm:opacity-30 sm:blur-3xl"
@@ -661,6 +662,7 @@ export function FullPlayer() {
                     </span>
                   </button>
                 ) : (
+                  <div className="hidden sm:block">
                   <button
                     type="button"
                     onClick={() => {
@@ -691,6 +693,7 @@ export function FullPlayer() {
                   >
                     <Shuffle className="h-5 w-5" />
                   </button>
+                  </div>
                 )}
                 <button
                   type="button"
@@ -808,19 +811,20 @@ export function FullPlayer() {
                       </select>
                     </label>
                   ) : null}
-                  <label className="relative flex items-center" title={rtl ? 'مؤقت النوم' : 'Sleep timer'}>
+                  <label className="relative flex items-center gap-1.5" title={rtl ? 'مؤقت النوم' : 'Sleep timer'}>
+                    <Moon className={cn('h-4 w-4 shrink-0', sleepUntil ? 'text-primary' : 'text-white/70')} aria-hidden="true" />
                     <span className="sr-only">{rtl ? 'مؤقت النوم' : 'Sleep timer'}</span>
                     <select
                       value={sleepUntil ? 'active' : 'off'}
                       onChange={(event) => setSleepTimer(event.target.value === 'off' ? 0 : Number(event.target.value))}
                       aria-label={rtl ? 'مؤقت إيقاف التشغيل' : 'Sleep timer'}
                       className={cn(
-                        'h-10 min-w-[64px] cursor-pointer rounded-full border px-1.5 text-center text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-primary sm:h-11',
+                        'h-10 min-w-[60px] cursor-pointer rounded-full border px-1.5 text-center text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-primary sm:h-11',
                         sleepUntil ? 'border-primary/60 bg-primary/20 text-white' : 'border-white/20 bg-white/[0.06] text-white hover:bg-white/10',
                       )}
                     >
-                      <option value="off" className="bg-[#18191b]">{rtl ? '☾ إيقاف' : '☾ Off'}</option>
-                      {sleepUntil ? <option value="active" disabled className="bg-[#18191b]">{rtl ? '☾ يعمل' : '☾ On'}</option> : null}
+                      <option value="off" className="bg-[#18191b]">{rtl ? 'إيقاف' : 'Off'}</option>
+                      {sleepUntil ? <option value="active" disabled className="bg-[#18191b]">{rtl ? 'يعمل' : 'On'}</option> : null}
                       {[5, 15, 30, 60].map((minutes) => (
                         <option key={minutes} value={minutes} className="bg-[#18191b]">{minutes} {rtl ? 'د' : 'min'}</option>
                       ))}
@@ -832,6 +836,28 @@ export function FullPlayer() {
                 </div>
               </div>
             </div>
+            {!podcast ? (
+              <div className="mt-2 flex w-full items-center justify-start border-t border-white/10 pt-2 sm:hidden">
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleShuffle();
+                    setControlNotice(rtl
+                      ? (shuffle ? 'إيقاف التشغيل العشوائي' : 'تشغيل عشوائي')
+                      : (shuffle ? 'Shuffle off' : 'Shuffle on'));
+                  }}
+                  aria-label={t('player.shuffle')}
+                  aria-pressed={shuffle}
+                  className={cn(
+                    'inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-xs font-semibold transition hover:bg-white/10',
+                    shuffle ? 'bg-primary/15 text-primary' : 'text-muted',
+                  )}
+                >
+                  <Shuffle className="h-4 w-4" aria-hidden="true" />
+                  {rtl ? 'تشغيل عشوائي' : 'Shuffle'}
+                </button>
+              </div>
+            ) : null}
             <div className="mt-2 grid w-full min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 border-t border-white/10 pt-2.5 sm:hidden">
               <PlayerVolumeControl rtl={rtl} mobile label={t('player.volume')} />
               <label className="flex w-[110px] shrink-0 cursor-pointer items-center gap-1.5 text-[10px] leading-tight text-[#bdbdbd]">
