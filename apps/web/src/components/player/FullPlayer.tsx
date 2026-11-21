@@ -363,6 +363,13 @@ export function FullPlayer() {
               : 'Immersive audio. Seamless control.'}
           </p>
         </div>
+        <div className="grid w-full min-w-0 flex-1 grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(290px,0.9fr)] lg:items-start">
+          <div
+            className={cn(
+              'oddio-mobile-player-card min-h-0 min-w-0 flex-col justify-between rounded-[24px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.20),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[28px] sm:rounded-[28px] sm:p-6 lg:block lg:p-5',
+              sideTab === 'queue' ? 'hidden lg:block' : 'flex',
+            )}
+          >
         <div className="mb-3 flex items-center justify-between gap-2 lg:hidden">
           <button
             type="button"
@@ -395,13 +402,6 @@ export function FullPlayer() {
             {sideTab !== 'queue' ? ` (${queue.length})` : ''}
           </button>
         </div>
-        <div className="grid w-full min-w-0 flex-1 grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(290px,0.9fr)] lg:items-start">
-          <div
-            className={cn(
-              'oddio-mobile-player-card min-h-0 min-w-0 flex-col justify-between rounded-[24px] border border-white/[0.13] bg-white/[0.055] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.20),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[28px] sm:rounded-[28px] sm:p-6 lg:block lg:p-5',
-              sideTab === 'queue' ? 'hidden lg:block' : 'flex',
-            )}
-          >
             <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-evenly gap-3 sm:gap-5 lg:grid lg:flex-none lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:items-center lg:gap-5">
               <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(78vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
                 <div
@@ -908,6 +908,26 @@ export function FullPlayer() {
                     : 'Similar content'
             }
           >
+            <div className="mb-3 flex items-center justify-between gap-2 lg:hidden">
+              <button
+                type="button"
+                onClick={() => setExpanded(false)}
+                aria-label={t('player.minimize')}
+                title={t('player.minimize')}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                <ChevronDown className="h-5 w-5" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setSideTab('similar')}
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] px-4 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                aria-label={rtl ? 'الرجوع للمشغل' : 'Back to player'}
+              >
+                <ListMusic className="h-5 w-5" aria-hidden="true" />
+                {rtl ? 'الرجوع للمشغل' : 'Back to player'}
+              </button>
+            </div>
             <div
               className={cn(
                 'mb-5 grid gap-1 rounded-2xl bg-white/[0.06] p-1.5',
