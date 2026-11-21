@@ -50,6 +50,7 @@ export function AppShell({
           >
             <MobileHeader user={user} contentLanguage={contentLanguage} />
             <DesktopTopBar contentLanguage={contentLanguage} />
+            <PlayerBar podcastMode={podcastMode} />
             <main
               id="main"
               tabIndex={-1}
@@ -60,7 +61,6 @@ export function AppShell({
             <Footer locale={locale} />
           </div>
           {!podcastMode ? <ListeningRail /> : null}
-          <PlayerBar podcastMode={podcastMode} />
           <DeferredFullPlayer />
           <MobileNav />
           <FavoriteGenresSelector
