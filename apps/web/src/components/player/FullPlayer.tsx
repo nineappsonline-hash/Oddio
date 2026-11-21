@@ -322,9 +322,22 @@ export function FullPlayer() {
             <span className="text-base font-black tracking-tight text-white lg:text-xl">
               Oddio
             </span>
-            <span className="ms-3 hidden text-[11px] font-bold uppercase tracking-[.2em] text-[#bcbcbc] sm:inline">
-              {t('player.nowPlaying')}
-            </span>
+            <div className="ms-4 flex min-w-0 items-center gap-3 border-s border-white/15 ps-4">
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-white/15">
+                <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="h-full w-full" rounded="rounded-lg" />
+              </div>
+              <div className="min-w-0">
+                <p dir="auto" className="max-w-[260px] truncate text-sm font-bold text-white xl:max-w-[420px]">{track.title}</p>
+                <p dir="auto" className="max-w-[260px] truncate text-xs text-white/55 xl:max-w-[420px]">
+                  {track.artist?.name || (rtl ? 'فنان غير معروف' : 'Unknown artist')}
+                  {(() => {
+                    const album = (track as typeof track & { album?: string | { title?: string; name?: string } }).album;
+                    const albumName = typeof album === 'string' ? album : album?.title || album?.name;
+                    return albumName ? ` · ${albumName}` : '';
+                  })()}
+                </p>
+              </div>
+            </div>
           </div>
           <button
             type="button"
@@ -641,7 +654,7 @@ export function FullPlayer() {
                 <span>{formatDuration(duration * 1000)}</span>
               </div>
 
-              <div className="oddio-mobile-playback-controls mt-2 grid min-w-0 grid-cols-5 items-center justify-items-center gap-1 sm:mt-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-4">
+              <div className="oddio-mobile-playback-controls mt-2 flex min-w-0 items-center justify-center gap-0.5 overflow-x-auto sm:mt-2 sm:flex-wrap sm:gap-x-3 lg:gap-x-4">
                 {podcast ? (
                   <button
                     type="button"
@@ -787,6 +800,41 @@ export function FullPlayer() {
                     )}
                   </button>
                 )}
+                <div className="flex shrink-0 items-center gap-1.5 sm:ms-2 sm:border-s sm:border-white/15 sm:ps-3">
+                  {podcast ? (
+                    <label className="relative flex items-center" title={rtl ? 'سرعة التشغيل' : 'Playback speed'}>
+                      <span className="sr-only">{rtl ? 'سرعة التشغيل' : 'Playback speed'}</span>
+                      <select
+                        value={playbackRate}
+                        onChange={(event) => setPlaybackRate(Number(event.target.value))}
+                        aria-label={rtl ? 'سرعة تشغيل البودكاست' : 'Podcast playback speed'}
+                        className="h-10 min-w-[58px] cursor-pointer rounded-full border border-white/20 bg-white/[0.06] px-1.5 text-center text-xs font-bold text-white outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary sm:h-11 sm:min-w-[65px]"
+                      >
+                        {[0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                          <option key={rate} value={rate} className="bg-[#18191b]">{rate}x</option>
+                        ))}
+                      </select>
+                    </label>
+                  ) : null}
+                  <label className="relative flex items-center" title={rtl ? 'مؤقت النوم' : 'Sleep timer'}>
+                    <span className="sr-only">{rtl ? 'مؤقت النوم' : 'Sleep timer'}</span>
+                    <select
+                      value={sleepUntil ? 'active' : 'off'}
+                      onChange={(event) => setSleepTimer(event.target.value === 'off' ? 0 : Number(event.target.value))}
+                      aria-label={rtl ? 'مؤقت إيقاف التشغيل' : 'Sleep timer'}
+                      className={cn(
+                        'h-10 min-w-[64px] cursor-pointer rounded-full border px-1.5 text-center text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-primary sm:h-11',
+                        sleepUntil ? 'border-primary/60 bg-primary/20 text-white' : 'border-white/20 bg-white/[0.06] text-white hover:bg-white/10',
+                      )}
+                    >
+                      <option value="off" className="bg-[#18191b]">{rtl ? '☾ إيقاف' : '☾ Off'}</option>
+                      {sleepUntil ? <option value="active" disabled className="bg-[#18191b]">{rtl ? '☾ يعمل' : '☾ On'}</option> : null}
+                      {[5, 15, 30, 60].map((minutes) => (
+                        <option key={minutes} value={minutes} className="bg-[#18191b]">{minutes} {rtl ? 'د' : 'min'}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
                 <div className="hidden shrink-0 items-center justify-center gap-2 sm:ms-2 sm:flex sm:w-auto sm:border-s sm:border-white/15 sm:ps-3">
                   <PlayerVolumeControl rtl={rtl} label={t('player.volume')} />
                 </div>
@@ -812,49 +860,6 @@ export function FullPlayer() {
                 </span>
               </label>
             </div>
-            {podcast ? (
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-3 sm:justify-end">
-                <label className="flex min-h-11 items-center gap-2 text-sm text-ink">
-                  <span>{rtl ? 'السرعة' : 'Speed'}</span>
-                  <select
-                    value={playbackRate}
-                    onChange={(event) => setPlaybackRate(Number(event.target.value))}
-                    aria-label={rtl ? 'سرعة تشغيل البودكاست' : 'Podcast playback speed'}
-                    className="min-h-11 rounded-lg border border-white/20 bg-[#18191b] px-3 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    {[0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                      <option key={rate} value={rate}>
-                        {rate}x
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex min-h-11 items-center gap-2 text-sm text-ink">
-                  <span>{rtl ? 'مؤقت النوم' : 'Sleep timer'}</span>
-                  <select
-                    value={sleepUntil ? 'active' : 'off'}
-                    onChange={(event) =>
-                      setSleepTimer(
-                        event.target.value === 'off' ? 0 : Number(event.target.value),
-                      )
-                    }
-                    aria-label={rtl ? 'مؤقت إيقاف التشغيل' : 'Sleep timer'}
-                    className="min-h-11 rounded-lg border border-white/20 bg-[#18191b] px-3 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    <option value="off">{rtl ? 'متوقف' : 'Off'}</option>
-                    {sleepUntil ? (
-                      <option value="active" disabled>
-                        {rtl ? 'المؤقت شغال' : 'Timer active'}
-                      </option>
-                    ) : null}
-                    <option value="5">5 {rtl ? 'دقايق' : 'min'}</option>
-                    <option value="15">15 {rtl ? 'دقيقة' : 'min'}</option>
-                    <option value="30">30 {rtl ? 'دقيقة' : 'min'}</option>
-                    <option value="60">60 {rtl ? 'دقيقة' : 'min'}</option>
-                  </select>
-                </label>
-              </div>
-            ) : null}
             <div className="mt-4 hidden flex-wrap items-center justify-end gap-4 sm:flex">
               <label className="flex cursor-pointer items-center gap-2 text-xs text-muted">
                 <input
