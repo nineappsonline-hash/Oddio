@@ -925,7 +925,8 @@ body {
   display: none;
   position: fixed;
   z-index: 31;
-  inset-block: 0 104px;
+  /* The mini player is now at the top, so no bottom dock space is needed. */
+  inset-block: 0 0;
   inset-inline-end: 0;
   width: 300px;
   padding: 23px 20px 22px;
