@@ -1,8 +1,9 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
-import { ChevronDown, MoreHorizontal, Pause, Play, SkipForward, ListMusic } from 'lucide-react';
+import { ChevronDown, ChevronUp, MoreHorizontal, Pause, Play, SkipForward, ListMusic, Expand } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
@@ -24,6 +25,32 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   const next = usePlayer((state) => state.next);
   const seek = usePlayer((state) => state.seek);
   const setExpanded = usePlayer((state) => state.setExpanded);
+  const [minimized, setMinimized] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const optionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!optionsOpen) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (!optionsRef.current?.contains(event.target as Node)) setOptionsOpen(false);
+    };
+    const closeEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOptionsOpen(false);
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      document.removeEventListener('keydown', closeEscape);
+    };
+  }, [optionsOpen]);
+
+  const showQueue = () => {
+    setOptionsOpen(false);
+    window.dispatchEvent(new Event('oddio:open-queue'));
+    setExpanded(true);
+  };
+
 
   if (!track) {
     return (
@@ -61,6 +88,21 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const albumValue = (track as typeof track & { album?: string | { name?: string; title?: string } }).album;
   const albumName = typeof albumValue === 'string' ? albumValue : (albumValue?.title || albumValue?.name);
+
+  if (minimized) {
+    return (
+      <div className="oddio-player-bar oddio-top-mini-player relative z-40 mx-3 my-3 flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-[#17151d]/95 px-3 py-2 text-white sm:mx-5 lg:mx-7" role="region" aria-label={t('player.miniPlayer')}>
+        <button type="button" onClick={() => setMinimized(false)} className="flex min-w-0 flex-1 items-center gap-2 text-start" aria-label={rtl ? 'إظهار المشغّل' : 'Show player'}>
+          <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="h-9 w-9 shrink-0" rounded="rounded-lg" />
+          <span className="min-w-0 truncate text-sm font-bold">{track.title}</span>
+          <ChevronUp className="h-4 w-4 shrink-0 text-white/70" />
+        </button>
+        <button type="button" onClick={toggle} aria-label={isPlaying ? t('common.pause') : t('common.play')} className="grid h-10 w-10 shrink-0 place-items-center rounded-full hover:bg-white/10">
+          {isPlaying ? <Pause className="h-5 w-5" fill="currentColor" /> : <Play className="h-5 w-5" fill="currentColor" />}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <section
@@ -121,19 +163,34 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           <SkipForward className="h-5 w-5" />
         </button>
         <button
-          type="button" onClick={() => { window.dispatchEvent(new Event('oddio:open-queue')); setExpanded(true); }}
+          type="button" onClick={showQueue}
           aria-label={t('player.queue')} title={t('player.queue')}
           className="hidden h-10 w-10 place-items-center rounded-full text-white/80 transition hover:bg-white/10 lg:grid"
         >
           <ListMusic className="h-5 w-5" />
         </button>
-        <button type="button" onClick={() => setExpanded(true)}
-          aria-label={t('player.expand')} title={t('player.expand')}
-          className="hidden h-10 w-10 place-items-center rounded-full text-white/80 transition hover:bg-white/10 lg:grid">
-          <MoreHorizontal className="h-5 w-5" />
-        </button>
-        <button type="button" onClick={() => setExpanded(true)}
-          aria-label={t('player.expand')} title={t('player.expand')}
+        <div ref={optionsRef} className="relative hidden lg:block">
+          <button type="button" onClick={() => setOptionsOpen((open) => !open)}
+            aria-label={rtl ? 'خيارات المشغّل' : 'Player options'} aria-expanded={optionsOpen} aria-haspopup="menu"
+            title={rtl ? 'خيارات المشغّل' : 'Player options'}
+            className="grid h-10 w-10 place-items-center rounded-full text-white/80 transition hover:bg-white/10">
+            <MoreHorizontal className="h-5 w-5" />
+          </button>
+          {optionsOpen ? (
+            <div role="menu" className="absolute end-0 top-full z-50 mt-2 min-w-[170px] rounded-xl border border-white/20 bg-[#24202d] p-1.5 shadow-2xl">
+              <button role="menuitem" type="button" onClick={() => { setOptionsOpen(false); setExpanded(true); }}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm text-white hover:bg-white/10">
+                <Expand className="h-4 w-4" /> {rtl ? 'المشغّل الكامل' : 'Full player'}
+              </button>
+              <button role="menuitem" type="button" onClick={showQueue}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-start text-sm text-white hover:bg-white/10">
+                <ListMusic className="h-4 w-4" /> {t('player.queue')}
+              </button>
+            </div>
+          ) : null}
+        </div>
+        <button type="button" onClick={() => { setOptionsOpen(false); setMinimized(true); }}
+          aria-label={t('player.minimize')} title={t('player.minimize')}
           className="grid h-10 w-10 place-items-center rounded-full border border-white/20 text-white/85 transition hover:bg-white/10">
           <ChevronDown className="h-5 w-5" />
         </button>
