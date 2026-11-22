@@ -125,6 +125,7 @@ export function TrackRow({
         </span>
         {showArtist && track.artist ? (
           <Link
+            prefetch={false}
             href={`/${locale}/artists/${track.artist.slug}`}
             dir="auto"
             className="block truncate rounded-sm text-xs text-muted transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"

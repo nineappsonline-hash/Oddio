@@ -21,10 +21,11 @@ export function PlayButton({
 }) {
   const t = useT();
   const current = usePlayer((state) => state.track?.id === track.id);
-  const isPlaying = usePlayer((state) => state.isPlaying);
+  // Do not wake every play button in a large grid on global play/pause ticks.
+  // Only the selected track's button needs the changing playback status.
+  const active = usePlayer((state) => state.track?.id === track.id && state.isPlaying);
   const play = usePlayer((state) => state.play);
   const toggle = usePlayer((state) => state.toggle);
-  const active = current && isPlaying;
 
   const sizes = {
     sm: 'h-12 w-12',
