@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 type Props = { slug: string; index: number };
 
 // Locally hosted artwork supplied for each genre.
@@ -126,11 +128,8 @@ export function GenreArtwork({ slug }: Props) {
       }}
     >
       {photo ? (
-        // A CSS background triggers an eager download even for offscreen cards.
-        // Native lazy loading lets the browser prioritize visible imagery.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={photo} alt="" loading="lazy" decoding="async"
-          className="absolute inset-0 h-full w-full object-cover" />
+        <Image src={photo} alt="" fill sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 220px"
+          quality={65} loading="lazy" className="object-cover" />
       ) : null}
       {!photo && (
         <>
