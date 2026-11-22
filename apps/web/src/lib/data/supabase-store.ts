@@ -85,8 +85,15 @@ async function fetchAll(table: string, columns = '*'): Promise<Row[]> {
  * EXECUTE permission: callers always use the private service client here.
  */
 export async function searchPublishedTrackPage({
-  query, genreSlug, moodSlug, language, country, sort, cursor,
-  limit = 25, arabicOnly = false,
+  query,
+  genreSlug,
+  moodSlug,
+  language,
+  country,
+  sort,
+  cursor,
+  limit = 25,
+  arabicOnly = false,
 }: {
   query?: string;
   genreSlug?: string;
@@ -101,8 +108,12 @@ export async function searchPublishedTrackPage({
   const client = serviceClient();
   const resolveCategory = async (table: 'genres' | 'moods', slug?: string) => {
     if (!slug) return null;
-    const { data, error } = await client.from(table)
-      .select('id').eq('slug', slug).eq('active', true).maybeSingle();
+    const { data, error } = await client
+      .from(table)
+      .select('id')
+      .eq('slug', slug)
+      .eq('active', true)
+      .maybeSingle();
     if (error) throw new Error(`Could not resolve ${table}: ${error.message}`);
     return data?.id ? String(data.id) : '';
   };
