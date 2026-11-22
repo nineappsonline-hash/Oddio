@@ -44,6 +44,7 @@ export function PlayerProvider({
 }) {
   const storageKey = `${PLAYER_SESSION_KEY}:${viewerId ?? 'guest'}`;
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const lastUiTimeUpdateRef = useRef(0);
   const playbackEpochRef = useRef(0);
   const standbyRef = useRef<HTMLAudioElement | null>(null);
   const warmedRef = useRef<{ trackId: string; result: PlaybackAuthorization } | null>(
@@ -749,7 +750,14 @@ export function PlayerProvider({
         audible.accumulated += delta * 1000;
       }
       audible.lastTime = time;
-      state.setCurrentTime(time);
+      // Native timeupdate fires several times per second. Keep audio and
+      // play qualification accurate, but avoid re-rendering every player
+      // widget and the large lyrics/queue overlay on every media event.
+      const now = performance.now();
+      if (now - lastUiTimeUpdateRef.current >= 500 || audio.paused || time >= audio.duration - 0.6) {
+        lastUiTimeUpdateRef.current = now;
+        state.setCurrentTime(time);
+      }
       const threshold = Math.min(30_000, state.track?.durationMs ?? 30_000);
       if (
         !isPodcastPlayback(state.track) &&
