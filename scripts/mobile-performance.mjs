@@ -129,6 +129,51 @@ try {
       `Mobile JS transfer ${report.jsTransferKiB} KiB exceeds ${budgetKiB} KiB budget`,
     );
   }
+  // Measure a real in-app navigation without counting server-only URL changes.
+  // This stays observational until we have repeatable field performance data.
+  const searchLink = page.locator('nav a[href="/en/search"]:visible').first();
+  await searchLink.waitFor({ state: 'visible', timeout: 10_000 });
+  const routeStart = Date.now();
+  await searchLink.click();
+  await page.waitForURL('**/en/search', { timeout: 20_000 });
+  await page.locator('main').waitFor({ state: 'visible', timeout: 20_000 });
+  const discoverNavigationMs = Date.now() - routeStart;
+  // Charts is a row-based music view even when Search starts with an empty query.
+  const chartsResponse = await page.goto(new URL('/en/charts', base).toString(), {
+    waitUntil: 'domcontentloaded',
+    timeout: 30_000,
+  });
+  if (!chartsResponse?.ok()) throw new Error('Mobile charts route failed');
+  const rows = page.locator('.oddio-track-row-lazy');
+  const offscreenRows = await rows.count();
+  let rowRendering = null;
+  if (offscreenRows > 0) {
+    const firstRow = rows.first();
+    rowRendering = await firstRow.evaluate((element) => ({
+      contentVisibility: getComputedStyle(element).contentVisibility,
+      containIntrinsicSize: getComputedStyle(element).containIntrinsicSize,
+    }));
+    await rows.last().scrollIntoViewIfNeeded();
+    if (!(await rows.last().isVisible())) {
+      throw new Error('Scrolled track row is not visible');
+    }
+  }
+  console.log(
+    JSON.stringify(
+      {
+        interaction: 'home-to-search',
+        device: 'iPhone 13 emulation',
+        navigationMs: discoverNavigationMs,
+        renderedTrackRows: offscreenRows,
+        rowRendering,
+      },
+      null,
+      2,
+    ),
+  );
+  if (failures.length) {
+    throw new Error(`Mobile navigation runtime errors: ${failures.join('; ')}`);
+  }
   // Initial baseline is observational: budgets must be calibrated against
   // repeated runs and field Core Web Vitals before gating releases.
 } finally {

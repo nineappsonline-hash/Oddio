@@ -100,10 +100,10 @@ export default async function LibraryPage({
         <a href="#recent" className="chip">
           {t('library.history')}
         </a>
-        <Link href={`/${locale}/library/recap`} className="chip">
+        <Link prefetch={false} href={`/${locale}/library/recap`} className="chip">
           {locale === 'ar' ? 'ملخصي الشهري' : 'Monthly recap'}
         </Link>
-        <Link href={`/${locale}/library/rewind`} className="chip">
+        <Link prefetch={false} href={`/${locale}/library/rewind`} className="chip">
           {locale === 'ar' ? 'حصاد السنة · Music DNA' : 'Rewind · Music DNA'}
         </Link>
       </nav>

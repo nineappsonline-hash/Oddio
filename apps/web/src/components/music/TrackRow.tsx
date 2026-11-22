@@ -47,7 +47,7 @@ export function TrackRow({
     <div
       dir="ltr"
       className={cn(
-        'group relative grid w-full min-w-0 items-center gap-2 overflow-hidden rounded-xl px-2 py-2 transition-colors duration-200 focus-within:bg-white/[0.065] sm:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] sm:gap-3',
+        'oddio-track-row-lazy group relative grid w-full min-w-0 items-center gap-2 overflow-hidden rounded-xl px-2 py-2 transition-colors duration-200 focus-within:bg-white/[0.065] sm:grid-cols-[auto_auto_minmax(0,1fr)_auto_auto] sm:gap-3',
         rank !== undefined
           ? 'grid-cols-[auto_auto_minmax(0,1fr)_auto]'
           : 'grid-cols-[auto_minmax(0,1fr)_auto]',

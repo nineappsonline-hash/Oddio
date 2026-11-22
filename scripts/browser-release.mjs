@@ -662,6 +662,14 @@ try {
       }
 
       if (locale === 'en' && viewport.width === 1366) {
+        // The login test navigates through several protected routes. Firefox
+        // can complete an obsolete speculative chunk request after navigation,
+        // reporting its failure on that older page. Start the Rewind check in
+        // a fresh tab, retaining the validated session cookie in this context.
+        await page.close();
+        pageErrors.length = 0;
+        page = await context.newPage();
+        page.on('pageerror', (error) => pageErrors.push(error.message));
         await test('signed-in Rewind shows honest empty state and protects sharing', async () => {
           // Demo seed intentionally has no qualified playback events.
           // A history row alone must not be counted as an annual qualified play.
