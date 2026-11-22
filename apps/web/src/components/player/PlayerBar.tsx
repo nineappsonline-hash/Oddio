@@ -25,7 +25,7 @@ import {
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
-import { formatDuration } from '@/lib/utils';
+import { PlayerMiniProgress, PlayerSeekProgress } from '@/components/player/PlayerProgress';
 import { OddioGlyph } from '@/components/ui/OddioGlyph';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { LikeButton } from '@/components/community/LikeButton';
@@ -42,14 +42,11 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
   const track = usePlayer((state) => state.track);
   const podcast = isPodcastPlayback(track);
   const isPlaying = usePlayer((state) => state.isPlaying);
-  const currentTime = usePlayer((state) => state.currentTime);
-  const duration = usePlayer((state) => state.duration);
   const buffering = usePlayer((state) => state.buffering);
   const error = usePlayer((state) => state.error);
   const retryPlayback = usePlayer((state) => state.retryPlayback);
   const toggle = usePlayer((state) => state.toggle);
   const next = usePlayer((state) => state.next);
-  const seek = usePlayer((state) => state.seek);
   const setExpanded = usePlayer((state) => state.setExpanded);
   const shuffle = usePlayer((state) => state.shuffle);
   const toggleShuffle = usePlayer((state) => state.toggleShuffle);
@@ -156,7 +153,6 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
     );
   }
 
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const albumValue = (
     track as typeof track & { album?: string | { name?: string; title?: string } }
   ).album;
@@ -242,24 +238,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
           </span>
         </span>
       </button>
-      <div className="hidden min-w-0 flex-1 items-center gap-3 lg:flex">
-        <span className="shrink-0 text-xs tabular-nums text-white/75">
-          {formatDuration(currentTime * 1000)} / {formatDuration(duration * 1000)}
-        </span>
-        <input
-          type="range"
-          min={0}
-          max={Math.max(duration, 0.1)}
-          step={0.1}
-          value={Math.min(currentTime, duration || 0)}
-          onChange={(event) => seek(Number(event.target.value))}
-          aria-label={t('player.seek')}
-          className="h-1 w-full min-w-0 cursor-pointer accent-[#b048eb]"
-          style={{
-            background: `linear-gradient(to ${rtl ? 'left' : 'right'}, #b048eb ${progress}%, rgba(255,255,255,0.2) ${progress}%)`,
-          }}
-        />
-      </div>
+      <PlayerSeekProgress rtl={rtl} label={t('player.seek')} />
       <div className="flex shrink-0 items-center gap-1 sm:gap-2">
         <button
           type="button"
@@ -572,9 +551,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
         </button>
       ) : null}
       {buffering ? <span className="sr-only">{t('player.buffering')}</span> : null}
-      <div className="pointer-events-none absolute inset-x-3 bottom-0 h-[2px] overflow-hidden rounded-full bg-white/10 lg:hidden">
-        <div className="h-full bg-[#b048eb]" style={{ width: `${progress}%` }} />
-      </div>
+      <PlayerMiniProgress />
     </section>
   );
 }
