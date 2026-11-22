@@ -189,7 +189,7 @@ export async function loadDbFromSupabase(options: {
     fetchAll('playlists'),
     fetchAll('playlist_tracks'),
     homeOnly ? userRows('likes') : fetchAll('likes'),
-    homeOnly ? userRows('artist_follows') : fetchAll('artist_follows'),
+    fetchAll('artist_follows'),
     homeOnly ? empty() : fetchAll('playlist_follows'),
     homeOnly ? empty() : fetchAll('comments'),
     homeOnly ? empty() : fetchAll('notifications'),
