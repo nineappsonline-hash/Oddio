@@ -80,6 +80,55 @@ async function fetchAll(table: string, columns = '*'): Promise<Row[]> {
   return rows;
 }
 
+/** Database-backed pagination for public catalog filters (no free-text term).
+ * Free-text/artist alias searches keep the existing comprehensive search
+ * until a dedicated indexed search RPC is deployed.
+ */
+export async function findPagedPublicTrackIds({
+  genreSlug, language, sort, cursor, limit = 25, arabicOnly = false,
+}: {
+  genreSlug?: string;
+  language?: string;
+  sort?: string;
+  cursor?: string;
+  limit?: number;
+  arabicOnly?: boolean;
+}): Promise<{ ids: string[]; total: number; nextCursor: string | null }> {
+  const client = serviceClient();
+  const size = Math.max(1, Math.min(50, Math.floor(limit)));
+  const offset = cursor && /^\d+$/.test(cursor) ? Math.min(100000, Number(cursor)) : 0;
+  let genreId: string | undefined;
+  if (genreSlug) {
+    const { data, error } = await client.from('genres')
+      .select('id').eq('slug', genreSlug).eq('active', true).maybeSingle();
+    if (error) throw new Error(`Failed to resolve genre: ${error.message}`);
+    if (!data?.id) return { ids: [], total: 0, nextCursor: null };
+    genreId = String(data.id);
+  }
+  let builder = client.from('tracks').select('id', { count: 'exact' })
+    .eq('review_status', 'approved')
+    .eq('publish_status', 'published')
+    .eq('visibility', 'public')
+    .lte('release_at', new Date().toISOString());
+  if (genreId) {
+    // Genre identifiers originate from DB, not from untrusted filter syntax.
+    builder = builder.or(`genre_id.eq.${genreId},genre_ids.cs.{${genreId}}`);
+  }
+  if (language) builder = builder.eq('language_code', language);
+  if (arabicOnly) builder = builder.ilike('language_code', 'ar%');
+  if (sort === 'newest') builder = builder.order('release_at', { ascending: false });
+  else builder = builder.order('qualified_plays', { ascending: false });
+  const { data, error, count } = await builder.order('id', { ascending: true })
+    .range(offset, offset + size - 1);
+  if (error) throw new Error(`Failed to search published tracks: ${error.message}`);
+  const total = count ?? 0;
+  return {
+    ids: (data ?? []).map((row) => String(row.id)),
+    total,
+    nextCursor: offset + size < total ? String(offset + size) : null,
+  };
+}
+
 function text(value: unknown, fallback = ''): string {
   return typeof value === 'string' ? value : fallback;
 }
@@ -138,10 +187,20 @@ function audioAsset(row: Row): AudioAsset {
 export async function loadDbFromSupabase(options: {
   homeViewerId?: string | null;
   homeOnly?: boolean;
+  searchTrackIds?: string[];
 } = {}): Promise<DemoDb> {
   const homeOnly = options.homeOnly === true;
   const viewerId = options.homeViewerId ?? null;
   const empty = (): Promise<Row[]> => Promise.resolve([]);
+  const pagedIds = options.searchTrackIds;
+  const pageRows = async (table: string, columns: string, key: string): Promise<Row[]> => {
+    if (!pagedIds) return fetchAll(table, columns);
+    if (!pagedIds.length) return [];
+    const { data, error } = await serviceClient().from(table)
+      .select(columns).in(key, pagedIds);
+    if (error) throw new Error(`Failed to read paged ${table}: ${error.message}`);
+    return (data ?? []) as unknown as Row[];
+  };
   const userRows = async (table: string, userColumn = 'user_id'): Promise<Row[]> => {
     if (!viewerId) return [];
     const { data, error } = await serviceClient().from(table).select('*').eq(userColumn, viewerId);
@@ -182,9 +241,9 @@ export async function loadDbFromSupabase(options: {
     fetchAll('artists'),
     homeOnly ? empty() : fetchAll('artist_social_links'),
     fetchAll('albums'),
-    fetchAll('tracks', homeOnly ? 'id,artist_id,album_id,title,slug,description,genre_id,genre_ids,language_code,country_code,production_type,explicit,visibility,review_status,publish_status,release_at,duration_ms,artwork_key,artwork_accent,quality_label,qualified_plays,like_count,comment_count,created_at,updated_at' : '*'),
-    fetchAll('track_moods'),
-    fetchAll('audio_assets'),
+    pageRows('tracks', homeOnly ? 'id,artist_id,album_id,title,slug,description,genre_id,genre_ids,language_code,country_code,production_type,explicit,visibility,review_status,publish_status,release_at,duration_ms,artwork_key,artwork_accent,quality_label,qualified_plays,like_count,comment_count,created_at,updated_at' : '*', 'id'),
+    pageRows('track_moods', '*', 'track_id'),
+    pageRows('audio_assets', '*', 'track_id'),
     fetchAll('genres'),
     fetchAll('moods'),
     fetchAll('playlists'),
