@@ -12,7 +12,7 @@ import { ExternalLink } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
 import { getArtistPage } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
-import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { loadPageDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
@@ -40,7 +40,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, slug } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const db = demoMode ? readDb() : await loadPageDbFromSupabase();
   const page = getArtistPage(db, { userId: null, roles: [] }, slug);
   const podcastCatalog = await getPodcastCatalog();
   if (!page)
@@ -80,7 +80,7 @@ export default async function ArtistPage({
   const t = createTranslator(locale);
   const viewer = await getViewer();
   const db = filterMusicDb(
-    demoMode ? readDb() : await loadDbFromSupabase(),
+    demoMode ? readDb() : await loadPageDbFromSupabase(),
     await getContentLanguagePreference(),
   );
   const page = getArtistPage(db, viewer, slug);
