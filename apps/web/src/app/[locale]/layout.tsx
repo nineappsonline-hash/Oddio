@@ -65,11 +65,16 @@ export async function generateMetadata({
     },
     manifest: '/manifest.webmanifest',
     icons: {
+      // Serve a favicon-sized rendition rather than the 688 KiB original.
+      // The source stays unchanged; Next.js generates optimized image bytes.
       icon: [
-        { url: '/glossy-gradient-play-loop-logo.png', type: 'image/png', sizes: 'any' },
+        {
+          url: '/_next/image?url=%2Fglossy-gradient-play-loop-logo.png&w=64&q=75',
+          sizes: '64x64',
+        },
       ],
-      shortcut: '/glossy-gradient-play-loop-logo.png',
-      apple: '/glossy-gradient-play-loop-logo.png',
+      shortcut: '/_next/image?url=%2Fglossy-gradient-play-loop-logo.png&w=64&q=75',
+      apple: '/_next/image?url=%2Fglossy-gradient-play-loop-logo.png&w=256&q=75',
     },
     alternates: {
       canonical: absoluteUrl(`/${safeLocale}`),
