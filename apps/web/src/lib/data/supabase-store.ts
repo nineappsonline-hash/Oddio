@@ -13,6 +13,7 @@ import type {
   Track,
 } from '@ai-music/contracts';
 import { env } from '@/lib/env';
+import type { TrackAccessFields } from '@ai-music/db';
 import { buildQualifiedListeningHistory } from './listening-history';
 import type {
   DemoDb,
@@ -298,9 +299,9 @@ export async function touchPlaybackSession(
  */
 export async function loadStreamAsset(trackId: string): Promise<{
   track: {
-    visibility: 'public' | 'unlisted' | 'private';
-    reviewStatus: 'approved' | 'draft' | 'pending' | 'rejected';
-    publishStatus: 'published' | 'unpublished' | 'available_private';
+    visibility: TrackAccessFields['visibility'];
+    reviewStatus: TrackAccessFields['reviewStatus'];
+    publishStatus: TrackAccessFields['publishStatus'];
     releaseAt: string;
     durationMs: number;
     explicit: boolean;
@@ -335,9 +336,9 @@ export async function loadStreamAsset(trackId: string): Promise<{
     ?? null;
   return {
     track: {
-      visibility: track.visibility,
-      reviewStatus: track.review_status,
-      publishStatus: track.publish_status,
+      visibility: track.visibility as TrackAccessFields['visibility'],
+      reviewStatus: track.review_status as TrackAccessFields['reviewStatus'],
+      publishStatus: track.publish_status as TrackAccessFields['publishStatus'],
       releaseAt: track.release_at,
       durationMs: Number(track.duration_ms) || 0,
       explicit: track.explicit,
