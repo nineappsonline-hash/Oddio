@@ -1,6 +1,6 @@
 import type { ImgHTMLAttributes } from 'react';
 
-/** Render the original Glossy Gradient Play Loop Logo PNG directly, without SVG raster resampling. */
+/** Preserve the original logo artwork, but fetch a small optimized rendition for tiny UI icons. */
 export function OddioPlayIcon({
   size = 24,
   style,
@@ -11,7 +11,7 @@ export function OddioPlayIcon({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/glossy-gradient-play-loop-logo.png"
+      src="/_next/image?url=%2Fglossy-gradient-play-loop-logo.png&w=96&q=75"
       alt=""
       aria-hidden="true"
       width={size}
