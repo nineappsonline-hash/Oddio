@@ -50,16 +50,8 @@ export async function POST(request: Request) {
     const client = serviceClient();
     const { error } = await client.from('client_performance_samples').insert(rows);
     if (error) throw error;
-    // pg_cron is not installed on the connected project. Periodically prune
-    // the time-indexed private table while there is incoming sample traffic.
-    if (Math.random() < 0.02) {
-      void Promise.resolve(
-        client
-          .from('client_performance_samples')
-          .delete()
-          .lt('recorded_at', new Date(Date.now() - 30 * 86400_000).toISOString()),
-      ).catch(() => undefined);
-    }
+    // The 30-day retention policy is enforced by a daily database cron job.
+    // Don't add an extra DELETE query to every sampled page visit.
     return new Response(null, { status: 204, headers: responseHeaders });
   } catch {
     return new Response(null, { status: 503, headers: responseHeaders });
