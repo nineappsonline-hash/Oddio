@@ -34,7 +34,7 @@ describe('Cloudflare R2 streaming architecture guard', () => {
 
   it('redirects audio bytes to R2 rather than proxying them through Vercel', () => {
     expect(streamRoute).toContain('NextResponse.redirect(');
-    expect(streamRoute).toContain('presignR2Get(track.audio.objectKey)');
+    expect(streamRoute).toMatch(/presignR2Get\((?:track\.)?audio\.objectKey\)/);
     expect(streamRoute).toContain(
       "response.headers.set('Cache-Control', 'private, no-store')",
     );
