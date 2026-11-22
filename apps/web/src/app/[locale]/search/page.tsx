@@ -67,7 +67,9 @@ export default async function SearchPage({
   // fuzzy/Arabic normalization path until its database equivalent is verified.
   const dbSearchSupported = !query.q || !/[\u0600-\u06ff]/.test(query.q);
   const paged =
-    !demoMode && dbSearchSupported && Boolean(query.q || query.genre || query.mood || query.language)
+    !demoMode &&
+    dbSearchSupported &&
+    Boolean(query.q || query.genre || query.mood || query.language)
       ? await searchPublishedTrackPage({
           query: query.q,
           genreSlug: query.genre,
@@ -80,9 +82,9 @@ export default async function SearchPage({
         })
           .then((result) => (query.q && result.total === 0 ? null : result))
           .catch((error: unknown) => {
-          console.error('Indexed catalog query failed:', error);
-          return null;
-        })
+            console.error('Indexed catalog query failed:', error);
+            return null;
+          })
       : null;
   const db = filterMusicDb(
     demoMode
@@ -103,9 +105,10 @@ export default async function SearchPage({
   // Track IDs and ranking come from the database, not a second in-memory
   // ranking pass. Still resolve artist, album and playlist sidebar matches
   // through the existing catalogue to preserve their current UX.
-  const unranked = paged && hasSearch
-    ? searchCatalog(db, viewer, { ...query, q: '', cursor: undefined })
-    : null;
+  const unranked =
+    paged && hasSearch
+      ? searchCatalog(db, viewer, { ...query, q: '', cursor: undefined })
+      : null;
   const byId = new Map(unranked?.tracks.map((track) => [track.id, track]));
   const rankedTracks = paged
     ? paged.ids.flatMap((id) => {
@@ -113,9 +116,15 @@ export default async function SearchPage({
         return track ? [track] : [];
       })
     : resultPage?.tracks;
-  const results = paged && resultPage
-    ? { ...resultPage, tracks: rankedTracks ?? [], total: paged.total, nextCursor: paged.nextCursor }
-    : resultPage;
+  const results =
+    paged && resultPage
+      ? {
+          ...resultPage,
+          tracks: rankedTracks ?? [],
+          total: paged.total,
+          nextCursor: paged.nextCursor,
+        }
+      : resultPage;
   const nextPageParams = new URLSearchParams();
   for (const key of ['q', 'genre', 'mood', 'language', 'sort'] as const) {
     const selected = query[key];
