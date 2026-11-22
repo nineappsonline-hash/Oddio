@@ -811,7 +811,7 @@ export function PlayerProvider({
         sendEvent('qualified', audible.accumulated);
         toast('Play counted after 30 seconds of listening.', 'success');
       }
-      if (audible.accumulated - audible.lastSent >= 5000) {
+      if (audible.accumulated - audible.lastSent >= 15000) {
         audible.lastSent = audible.accumulated;
         sendEvent('progress', audible.accumulated);
       }
