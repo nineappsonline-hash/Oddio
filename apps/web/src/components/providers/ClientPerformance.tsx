@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react';
 
-type MetricName = 'lcp' | 'cls' | 'fcp' | 'long_task' | 'audio_startup' | 'audio_rebuffer';
+type MetricName =
+  'lcp' | 'cls' | 'fcp' | 'long_task' | 'audio_startup' | 'audio_rebuffer';
 type WebEntry = PerformanceEntry & { hadRecentInput?: boolean; value?: number };
 
 function pageGroup(path: string): 'home' | 'discover' | 'search' | 'podcasts' | 'other' {
@@ -37,10 +38,7 @@ export function ClientPerformance() {
       records.set(name, values);
     };
     const observers: PerformanceObserver[] = [];
-    const observe = (
-      type: string,
-      callback: (entry: WebEntry) => void,
-    ) => {
+    const observe = (type: string, callback: (entry: WebEntry) => void) => {
       try {
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) callback(entry as WebEntry);
@@ -77,9 +75,10 @@ export function ClientPerformance() {
         name,
         // CLS accumulates layout shifts, while long_task is a count.
         // Other entries report the most recent or average duration.
-        value: name === 'cls' || name === 'long_task'
-          ? values.reduce((sum, item) => sum + item, 0)
-          : values.reduce((sum, item) => sum + item, 0) / values.length,
+        value:
+          name === 'cls' || name === 'long_task'
+            ? values.reduce((sum, item) => sum + item, 0)
+            : values.reduce((sum, item) => sum + item, 0) / values.length,
       })).filter(({ value }) => Number.isFinite(value) && value <= 120000);
       records.clear();
       if (!metrics.length) return;

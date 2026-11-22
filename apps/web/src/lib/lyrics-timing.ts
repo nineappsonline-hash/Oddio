@@ -4,7 +4,10 @@
  */
 export type TimedLyricCue = { start: number; end: number; text: string };
 
-export function activeLyricCueIndex(cues: readonly TimedLyricCue[], seconds: number): number {
+export function activeLyricCueIndex(
+  cues: readonly TimedLyricCue[],
+  seconds: number,
+): number {
   if (!Number.isFinite(seconds) || cues.length === 0) return -1;
   let low = 0;
   let high = cues.length;

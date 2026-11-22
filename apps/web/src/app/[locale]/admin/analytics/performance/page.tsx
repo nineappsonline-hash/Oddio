@@ -67,7 +67,10 @@ export default async function MobilePerformancePage({
   return (
     <div className="space-y-5">
       <header className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
-        <Link href={`/${locale}/admin/analytics`} className="text-xs font-semibold text-primary">
+        <Link
+          href={`/${locale}/admin/analytics`}
+          className="text-xs font-semibold text-primary"
+        >
           {ar ? '← التحليلات' : '← Analytics'}
         </Link>
         <h1 className="mt-3 text-2xl font-black text-ink">
@@ -94,13 +97,19 @@ export default async function MobilePerformancePage({
             </Link>
           ))}
           <span className="ms-auto text-xs text-muted">
-            {ar ? 'إجمالي عينات القياس' : 'Total metric samples'}: {count.toLocaleString('en-US')}
+            {ar ? 'إجمالي عينات القياس' : 'Total metric samples'}:{' '}
+            {count.toLocaleString('en-US')}
           </span>
         </div>
       </header>
       {error ? (
-        <p role="alert" className="rounded-xl border border-red-400/25 bg-red-950/20 p-5 text-sm text-red-200">
-          {ar ? 'تعذر تحميل قياسات الأداء حاليًا.' : 'Performance measurements are unavailable right now.'}
+        <p
+          role="alert"
+          className="rounded-xl border border-red-400/25 bg-red-950/20 p-5 text-sm text-red-200"
+        >
+          {ar
+            ? 'تعذر تحميل قياسات الأداء حاليًا.'
+            : 'Performance measurements are unavailable right now.'}
         </p>
       ) : rows.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/15 p-6 text-center text-sm text-muted">
@@ -111,7 +120,9 @@ export default async function MobilePerformancePage({
       ) : (
         <section className="card overflow-x-auto p-5">
           <h2 className="mb-4 text-lg font-bold text-ink">
-            {ar ? 'القياسات حسب الجهاز والمتصفح والصفحة' : 'Metrics by device, browser and page'}
+            {ar
+              ? 'القياسات حسب الجهاز والمتصفح والصفحة'
+              : 'Metrics by device, browser and page'}
           </h2>
           <table className="w-full min-w-[780px] text-sm">
             <thead>
@@ -128,7 +139,10 @@ export default async function MobilePerformancePage({
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={`${row.metric}:${row.device_group}:${row.browser_group}:${row.page_group}`} className="border-b border-white/5">
+                <tr
+                  key={`${row.metric}:${row.device_group}:${row.browser_group}:${row.page_group}`}
+                  className="border-b border-white/5"
+                >
                   <td className="py-3 pe-3 font-semibold text-ink">
                     {(names[row.metric] ?? [row.metric, row.metric])[ar ? 0 : 1]}
                   </td>
@@ -136,9 +150,15 @@ export default async function MobilePerformancePage({
                   <td className="py-3 pe-2 text-muted">{row.browser_group}</td>
                   <td className="py-3 pe-2 text-muted">{row.page_group}</td>
                   <td className="py-3 text-end tabular-nums">{row.sample_count}</td>
-                  <td className="py-3 text-end tabular-nums">{fmt(row.p50, row.metric)}</td>
-                  <td className="py-3 text-end tabular-nums font-semibold text-primary">{fmt(row.p75, row.metric)}</td>
-                  <td className="py-3 text-end tabular-nums">{fmt(row.p95, row.metric)}</td>
+                  <td className="py-3 text-end tabular-nums">
+                    {fmt(row.p50, row.metric)}
+                  </td>
+                  <td className="py-3 text-end tabular-nums font-semibold text-primary">
+                    {fmt(row.p75, row.metric)}
+                  </td>
+                  <td className="py-3 text-end tabular-nums">
+                    {fmt(row.p95, row.metric)}
+                  </td>
                 </tr>
               ))}
             </tbody>
