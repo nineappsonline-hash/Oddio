@@ -158,6 +158,7 @@ export default async function HomePage({
                 url={hero.artwork.url}
                 accent={hero.artwork.accent}
                 className="oddio-featured-album"
+                priority
                 rounded="rounded-[1.4rem]"
               />
             ) : (
