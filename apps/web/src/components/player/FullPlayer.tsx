@@ -7,7 +7,6 @@ import { activeLyricCueIndex } from '@/lib/lyrics-timing';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronDown,
-  ChevronUp,
   ListMusic,
   Moon,
   MoreHorizontal,
@@ -25,7 +24,7 @@ import {
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
-import { DragReorderList } from '@/components/ui/DragReorderList';
+import { PlayerQueueList } from '@/components/player/PlayerQueueList';
 import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
 import {
   CompactPlayerVolumeControl,
@@ -196,10 +195,6 @@ export function FullPlayer() {
   const cycleRepeat = usePlayer((state) => state.cycleRepeat);
   const toggleShuffle = usePlayer((state) => state.toggleShuffle);
   const toggleAutoplay = usePlayer((state) => state.toggleAutoplay);
-  const jumpTo = usePlayer((state) => state.jumpTo);
-  const removeFromQueue = usePlayer((state) => state.removeFromQueue);
-  const moveInQueue = usePlayer((state) => state.moveInQueue);
-  const reorderQueue = usePlayer((state) => state.reorderQueue);
   const clearQueue = usePlayer((state) => state.clearQueue);
 
   // The full player is a modal: lock background scrolling and keep keyboard
@@ -1371,80 +1366,11 @@ export function FullPlayer() {
                     </span>
                   </div>
                 </div>
-                {queue.length === 0 ? (
-                  <p className="rounded-xl border border-dashed border-white/10 p-4 text-xs text-muted">
-                    {t('player.emptyQueue')}
-                  </p>
-                ) : (
-                  <DragReorderList
-                    items={queue}
-                    getId={(item) => item.id}
-                    locale={rtl ? 'ar' : 'en'}
-                    onMove={reorderQueue}
-                    virtualRowHeight={72}
-                    className="scroll-thin -mx-1 min-h-0 flex-1 overflow-y-auto px-1"
-                    renderItem={(item, index) => (
-                      <div className="group flex min-w-0 items-center gap-1 rounded-xl px-1 py-1.5 hover:bg-white/5">
-                        <button
-                          type="button"
-                          onClick={() => jumpTo(item.id)}
-                          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                        >
-                          <Artwork
-                            title={item.title}
-                            url={item.artwork.url}
-                            accent={item.artwork.accent}
-                            className="h-10 w-10 shrink-0"
-                            rounded="rounded-lg"
-                          />
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-medium text-ink">
-                              {item.title}
-                            </span>
-                            <span className="block truncate text-xs text-muted">
-                              {item.artist?.name ?? '—'}
-                            </span>
-                          </span>
-                        </button>
-                        <div className="flex shrink-0 items-center gap-1">
-                          <button
-                            type="button"
-                            disabled={index === 0}
-                            onClick={() => moveInQueue(item.id, 'up')}
-                            aria-label={
-                              rtl ? `حرّك ${item.title} لفوق` : `Move ${item.title} up`
-                            }
-                            title={rtl ? 'لأعلى' : 'Move up'}
-                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-25"
-                          >
-                            <ChevronUp className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={index === queue.length - 1}
-                            onClick={() => moveInQueue(item.id, 'down')}
-                            aria-label={
-                              rtl ? `حرّك ${item.title} لتحت` : `Move ${item.title} down`
-                            }
-                            title={rtl ? 'لأسفل' : 'Move down'}
-                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-25"
-                          >
-                            <ChevronDown className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeFromQueue(item.id)}
-                            aria-label={t('player.removeFromQueue')}
-                            title={t('player.removeFromQueue')}
-                            className="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  />
-                )}
+                <PlayerQueueList
+                  rtl={rtl}
+                  emptyLabel={t('player.emptyQueue')}
+                  removeLabel={t('player.removeFromQueue')}
+                />
               </div>
             )}
           </aside>
