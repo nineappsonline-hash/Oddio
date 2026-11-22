@@ -56,15 +56,22 @@ try {
         await page.locator('.oddio-home-feature-grid').waitFor();
         assert.equal(await page.locator('.oddio-featured-stage').count(), 1);
         assert.equal(await page.locator('.oddio-topbar-search').count(), 1);
-        if (viewport.width >= 1320) {
-          await page.locator('.oddio-listening-rail').waitFor({ state: 'visible' });
-        }
-        assert.equal(await page.locator('.oddio-listening-rail').count(), 1);
-        assert.equal(
-          await page.locator('.oddio-listening-rail').isVisible(),
+        // Desktop-only rail is a deferred chunk. Wait for the settled
+        // breakpoint state instead of sampling while WebKit is hydrating.
+        await page.waitForFunction(
+          (expectedVisible) => {
+            const rail = document.querySelector('.oddio-listening-rail');
+            if (!rail) return false;
+            const style = getComputedStyle(rail);
+            const rect = rail.getBoundingClientRect();
+            const visible = style.display !== 'none' && style.visibility !== 'hidden'
+              && rect.width > 0 && rect.height > 0;
+            return visible === expectedVisible;
+          },
           viewport.width >= 1320,
-          'Listening rail visibility does not match the desktop breakpoint',
+          { timeout: 15000 },
         );
+        assert.equal(await page.locator('.oddio-listening-rail').count(), 1);
         assert.equal(
           await page.locator('.oddio-topbar-search').isVisible(),
           viewport.width >= 1024,
