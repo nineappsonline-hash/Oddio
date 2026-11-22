@@ -706,11 +706,14 @@ export function PlayerProvider({
       const standby = standbyRef.current;
       const remaining = audio.duration - time;
       const queued = state.queue[0];
-      const connection = (navigator as Navigator & {
-        connection?: { saveData?: boolean; effectiveType?: string };
-      }).connection;
+      const connection = (
+        navigator as Navigator & {
+          connection?: { saveData?: boolean; effectiveType?: string };
+        }
+      ).connection;
       const constrainedNetwork =
-        connection?.saveData || connection?.effectiveType === 'slow-2g' ||
+        connection?.saveData ||
+        connection?.effectiveType === 'slow-2g' ||
         connection?.effectiveType === '2g';
       if (
         standby &&
@@ -849,8 +852,11 @@ export function PlayerProvider({
         const trackAtStall = usePlayer.getState().track?.id;
         stallTimer = setTimeout(() => {
           stallTimer = null;
-          if (!audio.paused && audio.readyState < HTMLMediaElement.HAVE_FUTURE_DATA
-              && usePlayer.getState().track?.id === trackAtStall) {
+          if (
+            !audio.paused &&
+            audio.readyState < HTMLMediaElement.HAVE_FUTURE_DATA &&
+            usePlayer.getState().track?.id === trackAtStall
+          ) {
             onError();
           }
         }, 12000);
@@ -895,7 +901,9 @@ export function PlayerProvider({
               start: playbackStartRef.current,
               duration: delay,
             });
-          } catch { /* Optional diagnostic on older WebKit. */ }
+          } catch {
+            /* Optional diagnostic on older WebKit. */
+          }
         }
         playbackStartRef.current = null;
       }
@@ -907,7 +915,9 @@ export function PlayerProvider({
               start: lastStreamStallRef.current,
               duration: stalledFor,
             });
-          } catch { /* Optional diagnostic on older WebKit. */ }
+          } catch {
+            /* Optional diagnostic on older WebKit. */
+          }
         }
         lastStreamStallRef.current = null;
       }

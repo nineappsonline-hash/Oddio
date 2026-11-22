@@ -40,7 +40,10 @@ export async function POST(
         throw new AppError('playback_denied', 'Playback is not authorized.', 403);
       if (!streamAsset.audio)
         throw new AppError('audio_unavailable', 'Audio is not available.', 404);
-      const sessionId = await touchPlaybackSession(actor?.id ?? null, anonymousHash(request));
+      const sessionId = await touchPlaybackSession(
+        actor?.id ?? null,
+        anonymousHash(request),
+      );
       return jsonOk({
         sessionId,
         streamUrl: `/api/stream/${id}?token=${encodeURIComponent(signPlaybackToken(id))}`,

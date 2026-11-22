@@ -92,7 +92,12 @@ export async function GET(
       return response;
     } catch {
       return NextResponse.json(
-        { error: { code: 'storage_unavailable', message: 'Audio storage is unavailable.' } },
+        {
+          error: {
+            code: 'storage_unavailable',
+            message: 'Audio storage is unavailable.',
+          },
+        },
         { status: 503, headers: AUDIO_ERROR_HEADERS },
       );
     }

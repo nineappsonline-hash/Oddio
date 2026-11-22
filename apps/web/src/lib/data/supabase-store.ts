@@ -257,7 +257,6 @@ function audioAsset(row: Row): AudioAsset {
   };
 }
 
-
 /**
  * Playback authorization previously called mutateRuntimeDb, which hydrated and
  * diffed the whole database before every Play. This performs the existing
@@ -268,27 +267,38 @@ export async function touchPlaybackSession(
   anonymousHash: string | null,
 ): Promise<string> {
   const client = serviceClient();
-  const lookup = client.from('playback_sessions').select('id')
+  const lookup = client
+    .from('playback_sessions')
+    .select('id')
     .gt('last_seen_at', new Date(Date.now() - 15 * 60_000).toISOString())
-    .order('last_seen_at', { ascending: false }).limit(1);
+    .order('last_seen_at', { ascending: false })
+    .limit(1);
   const result = userId
     ? await lookup.eq('user_id', userId).maybeSingle()
-    : await lookup.eq('anonymous_session_hash', anonymousHash ?? '').is('user_id', null).maybeSingle();
-  if (result.error) throw new Error(`Playback session lookup failed: ${result.error.message}`);
+    : await lookup
+        .eq('anonymous_session_hash', anonymousHash ?? '')
+        .is('user_id', null)
+        .maybeSingle();
+  if (result.error)
+    throw new Error(`Playback session lookup failed: ${result.error.message}`);
   if (result.data?.id) {
-    const { error } = await client.from('playback_sessions')
+    const { error } = await client
+      .from('playback_sessions')
       .update({ last_seen_at: new Date().toISOString() })
       .eq('id', result.data.id);
     if (error) throw new Error(`Playback session update failed: ${error.message}`);
     return String(result.data.id);
   }
-  const { data, error } = await client.from('playback_sessions')
+  const { data, error } = await client
+    .from('playback_sessions')
     .insert({
       user_id: userId,
       anonymous_session_hash: userId ? null : anonymousHash,
     })
-    .select('id').single();
-  if (error || !data) throw new Error(`Playback session creation failed: ${error?.message}`);
+    .select('id')
+    .single();
+  if (error || !data)
+    throw new Error(`Playback session creation failed: ${error?.message}`);
   return String(data.id);
 }
 
@@ -312,16 +322,25 @@ export async function loadStreamAsset(trackId: string): Promise<{
   const client = serviceClient();
   const { data: track, error: trackError } = await client
     .from('tracks')
-    .select('id,artist_id,visibility,review_status,publish_status,release_at,duration_ms,explicit')
+    .select(
+      'id,artist_id,visibility,review_status,publish_status,release_at,duration_ms,explicit',
+    )
     .eq('id', trackId)
     .maybeSingle();
   if (trackError) throw new Error(`Stream track lookup failed: ${trackError.message}`);
   if (!track) return null;
 
   const [artistResponse, audioResponse] = await Promise.all([
-    client.from('artists').select('owner_user_id').eq('id', track.artist_id).maybeSingle(),
-    client.from('audio_assets')
-      .select('kind,object_key,format,bitrate_kbps,sample_rate,channels,bytes,sha256,processing_status')
+    client
+      .from('artists')
+      .select('owner_user_id')
+      .eq('id', track.artist_id)
+      .maybeSingle(),
+    client
+      .from('audio_assets')
+      .select(
+        'kind,object_key,format,bitrate_kbps,sample_rate,channels,bytes,sha256,processing_status',
+      )
       .eq('track_id', trackId),
   ]);
   if (artistResponse.error)
@@ -330,10 +349,13 @@ export async function loadStreamAsset(trackId: string): Promise<{
     throw new Error(`Stream asset lookup failed: ${audioResponse.error.message}`);
 
   const assets = ((audioResponse.data ?? []) as Row[]).map(audioAsset);
-  const audio = assets.find((asset) => asset.kind === 'rendition' && asset.processingStatus === 'ready')
-    ?? assets.find((asset) => asset.processingStatus === 'ready')
-    ?? assets.find((asset) => asset.kind === 'original')
-    ?? null;
+  const audio =
+    assets.find(
+      (asset) => asset.kind === 'rendition' && asset.processingStatus === 'ready',
+    ) ??
+    assets.find((asset) => asset.processingStatus === 'ready') ??
+    assets.find((asset) => asset.kind === 'original') ??
+    null;
   return {
     track: {
       visibility: track.visibility as TrackAccessFields['visibility'],
