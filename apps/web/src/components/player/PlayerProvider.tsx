@@ -428,7 +428,21 @@ export function PlayerProvider({
         }),
       }).catch(() => undefined);
     };
-    const unsubscribe = usePlayer.subscribe(() => {
+    let lastTimelineSaveAt = 0;
+    const unsubscribe = usePlayer.subscribe((state, previous) => {
+      // Position ticks should not stringify and write the whole queue every
+      // half second. Preserve immediate persistence for track/control changes.
+      const clockOnly = state.currentTime !== previous.currentTime
+        && state.track === previous.track
+        && state.queue === previous.queue
+        && state.isPlaying === previous.isPlaying
+        && state.volume === previous.volume
+        && state.muted === previous.muted
+        && state.repeat === previous.repeat
+        && state.shuffle === previous.shuffle
+        && state.autoplay === previous.autoplay;
+      if (clockOnly && Date.now() - lastTimelineSaveAt < 5000) return;
+      if (clockOnly) lastTimelineSaveAt = Date.now();
       if (timer) clearTimeout(timer);
       timer = setTimeout(save, 400);
       if (viewerId && !cloudTimer) {
