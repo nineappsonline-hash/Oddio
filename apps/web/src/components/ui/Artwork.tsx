@@ -7,6 +7,7 @@ export function Artwork({
   className,
   rounded = 'rounded-xl',
   animated = false,
+  priority = false,
 }: {
   title: string;
   url?: string;
@@ -14,6 +15,7 @@ export function Artwork({
   className?: string;
   rounded?: string;
   animated?: boolean;
+  priority?: boolean;
 }) {
   return (
     <div
@@ -35,7 +37,8 @@ export function Artwork({
           <img
             src={url}
             alt=""
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
             decoding="async"
             draggable={false}
             className="absolute inset-0 h-full w-full object-cover"
