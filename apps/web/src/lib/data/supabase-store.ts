@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type {
   Album,
@@ -606,6 +607,13 @@ export async function loadDbFromSupabase(options: {
     history,
   };
 }
+
+/**
+ * React request-scoped memoization for public/detail page rendering.
+ * This shares a single read between generateMetadata and the page without
+ * caching user data across requests or changing mutation/write semantics.
+ */
+export const loadPageDbFromSupabase = cache(() => loadDbFromSupabase());
 
 /* -------------------------------------------------------------------------- */
 /* Persistence                                                                */
