@@ -686,6 +686,11 @@ export function PlayerProvider({
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+    let stallTimer: ReturnType<typeof setTimeout> | null = null;
+    const clearStallTimer = () => {
+      if (stallTimer) clearTimeout(stallTimer);
+      stallTimer = null;
+    };
 
     const onTimeUpdate = () => {
       const state = usePlayer.getState();
@@ -826,12 +831,25 @@ export function PlayerProvider({
       }
     };
     const onWaiting = () => {
-      if (!audio.paused && !audio.ended) {
+      if (audio.paused || audio.ended) return;
+      if (lastStreamStallRef.current === null)
         lastStreamStallRef.current = performance.now();
-        usePlayer.getState().setBuffering(true);
+      usePlayer.getState().setBuffering(true);
+      // Safari can remain in waiting forever without emitting media error.
+      // A bounded recovery reauthorizes and resumes at the last audible time.
+      if (!stallTimer) {
+        const trackAtStall = usePlayer.getState().track?.id;
+        stallTimer = setTimeout(() => {
+          stallTimer = null;
+          if (!audio.paused && audio.readyState < HTMLMediaElement.HAVE_FUTURE_DATA
+              && usePlayer.getState().track?.id === trackAtStall) {
+            onError();
+          }
+        }, 12000);
       }
     };
     const onPlaying = () => {
+      clearStallTimer();
       if (handoffTargetRef.current === usePlayer.getState().track?.id) {
         handoffTargetRef.current = null;
         const standby = standbyRef.current;
@@ -864,20 +882,24 @@ export function PlayerProvider({
       if (playbackStartRef.current !== null) {
         const delay = performance.now() - playbackStartRef.current;
         if (delay >= 0 && delay < 120000) {
-          performance.measure('oddio:audio-startup', {
-            start: playbackStartRef.current,
-            duration: delay,
-          });
+          try {
+            performance.measure('oddio:audio-startup', {
+              start: playbackStartRef.current,
+              duration: delay,
+            });
+          } catch { /* Optional diagnostic on older WebKit. */ }
         }
         playbackStartRef.current = null;
       }
       if (lastStreamStallRef.current !== null) {
         const stalledFor = performance.now() - lastStreamStallRef.current;
         if (stalledFor >= 0 && stalledFor < 120000) {
-          performance.measure('oddio:audio-rebuffer', {
-            start: lastStreamStallRef.current,
-            duration: stalledFor,
-          });
+          try {
+            performance.measure('oddio:audio-rebuffer', {
+              start: lastStreamStallRef.current,
+              duration: stalledFor,
+            });
+          } catch { /* Optional diagnostic on older WebKit. */ }
         }
         lastStreamStallRef.current = null;
       }
@@ -887,6 +909,7 @@ export function PlayerProvider({
       }
     };
     const onError = () => {
+      clearStallTimer();
       const state = usePlayer.getState();
       const currentTrackId = state.track?.id;
       if (isPodcastPlayback(state.track)) {
@@ -950,6 +973,7 @@ export function PlayerProvider({
       }, delay);
     };
     const onEnded = () => {
+      clearStallTimer();
       const state = usePlayer.getState();
       if (isPodcastPlayback(state.track)) clearPodcastProgress(viewerId, state.track!.id);
       // Standby handoff is complete only after the next primary stream starts.
@@ -1051,6 +1075,7 @@ export function PlayerProvider({
       audio.removeEventListener('playing', onPlaying);
       audio.removeEventListener('error', onError);
       audio.removeEventListener('ended', onEnded);
+      clearStallTimer();
     };
   }, [sendEvent, toast, viewerId]);
 
