@@ -86,6 +86,8 @@ export function FullPlayer() {
   const [lyricsMessage, setLyricsMessage] = useState('');
   const [mobileLyricsOpen, setMobileLyricsOpen] = useState(false);
   const [mobileOptionsOpen, setMobileOptionsOpen] = useState(false);
+  const [sleepMenuOpen, setSleepMenuOpen] = useState(false);
+  const sleepMenuRef = useRef<HTMLDivElement>(null);
   const mobileOptionsRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [controlNotice, setControlNotice] = useState('');
@@ -101,6 +103,21 @@ export function FullPlayer() {
     return () => window.removeEventListener('oddio:open-queue', showQueue);
   }, []);
   const rtl = useLocale() === 'ar';
+  useEffect(() => {
+    if (!sleepMenuOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!sleepMenuRef.current?.contains(event.target as Node)) setSleepMenuOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSleepMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [sleepMenuOpen]);
   useEffect(() => {
     if (!mobileOptionsOpen) return;
     const onPointerDown = (event: PointerEvent) => {
@@ -539,30 +556,20 @@ export function FullPlayer() {
               </div>
               <div className="flex min-w-0 flex-col justify-center gap-2 sm:mt-6 sm:gap-5 lg:mt-0">
                 <div className="min-w-0">
-                  <span className="mb-1 block text-[10px] font-bold uppercase tracking-[.17em] text-[#bdbdbd] sm:mb-3 sm:text-[11px]">
-                    {podcast
-                      ? rtl
-                        ? 'حلقة بودكاست'
-                        : 'PODCAST EPISODE'
-                      : rtl
-                        ? 'أغنية'
-                        : 'MUSIC / TRACK'}
-                  </span>
-                  <h1 className="min-w-0 text-[clamp(19px,5.3vw,27px)] font-black tracking-tight text-white sm:text-3xl lg:text-[clamp(22px,1.9vw,32px)]">
-                    <AutoScrollTitle text={track.title} lines={2} />
-                  </h1>
                   {track.artist ? (
                     <Link
-                      href={
-                        podcast
-                          ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}`
-                          : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`
-                      }
-                      className="mt-1 inline-block text-sm font-semibold text-[#c9c9c9] transition hover:text-white sm:mt-3 sm:text-base"
+                      href={podcast
+                        ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}`
+                        : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
+                      dir="auto"
+                      className="mb-1 block w-fit text-sm font-bold text-[#c9c9c9] transition hover:text-white sm:mb-3 sm:text-base"
                     >
                       {track.artist.name}
                     </Link>
                   ) : null}
+                  <h1 className="min-w-0 text-[clamp(19px,5.3vw,27px)] font-black tracking-tight text-white sm:text-3xl lg:text-[clamp(22px,1.9vw,32px)]">
+                    <AutoScrollTitle text={track.title} lines={2} />
+                  </h1>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <Badge tone="cyan">{track.qualityLabel}</Badge>
                     {!podcast && (
@@ -575,29 +582,7 @@ export function FullPlayer() {
                     {track.genre ? (
                       <Badge tone="neutral">{track.genre.slug}</Badge>
                     ) : null}
-                    <span className="ms-auto flex shrink-0 items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setSideTab('queue')}
-                        aria-label={t('player.queue')}
-                        title={t('player.queue')}
-                        className="inline-flex h-10 items-center gap-1.5 rounded-full border border-white/20 px-2.5 text-xs font-semibold text-white transition hover:bg-white/10 lg:hidden"
-                      >
-                        <ListMusic className="h-4 w-4" aria-hidden="true" />
-                        <span>{t('player.queue')}</span>
-                        <span className="text-white/60">({queue.length})</span>
-                      </button>
-                      <ShareButton
-                        storyTrack={track}
-                        title={track.title}
-                        label={t('common.share')}
-                        url={
-                          podcast
-                            ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
-                            : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`
-                        }
-                      />
-                    </span>
+
                   </div>
                 </div>
                 {!podcast && (
@@ -668,7 +653,7 @@ export function FullPlayer() {
                         </div>
                       ) : null}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <LikeButton
                         trackId={track.id}
                         initialLiked={track.isLiked}
@@ -676,12 +661,62 @@ export function FullPlayer() {
                         compact
                       />
                       <DislikeButton trackId={track.id} />
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setSideTab('queue')}
+                        aria-label={t('player.queue')}
+                        title={t('player.queue')}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+                      >
+                        <ListMusic className="h-4 w-4" aria-hidden="true" />
+
+                      </button>
+                      <ShareButton
+                        storyTrack={track}
+                        title={track.title}
+                        label={t('common.share')}
+                        iconOnly
+                        url={
+                          podcast
+                            ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
+                            : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`
+                        }
+                      />
+                    </div>
                     </div>
                     <span className="text-xs text-muted">
                       {formatNumber(track.qualifiedPlays)} {t('common.plays')}
                     </span>
                   </div>
                 )}
+                {podcast ? (
+                  <div className="mt-2 flex items-center gap-2">
+                                        <div className="flex shrink-0 items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setSideTab('queue')}
+                        aria-label={t('player.queue')}
+                        title={t('player.queue')}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+                      >
+                        <ListMusic className="h-4 w-4" aria-hidden="true" />
+
+                      </button>
+                      <ShareButton
+                        storyTrack={track}
+                        title={track.title}
+                        label={t('common.share')}
+                        iconOnly
+                        url={
+                          podcast
+                            ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
+                            : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`
+                        }
+                      />
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
 
@@ -884,25 +919,42 @@ export function FullPlayer() {
                       </select>
                     </label>
                   ) : null}
-                  <label className="relative flex items-center gap-1.5" title={rtl ? 'مؤقت النوم' : 'Sleep timer'}>
-                    <Moon className={cn('h-4 w-4 shrink-0', sleepUntil ? 'text-primary' : 'text-white/70')} aria-hidden="true" />
-                    <span className="sr-only">{rtl ? 'مؤقت النوم' : 'Sleep timer'}</span>
-                    <select
-                      value={sleepUntil ? 'active' : 'off'}
-                      onChange={(event) => setSleepTimer(event.target.value === 'off' ? 0 : Number(event.target.value))}
-                      aria-label={rtl ? 'مؤقت إيقاف التشغيل' : 'Sleep timer'}
+                  <div className="relative flex items-center" ref={sleepMenuRef}>
+                    <button
+                      type="button"
+                      aria-label={rtl ? 'مؤقت النوم' : 'Sleep timer'}
+                      title={rtl ? 'مؤقت النوم' : 'Sleep timer'}
+                      aria-haspopup="menu"
+                      aria-expanded={sleepMenuOpen}
+                      onClick={() => setSleepMenuOpen((open) => !open)}
                       className={cn(
-                        'h-10 min-w-[60px] cursor-pointer rounded-full border px-1.5 text-center text-xs font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-primary sm:h-11',
-                        sleepUntil ? 'border-primary/60 bg-primary/20 text-white' : 'border-white/20 bg-white/[0.06] text-white hover:bg-white/10',
+                        'inline-flex h-10 w-10 items-center justify-center rounded-full border transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary sm:h-11 sm:w-11',
+                        sleepUntil ? 'border-primary/60 bg-primary/20 text-primary' : 'border-white/20 bg-white/[0.06] text-white/75',
                       )}
                     >
-                      <option value="off" className="bg-[#18191b]">{rtl ? 'إيقاف' : 'Off'}</option>
-                      {sleepUntil ? <option value="active" disabled className="bg-[#18191b]">{rtl ? 'يعمل' : 'On'}</option> : null}
-                      {[5, 15, 30, 60].map((minutes) => (
-                        <option key={minutes} value={minutes} className="bg-[#18191b]">{minutes} {rtl ? 'د' : 'min'}</option>
-                      ))}
-                    </select>
-                  </label>
+                      <Moon className="h-5 w-5" aria-hidden="true" />
+                      {sleepUntil ? <span className="absolute end-1 top-1 h-1.5 w-1.5 rounded-full bg-primary" /> : null}
+                    </button>
+                    {sleepMenuOpen ? (
+                      <div role="menu" aria-label={rtl ? 'مؤقت النوم' : 'Sleep timer'}
+                        className="absolute bottom-full end-0 z-[110] mb-2 w-48 rounded-xl border border-white/20 bg-[#242129] p-2 text-white shadow-2xl">
+                        <div className="border-b border-white/15 px-3 py-2 text-sm font-bold">
+                          {rtl ? 'مؤقت النوم' : 'Sleep timer'}
+                          <span className="mt-1 block text-xs font-normal text-white/60">
+                            {sleepUntil ? (rtl ? 'يعمل' : 'On') : (rtl ? 'إيقاف' : 'Off')}
+                          </span>
+                        </div>
+                        {[0, 5, 15, 30, 60].map((minutes) => (
+                          <button key={minutes} type="button" role="menuitem"
+                            onClick={() => { setSleepTimer(minutes); setSleepMenuOpen(false); }}
+                            className="flex min-h-10 w-full items-center rounded-lg px-3 text-start text-sm hover:bg-white/10"
+                          >
+                            {minutes === 0 ? (rtl ? 'إيقاف' : 'Off') : `${minutes} ${rtl ? 'دقيقة' : 'minutes'}`}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="flex shrink-0 items-center sm:hidden">
                   <CompactPlayerVolumeControl rtl={rtl} label={t('player.volume')} />
