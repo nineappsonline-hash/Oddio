@@ -50,6 +50,21 @@ as $function$
         or t.title ilike '%' || a.term || '%'
         or ar.name ilike '%' || a.term || '%'
         or array_to_string(ar.search_aliases, ' ') ilike '%' || a.term || '%'
+        or exists (
+          select 1 from public.genres g
+          where (g.id = t.genre_id or g.id = any(t.genre_ids))
+            and (g.label_en ilike '%' || a.term || '%' or g.label_ar ilike '%' || a.term || '%')
+        )
+        or exists (
+          select 1 from public.track_moods tm
+          join public.moods mo on mo.id = tm.mood_id
+          where tm.track_id = t.id
+            and (mo.label_en ilike '%' || a.term || '%' or mo.label_ar ilike '%' || a.term || '%')
+        )
+        or exists (
+          select 1 from public.albums al
+          where al.id = t.album_id and al.title ilike '%' || a.term || '%'
+        )
       )
   )
   select m.id as track_id, count(*) over () as total_count
