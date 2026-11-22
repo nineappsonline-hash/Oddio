@@ -28,7 +28,7 @@ function parseStorySrt(value: string): LyricCue[] {
           + Number((match[4] ?? '0').padEnd(3, '0').slice(0, 3)) / 1000
         : NaN;
     };
-    const [from, to] = lines[index].split('-->');
+    const [from, to] = (lines[index] ?? '').split('-->');
     const start = parseTime(from || '');
     const end = parseTime(to || '');
     const text = lines.slice(index + 1).join(' ').replace(/<[^>]*>/g, '').trim();
