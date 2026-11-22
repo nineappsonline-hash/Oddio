@@ -532,6 +532,7 @@ export function PlayerProvider({
     state.setError(null);
     state.setBuffering(true);
     playbackStartRef.current = performance.now();
+    lastStreamStallRef.current = null;
     sessionRef.current = null;
     streamRef.current = null;
     setStream(null);
@@ -624,8 +625,15 @@ export function PlayerProvider({
       }
     };
     check();
-    const interval = window.setInterval(check, 1000);
-    return () => window.clearInterval(interval);
+    const delay = Math.max(0, sleepUntil - Date.now());
+    const timer = window.setTimeout(check, Math.min(delay, 2_147_483_647));
+    // Background Safari timers may be suspended; re-check the real deadline
+    // when the page becomes active instead of polling every second.
+    document.addEventListener('visibilitychange', check);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', check);
+    };
   }, [sleepUntil]);
 
   useEffect(() => {
@@ -825,7 +833,7 @@ export function PlayerProvider({
       }
       pendingRestoreTime.current = null;
       pendingRestoreTrackId.current = null;
-      usePlayer.getState().setBuffering(false);
+      if (!usePlayer.getState().isPlaying) usePlayer.getState().setBuffering(false);
       if (Number.isFinite(audio.duration)) {
         usePlayer.getState().setDuration(audio.duration);
       }
@@ -1143,9 +1151,10 @@ export function PlayerProvider({
       }
     };
     updatePosition();
+    if (!isPlaying) return;
     const interval = window.setInterval(updatePosition, 1000);
     return () => window.clearInterval(interval);
-  }, [track]);
+  }, [track, isPlaying]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
