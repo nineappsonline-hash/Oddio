@@ -4,6 +4,7 @@ import type { SessionUser } from '@ai-music/contracts';
 import { SessionProvider } from '@/components/providers/SessionProvider';
 import { ToastProvider } from '@/components/providers/ToastProvider';
 import { PlayerProvider } from '@/components/player/PlayerProvider';
+import { ClientPerformance } from '@/components/providers/ClientPerformance';
 import { PlayerBar } from '@/components/player/PlayerBar';
 import { DeferredFullPlayer } from '@/components/player/DeferredFullPlayer';
 import { FavoriteGenresSelector } from '@/components/onboarding/FavoriteGenresSelector';
@@ -36,6 +37,7 @@ export function AppShell({
     <SessionProvider user={user}>
       <ToastProvider>
         <PlayerProvider key={user?.id ?? 'guest'} viewerId={user?.id ?? null}>
+          <ClientPerformance />
           <a
             href="#main"
             className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
