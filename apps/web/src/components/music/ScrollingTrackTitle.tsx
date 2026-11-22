@@ -44,6 +44,7 @@ export function ScrollingTrackTitle({
     <Link
       ref={viewportRef}
       href={href}
+      prefetch={false}
       title={title}
       dir={rtl ? 'rtl' : 'ltr'}
       className={cn(
