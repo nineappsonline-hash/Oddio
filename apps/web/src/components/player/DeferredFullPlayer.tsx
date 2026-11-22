@@ -12,6 +12,6 @@ const FullPlayer = dynamic(
 );
 
 export function DeferredFullPlayer() {
-  const hasTrack = usePlayer((state) => Boolean(state.track));
-  return hasTrack ? <FullPlayer /> : null;
+  const shouldShow = usePlayer((state) => Boolean(state.track && state.expanded));
+  return shouldShow ? <FullPlayer /> : null;
 }
