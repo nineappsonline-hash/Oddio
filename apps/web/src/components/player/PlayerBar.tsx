@@ -96,7 +96,9 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
 
   const showQueue = () => {
     setOptionsOpen(false);
-    window.dispatchEvent(new Event('oddio:open-queue'));
+    // The full player mounts on demand; persist the panel request until it
+    // has finished loading instead of firing an event before it exists.
+    try { window.sessionStorage.setItem('oddio:pending-player-tab', 'queue'); } catch {}
     setExpanded(true);
   };
 
