@@ -731,10 +731,14 @@ export function PlayerProvider({
           connection?: { saveData?: boolean; effectiveType?: string };
         }
       ).connection;
+      // Do not fetch an entire second audio file on cellular 3G / data saver.
+      // A more conservative warmup is preferable to starving the playing song.
       const constrainedNetwork =
+        !navigator.onLine ||
         connection?.saveData ||
         connection?.effectiveType === 'slow-2g' ||
-        connection?.effectiveType === '2g';
+        connection?.effectiveType === '2g' ||
+        connection?.effectiveType === '3g';
       if (
         standby &&
         !constrainedNetwork &&
