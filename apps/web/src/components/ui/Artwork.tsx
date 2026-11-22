@@ -25,6 +25,11 @@ export function Artwork({
   const optimizedCloudinary = cloudinarySource && url?.includes('/image/upload/')
     ? url.replace('/image/upload/', '/image/upload/f_auto,q_auto:good,w_800/')
     : url;
+  const cloudinarySet = cloudinarySource && url?.includes('/image/upload/')
+    ? [160, 320, 480, 800].map((width) =>
+        `${url.replace('/image/upload/', `/image/upload/f_auto,q_auto:good,w_${width}/`)} ${width}w`
+      ).join(', ')
+    : undefined;
   return (
     <div
       role="img"
@@ -59,6 +64,8 @@ export function Artwork({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={optimizedCloudinary}
+              srcSet={cloudinarySet}
+              sizes={cloudinarySet ? sizes : undefined}
               alt=""
               loading={priority ? 'eager' : 'lazy'}
               fetchPriority={priority ? 'high' : 'auto'}
