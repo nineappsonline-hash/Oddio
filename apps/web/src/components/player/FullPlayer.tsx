@@ -588,6 +588,7 @@ export function FullPlayer() {
                         <span className="text-white/60">({queue.length})</span>
                       </button>
                       <ShareButton
+                        storyTrack={track}
                         title={track.title}
                         label={t('common.share')}
                         url={
