@@ -352,6 +352,14 @@ export function StoryClipComposer({ track, onClose }: {
 
   async function shareFile() {
     if (!file) return;
+    // Prepare the URL for Instagram's native Link sticker before opening the
+    // system share sheet. Never claim that a sticker was added automatically.
+    try {
+      await navigator.clipboard.writeText(link());
+      setCopied(true);
+    } catch {
+      // Copy link remains available as an explicit separate action.
+    }
     try {
       if (navigator.canShare?.({ files: [file] }) && navigator.share) {
         await navigator.share({ files: [file], title: track.title });
