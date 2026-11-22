@@ -1312,6 +1312,7 @@ export function FullPlayer() {
                     getId={(item) => item.id}
                     locale={rtl ? 'ar' : 'en'}
                     onMove={reorderQueue}
+                    virtualRowHeight={72}
                     className="scroll-thin -mx-1 min-h-0 flex-1 overflow-y-auto px-1"
                     renderItem={(item, index) => (
                       <div className="group flex min-w-0 items-center gap-1 rounded-xl px-1 py-1.5 hover:bg-white/5">
