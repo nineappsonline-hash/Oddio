@@ -2598,3 +2598,18 @@ body {
     top: 83px !important;
   }
 }
+
+
+/* Mobile performance: avoid repeatedly rasterizing large blurred gradient
+   layers beneath the player and the rest of the application. The static
+   ambient gradient stays visible, so the visual identity is preserved. */
+@media (max-width: 767px) {
+  .aurora-blob,
+  .ambient-noise {
+    display: none;
+  }
+
+  .oddio-full-player .animate-spin-slow {
+    animation: none !important;
+  }
+}
