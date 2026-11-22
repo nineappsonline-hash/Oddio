@@ -897,6 +897,7 @@ export function PlayerProvider({
         const delay = performance.now() - playbackStartRef.current;
         if (delay >= 0 && delay < 120000) {
           try {
+            performance.clearMeasures('oddio:audio-startup');
             performance.measure('oddio:audio-startup', {
               start: playbackStartRef.current,
               duration: delay,
@@ -911,6 +912,7 @@ export function PlayerProvider({
         const stalledFor = performance.now() - lastStreamStallRef.current;
         if (stalledFor >= 0 && stalledFor < 120000) {
           try {
+            performance.clearMeasures('oddio:audio-rebuffer');
             performance.measure('oddio:audio-rebuffer', {
               start: lastStreamStallRef.current,
               duration: stalledFor,
