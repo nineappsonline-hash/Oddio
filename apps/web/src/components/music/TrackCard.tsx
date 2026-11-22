@@ -69,6 +69,7 @@ export function TrackCard({
       </div>
       <div className="mt-3 space-y-0.5 px-0.5">
         <Link
+          prefetch={false}
           href={`/${locale}/tracks/${track.id}-${track.slug}`}
           className="block min-w-0 rounded-sm text-sm font-semibold text-ink transition group-hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
@@ -76,6 +77,7 @@ export function TrackCard({
         </Link>
         {track.artist ? (
           <Link
+            prefetch={false}
             href={`/${locale}/artists/${track.artist.slug}`}
             className="block truncate rounded-sm text-xs text-muted transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
