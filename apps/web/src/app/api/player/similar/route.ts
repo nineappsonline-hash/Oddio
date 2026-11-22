@@ -84,7 +84,7 @@ export async function GET(request: Request) {
       }
     } else {
       const viewer = await getViewer();
-      const db = demoMode ? readDb() : await loadDbFromSupabase();
+      const db = demoMode ? readDb() : await loadDbFromSupabase({ homeOnly: true, homeViewerId: viewer.userId });
       // Use access-filtered catalog: no private, unapproved, or unreleased tracks.
       const visible = listableTracks(db, viewer);
       const current = visible.find((track) => track.id === id);
