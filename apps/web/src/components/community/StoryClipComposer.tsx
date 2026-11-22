@@ -250,7 +250,7 @@ export function StoryClipComposer({ track, onClose }: {
     fetch(`/api/tracks/${track.id}/synced-lyrics`)
       .then((response) => response.ok ? response.json() : null)
       .then((data) => {
-        if (active && typeof data?.srt === 'string') setLyricCues(parseStorySrt(data.srt));
+        if (active && typeof data?.data?.srt === 'string') setLyricCues(parseStorySrt(data.data.srt));
       })
       .catch(() => {});
     return () => { active = false; };
