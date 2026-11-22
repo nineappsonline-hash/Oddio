@@ -80,6 +80,60 @@ async function fetchAll(table: string, columns = '*'): Promise<Row[]> {
   return rows;
 }
 
+/**
+ * Indexed, server-only full-text search. The RPC has no anon/authenticated
+ * EXECUTE permission: callers always use the private service client here.
+ */
+export async function searchPublishedTrackPage({
+  query, genreSlug, moodSlug, language, country, sort, cursor,
+  limit = 25, arabicOnly = false,
+}: {
+  query?: string;
+  genreSlug?: string;
+  moodSlug?: string;
+  language?: string;
+  country?: string;
+  sort?: string;
+  cursor?: string;
+  limit?: number;
+  arabicOnly?: boolean;
+}): Promise<{ ids: string[]; total: number; nextCursor: string | null }> {
+  const client = serviceClient();
+  const resolveCategory = async (table: 'genres' | 'moods', slug?: string) => {
+    if (!slug) return null;
+    const { data, error } = await client.from(table)
+      .select('id').eq('slug', slug).eq('active', true).maybeSingle();
+    if (error) throw new Error(`Could not resolve ${table}: ${error.message}`);
+    return data?.id ? String(data.id) : '';
+  };
+  const [genreId, moodId] = await Promise.all([
+    resolveCategory('genres', genreSlug),
+    resolveCategory('moods', moodSlug),
+  ]);
+  if (genreId === '' || moodId === '') return { ids: [], total: 0, nextCursor: null };
+  const offset = cursor && /^\d+$/.test(cursor) ? Math.min(100000, Number(cursor)) : 0;
+  const size = Math.max(1, Math.min(50, Math.floor(limit)));
+  const { data, error } = await client.rpc('oddio_search_tracks_page', {
+    p_query: (query ?? '').slice(0, 160),
+    p_genre_id: genreId,
+    p_mood_id: moodId,
+    p_language: language || null,
+    p_country: country || null,
+    p_sort: sort || 'relevant',
+    p_offset: offset,
+    p_limit: size,
+    p_arabic_only: arabicOnly,
+  });
+  if (error) throw new Error(`Indexed track search failed: ${error.message}`);
+  const rows = (data ?? []) as Array<{ track_id: string; total_count: number }>;
+  const total = Number(rows[0]?.total_count ?? 0);
+  return {
+    ids: rows.map((row) => row.track_id),
+    total,
+    nextCursor: offset + size < total ? String(offset + size) : null,
+  };
+}
+
 /** Database-backed pagination for public catalog filters (no free-text term).
  * Free-text/artist alias searches keep the existing comprehensive search
  * until a dedicated indexed search RPC is deployed.
