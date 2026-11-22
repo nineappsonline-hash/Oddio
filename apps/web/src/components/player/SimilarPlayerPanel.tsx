@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Headphones, Music2, Play, Plus } from 'lucide-react';
 import { Artwork } from '@/components/ui/Artwork';
 import { usePlayer } from '@/lib/player-store';
@@ -25,7 +25,7 @@ type SimilarItem = {
   };
 };
 
-export function SimilarPlayerPanel({
+function SimilarPlayerPanelInner({
   trackId,
   podcast,
   rtl,
@@ -169,3 +169,7 @@ export function SimilarPlayerPanel({
     </div>
   );
 }
+
+// The parent player advances progress several times a second. Suggestions only
+// need to redraw when the track, mode or active tab changes.
+export const SimilarPlayerPanel = memo(SimilarPlayerPanelInner);
