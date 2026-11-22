@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getGenrePage } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
-import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { loadPageDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import Link from 'next/link';
 import { GenreArtwork } from '@/components/music/GenreArtwork';
@@ -25,7 +25,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, slug } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const db = demoMode ? readDb() : await loadPageDbFromSupabase();
   const page = getGenrePage(db, { userId: null, roles: [] }, slug);
   const label = page
     ? safeLocale === 'ar'
@@ -58,7 +58,7 @@ export default async function GenrePage({
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
   const db = filterMusicDb(
-    demoMode ? readDb() : await loadDbFromSupabase(),
+    demoMode ? readDb() : await loadPageDbFromSupabase(),
     contentLanguage,
   );
   const page = getGenrePage(db, viewer, slug);
