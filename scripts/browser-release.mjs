@@ -582,7 +582,7 @@ try {
         // real errors or treat a failed redirect as a pass.
         if (
           unexpectedErrors.length > 0 &&
-          unexpectedErrors.every((error) => /Loading chunk \\d+ failed/.test(error))
+          unexpectedErrors.every((error) => /Loading chunk \d+ failed/.test(error))
         ) {
           pageErrors.length = 0;
           await page.goto(`${base}/${locale}/library/recap`, {
