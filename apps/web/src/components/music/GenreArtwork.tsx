@@ -128,8 +128,15 @@ export function GenreArtwork({ slug }: Props) {
       }}
     >
       {photo ? (
-        <Image src={photo} alt="" fill sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 220px"
-          quality={65} loading="lazy" className="object-cover" />
+        <Image
+          src={photo}
+          alt=""
+          fill
+          sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 220px"
+          quality={65}
+          loading="lazy"
+          className="object-cover"
+        />
       ) : null}
       {!photo && (
         <>

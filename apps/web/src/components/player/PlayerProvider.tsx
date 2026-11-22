@@ -432,15 +432,16 @@ export function PlayerProvider({
     const unsubscribe = usePlayer.subscribe((state, previous) => {
       // Position ticks should not stringify and write the whole queue every
       // half second. Preserve immediate persistence for track/control changes.
-      const clockOnly = state.currentTime !== previous.currentTime
-        && state.track === previous.track
-        && state.queue === previous.queue
-        && state.isPlaying === previous.isPlaying
-        && state.volume === previous.volume
-        && state.muted === previous.muted
-        && state.repeat === previous.repeat
-        && state.shuffle === previous.shuffle
-        && state.autoplay === previous.autoplay;
+      const clockOnly =
+        state.currentTime !== previous.currentTime &&
+        state.track === previous.track &&
+        state.queue === previous.queue &&
+        state.isPlaying === previous.isPlaying &&
+        state.volume === previous.volume &&
+        state.muted === previous.muted &&
+        state.repeat === previous.repeat &&
+        state.shuffle === previous.shuffle &&
+        state.autoplay === previous.autoplay;
       if (clockOnly && Date.now() - lastTimelineSaveAt < 5000) return;
       if (clockOnly) lastTimelineSaveAt = Date.now();
       if (timer) clearTimeout(timer);
@@ -768,7 +769,11 @@ export function PlayerProvider({
       // play qualification accurate, but avoid re-rendering every player
       // widget and the large lyrics/queue overlay on every media event.
       const now = performance.now();
-      if (now - lastUiTimeUpdateRef.current >= 500 || audio.paused || time >= audio.duration - 0.6) {
+      if (
+        now - lastUiTimeUpdateRef.current >= 500 ||
+        audio.paused ||
+        time >= audio.duration - 0.6
+      ) {
         lastUiTimeUpdateRef.current = now;
         state.setCurrentTime(time);
       }

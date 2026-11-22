@@ -111,7 +111,15 @@ export function TrackRow({
           {isCurrent ? (
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/50 bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary sm:px-2">
               <Equalizer bars={4} paused={!isPlaying} className="h-3 shrink-0" />
-              <span className="hidden sm:inline">{isPlaying ? (locale === 'ar' ? 'شغّال' : 'Playing') : (locale === 'ar' ? 'متوقف' : 'Paused')}</span>
+              <span className="hidden sm:inline">
+                {isPlaying
+                  ? locale === 'ar'
+                    ? 'شغّال'
+                    : 'Playing'
+                  : locale === 'ar'
+                    ? 'متوقف'
+                    : 'Paused'}
+              </span>
             </span>
           ) : null}
         </span>

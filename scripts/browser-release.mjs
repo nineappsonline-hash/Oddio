@@ -229,8 +229,12 @@ try {
           // The mini-player now lives in the top workspace, not at the foot
           // of the viewport. Compare actual intersections rather than assuming
           // the player is positioned below the footer.
-          return player.top < footer.bottom && player.bottom > footer.top
-            && player.left < footer.right && player.right > footer.left;
+          return (
+            player.top < footer.bottom &&
+            player.bottom > footer.top &&
+            player.left < footer.right &&
+            player.right > footer.left
+          );
         });
         assert.equal(playerOverlapsFooter, false, 'mini player visually overlaps footer');
         const documentOverflow = await page.evaluate(

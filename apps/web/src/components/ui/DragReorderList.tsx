@@ -43,15 +43,21 @@ export function DragReorderList<T>({
   const [dropAllowed, setDropAllowed] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const ar = locale === 'ar';
-  const virtual = layout === 'list' && Number.isFinite(virtualRowHeight)
-    && (virtualRowHeight ?? 0) > 0 && items.length > 60;
+  const virtual =
+    layout === 'list' &&
+    Number.isFinite(virtualRowHeight) &&
+    (virtualRowHeight ?? 0) > 0 &&
+    items.length > 60;
   const rowHeight = virtualRowHeight ?? 76;
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(560);
   const overscan = 8;
   const first = virtual ? Math.max(0, Math.floor(scrollTop / rowHeight) - overscan) : 0;
   const last = virtual
-    ? Math.min(items.length, Math.ceil((scrollTop + viewportHeight) / rowHeight) + overscan)
+    ? Math.min(
+        items.length,
+        Math.ceil((scrollTop + viewportHeight) / rowHeight) + overscan,
+      )
     : items.length;
   const visible = items.slice(first, last);
   const onListScroll = (event: UIEvent<HTMLUListElement>) => {
@@ -69,8 +75,9 @@ export function DragReorderList<T>({
       list.scrollTop = y + rowHeight - list.clientHeight;
     setScrollTop(list.scrollTop);
     requestAnimationFrame(() => {
-      const handle = Array.from(list.querySelectorAll<HTMLButtonElement>('button[data-drag-handle]'))
-        .find((button) => button.dataset.dragHandle === id);
+      const handle = Array.from(
+        list.querySelectorAll<HTMLButtonElement>('button[data-drag-handle]'),
+      ).find((button) => button.dataset.dragHandle === id);
       handle?.focus();
     });
   };
@@ -167,75 +174,86 @@ export function DragReorderList<T>({
       <ul
         ref={ref}
         onScroll={onListScroll}
-        className={cn(layout === 'list' ? (virtual ? 'space-y-0' : 'space-y-1') : 'grid', className)}
+        className={cn(
+          layout === 'list' ? (virtual ? 'space-y-0' : 'space-y-1') : 'grid',
+          className,
+        )}
         aria-label={ar ? 'قائمة قابلة لإعادة الترتيب' : 'Reorderable list'}
       >
         {virtual && first > 0 ? (
-          <li aria-hidden="true" role="presentation" style={{ height: first * rowHeight }} />
+          <li
+            aria-hidden="true"
+            role="presentation"
+            style={{ height: first * rowHeight }}
+          />
         ) : null}
         {visible.map((item, offset) => {
           const index = first + offset;
           return (
-          <li
-            key={getId(item)}
-            data-reorder-id={getId(item)}
-            data-reorder-index={index}
-            style={virtual ? { height: rowHeight, boxSizing: 'border-box' } : undefined}
-            className={cn(
-              'flex min-w-0 items-center gap-1 rounded-xl transition-colors',
-              dragging === index && 'bg-primary/15 opacity-70',
-              over === index &&
-                dragging !== index &&
-                dropAllowed &&
-                'ring-2 ring-primary/60 bg-primary/[0.09]',
-            )}
-          >
-            <button
-              type="button"
-              data-drag-handle={getId(item)}
-              disabled={disabled}
-              aria-label={
-                ar
-                  ? `اسحب العنصر رقم ${index + 1} لترتيبه، أو استخدم سهم فوق وتحت`
-                  : `Drag item ${index + 1} to reorder, or use arrow up/down`
-              }
-              title={ar ? 'اسحب للترتيب' : 'Drag to reorder'}
-              className="grid h-11 w-9 shrink-0 touch-none cursor-grab place-items-center rounded-lg text-muted hover:bg-white/10 hover:text-ink active:cursor-grabbing focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-40"
-              onPointerDown={(event) => onPointerDown(event, index)}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={stop}
-              onLostPointerCapture={stop}
-              onKeyDown={(event) => {
-                if (disabled) return;
-                const to =
-                  index +
-                  (event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0);
-                if (
-                  (event.key === 'ArrowUp' || event.key === 'ArrowDown') &&
-                  to >= 0 &&
-                  to < items.length
-                ) {
-                  event.preventDefault();
-                  onMove(index, to);
-                  refocusMoved(getId(item), to);
-                  setAnnouncement(
-                    ar
-                      ? `تم نقل العنصر إلى رقم ${to + 1}`
-                      : `Moved item to position ${to + 1}`,
-                  );
-                  // The keyed handle stays mounted and retains keyboard focus.
-                }
-              }}
+            <li
+              key={getId(item)}
+              data-reorder-id={getId(item)}
+              data-reorder-index={index}
+              style={virtual ? { height: rowHeight, boxSizing: 'border-box' } : undefined}
+              className={cn(
+                'flex min-w-0 items-center gap-1 rounded-xl transition-colors',
+                dragging === index && 'bg-primary/15 opacity-70',
+                over === index &&
+                  dragging !== index &&
+                  dropAllowed &&
+                  'ring-2 ring-primary/60 bg-primary/[0.09]',
+              )}
             >
-              <GripVertical className="h-5 w-5" aria-hidden="true" />
-            </button>
-            <div className="min-w-0 flex-1">{renderItem(item, index)}</div>
-          </li>
+              <button
+                type="button"
+                data-drag-handle={getId(item)}
+                disabled={disabled}
+                aria-label={
+                  ar
+                    ? `اسحب العنصر رقم ${index + 1} لترتيبه، أو استخدم سهم فوق وتحت`
+                    : `Drag item ${index + 1} to reorder, or use arrow up/down`
+                }
+                title={ar ? 'اسحب للترتيب' : 'Drag to reorder'}
+                className="grid h-11 w-9 shrink-0 touch-none cursor-grab place-items-center rounded-lg text-muted hover:bg-white/10 hover:text-ink active:cursor-grabbing focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-40"
+                onPointerDown={(event) => onPointerDown(event, index)}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={stop}
+                onLostPointerCapture={stop}
+                onKeyDown={(event) => {
+                  if (disabled) return;
+                  const to =
+                    index +
+                    (event.key === 'ArrowUp' ? -1 : event.key === 'ArrowDown' ? 1 : 0);
+                  if (
+                    (event.key === 'ArrowUp' || event.key === 'ArrowDown') &&
+                    to >= 0 &&
+                    to < items.length
+                  ) {
+                    event.preventDefault();
+                    onMove(index, to);
+                    refocusMoved(getId(item), to);
+                    setAnnouncement(
+                      ar
+                        ? `تم نقل العنصر إلى رقم ${to + 1}`
+                        : `Moved item to position ${to + 1}`,
+                    );
+                    // The keyed handle stays mounted and retains keyboard focus.
+                  }
+                }}
+              >
+                <GripVertical className="h-5 w-5" aria-hidden="true" />
+              </button>
+              <div className="min-w-0 flex-1">{renderItem(item, index)}</div>
+            </li>
           );
         })}
         {virtual && last < items.length ? (
-          <li aria-hidden="true" role="presentation" style={{ height: (items.length - last) * rowHeight }} />
+          <li
+            aria-hidden="true"
+            role="presentation"
+            style={{ height: (items.length - last) * rowHeight }}
+          />
         ) : null}
       </ul>
     </div>

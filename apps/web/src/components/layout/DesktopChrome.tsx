@@ -29,9 +29,10 @@ export function DesktopChrome({
     media.addEventListener('change', update);
     return () => media.removeEventListener('change', update);
   }, []);
-  if (!desktop) return podcastMode ? null : (
-    <div className="oddio-listening-rail hidden" aria-hidden="true" />
-  );
+  if (!desktop)
+    return podcastMode ? null : (
+      <div className="oddio-listening-rail hidden" aria-hidden="true" />
+    );
   return (
     <>
       <DesktopSidebar user={user} />

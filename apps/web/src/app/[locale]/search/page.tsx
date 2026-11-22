@@ -65,26 +65,30 @@ export default async function SearchPage({
   const contentLanguage = await getContentLanguagePreference();
   // Database pagination is safe for category/language browsing. Free-text
   // queries retain the richer artist-alias/album/mood relevance behavior.
-  const paged = !demoMode && !query.q && !query.mood && (query.genre || query.language)
-    ? await findPagedPublicTrackIds({
-        genreSlug: query.genre,
-        language: query.language,
-        sort: query.sort,
-        cursor: query.cursor,
-        limit: query.limit,
-        arabicOnly: contentLanguage === 'ar',
-      }).catch((error: unknown) => {
-        // Database filter availability should never prevent a search page
-        // from loading. Fall back to the comprehensive server search.
-        console.error('Paged catalog query failed:', error);
-        return null;
-      })
-    : null;
+  const paged =
+    !demoMode && !query.q && !query.mood && (query.genre || query.language)
+      ? await findPagedPublicTrackIds({
+          genreSlug: query.genre,
+          language: query.language,
+          sort: query.sort,
+          cursor: query.cursor,
+          limit: query.limit,
+          arabicOnly: contentLanguage === 'ar',
+        }).catch((error: unknown) => {
+          // Database filter availability should never prevent a search page
+          // from loading. Fall back to the comprehensive server search.
+          console.error('Paged catalog query failed:', error);
+          return null;
+        })
+      : null;
   const db = filterMusicDb(
-    demoMode ? readDb() : await loadDbFromSupabase({
-      homeOnly: true, homeViewerId: viewer.userId,
-      ...(paged ? { searchTrackIds: paged.ids } : {}),
-    }),
+    demoMode
+      ? readDb()
+      : await loadDbFromSupabase({
+          homeOnly: true,
+          homeViewerId: viewer.userId,
+          ...(paged ? { searchTrackIds: paged.ids } : {}),
+        }),
     contentLanguage,
   );
   const genres = db.genres.filter((genre) => genre.active);
@@ -93,9 +97,10 @@ export default async function SearchPage({
   const resultPage = hasSearch
     ? searchCatalog(db, viewer, paged ? { ...query, cursor: undefined } : query)
     : null;
-  const results = paged && resultPage
-    ? { ...resultPage, total: paged.total, nextCursor: paged.nextCursor }
-    : resultPage;
+  const results =
+    paged && resultPage
+      ? { ...resultPage, total: paged.total, nextCursor: paged.nextCursor }
+      : resultPage;
   const nextPageParams = new URLSearchParams();
   for (const key of ['q', 'genre', 'mood', 'language', 'sort'] as const) {
     const selected = query[key];

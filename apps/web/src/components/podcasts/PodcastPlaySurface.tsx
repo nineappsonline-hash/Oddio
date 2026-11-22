@@ -63,8 +63,18 @@ export function PodcastPlaySurface({
           aria-live="polite"
           className="pointer-events-none absolute start-3 top-3 z-20 inline-flex items-center gap-1.5 rounded-full border border-[#c78bf4]/70 bg-[#22142d]/95 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-lg backdrop-blur-md"
         >
-          {isPlaying ? <AudioLines className="h-3.5 w-3.5 animate-pulse text-[#dfb3fa]" /> : <Pause className="h-3.5 w-3.5 text-[#dfb3fa]" />}
-          {isPlaying ? (locale === 'ar' ? 'شغّال دلوقتي' : 'Now playing') : (locale === 'ar' ? 'متوقف مؤقتًا' : 'Paused')}
+          {isPlaying ? (
+            <AudioLines className="h-3.5 w-3.5 animate-pulse text-[#dfb3fa]" />
+          ) : (
+            <Pause className="h-3.5 w-3.5 text-[#dfb3fa]" />
+          )}
+          {isPlaying
+            ? locale === 'ar'
+              ? 'شغّال دلوقتي'
+              : 'Now playing'
+            : locale === 'ar'
+              ? 'متوقف مؤقتًا'
+              : 'Paused'}
         </span>
       ) : null}
     </button>

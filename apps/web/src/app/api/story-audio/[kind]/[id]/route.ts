@@ -26,41 +26,66 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid story media' }, { status: 400 });
     }
     if (demoMode) {
-      return NextResponse.json({ error: 'Story clips unavailable in demo mode' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Story clips unavailable in demo mode' },
+        { status: 404 },
+      );
     }
 
     let objectKey: string;
     if (kind === 'track') {
       const db = await readRuntimeDb();
       const track = db.tracks.find((item) => item.id === id);
-      if (!track) return NextResponse.json({ error: 'Track unavailable' }, { status: 404 });
+      if (!track)
+        return NextResponse.json({ error: 'Track unavailable' }, { status: 404 });
       const viewer = await getViewer();
-      if (!accessForTrack(db, track, viewer).allowed
-        || !accessForTrack(db, track, { userId: null, roles: [] }).allowed) {
-        return NextResponse.json({ error: 'Only publicly playable tracks can be shared as Stories' }, { status: 403 });
+      if (
+        !accessForTrack(db, track, viewer).allowed ||
+        !accessForTrack(db, track, { userId: null, roles: [] }).allowed
+      ) {
+        return NextResponse.json(
+          { error: 'Only publicly playable tracks can be shared as Stories' },
+          { status: 403 },
+        );
       }
-      if (!track.audio || track.audio.kind !== 'rendition' || track.audio.processingStatus !== 'ready') {
+      if (
+        !track.audio ||
+        track.audio.kind !== 'rendition' ||
+        track.audio.processingStatus !== 'ready'
+      ) {
         return NextResponse.json({ error: 'Audio not ready' }, { status: 404 });
       }
       objectKey = track.audio.objectKey;
     } else {
-      if (!isPodcastId(id)) return NextResponse.json({ error: 'Invalid episode' }, { status: 400 });
+      if (!isPodcastId(id))
+        return NextResponse.json({ error: 'Invalid episode' }, { status: 400 });
       const db = serviceClient();
       const { data: episode, error } = await db
         .from('podcast_episodes')
         .select('show_id,status,published_at,audio_object_key')
-        .eq('id', id).maybeSingle();
-      if (error || !episode || episode.status !== 'published' || !episode.published_at
-        || Date.parse(episode.published_at) > Date.now()) {
+        .eq('id', id)
+        .maybeSingle();
+      if (
+        error ||
+        !episode ||
+        episode.status !== 'published' ||
+        !episode.published_at ||
+        Date.parse(episode.published_at) > Date.now()
+      ) {
         return NextResponse.json({ error: 'Episode unavailable' }, { status: 404 });
       }
-      const { data: show } = await db.from('podcast_shows').select('status')
-        .eq('id', episode.show_id).maybeSingle();
+      const { data: show } = await db
+        .from('podcast_shows')
+        .select('status')
+        .eq('id', episode.show_id)
+        .maybeSingle();
       if (show?.status !== 'published') {
         return NextResponse.json({ error: 'Episode unavailable' }, { status: 404 });
       }
-      if (typeof episode.audio_object_key !== 'string'
-        || !/^podcasts\/[a-f0-9-]+\.(mp3|m4a|aac)$/i.test(episode.audio_object_key)) {
+      if (
+        typeof episode.audio_object_key !== 'string' ||
+        !/^podcasts\/[a-f0-9-]+\.(mp3|m4a|aac)$/i.test(episode.audio_object_key)
+      ) {
         return NextResponse.json({ error: 'Audio unavailable' }, { status: 404 });
       }
       objectKey = episode.audio_object_key;
@@ -97,7 +122,10 @@ export async function GET(
       return NextResponse.json({ error: 'Audio stream unavailable' }, { status: 502 });
     }
     if (upstream.status !== 206) {
-      console.error('story-audio upstream did not honor Range', { kind, status: upstream.status });
+      console.error('story-audio upstream did not honor Range', {
+        kind,
+        status: upstream.status,
+      });
       await upstream.body.cancel();
       return NextResponse.json({ error: 'Audio range unavailable' }, { status: 502 });
     }

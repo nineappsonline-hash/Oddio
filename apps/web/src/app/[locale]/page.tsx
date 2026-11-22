@@ -58,7 +58,9 @@ export default async function HomePage({
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
   const db = filterMusicDb(
-    demoMode ? readDb() : await loadDbFromSupabase({ homeOnly: true, homeViewerId: viewer.userId }),
+    demoMode
+      ? readDb()
+      : await loadDbFromSupabase({ homeOnly: true, homeViewerId: viewer.userId }),
     contentLanguage,
   );
   const data = getHomeData(db, viewer);

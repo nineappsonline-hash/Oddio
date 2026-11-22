@@ -131,7 +131,9 @@ export function ShareButton({
         type="button"
         variant="outline"
         size="sm"
-        className={iconOnly ? "h-10 w-10 !min-w-0 !p-0 justify-center rounded-full" : undefined}
+        className={
+          iconOnly ? 'h-10 w-10 !min-w-0 !p-0 justify-center rounded-full' : undefined
+        }
         aria-label={label}
         title={label}
         onClick={() => setOpen((value) => !value)}
@@ -178,20 +180,23 @@ export function ShareButton({
             <MessageCircle size={18} className="text-[#25D366]" /> WhatsApp
           </button>
           {!storyTrack ? (
-          <button
-            type="button"
-            role="menuitem"
-            onClick={instagram}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start hover:bg-white/10"
-          >
-            <Instagram size={18} className="text-[#f2a0d1]" /> Instagram
-          </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={instagram}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start hover:bg-white/10"
+            >
+              <Instagram size={18} className="text-[#f2a0d1]" /> Instagram
+            </button>
           ) : null}
           {storyTrack ? (
             <button
               type="button"
               role="menuitem"
-              onClick={() => { setOpen(false); setStoryOpen(true); }}
+              onClick={() => {
+                setOpen(false);
+                setStoryOpen(true);
+              }}
               className="flex w-full items-center gap-3 rounded-xl border-t border-white/10 px-3 py-2.5 text-start font-semibold text-[#eed4ff] hover:bg-white/10"
             >
               <Instagram size={18} />

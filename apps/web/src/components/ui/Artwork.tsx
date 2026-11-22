@@ -22,14 +22,19 @@ export function Artwork({
 }) {
   const localSource = Boolean(url && url.startsWith('/') && !url.startsWith('//'));
   const cloudinarySource = Boolean(url && /^https:\/\/res\.cloudinary\.com\//i.test(url));
-  const optimizedCloudinary = cloudinarySource && url?.includes('/image/upload/')
-    ? url.replace('/image/upload/', '/image/upload/f_auto,q_auto:good,w_800/')
-    : url;
-  const cloudinarySet = cloudinarySource && url?.includes('/image/upload/')
-    ? [160, 320, 480, 800].map((width) =>
-        `${url.replace('/image/upload/', `/image/upload/f_auto,q_auto:good,w_${width}/`)} ${width}w`
-      ).join(', ')
-    : undefined;
+  const optimizedCloudinary =
+    cloudinarySource && url?.includes('/image/upload/')
+      ? url.replace('/image/upload/', '/image/upload/f_auto,q_auto:good,w_800/')
+      : url;
+  const cloudinarySet =
+    cloudinarySource && url?.includes('/image/upload/')
+      ? [160, 320, 480, 800]
+          .map(
+            (width) =>
+              `${url.replace('/image/upload/', `/image/upload/f_auto,q_auto:good,w_${width}/`)} ${width}w`,
+          )
+          .join(', ')
+      : undefined;
   return (
     <div
       role="img"

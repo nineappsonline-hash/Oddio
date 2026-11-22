@@ -2580,7 +2580,6 @@ body {
   }
 }
 
-
 /* The active mini player lives directly under the workspace header, instead
    of the legacy fixed bottom dock. Keep the idle dock unchanged. */
 .oddio-player-bar.oddio-top-mini-player {
@@ -2599,7 +2598,6 @@ body {
   }
 }
 
-
 /* Mobile performance: avoid repeatedly rasterizing large blurred gradient
    layers beneath the player and the rest of the application. The static
    ambient gradient stays visible, so the visual identity is preserved. */
@@ -2613,4 +2611,3 @@ body {
     animation: none !important;
   }
 }
-

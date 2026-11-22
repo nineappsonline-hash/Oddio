@@ -26,7 +26,10 @@ import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
 import { DragReorderList } from '@/components/ui/DragReorderList';
 import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
-import { CompactPlayerVolumeControl, PlayerVolumeControl } from '@/components/player/PlayerVolumeControl';
+import {
+  CompactPlayerVolumeControl,
+  PlayerVolumeControl,
+} from '@/components/player/PlayerVolumeControl';
 import { SaveQueueAsPlaylist } from '@/components/player/SaveQueueAsPlaylist';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { Badge } from '@/components/ui/Badge';
@@ -129,7 +132,8 @@ export function FullPlayer() {
   useEffect(() => {
     if (!mobileOptionsOpen) return;
     const onPointerDown = (event: PointerEvent) => {
-      if (!mobileOptionsRef.current?.contains(event.target as Node)) setMobileOptionsOpen(false);
+      if (!mobileOptionsRef.current?.contains(event.target as Node))
+        setMobileOptionsOpen(false);
     };
     const onEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setMobileOptionsOpen(false);
@@ -369,15 +373,34 @@ export function FullPlayer() {
             </span>
             <div className="ms-4 flex min-w-0 items-center gap-3 border-s border-white/15 ps-4">
               <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-white/15">
-                <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="h-full w-full" rounded="rounded-lg" />
+                <Artwork
+                  title={track.title}
+                  url={track.artwork.url}
+                  accent={track.artwork.accent}
+                  className="h-full w-full"
+                  rounded="rounded-lg"
+                />
               </div>
               <div className="min-w-0">
-                <p dir="auto" className="max-w-[260px] truncate text-sm font-bold text-white xl:max-w-[420px]">{track.title}</p>
-                <p dir="auto" className="max-w-[260px] truncate text-xs text-white/55 xl:max-w-[420px]">
+                <p
+                  dir="auto"
+                  className="max-w-[260px] truncate text-sm font-bold text-white xl:max-w-[420px]"
+                >
+                  {track.title}
+                </p>
+                <p
+                  dir="auto"
+                  className="max-w-[260px] truncate text-xs text-white/55 xl:max-w-[420px]"
+                >
                   {track.artist?.name || (rtl ? 'فنان غير معروف' : 'Unknown artist')}
                   {(() => {
-                    const album = (track as typeof track & { album?: string | { title?: string; name?: string } }).album;
-                    const albumName = typeof album === 'string' ? album : album?.title || album?.name;
+                    const album = (
+                      track as typeof track & {
+                        album?: string | { title?: string; name?: string };
+                      }
+                    ).album;
+                    const albumName =
+                      typeof album === 'string' ? album : album?.title || album?.name;
                     return albumName ? ` · ${albumName}` : '';
                   })()}
                 </p>
@@ -415,18 +438,17 @@ export function FullPlayer() {
               sideTab === 'queue' ? 'hidden lg:block' : 'flex',
             )}
           >
-        <div className="mb-3 flex items-center justify-start gap-2 lg:hidden">
-          <button
-            type="button"
-            onClick={() => setExpanded(false)}
-            aria-label={t('player.minimize')}
-            title={t('player.minimize')}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-          >
-            <ChevronDown className="h-5 w-5" aria-hidden="true" />
-          </button>
-
-        </div>
+            <div className="mb-3 flex items-center justify-start gap-2 lg:hidden">
+              <button
+                type="button"
+                onClick={() => setExpanded(false)}
+                aria-label={t('player.minimize')}
+                title={t('player.minimize')}
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.08] text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                <ChevronDown className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
             <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-evenly gap-3 sm:gap-5 lg:grid lg:flex-none lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:items-center lg:gap-5">
               <div className="oddio-mobile-artwork relative mx-auto w-full max-w-[min(78vw,40dvh,320px)] sm:max-w-md lg:max-w-[330px] xl:max-w-[360px]">
                 <div
@@ -438,7 +460,6 @@ export function FullPlayer() {
                   }}
                 />
                 <div className="relative overflow-hidden rounded-[20px] border border-white/[0.16] bg-white/[0.055] p-1 shadow-[0_15px_45px_rgba(0,0,0,.35)] backdrop-blur-xl sm:rounded-[26px] sm:p-1.5">
-
                   <Artwork
                     title={track.title}
                     animated={isPlaying && !track.artwork.url}
@@ -566,9 +587,11 @@ export function FullPlayer() {
                 <div className="min-w-0">
                   {track.artist ? (
                     <Link
-                      href={podcast
-                        ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}`
-                        : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`}
+                      href={
+                        podcast
+                          ? `/${rtl ? 'ar' : 'en'}/podcasts/shows/${track.artist.slug}`
+                          : `/${rtl ? 'ar' : 'en'}/artists/${track.artist.slug}`
+                      }
                       dir="auto"
                       className="mb-1 block w-fit text-sm font-bold text-[#c9c9c9] transition hover:text-white sm:mb-3 sm:text-base"
                     >
@@ -590,16 +613,15 @@ export function FullPlayer() {
                     {track.genre ? (
                       <Badge tone="neutral">{track.genre.slug}</Badge>
                     ) : null}
-
                   </div>
                 </div>
                 {!podcast && (
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="hidden sm:block">
-                    <AddToPlaylistButton
-                      trackId={track.id}
-                      label={t('track.addToPlaylist')}
-                    />
+                      <AddToPlaylistButton
+                        trackId={track.id}
+                        label={t('track.addToPlaylist')}
+                      />
                     </div>
                     <div className="relative sm:hidden" ref={mobileOptionsRef}>
                       <button
@@ -613,21 +635,34 @@ export function FullPlayer() {
                         <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
                       </button>
                       {mobileOptionsOpen ? (
-                        <div role="menu" className="absolute bottom-full start-0 z-[80] mb-2 flex min-w-[210px] flex-col gap-1 rounded-xl border border-white/20 bg-[#242129] p-2 shadow-2xl">
-                          <div role="none" className="[&_button]:w-full [&_button]:justify-start">
-                            <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />
+                        <div
+                          role="menu"
+                          className="absolute bottom-full start-0 z-[80] mb-2 flex min-w-[210px] flex-col gap-1 rounded-xl border border-white/20 bg-[#242129] p-2 shadow-2xl"
+                        >
+                          <div
+                            role="none"
+                            className="[&_button]:w-full [&_button]:justify-start"
+                          >
+                            <AddToPlaylistButton
+                              trackId={track.id}
+                              label={t('track.addToPlaylist')}
+                            />
                           </div>
                           <button
                             type="button"
                             role="menuitem"
                             onClick={() => {
                               usePlayer.setState((state) => ({
-                                queue: state.track && !state.queue.some((item) => item.id === state.track?.id)
-                                  ? [...state.queue, state.track]
-                                  : state.queue,
+                                queue:
+                                  state.track &&
+                                  !state.queue.some((item) => item.id === state.track?.id)
+                                    ? [...state.queue, state.track]
+                                    : state.queue,
                               }));
                               setMobileOptionsOpen(false);
-                              setControlNotice(rtl ? 'اتضاف لقائمة الانتظار' : 'Added to queue');
+                              setControlNotice(
+                                rtl ? 'اتضاف لقائمة الانتظار' : 'Added to queue',
+                              );
                             }}
                             className="flex min-h-11 items-center gap-2 rounded-lg px-3 text-start text-sm text-white hover:bg-white/10"
                           >
@@ -669,6 +704,36 @@ export function FullPlayer() {
                         compact
                       />
                       <DislikeButton trackId={track.id} />
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setSideTab('queue')}
+                          aria-label={t('player.queue')}
+                          title={t('player.queue')}
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
+                        >
+                          <ListMusic className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <ShareButton
+                          storyTrack={track}
+                          title={track.title}
+                          label={t('common.share')}
+                          iconOnly
+                          url={
+                            podcast
+                              ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
+                              : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`
+                          }
+                        />
+                      </div>
+                    </div>
+                    <span className="text-xs text-muted">
+                      {formatNumber(track.qualifiedPlays)} {t('common.plays')}
+                    </span>
+                  </div>
+                )}
+                {podcast ? (
+                  <div className="mt-2 flex items-center gap-2">
                     <div className="flex shrink-0 items-center gap-1.5">
                       <button
                         type="button"
@@ -678,38 +743,6 @@ export function FullPlayer() {
                         className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
                       >
                         <ListMusic className="h-4 w-4" aria-hidden="true" />
-
-                      </button>
-                      <ShareButton
-                        storyTrack={track}
-                        title={track.title}
-                        label={t('common.share')}
-                        iconOnly
-                        url={
-                          podcast
-                            ? `/${rtl ? 'ar' : 'en'}/podcasts/episodes/${track.id}`
-                            : `/${rtl ? 'ar' : 'en'}/tracks/${track.id}-${track.slug}`
-                        }
-                      />
-                    </div>
-                    </div>
-                    <span className="text-xs text-muted">
-                      {formatNumber(track.qualifiedPlays)} {t('common.plays')}
-                    </span>
-                  </div>
-                )}
-                {podcast ? (
-                  <div className="mt-2 flex items-center gap-2">
-                                        <div className="flex shrink-0 items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setSideTab('queue')}
-                        aria-label={t('player.queue')}
-                        title={t('player.queue')}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition hover:bg-white/10"
-                      >
-                        <ListMusic className="h-4 w-4" aria-hidden="true" />
-
                       </button>
                       <ShareButton
                         storyTrack={track}
@@ -779,36 +812,36 @@ export function FullPlayer() {
                   </button>
                 ) : (
                   <div className="shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      toggleShuffle();
-                      setControlNotice(
-                        rtl
-                          ? shuffle
+                    <button
+                      type="button"
+                      onClick={() => {
+                        toggleShuffle();
+                        setControlNotice(
+                          rtl
+                            ? shuffle
+                              ? 'إيقاف التشغيل العشوائي'
+                              : 'تشغيل عشوائي'
+                            : shuffle
+                              ? 'Shuffle off'
+                              : 'Shuffle on',
+                        );
+                      }}
+                      aria-label={t('player.shuffle')}
+                      title={
+                        shuffle
+                          ? rtl
                             ? 'إيقاف التشغيل العشوائي'
-                            : 'تشغيل عشوائي'
-                          : shuffle
-                            ? 'Shuffle off'
-                            : 'Shuffle on',
-                      );
-                    }}
-                    aria-label={t('player.shuffle')}
-                    title={
-                      shuffle
-                        ? rtl
-                          ? 'إيقاف التشغيل العشوائي'
-                          : 'Disable shuffle'
-                        : t('player.shuffle')
-                    }
-                    aria-pressed={shuffle}
-                    className={cn(
-                      'grid h-11 w-11 place-items-center rounded-full transition hover:bg-white/10 sm:block sm:h-auto sm:w-auto sm:p-2.5',
-                      shuffle ? 'text-neutral-200' : 'text-muted',
-                    )}
-                  >
-                    <Shuffle className="h-5 w-5" />
-                  </button>
+                            : 'Disable shuffle'
+                          : t('player.shuffle')
+                      }
+                      aria-pressed={shuffle}
+                      className={cn(
+                        'grid h-11 w-11 place-items-center rounded-full transition hover:bg-white/10 sm:block sm:h-auto sm:w-auto sm:p-2.5',
+                        shuffle ? 'text-neutral-200' : 'text-muted',
+                      )}
+                    >
+                      <Shuffle className="h-5 w-5" />
+                    </button>
                   </div>
                 )}
                 <button
@@ -913,16 +946,25 @@ export function FullPlayer() {
                 )}
                 <div className="flex shrink-0 items-center gap-1.5 sm:ms-2 sm:border-s sm:border-white/15 sm:ps-3">
                   {podcast ? (
-                    <label className="relative flex items-center" title={rtl ? 'سرعة التشغيل' : 'Playback speed'}>
-                      <span className="sr-only">{rtl ? 'سرعة التشغيل' : 'Playback speed'}</span>
+                    <label
+                      className="relative flex items-center"
+                      title={rtl ? 'سرعة التشغيل' : 'Playback speed'}
+                    >
+                      <span className="sr-only">
+                        {rtl ? 'سرعة التشغيل' : 'Playback speed'}
+                      </span>
                       <select
                         value={playbackRate}
                         onChange={(event) => setPlaybackRate(Number(event.target.value))}
-                        aria-label={rtl ? 'سرعة تشغيل البودكاست' : 'Podcast playback speed'}
+                        aria-label={
+                          rtl ? 'سرعة تشغيل البودكاست' : 'Podcast playback speed'
+                        }
                         className="h-10 min-w-[58px] cursor-pointer rounded-full border border-white/20 bg-white/[0.06] px-1.5 text-center text-xs font-bold text-white outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary sm:h-11 sm:min-w-[65px]"
                       >
                         {[0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                          <option key={rate} value={rate} className="bg-[#18191b]">{rate}x</option>
+                          <option key={rate} value={rate} className="bg-[#18191b]">
+                            {rate}x
+                          </option>
                         ))}
                       </select>
                     </label>
@@ -937,27 +979,44 @@ export function FullPlayer() {
                       onClick={() => setSleepMenuOpen((open) => !open)}
                       className={cn(
                         'inline-flex h-10 w-10 items-center justify-center rounded-full border transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary sm:h-11 sm:w-11',
-                        sleepUntil ? 'border-primary/60 bg-primary/20 text-primary' : 'border-white/20 bg-white/[0.06] text-white/75',
+                        sleepUntil
+                          ? 'border-primary/60 bg-primary/20 text-primary'
+                          : 'border-white/20 bg-white/[0.06] text-white/75',
                       )}
                     >
                       <Moon className="h-5 w-5" aria-hidden="true" />
-                      {sleepUntil ? <span className="absolute end-1 top-1 h-1.5 w-1.5 rounded-full bg-primary" /> : null}
+                      {sleepUntil ? (
+                        <span className="absolute end-1 top-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                      ) : null}
                     </button>
                     {sleepMenuOpen ? (
-                      <div role="menu" aria-label={rtl ? 'مؤقت النوم' : 'Sleep timer'}
-                        className="absolute bottom-full end-0 z-[110] mb-2 w-48 rounded-xl border border-white/20 bg-[#242129] p-2 text-white shadow-2xl">
+                      <div
+                        role="menu"
+                        aria-label={rtl ? 'مؤقت النوم' : 'Sleep timer'}
+                        className="absolute bottom-full end-0 z-[110] mb-2 w-48 rounded-xl border border-white/20 bg-[#242129] p-2 text-white shadow-2xl"
+                      >
                         <div className="border-b border-white/15 px-3 py-2 text-sm font-bold">
                           {rtl ? 'مؤقت النوم' : 'Sleep timer'}
                           <span className="mt-1 block text-xs font-normal text-white/60">
-                            {sleepUntil ? (rtl ? 'يعمل' : 'On') : (rtl ? 'إيقاف' : 'Off')}
+                            {sleepUntil ? (rtl ? 'يعمل' : 'On') : rtl ? 'إيقاف' : 'Off'}
                           </span>
                         </div>
                         {[0, 5, 15, 30, 60].map((minutes) => (
-                          <button key={minutes} type="button" role="menuitem"
-                            onClick={() => { setSleepTimer(minutes); setSleepMenuOpen(false); }}
+                          <button
+                            key={minutes}
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setSleepTimer(minutes);
+                              setSleepMenuOpen(false);
+                            }}
                             className="flex min-h-10 w-full items-center rounded-lg px-3 text-start text-sm hover:bg-white/10"
                           >
-                            {minutes === 0 ? (rtl ? 'إيقاف' : 'Off') : `${minutes} ${rtl ? 'دقيقة' : 'minutes'}`}
+                            {minutes === 0
+                              ? rtl
+                                ? 'إيقاف'
+                                : 'Off'
+                              : `${minutes} ${rtl ? 'دقيقة' : 'minutes'}`}
                           </button>
                         ))}
                       </div>

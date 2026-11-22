@@ -89,14 +89,17 @@ export interface TrackPageData {
 
 // Build relation indexes once per request snapshot. A catalog page may enrich
 // hundreds of tracks; repeated linear searches previously scaled quadratically.
-const catalogIndexCache = new WeakMap<DemoDb, {
-  artists: Map<string, DemoDb['artists'][number]>;
-  albums: Map<string, DemoDb['albums'][number]>;
-  genres: Map<string, DemoDb['genres'][number]>;
-  moods: Map<string, DemoDb['moods'][number]>;
-  commentCounts: Map<string, number>;
-  likes: Set<string>;
-}>();
+const catalogIndexCache = new WeakMap<
+  DemoDb,
+  {
+    artists: Map<string, DemoDb['artists'][number]>;
+    albums: Map<string, DemoDb['albums'][number]>;
+    genres: Map<string, DemoDb['genres'][number]>;
+    moods: Map<string, DemoDb['moods'][number]>;
+    commentCounts: Map<string, number>;
+    likes: Set<string>;
+  }
+>();
 function catalogIndexes(db: DemoDb) {
   let index = catalogIndexCache.get(db);
   if (!index) {
@@ -148,15 +151,14 @@ export function enrichTrack(
   return {
     ...track,
     likeCount: track.likeCount,
-    commentCount: db.comments.length ? (indexes.commentCounts.get(track.id) ?? 0) : track.commentCount,
+    commentCount: db.comments.length
+      ? (indexes.commentCounts.get(track.id) ?? 0)
+      : track.commentCount,
     artist,
     album,
     genre,
     moods,
-    isLiked: Boolean(
-      viewer.userId &&
-      indexes.likes.has(`${viewer.userId}:${track.id}`),
-    ),
+    isLiked: Boolean(viewer.userId && indexes.likes.has(`${viewer.userId}:${track.id}`)),
     access: accessForTrack(db, track, viewer, now),
   };
 }

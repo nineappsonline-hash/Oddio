@@ -30,7 +30,8 @@ export function TrackCard({
       data-playback-state={isCurrent ? (isPlaying ? 'playing' : 'paused') : undefined}
       className={cn(
         'group card card-hover relative min-w-0 overflow-hidden p-3 transition-colors duration-200 focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20',
-        isCurrent && 'border-[#bd73f0] bg-[#a953e7]/[0.12] ring-2 ring-[#ab60e2]/50 shadow-[0_12px_36px_rgba(119,57,174,0.2)]',
+        isCurrent &&
+          'border-[#bd73f0] bg-[#a953e7]/[0.12] ring-2 ring-[#ab60e2]/50 shadow-[0_12px_36px_rgba(119,57,174,0.2)]',
       )}
     >
       <div className="art-frame relative rounded-xl">

@@ -85,7 +85,12 @@ async function fetchAll(table: string, columns = '*'): Promise<Row[]> {
  * until a dedicated indexed search RPC is deployed.
  */
 export async function findPagedPublicTrackIds({
-  genreSlug, language, sort, cursor, limit = 25, arabicOnly = false,
+  genreSlug,
+  language,
+  sort,
+  cursor,
+  limit = 25,
+  arabicOnly = false,
 }: {
   genreSlug?: string;
   language?: string;
@@ -99,13 +104,19 @@ export async function findPagedPublicTrackIds({
   const offset = cursor && /^\d+$/.test(cursor) ? Math.min(100000, Number(cursor)) : 0;
   let genreId: string | undefined;
   if (genreSlug) {
-    const { data, error } = await client.from('genres')
-      .select('id').eq('slug', genreSlug).eq('active', true).maybeSingle();
+    const { data, error } = await client
+      .from('genres')
+      .select('id')
+      .eq('slug', genreSlug)
+      .eq('active', true)
+      .maybeSingle();
     if (error) throw new Error(`Failed to resolve genre: ${error.message}`);
     if (!data?.id) return { ids: [], total: 0, nextCursor: null };
     genreId = String(data.id);
   }
-  let builder = client.from('tracks').select('id', { count: 'exact' })
+  let builder = client
+    .from('tracks')
+    .select('id', { count: 'exact' })
     .eq('review_status', 'approved')
     .eq('publish_status', 'published')
     .eq('visibility', 'public')
@@ -118,7 +129,8 @@ export async function findPagedPublicTrackIds({
   if (arabicOnly) builder = builder.ilike('language_code', 'ar%');
   if (sort === 'newest') builder = builder.order('release_at', { ascending: false });
   else builder = builder.order('qualified_plays', { ascending: false });
-  const { data, error, count } = await builder.order('id', { ascending: true })
+  const { data, error, count } = await builder
+    .order('id', { ascending: true })
     .range(offset, offset + size - 1);
   if (error) throw new Error(`Failed to search published tracks: ${error.message}`);
   const total = count ?? 0;
@@ -184,26 +196,37 @@ function audioAsset(row: Row): AudioAsset {
  * Keep the full snapshot for legacy admin/write routes; never query staff,
  * moderation, notification or audit tables just to render the storefront.
  */
-export async function loadDbFromSupabase(options: {
-  homeViewerId?: string | null;
-  homeOnly?: boolean;
-  searchTrackIds?: string[];
-} = {}): Promise<DemoDb> {
+export async function loadDbFromSupabase(
+  options: {
+    homeViewerId?: string | null;
+    homeOnly?: boolean;
+    searchTrackIds?: string[];
+  } = {},
+): Promise<DemoDb> {
   const homeOnly = options.homeOnly === true;
   const viewerId = options.homeViewerId ?? null;
   const empty = (): Promise<Row[]> => Promise.resolve([]);
   const pagedIds = options.searchTrackIds;
-  const pageRows = async (table: string, columns: string, key: string): Promise<Row[]> => {
+  const pageRows = async (
+    table: string,
+    columns: string,
+    key: string,
+  ): Promise<Row[]> => {
     if (!pagedIds) return fetchAll(table, columns);
     if (!pagedIds.length) return [];
-    const { data, error } = await serviceClient().from(table)
-      .select(columns).in(key, pagedIds);
+    const { data, error } = await serviceClient()
+      .from(table)
+      .select(columns)
+      .in(key, pagedIds);
     if (error) throw new Error(`Failed to read paged ${table}: ${error.message}`);
     return (data ?? []) as unknown as Row[];
   };
   const userRows = async (table: string, userColumn = 'user_id'): Promise<Row[]> => {
     if (!viewerId) return [];
-    const { data, error } = await serviceClient().from(table).select('*').eq(userColumn, viewerId);
+    const { data, error } = await serviceClient()
+      .from(table)
+      .select('*')
+      .eq(userColumn, viewerId);
     if (error) throw new Error(`Failed to read ${table}: ${error.message}`);
     return (data ?? []) as Row[];
   };
@@ -241,7 +264,13 @@ export async function loadDbFromSupabase(options: {
     fetchAll('artists'),
     homeOnly ? empty() : fetchAll('artist_social_links'),
     fetchAll('albums'),
-    pageRows('tracks', homeOnly ? 'id,artist_id,album_id,title,slug,description,genre_id,genre_ids,language_code,country_code,production_type,explicit,visibility,review_status,publish_status,release_at,duration_ms,artwork_key,artwork_accent,quality_label,qualified_plays,like_count,comment_count,created_at,updated_at' : '*', 'id'),
+    pageRows(
+      'tracks',
+      homeOnly
+        ? 'id,artist_id,album_id,title,slug,description,genre_id,genre_ids,language_code,country_code,production_type,explicit,visibility,review_status,publish_status,release_at,duration_ms,artwork_key,artwork_accent,quality_label,qualified_plays,like_count,comment_count,created_at,updated_at'
+        : '*',
+      'id',
+    ),
     pageRows('track_moods', '*', 'track_id'),
     pageRows('audio_assets', '*', 'track_id'),
     fetchAll('genres'),
@@ -278,7 +307,8 @@ export async function loadDbFromSupabase(options: {
       .eq('user_id', viewerId)
       .order('started_at', { ascending: false })
       .limit(150);
-    if (sessionError) throw new Error(`Failed to read playback sessions: ${sessionError.message}`);
+    if (sessionError)
+      throw new Error(`Failed to read playback sessions: ${sessionError.message}`);
     sessionRows = (sessions ?? []) as Row[];
     const sessionIds = sessionRows.map((row) => text(row.id)).filter(Boolean);
     if (sessionIds.length) {
@@ -288,7 +318,8 @@ export async function loadDbFromSupabase(options: {
         .in('session_id', sessionIds)
         .order('occurred_at', { ascending: false })
         .limit(600);
-      if (eventError) throw new Error(`Failed to read listening history: ${eventError.message}`);
+      if (eventError)
+        throw new Error(`Failed to read listening history: ${eventError.message}`);
       playbackRows = (events ?? []) as Row[];
     }
   }

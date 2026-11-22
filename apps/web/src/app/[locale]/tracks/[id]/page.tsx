@@ -194,7 +194,12 @@ export default async function TrackPage({
               initialCount={track.likeCount}
             />
             <AddToPlaylistButton trackId={track.id} label={t('track.addToPlaylist')} />
-            <ShareButton title={track.title} label={t('common.share')} storyTrack={track} url={`/${locale}/tracks/${track.id}-${track.slug}`} />
+            <ShareButton
+              title={track.title}
+              label={t('common.share')}
+              storyTrack={track}
+              url={`/${locale}/tracks/${track.id}-${track.slug}`}
+            />
             <ReportButton
               targetType="track"
               targetId={track.id}

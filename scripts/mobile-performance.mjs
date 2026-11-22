@@ -41,10 +41,13 @@ try {
   const report = await page.evaluate(() => {
     const nav = performance.getEntriesByType('navigation')[0];
     const resources = performance.getEntriesByType('resource');
-    const nextScripts = resources.filter((r) => r.name.includes('/_next/static/') &&
-      (r.name.includes('.js') || r.initiatorType === 'script'));
-    const transferred = (items) => Math.round(items.reduce((sum, item) =>
-      sum + (item.transferSize || 0), 0) / 1024);
+    const nextScripts = resources.filter(
+      (r) =>
+        r.name.includes('/_next/static/') &&
+        (r.name.includes('.js') || r.initiatorType === 'script'),
+    );
+    const transferred = (items) =>
+      Math.round(items.reduce((sum, item) => sum + (item.transferSize || 0), 0) / 1024);
     return {
       navigationMs: nav ? Math.round(nav.duration) : null,
       ttfbMs: nav ? Math.round(nav.responseStart) : null,
@@ -55,15 +58,29 @@ try {
       totalTransferKiB: transferred(resources),
       images: resources.filter((item) => item.initiatorType === 'img').length,
       viewportWidth: window.innerWidth,
-      fcpMs: Math.round(performance.getEntriesByType('paint')
-        .find((item) => item.name === 'first-contentful-paint')?.startTime || 0),
+      fcpMs: Math.round(
+        performance
+          .getEntriesByType('paint')
+          .find((item) => item.name === 'first-contentful-paint')?.startTime || 0,
+      ),
       lcpMs: window.__oddioPerf?.lcp == null ? null : Math.round(window.__oddioPerf.lcp),
       cls: Number((window.__oddioPerf?.cls ?? 0).toFixed(3)),
       longTasks: window.__oddioPerf?.longTasks ?? 0,
     };
   });
-  console.log(JSON.stringify({ route: '/en', device: 'iPhone 13 emulation',
-    mainVisibleMs: firstMain, ...report, pageErrors: failures }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        route: '/en',
+        device: 'iPhone 13 emulation',
+        mainVisibleMs: firstMain,
+        ...report,
+        pageErrors: failures,
+      },
+      null,
+      2,
+    ),
+  );
   if (!report.viewportWidth || report.viewportWidth > 500) {
     throw new Error('Mobile viewport emulation did not apply');
   }
