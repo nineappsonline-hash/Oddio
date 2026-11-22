@@ -45,6 +45,8 @@ export function PlayerProvider({
   const storageKey = `${PLAYER_SESSION_KEY}:${viewerId ?? 'guest'}`;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastUiTimeUpdateRef = useRef(0);
+  const playbackStartRef = useRef<number | null>(null);
+  const lastStreamStallRef = useRef<number | null>(null);
   const playbackEpochRef = useRef(0);
   const standbyRef = useRef<HTMLAudioElement | null>(null);
   const warmedRef = useRef<{ trackId: string; result: PlaybackAuthorization } | null>(
@@ -529,6 +531,7 @@ export function PlayerProvider({
     previousAuthorizedTrackRef.current = trackId;
     state.setError(null);
     state.setBuffering(true);
+    playbackStartRef.current = performance.now();
     sessionRef.current = null;
     streamRef.current = null;
     setStream(null);
@@ -690,8 +693,15 @@ export function PlayerProvider({
       const standby = standbyRef.current;
       const remaining = audio.duration - time;
       const queued = state.queue[0];
+      const connection = (navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }).connection;
+      const constrainedNetwork =
+        connection?.saveData || connection?.effectiveType === 'slow-2g' ||
+        connection?.effectiveType === '2g';
       if (
         standby &&
+        !constrainedNetwork &&
         canPrepareNextTrack({
           remainingSeconds: remaining,
           playing: state.isPlaying,
@@ -815,7 +825,12 @@ export function PlayerProvider({
         usePlayer.getState().setDuration(audio.duration);
       }
     };
-    const onWaiting = () => usePlayer.getState().setBuffering(true);
+    const onWaiting = () => {
+      if (!audio.paused && !audio.ended) {
+        lastStreamStallRef.current = performance.now();
+        usePlayer.getState().setBuffering(true);
+      }
+    };
     const onPlaying = () => {
       if (handoffTargetRef.current === usePlayer.getState().track?.id) {
         handoffTargetRef.current = null;
@@ -846,6 +861,26 @@ export function PlayerProvider({
         audio.volume = usePlayer.getState().muted ? 0 : usePlayer.getState().volume;
       }
       usePlayer.getState().setBuffering(false);
+      if (playbackStartRef.current !== null) {
+        const delay = performance.now() - playbackStartRef.current;
+        if (delay >= 0 && delay < 120000) {
+          performance.measure('oddio:audio-startup', {
+            start: playbackStartRef.current,
+            duration: delay,
+          });
+        }
+        playbackStartRef.current = null;
+      }
+      if (lastStreamStallRef.current !== null) {
+        const stalledFor = performance.now() - lastStreamStallRef.current;
+        if (stalledFor >= 0 && stalledFor < 120000) {
+          performance.measure('oddio:audio-rebuffer', {
+            start: lastStreamStallRef.current,
+            duration: stalledFor,
+          });
+        }
+        lastStreamStallRef.current = null;
+      }
       if (!startSentRef.current && sessionRef.current) {
         startSentRef.current = true;
         sendEvent('start', 0);
