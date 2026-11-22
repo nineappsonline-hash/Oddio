@@ -302,6 +302,7 @@ export async function loadStreamAsset(trackId: string): Promise<{
     reviewStatus: 'approved' | 'draft' | 'pending' | 'rejected';
     publishStatus: 'published' | 'unpublished' | 'available_private';
     releaseAt: string;
+    durationMs: number;
     explicit: boolean;
     artistOwnerId: string | null;
   };
@@ -310,7 +311,7 @@ export async function loadStreamAsset(trackId: string): Promise<{
   const client = serviceClient();
   const { data: track, error: trackError } = await client
     .from('tracks')
-    .select('id,artist_id,visibility,review_status,publish_status,release_at,explicit')
+    .select('id,artist_id,visibility,review_status,publish_status,release_at,duration_ms,explicit')
     .eq('id', trackId)
     .maybeSingle();
   if (trackError) throw new Error(`Stream track lookup failed: ${trackError.message}`);
@@ -338,6 +339,7 @@ export async function loadStreamAsset(trackId: string): Promise<{
       reviewStatus: track.review_status,
       publishStatus: track.publish_status,
       releaseAt: track.release_at,
+      durationMs: Number(track.duration_ms) || 0,
       explicit: track.explicit,
       artistOwnerId: artistResponse.data?.owner_user_id ?? null,
     },
