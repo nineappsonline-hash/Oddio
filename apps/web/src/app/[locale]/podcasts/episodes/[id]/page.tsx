@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ShareButton } from '@/components/community/ShareButton';
+import { podcastAsTrack } from '@/lib/podcast-playback';
 import { notFound } from 'next/navigation';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
@@ -96,6 +97,7 @@ export default async function PodcastEpisodePage({
           </h1>
           <ShareButton
             title={episode.title}
+            storyTrack={podcastAsTrack(episode, show)}
             label={ar ? 'مشاركة' : 'Share'}
             url={`/${locale}/podcasts/episodes/${episode.id}`}
           />
