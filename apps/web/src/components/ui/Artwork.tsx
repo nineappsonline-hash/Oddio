@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { cn, initials } from '@/lib/utils';
 
 export function Artwork({
@@ -8,6 +9,7 @@ export function Artwork({
   rounded = 'rounded-xl',
   animated = false,
   priority = false,
+  sizes = '(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 280px',
 }: {
   title: string;
   url?: string;
@@ -16,7 +18,13 @@ export function Artwork({
   rounded?: string;
   animated?: boolean;
   priority?: boolean;
+  sizes?: string;
 }) {
+  const localSource = Boolean(url && url.startsWith('/') && !url.startsWith('//'));
+  const cloudinarySource = Boolean(url && /^https:\/\/res\.cloudinary\.com\//i.test(url));
+  const optimizedCloudinary = cloudinarySource && url?.includes('/image/upload/')
+    ? url.replace('/image/upload/', '/image/upload/f_auto,q_auto:good,w_800/')
+    : url;
   return (
     <div
       role="img"
@@ -34,15 +42,31 @@ export function Artwork({
     >
       {url ? (
         <>
-          <img
-            src={url}
-            alt=""
-            loading={priority ? "eager" : "lazy"}
-            fetchPriority={priority ? "high" : "auto"}
-            decoding="async"
-            draggable={false}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+          {localSource ? (
+            <Image
+              src={url!}
+              alt=""
+              fill
+              sizes={sizes}
+              quality={72}
+              priority={priority}
+              draggable={false}
+              className="object-cover"
+            />
+          ) : (
+            // Preserve signed/external artist artwork URLs without routing
+            // private hosts through the public Next.js image proxy.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={optimizedCloudinary}
+              alt=""
+              loading={priority ? 'eager' : 'lazy'}
+              fetchPriority={priority ? 'high' : 'auto'}
+              decoding="async"
+              draggable={false}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          )}
           <span
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#090912]/5 to-[#090912]/55"
