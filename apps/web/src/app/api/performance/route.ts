@@ -51,7 +51,8 @@ export async function POST(request: Request) {
     if (Math.random() < 0.02) {
       void client.from('client_performance_samples')
         .delete()
-        .lt('recorded_at', new Date(Date.now() - 30 * 86400_000).toISOString());
+        .lt('recorded_at', new Date(Date.now() - 30 * 86400_000).toISOString())
+        .then(() => undefined);
     }
     return new Response(null, { status: 204, headers: responseHeaders });
   } catch {
