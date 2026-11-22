@@ -129,8 +129,25 @@ function audioAsset(row: Row): AudioAsset {
   };
 }
 
-export async function loadDbFromSupabase(): Promise<DemoDb> {
-  const [
+/**
+ * Homepage discovery only needs public catalog and the active listener's signals.
+ * Keep the full snapshot for legacy admin/write routes; never query staff,
+ * moderation, notification or audit tables just to render the storefront.
+ */
+export async function loadDbFromSupabase(options: {
+  homeViewerId?: string | null;
+  homeOnly?: boolean;
+} = {}): Promise<DemoDb> {
+  const homeOnly = options.homeOnly === true;
+  const viewerId = options.homeViewerId ?? null;
+  const empty = (): Promise<Row[]> => Promise.resolve([]);
+  const userRows = async (table: string, userColumn = 'user_id'): Promise<Row[]> => {
+    if (!viewerId) return [];
+    const { data, error } = await serviceClient().from(table).select('*').eq(userColumn, viewerId);
+    if (error) throw new Error(`Failed to read ${table}: ${error.message}`);
+    return (data ?? []) as Row[];
+  };
+  let [
     profileRows,
     staffRows,
     artistRows,
@@ -160,9 +177,9 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
     playbackRows,
   ] = await Promise.all([
     fetchAll('profiles'),
-    fetchAll('staff_roles'),
+    homeOnly ? empty() : fetchAll('staff_roles'),
     fetchAll('artists'),
-    fetchAll('artist_social_links'),
+    homeOnly ? empty() : fetchAll('artist_social_links'),
     fetchAll('albums'),
     fetchAll('tracks'),
     fetchAll('track_moods'),
@@ -171,22 +188,47 @@ export async function loadDbFromSupabase(): Promise<DemoDb> {
     fetchAll('moods'),
     fetchAll('playlists'),
     fetchAll('playlist_tracks'),
-    fetchAll('likes'),
-    fetchAll('artist_follows'),
-    fetchAll('playlist_follows'),
-    fetchAll('comments'),
-    fetchAll('notifications'),
-    fetchAll('notification_preferences'),
-    fetchAll('artist_applications'),
-    fetchAll('reports'),
-    fetchAll('verification_requests'),
+    homeOnly ? userRows('likes') : fetchAll('likes'),
+    homeOnly ? userRows('artist_follows') : fetchAll('artist_follows'),
+    homeOnly ? empty() : fetchAll('playlist_follows'),
+    homeOnly ? empty() : fetchAll('comments'),
+    homeOnly ? empty() : fetchAll('notifications'),
+    homeOnly ? empty() : fetchAll('notification_preferences'),
+    homeOnly ? empty() : fetchAll('artist_applications'),
+    homeOnly ? empty() : fetchAll('reports'),
+    homeOnly ? empty() : fetchAll('verification_requests'),
     fetchAll('featured_slots'),
-    fetchAll('audit_logs'),
-    fetchAll('upload_quotas'),
-    fetchAll('upload_events'),
-    fetchAll('playback_sessions'),
-    fetchAll('playback_events'),
+    homeOnly ? empty() : fetchAll('audit_logs'),
+    homeOnly ? empty() : fetchAll('upload_quotas'),
+    homeOnly ? empty() : fetchAll('upload_events'),
+    homeOnly ? empty() : fetchAll('playback_sessions'),
+    homeOnly ? empty() : fetchAll('playback_events'),
   ]);
+
+  // Recent personalized listening only: never load every listener's playback
+  // events on a public homepage. The latest 150 sessions provide sufficient
+  // recent-history context without scanning the entire event table.
+  if (homeOnly && viewerId) {
+    const { data: sessions, error: sessionError } = await serviceClient()
+      .from('playback_sessions')
+      .select('*')
+      .eq('user_id', viewerId)
+      .order('started_at', { ascending: false })
+      .limit(150);
+    if (sessionError) throw new Error(`Failed to read playback sessions: ${sessionError.message}`);
+    sessionRows = (sessions ?? []) as Row[];
+    const sessionIds = sessionRows.map((row) => text(row.id)).filter(Boolean);
+    if (sessionIds.length) {
+      const { data: events, error: eventError } = await serviceClient()
+        .from('playback_events')
+        .select('*')
+        .in('session_id', sessionIds)
+        .order('occurred_at', { ascending: false })
+        .limit(600);
+      if (eventError) throw new Error(`Failed to read listening history: ${eventError.message}`);
+      playbackRows = (events ?? []) as Row[];
+    }
+  }
 
   const rolesByUser = groupBy(staffRows, (row) => text(row.user_id));
   const nameById = new Map(profileRows.map((row) => [text(row.id), row]));
