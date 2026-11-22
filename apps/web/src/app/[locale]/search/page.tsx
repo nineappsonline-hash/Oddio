@@ -64,7 +64,7 @@ export default async function SearchPage({
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
   const db = filterMusicDb(
-    demoMode ? readDb() : await loadDbFromSupabase(),
+    demoMode ? readDb() : await loadDbFromSupabase({ homeOnly: true, homeViewerId: viewer.userId }),
     contentLanguage,
   );
   const genres = db.genres.filter((genre) => genre.active);
