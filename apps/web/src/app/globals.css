@@ -2612,7 +2612,6 @@ body {
   }
 }
 
-
 /* Long tracklists still remain in the DOM for keyboard navigation, search,
    screen readers and queue ordering. Skip layout/paint work for rows well
    outside the viewport; the intrinsic height keeps scroll positions stable.
