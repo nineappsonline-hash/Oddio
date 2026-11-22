@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
 import { activeLyricCueIndex } from '@/lib/lyrics-timing';
@@ -24,7 +25,10 @@ import {
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
-import { PlayerQueueList } from '@/components/player/PlayerQueueList';
+const PlayerQueueList = dynamic(
+  () => import('@/components/player/PlayerQueueList').then((m) => m.PlayerQueueList),
+  { ssr: false },
+);
 import { AutoScrollTitle } from '@/components/ui/AutoScrollTitle';
 import {
   CompactPlayerVolumeControl,
@@ -35,9 +39,16 @@ import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton'
 import { Badge } from '@/components/ui/Badge';
 import { LikeButton } from '@/components/community/LikeButton';
 import { DislikeButton } from '@/components/community/DislikeButton';
-import { TimedComments } from '@/components/community/TimedComments';
+const TimedComments = dynamic(
+  () => import('@/components/community/TimedComments').then((m) => m.TimedComments),
+  { ssr: false },
+);
 import { ShareButton } from '@/components/community/ShareButton';
-import { SimilarPlayerPanel } from '@/components/player/SimilarPlayerPanel';
+const SimilarPlayerPanel = dynamic(
+  () =>
+    import('@/components/player/SimilarPlayerPanel').then((m) => m.SimilarPlayerPanel),
+  { ssr: false },
+);
 import { Sparkles } from 'lucide-react';
 import { Equalizer } from '@/components/visuals/Equalizer';
 import { cn, formatDuration, formatNumber } from '@/lib/utils';
@@ -101,6 +112,16 @@ export function FullPlayer() {
     return () => window.clearTimeout(timer);
   }, [controlNotice]);
   const [sideTab, setSideTab] = useState<'lyrics' | 'queue' | 'similar'>('similar');
+  // The suggestions pane is hidden entirely on narrow screens. Avoid
+  // fetching/rendering its chunk while mobile listeners open lyrics or queue.
+  const [desktopSuggestions, setDesktopSuggestions] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 1024px)');
+    const update = () => setDesktopSuggestions(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
   useEffect(() => {
     const showQueue = () => setSideTab('queue');
     try {
@@ -1226,7 +1247,7 @@ export function FullPlayer() {
                     ? 'كلمات الأغنية'
                     : 'LYRICS'}
             </p>
-            {sideTab === 'similar' ? (
+            {sideTab === 'similar' && desktopSuggestions ? (
               <div
                 id="oddio-player-panel"
                 role="tabpanel"
