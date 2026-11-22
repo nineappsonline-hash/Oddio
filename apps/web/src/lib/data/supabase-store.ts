@@ -74,7 +74,7 @@ async function fetchAll(table: string, columns = '*'): Promise<Row[]> {
       .select(columns)
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`Failed to read ${table}: ${error.message}`);
-    rows.push(...((data ?? []) as Row[]));
+    rows.push(...((data ?? []) as unknown as Row[]));
     if (!data || data.length < PAGE) break;
   }
   return rows;
