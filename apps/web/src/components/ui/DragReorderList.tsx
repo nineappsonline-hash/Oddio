@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type ReactNode, type PointerEvent } from 'react';
+import { useRef, useState, type ReactNode, type PointerEvent, type UIEvent } from 'react';
 import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +17,7 @@ export function DragReorderList<T>({
   className,
   disabled = false,
   layout = 'list',
+  virtualRowHeight,
 }: {
   items: T[];
   getId: (item: T) => string;
@@ -26,6 +27,7 @@ export function DragReorderList<T>({
   className?: string;
   disabled?: boolean;
   layout?: 'list' | 'grid';
+  virtualRowHeight?: number;
 }) {
   const ref = useRef<HTMLUListElement>(null);
   const pointer = useRef<{
@@ -41,6 +43,37 @@ export function DragReorderList<T>({
   const [dropAllowed, setDropAllowed] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const ar = locale === 'ar';
+  const virtual = layout === 'list' && Number.isFinite(virtualRowHeight)
+    && (virtualRowHeight ?? 0) > 0 && items.length > 60;
+  const rowHeight = virtualRowHeight ?? 76;
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(560);
+  const overscan = 8;
+  const first = virtual ? Math.max(0, Math.floor(scrollTop / rowHeight) - overscan) : 0;
+  const last = virtual
+    ? Math.min(items.length, Math.ceil((scrollTop + viewportHeight) / rowHeight) + overscan)
+    : items.length;
+  const visible = items.slice(first, last);
+  const onListScroll = (event: UIEvent<HTMLUListElement>) => {
+    if (!virtual) return;
+    setScrollTop(event.currentTarget.scrollTop);
+    setViewportHeight(event.currentTarget.clientHeight);
+  };
+  const refocusMoved = (id: string, target: number) => {
+    if (!virtual) return;
+    const list = ref.current;
+    if (!list) return;
+    const y = target * rowHeight;
+    if (y < list.scrollTop) list.scrollTop = y;
+    else if (y + rowHeight > list.scrollTop + list.clientHeight)
+      list.scrollTop = y + rowHeight - list.clientHeight;
+    setScrollTop(list.scrollTop);
+    requestAnimationFrame(() => {
+      const handle = Array.from(list.querySelectorAll<HTMLButtonElement>('button[data-drag-handle]'))
+        .find((button) => button.dataset.dragHandle === id);
+      handle?.focus();
+    });
+  };
 
   const stop = () => {
     pointer.current = null;
@@ -133,14 +166,21 @@ export function DragReorderList<T>({
       </span>
       <ul
         ref={ref}
+        onScroll={onListScroll}
         className={cn(layout === 'list' ? 'space-y-1' : 'grid', className)}
         aria-label={ar ? 'قائمة قابلة لإعادة الترتيب' : 'Reorderable list'}
       >
-        {items.map((item, index) => (
+        {virtual && first > 0 ? (
+          <li aria-hidden="true" role="presentation" style={{ height: first * rowHeight }} />
+        ) : null}
+        {visible.map((item, offset) => {
+          const index = first + offset;
+          return (
           <li
             key={getId(item)}
             data-reorder-id={getId(item)}
             data-reorder-index={index}
+            style={virtual ? { height: rowHeight, boxSizing: 'border-box' } : undefined}
             className={cn(
               'flex min-w-0 items-center gap-1 rounded-xl transition-colors',
               dragging === index && 'bg-primary/15 opacity-70',
@@ -152,6 +192,7 @@ export function DragReorderList<T>({
           >
             <button
               type="button"
+              data-drag-handle={getId(item)}
               disabled={disabled}
               aria-label={
                 ar
@@ -177,6 +218,7 @@ export function DragReorderList<T>({
                 ) {
                   event.preventDefault();
                   onMove(index, to);
+                  refocusMoved(getId(item), to);
                   setAnnouncement(
                     ar
                       ? `تم نقل العنصر إلى رقم ${to + 1}`
@@ -190,7 +232,11 @@ export function DragReorderList<T>({
             </button>
             <div className="min-w-0 flex-1">{renderItem(item, index)}</div>
           </li>
-        ))}
+          );
+        })}
+        {virtual && last < items.length ? (
+          <li aria-hidden="true" role="presentation" style={{ height: (items.length - last) * rowHeight }} />
+        ) : null}
       </ul>
     </div>
   );
