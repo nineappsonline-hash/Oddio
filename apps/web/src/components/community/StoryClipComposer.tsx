@@ -13,6 +13,30 @@ const STORY_WIDTH = 720;
 const STORY_HEIGHT = 1280;
 const MAX_CLIP_SECONDS = 30;
 
+
+type LyricCue = { start: number; end: number; text: string };
+
+function parseStorySrt(value: string): LyricCue[] {
+  return value.replace(/\r/g, '').trim().split(/\n\s*\n/).flatMap((block) => {
+    const lines = block.split('\n');
+    const index = lines.findIndex((line) => line.includes('-->'));
+    if (index < 0) return [];
+    const parseTime = (input: string) => {
+      const match = input.trim().match(/(?:(\d+):)?(\d+):(\d+)[,.](\d+)/);
+      return match
+        ? Number(match[1] || 0) * 3600 + Number(match[2]) * 60 + Number(match[3])
+          + Number(match[4].padEnd(3, '0').slice(0, 3)) / 1000
+        : NaN;
+    };
+    const [from, to] = lines[index].split('-->');
+    const start = parseTime(from || '');
+    const end = parseTime(to || '');
+    const text = lines.slice(index + 1).join(' ').replace(/<[^>]*>/g, '').trim();
+    return Number.isFinite(start) && Number.isFinite(end) && end > start && text
+      ? [{ start, end, text }] : [];
+  });
+}
+
 function formatTime(value: number): string {
   const total = Math.max(0, Math.floor(value));
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
@@ -43,6 +67,7 @@ function drawStory(
   seconds: number,
   length: number,
   ar: boolean,
+  lyric?: string,
 ) {
   const { width, height } = ctx.canvas;
   ctx.clearRect(0, 0, width, height);
@@ -115,6 +140,16 @@ function drawStory(
   const artist = track.artist?.name || 'Oddio';
   ctx.fillText(artist.slice(0, 65), 360, 1015);
 
+  if (lyric) {
+    ctx.fillStyle = 'rgba(10,7,20,.87)';
+    ctx.beginPath();
+    ctx.roundRect(50, 947, 620, 110, 20);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 30px Arial, sans-serif';
+    wrapText(ctx, lyric, 570, 2).forEach((line, i) => ctx.fillText(line, 360, 987 + i * 37));
+  }
+
   // Animated audio bars and excerpt progress.
   for (let i = 0; i < 37; i++) {
     const phase = seconds * 7 + i * 0.71;
@@ -153,6 +188,7 @@ export function StoryClipComposer({ track, onClose }: {
   const currentSeconds = usePlayer((state) => state.track?.id === track.id ? state.currentTime : 0);
   const [measuredDuration, setMeasuredDuration] = useState(0);
   const [loadingAudio, setLoadingAudio] = useState(true);
+  const [lyricCues, setLyricCues] = useState<LyricCue[]>([]);
   const duration = measuredDuration || Math.max(0, (track.durationMs || 0) / 1000);
   const [start, setStart] = useState(() => Math.min(Math.floor(currentSeconds), Math.max(0, duration - MAX_CLIP_SECONDS)));
   const [clipLength, setClipLength] = useState(15);
@@ -179,6 +215,7 @@ export function StoryClipComposer({ track, onClose }: {
   };
   const audioSrc = `/api/story-audio/${podcast ? 'podcast' : 'track'}/${track.id}`;
   const effectiveLength = Math.min(clipLength, Math.max(1, duration - start));
+  const lyricAt = (position: number) => lyricCues.find((cue) => cue.start <= position && position < cue.end)?.text;
 
   useEffect(() => {
     let active = true;
@@ -206,6 +243,18 @@ export function StoryClipComposer({ track, onClose }: {
       audio.load();
     };
   }, [audioSrc, ar]);
+
+  useEffect(() => {
+    if (podcast) return;
+    let active = true;
+    fetch(`/api/tracks/${track.id}/synced-lyrics`)
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (active && typeof data?.srt === 'string') setLyricCues(parseStorySrt(data.srt));
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [podcast, track.id]);
 
   useEffect(() => () => {
     cancelRef.current?.();
@@ -305,7 +354,7 @@ export function StoryClipComposer({ track, onClose }: {
       const source = context.createMediaElementSource(audio);
       const destination = context.createMediaStreamDestination();
       source.connect(destination);
-      drawStory(ctx, track, cover, 0, effectiveLength, ar);
+      drawStory(ctx, track, cover, 0, effectiveLength, ar, lyricAt(start));
       stream = canvas.captureStream(24);
       for (const item of destination.stream.getAudioTracks()) stream.addTrack(item);
       const mime = [
@@ -338,7 +387,7 @@ export function StoryClipComposer({ track, onClose }: {
       cancelRef.current = stop;
       const draw = () => {
         const seconds = Math.min(effectiveLength, (performance.now() - startTime) / 1000);
-        drawStory(ctx, track, cover, seconds, effectiveLength, ar);
+        drawStory(ctx, track, cover, seconds, effectiveLength, ar, lyricAt(start + seconds));
         setPercent(Math.round(100 * seconds / effectiveLength));
         if (seconds >= effectiveLength) stop();
         else raf = requestAnimationFrame(draw);
