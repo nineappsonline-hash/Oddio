@@ -258,6 +258,40 @@ function audioAsset(row: Row): AudioAsset {
 
 
 /**
+ * Playback authorization previously called mutateRuntimeDb, which hydrated and
+ * diffed the whole database before every Play. This performs the existing
+ * 15-minute session reuse with only the playback_sessions table.
+ */
+export async function touchPlaybackSession(
+  userId: string | null,
+  anonymousHash: string | null,
+): Promise<string> {
+  const client = serviceClient();
+  const lookup = client.from('playback_sessions').select('id')
+    .gt('last_seen_at', new Date(Date.now() - 15 * 60_000).toISOString())
+    .order('last_seen_at', { ascending: false }).limit(1);
+  const result = userId
+    ? await lookup.eq('user_id', userId).maybeSingle()
+    : await lookup.eq('anonymous_session_hash', anonymousHash ?? '').is('user_id', null).maybeSingle();
+  if (result.error) throw new Error(`Playback session lookup failed: ${result.error.message}`);
+  if (result.data?.id) {
+    const { error } = await client.from('playback_sessions')
+      .update({ last_seen_at: new Date().toISOString() })
+      .eq('id', result.data.id);
+    if (error) throw new Error(`Playback session update failed: ${error.message}`);
+    return String(result.data.id);
+  }
+  const { data, error } = await client.from('playback_sessions')
+    .insert({
+      user_id: userId,
+      anonymous_session_hash: userId ? null : anonymousHash,
+    })
+    .select('id').single();
+  if (error || !data) throw new Error(`Playback session creation failed: ${error?.message}`);
+  return String(data.id);
+}
+
+/**
  * Streaming hot path: avoid rebuilding the entire application snapshot for
  * every browser Range request. Authorization is still evaluated by the
  * streaming route against current track flags and artist ownership.
