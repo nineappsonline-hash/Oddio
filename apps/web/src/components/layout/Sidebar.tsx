@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import { Logo } from '@/components/layout/BrandLogo';
+export { Logo } from '@/components/layout/BrandLogo';
 import {
   ArrowUpRight,
   Sparkles,
@@ -19,30 +20,6 @@ import { useT } from '@/i18n/use-translator';
 import { useLocalePath } from '@/lib/use-locale-path';
 import { cn } from '@/lib/utils';
 import { OddioGlyph, type OddioGlyphName } from '@/components/ui/OddioGlyph';
-
-export function Logo({ locale, compact = false }: { locale: string; compact?: boolean }) {
-  return (
-    <Link
-      prefetch={false}
-      href={`/${locale}`}
-      className="group/logo inline-flex items-center gap-3"
-      aria-label="Oddio"
-    >
-      <Image
-        src="/oddio-gradient-play-logo.png"
-        alt="Oddio"
-        width={198}
-        height={66}
-        className={
-          compact
-            ? 'h-10 w-[120px] object-contain object-left'
-            : 'h-[58px] w-[188px] object-contain object-left'
-        }
-        priority
-      />
-    </Link>
-  );
-}
 
 export function Sidebar({ user }: { user: SessionUser | null }) {
   const t = useT();
