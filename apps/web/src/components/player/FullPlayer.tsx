@@ -276,8 +276,13 @@ export function FullPlayer() {
     setMobileLyricsOpen(false);
   }, [track?.id]);
   useEffect(() => {
-    if (!track?.id || isPodcastPlayback(track) || !lyricsRequested ||
-        loadedLyricsForRef.current === track.id) return;
+    if (
+      !track?.id ||
+      isPodcastPlayback(track) ||
+      !lyricsRequested ||
+      loadedLyricsForRef.current === track.id
+    )
+      return;
     const id = track.id;
     const controller = new AbortController();
     setLyricsLoading(true);
