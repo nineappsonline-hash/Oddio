@@ -84,11 +84,21 @@ export async function GET(
     }
 
     const upstream = await fetch(presignR2Get(objectKey), {
-      headers: { Range: `bytes=${start}-${end}` },
+      headers: rawRange ? { Range: `bytes=${start}-${end}` } : {},
       cache: 'no-store',
       signal: request.signal,
     });
-    if (upstream.status !== 206 || !upstream.body) {
+    if (!upstream.body || !upstream.ok) {
+      console.error('story-audio upstream response', {
+        kind,
+        status: upstream.status,
+        hasRange: Boolean(rawRange),
+      });
+      return NextResponse.json({ error: 'Audio stream unavailable' }, { status: 502 });
+    }
+    if (rawRange && upstream.status !== 206) {
+      console.error('story-audio upstream did not honor Range', { kind, status: upstream.status });
+      await upstream.body.cancel();
       return NextResponse.json({ error: 'Audio range unavailable' }, { status: 502 });
     }
     const headers = new Headers({
@@ -101,7 +111,7 @@ export async function GET(
       const value = upstream.headers.get(key);
       if (value) headers.set(key, value);
     }
-    return new Response(upstream.body, { status: 206, headers });
+    return new Response(upstream.body, { status: upstream.status, headers });
   } catch {
     return NextResponse.json({ error: 'Story audio unavailable' }, { status: 503 });
   }
