@@ -815,8 +815,12 @@ export function PlayerProvider({
       // play qualification accurate, but avoid re-rendering every player
       // widget and the large lyrics/queue overlay on every media event.
       const now = performance.now();
+      // Keep native audio, listening qualification, and gapless transitions
+      // running when the tab is hidden. React progress updates are purely
+      // visual and should not wake up the entire app every 500ms on iOS.
+      const uiInterval = document.hidden ? 15_000 : 500;
       if (
-        now - lastUiTimeUpdateRef.current >= 500 ||
+        now - lastUiTimeUpdateRef.current >= uiInterval ||
         audio.paused ||
         time >= audio.duration - 0.6
       ) {
@@ -1102,6 +1106,13 @@ export function PlayerProvider({
       }
     };
 
+    const onReturnToForeground = () => {
+      if (!document.hidden) {
+        lastUiTimeUpdateRef.current = performance.now();
+        usePlayer.getState().setCurrentTime(audio.currentTime);
+      }
+    };
+    document.addEventListener('visibilitychange', onReturnToForeground);
     audio.addEventListener('timeupdate', onTimeUpdate);
     audio.addEventListener('loadedmetadata', onLoaded);
     audio.addEventListener('waiting', onWaiting);
@@ -1115,6 +1126,7 @@ export function PlayerProvider({
       audio.removeEventListener('playing', onPlaying);
       audio.removeEventListener('error', onError);
       audio.removeEventListener('ended', onEnded);
+      document.removeEventListener('visibilitychange', onReturnToForeground);
       clearStallTimer();
     };
   }, [sendEvent, toast, viewerId]);
