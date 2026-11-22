@@ -167,7 +167,7 @@ export function DragReorderList<T>({
       <ul
         ref={ref}
         onScroll={onListScroll}
-        className={cn(layout === 'list' ? 'space-y-1' : 'grid', className)}
+        className={cn(layout === 'list' ? (virtual ? 'space-y-0' : 'space-y-1') : 'grid', className)}
         aria-label={ar ? 'قائمة قابلة لإعادة الترتيب' : 'Reorderable list'}
       >
         {virtual && first > 0 ? (
