@@ -138,14 +138,25 @@ try {
   await page.waitForURL('**/en/search', { timeout: 20_000 });
   await page.locator('main').waitFor({ state: 'visible', timeout: 20_000 });
   const discoverNavigationMs = Date.now() - routeStart;
-  const offscreenRows = await page.locator('.oddio-track-row-lazy').count();
+  // Charts is a row-based music view even when Search starts with an empty query.
+  const chartsResponse = await page.goto(new URL('/en/charts', base).toString(), {
+    waitUntil: 'domcontentloaded',
+    timeout: 30_000,
+  });
+  if (!chartsResponse?.ok()) throw new Error('Mobile charts route failed');
+  const rows = page.locator('.oddio-track-row-lazy');
+  const offscreenRows = await rows.count();
   let rowRendering = null;
   if (offscreenRows > 0) {
-    const firstRow = page.locator('.oddio-track-row-lazy').first();
+    const firstRow = rows.first();
     rowRendering = await firstRow.evaluate((element) => ({
       contentVisibility: getComputedStyle(element).contentVisibility,
       containIntrinsicSize: getComputedStyle(element).containIntrinsicSize,
     }));
+    await rows.last().scrollIntoViewIfNeeded();
+    if (!(await rows.last().isVisible())) {
+      throw new Error('Scrolled track row is not visible');
+    }
   }
   console.log(
     JSON.stringify(
