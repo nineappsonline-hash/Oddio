@@ -155,3 +155,4 @@ jobs:
           for browser in chromium firefox webkit; do
             BROWSER_ENGINE="$browser" SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/browser-release.mjs
           done
+          SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/mobile-performance.mjs
