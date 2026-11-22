@@ -129,6 +129,39 @@ try {
       `Mobile JS transfer ${report.jsTransferKiB} KiB exceeds ${budgetKiB} KiB budget`,
     );
   }
+  // Measure a real in-app navigation without counting server-only URL changes.
+  // This stays observational until we have repeatable field performance data.
+  const discover = page.locator('a[href="/en/discover"]').first();
+  await discover.waitFor({ state: 'visible', timeout: 10_000 });
+  const routeStart = Date.now();
+  await discover.click();
+  await page.waitForURL('**/en/discover', { timeout: 20_000 });
+  await page.locator('main').waitFor({ state: 'visible', timeout: 20_000 });
+  const discoverNavigationMs = Date.now() - routeStart;
+  const offscreenRows = await page.locator('.oddio-track-row-lazy').count();
+  const rowRendering =
+    offscreenRows > 0
+      ? await page.locator('.oddio-track-row-lazy').first().evaluate((element) => ({
+          contentVisibility: getComputedStyle(element).contentVisibility,
+          containIntrinsicSize: getComputedStyle(element).containIntrinsicSize,
+        }))
+      : null;
+  console.log(
+    JSON.stringify(
+      {
+        interaction: 'home-to-discover',
+        device: 'iPhone 13 emulation',
+        navigationMs: discoverNavigationMs,
+        renderedTrackRows: offscreenRows,
+        rowRendering,
+      },
+      null,
+      2,
+    ),
+  );
+  if (failures.length) {
+    throw new Error(`Mobile navigation runtime errors: ${failures.join('; ')}`);
+  }
   // Initial baseline is observational: budgets must be calibrated against
   // repeated runs and field Core Web Vitals before gating releases.
 } finally {
