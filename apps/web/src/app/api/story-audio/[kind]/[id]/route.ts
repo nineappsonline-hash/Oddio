@@ -20,7 +20,7 @@ export async function GET(
   context: { params: Promise<{ kind: string; id: string }> },
 ) {
   try {
-    rateLimit(`story-audio:${clientIp(request)}`, 180, 60_000);
+    rateLimit(`story-audio:${clientIp(request)}`, 45, 60_000);
     const { kind, id } = await context.params;
     if (!/^[a-f0-9-]{36}$/i.test(id) || (kind !== 'track' && kind !== 'podcast')) {
       return NextResponse.json({ error: 'Invalid story media' }, { status: 400 });
@@ -35,8 +35,9 @@ export async function GET(
       const track = db.tracks.find((item) => item.id === id);
       if (!track) return NextResponse.json({ error: 'Track unavailable' }, { status: 404 });
       const viewer = await getViewer();
-      if (!accessForTrack(db, track, viewer).allowed) {
-        return NextResponse.json({ error: 'Track unavailable' }, { status: 403 });
+      if (!accessForTrack(db, track, viewer).allowed
+        || !accessForTrack(db, track, { userId: null, roles: [] }).allowed) {
+        return NextResponse.json({ error: 'Only publicly playable tracks can be shared as Stories' }, { status: 403 });
       }
       if (!track.audio || track.audio.kind !== 'rendition' || track.audio.processingStatus !== 'ready') {
         return NextResponse.json({ error: 'Audio not ready' }, { status: 404 });
