@@ -18,11 +18,13 @@ export function ShareButton({
   label = 'Share',
   url,
   storyTrack,
+  iconOnly = false,
 }: {
   title: string;
   label?: string;
   url?: string;
   storyTrack?: CatalogTrack;
+  iconOnly?: boolean;
 }) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -129,12 +131,15 @@ export function ShareButton({
         type="button"
         variant="outline"
         size="sm"
+        className={iconOnly ? "h-10 w-10 !min-w-0 !p-0 justify-center rounded-full" : undefined}
+        aria-label={label}
+        title={label}
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={open}
       >
         <Share2 className="h-4 w-4" />
-        {label}
+        {!iconOnly ? label : null}
       </Button>
       {open ? (
         <div
