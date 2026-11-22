@@ -345,6 +345,7 @@ export function PlayerBar({ podcastMode = false }: { podcastMode?: boolean }) {
             </label>
             <div role="none" className="rounded-lg px-1 py-1 text-sm text-white [&_button]:!min-h-10 [&_button]:!w-full [&_button]:!justify-start [&_button]:!border-0 [&_button]:!bg-transparent [&_button]:!px-2 [&_button]:!text-sm [&_button:hover]:!bg-white/10">
               <ShareButton
+                storyTrack={track}
                 title={track.title}
                 label={t('common.share')}
                 url={podcast
