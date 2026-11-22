@@ -2,6 +2,7 @@ import { chromium, devices } from 'playwright';
 
 const base = process.env.SMOKE_BASE_URL || 'http://127.0.0.1:3100';
 const browser = await chromium.launch({ headless: true });
+const budgetKiB = Number(process.env.ODDIO_MOBILE_JS_BUDGET_KIB || 0);
 const context = await browser.newContext({
   ...devices['iPhone 13'],
   reducedMotion: 'reduce',
@@ -9,6 +10,7 @@ const context = await browser.newContext({
 try {
   const page = await context.newPage();
   const failures = [];
+  const failedRequests = [];
   await page.addInitScript(() => {
     window.__oddioPerf = { lcp: null, cls: 0, longTasks: 0 };
     try {
@@ -28,6 +30,12 @@ try {
     }
   });
   page.on('pageerror', (error) => failures.push(error.message));
+  page.on('requestfailed', (request) => {
+    failedRequests.push({
+      url: new URL(request.url()).pathname,
+      reason: request.failure()?.errorText || 'unknown',
+    });
+  });
   const started = Date.now();
   const response = await page.goto(new URL('/en', base).toString(), {
     waitUntil: 'domcontentloaded',
@@ -48,7 +56,24 @@ try {
     );
     const transferred = (items) =>
       Math.round(items.reduce((sum, item) => sum + (item.transferSize || 0), 0) / 1024);
+    const largestResources = [...resources]
+      .filter((r) => r.transferSize > 0)
+      .sort((a, b) => b.transferSize - a.transferSize)
+      .slice(0, 8)
+      .map((r) => ({
+        path: new URL(r.name).pathname,
+        transferKiB: Math.round(r.transferSize / 1024),
+        durationMs: Math.round(r.duration),
+        initiator: r.initiatorType,
+      }));
+    const fontResources = resources.filter((r) => /\\.(woff2?|ttf)(\\?|$)/i.test(r.name));
+    const imageResources = resources.filter((r) =>
+      r.initiatorType === 'img' || /\\.(webp|avif|png|jpe?g)(\\?|$)/i.test(r.name),
+    );
     return {
+      largestResources,
+      imageTransferKiB: transferred(imageResources),
+      fontTransferKiB: transferred(fontResources),
       navigationMs: nav ? Math.round(nav.duration) : null,
       ttfbMs: nav ? Math.round(nav.responseStart) : null,
       domContentLoadedMs: nav ? Math.round(nav.domContentLoadedEventEnd) : null,
@@ -76,6 +101,7 @@ try {
         mainVisibleMs: firstMain,
         ...report,
         pageErrors: failures,
+        failedRequests,
       },
       null,
       2,
@@ -83,6 +109,12 @@ try {
   );
   if (!report.viewportWidth || report.viewportWidth > 500) {
     throw new Error('Mobile viewport emulation did not apply');
+  }
+  if (failures.length) {
+    throw new Error(`Mobile runtime errors: ${failures.join('; ')}`);
+  }
+  if (budgetKiB > 0 && report.jsTransferKiB > budgetKiB) {
+    throw new Error(`Mobile JS transfer ${report.jsTransferKiB} KiB exceeds ${budgetKiB} KiB budget`);
   }
   // Initial baseline is observational: budgets must be calibrated against
   // repeated runs and field Core Web Vitals before gating releases.
