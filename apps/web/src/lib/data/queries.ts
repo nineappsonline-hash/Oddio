@@ -87,8 +87,39 @@ export interface TrackPageData {
   related: CatalogTrack[];
 }
 
+// Build relation indexes once per request snapshot. A catalog page may enrich
+// hundreds of tracks; repeated linear searches previously scaled quadratically.
+const catalogIndexCache = new WeakMap<DemoDb, {
+  artists: Map<string, DemoDb['artists'][number]>;
+  albums: Map<string, DemoDb['albums'][number]>;
+  genres: Map<string, DemoDb['genres'][number]>;
+  moods: Map<string, DemoDb['moods'][number]>;
+  commentCounts: Map<string, number>;
+  likes: Set<string>;
+}>();
+function catalogIndexes(db: DemoDb) {
+  let index = catalogIndexCache.get(db);
+  if (!index) {
+    const commentCounts = new Map<string, number>();
+    for (const comment of db.comments) {
+      if (comment.status !== 'visible') continue;
+      commentCounts.set(comment.trackId, (commentCounts.get(comment.trackId) ?? 0) + 1);
+    }
+    index = {
+      artists: new Map(db.artists.map((artist) => [artist.id, artist])),
+      albums: new Map(db.albums.map((album) => [album.id, album])),
+      genres: new Map(db.genres.map((genre) => [genre.id, genre])),
+      moods: new Map(db.moods.map((mood) => [mood.id, mood])),
+      commentCounts,
+      likes: new Set(db.likes.map((like) => `${like.userId}:${like.trackId}`)),
+    };
+    catalogIndexCache.set(db, index);
+  }
+  return index;
+}
+
 export function ownerIdForTrack(db: DemoDb, track: Track): string | null {
-  return db.artists.find((artist) => artist.id === track.artistId)?.ownerUserId ?? null;
+  return catalogIndexes(db).artists.get(track.artistId)?.ownerUserId ?? null;
 }
 
 export function accessForTrack(
@@ -100,35 +131,31 @@ export function accessForTrack(
   return evaluateTrackAccess(track, viewer, now, ownerIdForTrack(db, track));
 }
 
-function visibleCommentCount(db: DemoDb, trackId: string): number {
-  return db.comments.filter(
-    (comment) => comment.trackId === trackId && comment.status === 'visible',
-  ).length;
-}
-
 export function enrichTrack(
   db: DemoDb,
   track: Track,
   viewer: Viewer = { userId: null, roles: [] },
   now = new Date(),
 ): CatalogTrack {
-  const artist = db.artists.find((item) => item.id === track.artistId);
-  const album = track.albumId
-    ? (db.albums.find((item) => item.id === track.albumId) ?? null)
-    : null;
-  const genre = db.genres.find((item) => item.id === track.genreId);
-  const moods = db.moods.filter((mood) => track.moodIds.includes(mood.id));
+  const indexes = catalogIndexes(db);
+  const artist = indexes.artists.get(track.artistId);
+  const album = track.albumId ? (indexes.albums.get(track.albumId) ?? null) : null;
+  const genre = indexes.genres.get(track.genreId);
+  const moods = track.moodIds.flatMap((id) => {
+    const mood = indexes.moods.get(id);
+    return mood ? [mood] : [];
+  });
   return {
     ...track,
     likeCount: track.likeCount,
-    commentCount: db.comments.length ? visibleCommentCount(db, track.id) : track.commentCount,
+    commentCount: db.comments.length ? (indexes.commentCounts.get(track.id) ?? 0) : track.commentCount,
     artist,
     album,
     genre,
     moods,
     isLiked: Boolean(
       viewer.userId &&
-      db.likes.some((like) => like.userId === viewer.userId && like.trackId === track.id),
+      indexes.likes.has(`${viewer.userId}:${track.id}`),
     ),
     access: accessForTrack(db, track, viewer, now),
   };
