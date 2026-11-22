@@ -139,13 +139,14 @@ try {
   await page.locator('main').waitFor({ state: 'visible', timeout: 20_000 });
   const discoverNavigationMs = Date.now() - routeStart;
   const offscreenRows = await page.locator('.oddio-track-row-lazy').count();
-  const rowRendering =
-    offscreenRows > 0
-      ? await page.locator('.oddio-track-row-lazy').first().evaluate((element) => ({
-          contentVisibility: getComputedStyle(element).contentVisibility,
-          containIntrinsicSize: getComputedStyle(element).containIntrinsicSize,
-        }))
-      : null;
+  let rowRendering = null;
+  if (offscreenRows > 0) {
+    const firstRow = page.locator('.oddio-track-row-lazy').first();
+    rowRendering = await firstRow.evaluate((element) => ({
+      contentVisibility: getComputedStyle(element).contentVisibility,
+      containIntrinsicSize: getComputedStyle(element).containIntrinsicSize,
+    }));
+  }
   console.log(
     JSON.stringify(
       {
