@@ -18,6 +18,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Refresh checkout to latest main
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
       - name: Apply repository Prettier rules
         run: |
           npx prettier --write \
