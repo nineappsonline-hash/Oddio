@@ -131,11 +131,11 @@ try {
   }
   // Measure a real in-app navigation without counting server-only URL changes.
   // This stays observational until we have repeatable field performance data.
-  const discover = page.locator('a[href="/en/discover"]').first();
-  await discover.waitFor({ state: 'visible', timeout: 10_000 });
+  const searchLink = page.locator('nav a[href="/en/search"]:visible').first();
+  await searchLink.waitFor({ state: 'visible', timeout: 10_000 });
   const routeStart = Date.now();
-  await discover.click();
-  await page.waitForURL('**/en/discover', { timeout: 20_000 });
+  await searchLink.click();
+  await page.waitForURL('**/en/search', { timeout: 20_000 });
   await page.locator('main').waitFor({ state: 'visible', timeout: 20_000 });
   const discoverNavigationMs = Date.now() - routeStart;
   const offscreenRows = await page.locator('.oddio-track-row-lazy').count();
@@ -150,7 +150,7 @@ try {
   console.log(
     JSON.stringify(
       {
-        interaction: 'home-to-discover',
+        interaction: 'home-to-search',
         device: 'iPhone 13 emulation',
         navigationMs: discoverNavigationMs,
         renderedTrackRows: offscreenRows,
