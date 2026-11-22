@@ -122,11 +122,16 @@ export function GenreArtwork({ slug }: Props) {
       aria-hidden="true"
       className="absolute inset-0 overflow-hidden"
       style={{
-        background: photo
-          ? `url("${photo}") center / cover no-repeat`
-          : `radial-gradient(ellipse at 72% 25%, hsl(${(hue + 65) % 360} 70% 44% / .65), transparent 58%), linear-gradient(140deg, hsl(${hue} 63% 35%), #090817)`,
+        background: `radial-gradient(ellipse at 72% 25%, hsl(${(hue + 65) % 360} 70% 44% / .65), transparent 58%), linear-gradient(140deg, hsl(${hue} 63% 35%), #090817)`,
       }}
     >
+      {photo ? (
+        // A CSS background triggers an eager download even for offscreen cards.
+        // Native lazy loading lets the browser prioritize visible imagery.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={photo} alt="" loading="lazy" decoding="async"
+          className="absolute inset-0 h-full w-full object-cover" />
+      ) : null}
       {!photo && (
         <>
           <div className="absolute -right-8 -top-10 h-44 w-44 rotate-12 rounded-full border-[18px] border-white/10" />
