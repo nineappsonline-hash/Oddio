@@ -64,8 +64,11 @@ try {
             if (!rail) return false;
             const style = getComputedStyle(rail);
             const rect = rail.getBoundingClientRect();
-            const visible = style.display !== 'none' && style.visibility !== 'hidden'
-              && rect.width > 0 && rect.height > 0;
+            const visible =
+              style.display !== 'none' &&
+              style.visibility !== 'hidden' &&
+              rect.width > 0 &&
+              rect.height > 0;
             return visible === expectedVisible;
           },
           viewport.width >= 1320,

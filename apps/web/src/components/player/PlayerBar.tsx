@@ -25,7 +25,10 @@ import {
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
 import { Artwork } from '@/components/ui/Artwork';
-import { PlayerMiniProgress, PlayerSeekProgress } from '@/components/player/PlayerProgress';
+import {
+  PlayerMiniProgress,
+  PlayerSeekProgress,
+} from '@/components/player/PlayerProgress';
 import { OddioGlyph } from '@/components/ui/OddioGlyph';
 import { AddToPlaylistButton } from '@/components/playlists/AddToPlaylistButton';
 import { LikeButton } from '@/components/community/LikeButton';
