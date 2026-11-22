@@ -73,6 +73,11 @@ export default async function SearchPage({
         cursor: query.cursor,
         limit: query.limit,
         arabicOnly: contentLanguage === 'ar',
+      }).catch((error: unknown) => {
+        // Database filter availability should never prevent a search page
+        // from loading. Fall back to the comprehensive server search.
+        console.error('Paged catalog query failed:', error);
+        return null;
       })
     : null;
   const db = filterMusicDb(
