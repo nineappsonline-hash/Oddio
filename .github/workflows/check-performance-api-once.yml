@@ -1,0 +1,25 @@
+name: Check production performance ingest once
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/check-performance-api-once.yml'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify production telemetry ingestion and validation
+        run: |
+          set -euo pipefail
+          url='https://oddio.online/api/performance'
+          valid='{"metrics":[{"name":"audio_startup","value":98765.432}],"pageGroup":"other","deviceGroup":"desktop","browserGroup":"other","locale":"en"}'
+          invalid='{"metrics":[{"name":"not_allowed","value":1}],"pageGroup":"other","deviceGroup":"desktop","browserGroup":"other","locale":"en"}'
+          accepted=$(curl --retry 2 --retry-delay 1 -sS -o /dev/null -w '%{http_code}' -X POST "$url" -H 'Content-Type: application/json' -H 'Origin: https://oddio.online' --data "$valid")
+          echo "Valid anonymous metric HTTP $accepted"
+          test "$accepted" = 204
+          rejected=$(curl --retry 2 --retry-delay 1 -sS -o /dev/null -w '%{http_code}' -X POST "$url" -H 'Content-Type: application/json' -H 'Origin: https://oddio.online' --data "$invalid")
+          echo "Invalid metric HTTP $rejected"
+          test "$rejected" = 400
+          cross=$(curl --retry 2 --retry-delay 1 -sS -o /dev/null -w '%{http_code}' -X POST "$url" -H 'Content-Type: application/json' -H 'Origin: https://untrusted.invalid' --data "$valid")
+          echo "Cross-origin metric HTTP $cross"
+          test "$cross" != 204
