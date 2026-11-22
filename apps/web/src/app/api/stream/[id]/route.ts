@@ -4,7 +4,8 @@ import { verifyPlaybackToken } from '@/lib/auth/token';
 import { getViewer } from '@/lib/auth/session';
 import { objectKeyToPath, readDb } from '@/lib/data/db';
 import { accessForTrack } from '@/lib/data/queries';
-import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { loadStreamAsset } from '@/lib/data/supabase-store';
+import { evaluateTrackAccess } from '@ai-music/db';
 import { demoMode } from '@/lib/env';
 import { presignR2Get, presignR2OriginalGet } from '@/lib/storage/r2-presign';
 
@@ -46,32 +47,35 @@ export async function GET(
     );
   }
 
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
-  const track = db.tracks.find((item) => item.id === id);
-  if (!track || !track.audio) {
-    return NextResponse.json(
-      { error: { code: 'not_found', message: 'Audio not found.' } },
-      { status: 404, headers: AUDIO_ERROR_HEADERS },
-    );
-  }
   const viewer = await getViewer();
-  const access = accessForTrack(db, track, viewer);
-  if (!access.allowed) {
-    return NextResponse.json(
-      { error: { code: 'playback_denied', message: 'Playback is not authorized.' } },
-      { status: 403, headers: AUDIO_ERROR_HEADERS },
-    );
-  }
-
   if (!demoMode) {
-    const ready =
-      track.audio.processingStatus === 'ready' && track.audio.kind === 'rendition';
+    const result = await loadStreamAsset(id);
+    if (!result?.audio) {
+      return NextResponse.json(
+        { error: { code: 'not_found', message: 'Audio not found.' } },
+        { status: 404, headers: AUDIO_ERROR_HEADERS },
+      );
+    }
+    const access = evaluateTrackAccess(
+      result.track,
+      viewer,
+      new Date(),
+      result.track.artistOwnerId,
+    );
+    if (!access.allowed) {
+      return NextResponse.json(
+        { error: { code: 'playback_denied', message: 'Playback is not authorized.' } },
+        { status: 403, headers: AUDIO_ERROR_HEADERS },
+      );
+    }
+    const audio = result.audio;
+    const ready = audio.processingStatus === 'ready' && audio.kind === 'rendition';
     const originalFallback =
-      track.publishStatus === 'published' &&
-      track.reviewStatus === 'approved' &&
-      track.audio.kind === 'original' &&
-      track.audio.format === 'mp3' &&
-      /^incoming\/[a-f0-9-]+\/[a-f0-9-]+$/.test(track.audio.objectKey);
+      result.track.publishStatus === 'published' &&
+      result.track.reviewStatus === 'approved' &&
+      audio.kind === 'original' &&
+      audio.format === 'mp3' &&
+      /^incoming\/[a-f0-9-]+\/[a-f0-9-]+$/.test(audio.objectKey);
     if (!ready && !originalFallback) {
       return NextResponse.json(
         { error: { code: 'audio_not_ready', message: 'Audio is still processing.' } },
@@ -80,26 +84,33 @@ export async function GET(
     }
     try {
       const response = NextResponse.redirect(
-        ready
-          ? presignR2Get(track.audio.objectKey)
-          : presignR2OriginalGet(track.audio.objectKey),
+        ready ? presignR2Get(audio.objectKey) : presignR2OriginalGet(audio.objectKey),
         307,
       );
-      // Never cache a response carrying a private, bearer-style R2 link.
       response.headers.set('Cache-Control', 'private, no-store');
       response.headers.set('Referrer-Policy', 'no-referrer');
       return response;
     } catch {
       return NextResponse.json(
-        {
-          error: {
-            code: 'storage_unavailable',
-            message: 'Audio storage is unavailable.',
-          },
-        },
+        { error: { code: 'storage_unavailable', message: 'Audio storage is unavailable.' } },
         { status: 503, headers: AUDIO_ERROR_HEADERS },
       );
     }
+  }
+
+  const db = readDb();
+  const track = db.tracks.find((item) => item.id === id);
+  if (!track?.audio) {
+    return NextResponse.json(
+      { error: { code: 'not_found', message: 'Audio not found.' } },
+      { status: 404, headers: AUDIO_ERROR_HEADERS },
+    );
+  }
+  if (!accessForTrack(db, track, viewer).allowed) {
+    return NextResponse.json(
+      { error: { code: 'playback_denied', message: 'Playback is not authorized.' } },
+      { status: 403, headers: AUDIO_ERROR_HEADERS },
+    );
   }
 
   const filePath = objectKeyToPath(track.audio.objectKey);
