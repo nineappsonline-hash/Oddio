@@ -108,7 +108,6 @@ function drawStory(
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 42px Arial, sans-serif';
   const titleLines = wrapText(ctx, track.title, 590, 2);
-  titleLines.forEach((line, i) => ctx.fillText(line, 890 + i * 52, 0)); // reassigned below
   // The right-to-left title is drawn in the center with the same alignment.
   titleLines.forEach((line, i) => ctx.fillText(line, 360, 900 + i * 52));
   ctx.fillStyle = '#c6b7d5';
@@ -268,7 +267,7 @@ export function StoryClipComposer({ track, onClose }: {
       });
       audio.currentTime = start;
       await new Promise<void>((resolve) => {
-        if (audio!.seeked || Math.abs(audio!.currentTime - start) < 0.15) resolve();
+        if (!audio!.seeking && Math.abs(audio!.currentTime - start) < 0.15) resolve();
         else {
           const timer = setTimeout(resolve, 1200);
           audio!.addEventListener('seeked', () => { clearTimeout(timer); resolve(); }, { once: true });
