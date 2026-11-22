@@ -6,7 +6,7 @@ import type { Locale } from '@ai-music/contracts';
 import { searchQuery } from '@ai-music/contracts';
 import { searchCatalog } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
-import { loadDbFromSupabase, findPagedPublicTrackIds } from '@/lib/data/supabase-store';
+import { loadDbFromSupabase, searchPublishedTrackPage } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
@@ -63,21 +63,22 @@ export default async function SearchPage({
   const query = parsed.success ? parsed.data : searchQuery.parse({});
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
-  // Database pagination is safe for category/language browsing. Free-text
-  // queries retain the richer artist-alias/album/mood relevance behavior.
+  // The current RPC covers published music; preserve the existing local
+  // fuzzy/Arabic normalization path until its database equivalent is verified.
+  const dbSearchSupported = !query.q || !/[\u0600-\u06ff]/.test(query.q);
   const paged =
-    !demoMode && !query.q && !query.mood && (query.genre || query.language)
-      ? await findPagedPublicTrackIds({
+    !demoMode && dbSearchSupported && Boolean(query.q || query.genre || query.mood || query.language)
+      ? await searchPublishedTrackPage({
+          query: query.q,
           genreSlug: query.genre,
+          moodSlug: query.mood,
           language: query.language,
           sort: query.sort,
           cursor: query.cursor,
           limit: query.limit,
           arabicOnly: contentLanguage === 'ar',
         }).catch((error: unknown) => {
-          // Database filter availability should never prevent a search page
-          // from loading. Fall back to the comprehensive server search.
-          console.error('Paged catalog query failed:', error);
+          console.error('Indexed catalog query failed:', error);
           return null;
         })
       : null;
@@ -97,10 +98,22 @@ export default async function SearchPage({
   const resultPage = hasSearch
     ? searchCatalog(db, viewer, paged ? { ...query, cursor: undefined } : query)
     : null;
-  const results =
-    paged && resultPage
-      ? { ...resultPage, total: paged.total, nextCursor: paged.nextCursor }
-      : resultPage;
+  // Track IDs and ranking come from the database, not a second in-memory
+  // ranking pass. Still resolve artist, album and playlist sidebar matches
+  // through the existing catalogue to preserve their current UX.
+  const unranked = paged && hasSearch
+    ? searchCatalog(db, viewer, { ...query, q: '', cursor: undefined })
+    : null;
+  const byId = new Map(unranked?.tracks.map((track) => [track.id, track]));
+  const rankedTracks = paged
+    ? paged.ids.flatMap((id) => {
+        const track = byId.get(id);
+        return track ? [track] : [];
+      })
+    : resultPage?.tracks;
+  const results = paged && resultPage
+    ? { ...resultPage, tracks: rankedTracks ?? [], total: paged.total, nextCursor: paged.nextCursor }
+    : resultPage;
   const nextPageParams = new URLSearchParams();
   for (const key of ['q', 'genre', 'mood', 'language', 'sort'] as const) {
     const selected = query[key];
