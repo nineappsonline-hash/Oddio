@@ -32,3 +32,4 @@ jobs:
             git commit -m "style: normalize formatting for performance changes"
             git push origin HEAD:main
           fi
+# Final pass: format the added performance verification notes.
