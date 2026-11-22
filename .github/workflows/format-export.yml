@@ -1,0 +1,28 @@
+name: Export formatted Oddio files
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/format-export.yml
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Produce formatted payloads
+        run: |
+          for file in 'apps/web/src/app/[locale]/search/page.tsx' 'apps/web/src/lib/data/supabase-store.ts' 'docs/mobile-performance-implementation-20261122.md'; do
+            npx prettier --write "$file"
+            echo "ODDIO_FORMAT_START:$file"
+            base64 -w0 "$file"
+            echo
+            echo "ODDIO_FORMAT_END:$file"
+          done
