@@ -2614,14 +2614,3 @@ body {
   }
 }
 
-/* Render below-the-fold mobile dashboard sections only as they approach
-   the viewport. Their reserved height limits shifts while scrolling. */
-@media (max-width: 767px) {
-  .oddio-home-dashboard > .oddio-dashboard-section,
-  .oddio-home-dashboard > .oddio-home-editorial-columns,
-  .oddio-home-dashboard > .oddio-home-bottom-columns,
-  .oddio-home-dashboard > .oddio-creator-banner {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 460px;
-  }
-}
