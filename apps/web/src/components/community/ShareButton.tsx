@@ -10,19 +10,24 @@ import { Check, Copy, Facebook, Instagram, MessageCircle, Share2, X } from 'luci
 import { useToast } from '@/components/providers/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { canonicalOddioShareUrl } from '@/lib/share-url';
+import type { CatalogTrack } from '@/lib/data/queries';
+import { StoryClipComposer } from '@/components/community/StoryClipComposer';
 
 export function ShareButton({
   title,
   label = 'Share',
   url,
+  storyTrack,
 }: {
   title: string;
   label?: string;
   url?: string;
+  storyTrack?: CatalogTrack;
 }) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [storyOpen, setStoryOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
   // Prefer a content-specific address over the current page, especially
@@ -175,6 +180,17 @@ export function ShareButton({
           >
             <Instagram size={18} className="text-[#f2a0d1]" /> Instagram
           </button>
+          {storyTrack ? (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => { setOpen(false); setStoryOpen(true); }}
+              className="flex w-full items-center gap-3 rounded-xl border-t border-white/10 px-3 py-2.5 text-start font-semibold text-[#eed4ff] hover:bg-white/10"
+            >
+              <Instagram size={18} />
+              Share audio clip to Story
+            </button>
+          ) : null}
           <button
             type="button"
             role="menuitem"
@@ -184,6 +200,9 @@ export function ShareButton({
             <X size={18} className="text-white" /> X
           </button>
         </div>
+      ) : null}
+      {storyOpen && storyTrack ? (
+        <StoryClipComposer track={storyTrack} onClose={() => setStoryOpen(false)} />
       ) : null}
     </div>
   );
