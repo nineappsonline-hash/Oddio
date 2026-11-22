@@ -55,8 +55,11 @@ export default async function HomePage({
   const locale = raw;
   const ar = locale === 'ar';
   const t = createTranslator(locale);
-  const viewer = await getViewer();
-  const contentLanguage = await getContentLanguagePreference();
+  // Independent session and language lookups should not block each other.
+  const [viewer, contentLanguage] = await Promise.all([
+    getViewer(),
+    getContentLanguagePreference(),
+  ]);
   const db = filterMusicDb(
     demoMode
       ? readDb()

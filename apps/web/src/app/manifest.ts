@@ -15,9 +15,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#100C0D',
     icons: [
       {
-        src: '/glossy-gradient-play-loop-logo.png',
-        type: 'image/png',
-        sizes: 'any',
+        // The installed app only needs a compact icon, not the 688 KiB master.
+        src: '/_next/image?url=%2Fglossy-gradient-play-loop-logo.png&w=256&q=75',
+        sizes: '256x256',
         purpose: 'any',
       },
     ],

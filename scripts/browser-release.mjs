@@ -74,7 +74,15 @@ try {
           viewport.width >= 1320,
           { timeout: 15000 },
         );
-        assert.equal(await page.locator('.oddio-listening-rail').count(), 1);
+        // A visibility assertion is resilient to client hydration replacing the
+        // initially hidden rail placeholder with its desktop component.
+        if (viewport.width >= 1320) {
+          await page.locator('.oddio-listening-rail:visible').waitFor();
+        } else {
+          await page.locator('.oddio-listening-rail:visible').waitFor({
+            state: 'hidden',
+          });
+        }
         assert.equal(
           await page.locator('.oddio-topbar-search').isVisible(),
           viewport.width >= 1024,

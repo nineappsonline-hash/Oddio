@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import type { SessionUser } from '@ai-music/contracts';
 import { SessionProvider } from '@/components/providers/SessionProvider';
 import { ToastProvider } from '@/components/providers/ToastProvider';
@@ -7,7 +8,6 @@ import { PlayerProvider } from '@/components/player/PlayerProvider';
 import { ClientPerformance } from '@/components/providers/ClientPerformance';
 import { PlayerBar } from '@/components/player/PlayerBar';
 import { DeferredFullPlayer } from '@/components/player/DeferredFullPlayer';
-import { FavoriteGenresSelector } from '@/components/onboarding/FavoriteGenresSelector';
 import { DesktopTopBar } from '@/components/layout/DesktopTopBar';
 import { DesktopChrome } from '@/components/layout/DesktopChrome';
 import { MobileHeader, MobileNav } from '@/components/layout/MobileNav';
@@ -17,6 +17,15 @@ import { AmbientBackground } from '@/components/visuals/AmbientBackground';
 import { useT } from '@/i18n/use-translator';
 import type { Locale } from '@ai-music/contracts';
 import type { ContentLanguagePreference } from '@/lib/content-language';
+
+// Guests never need onboarding: keep its JS out of their initial bundle.
+const FavoriteGenresSelector = dynamic(
+  () =>
+    import('@/components/onboarding/FavoriteGenresSelector').then(
+      (module) => module.FavoriteGenresSelector,
+    ),
+  { ssr: false },
+);
 
 export function AppShell({
   locale,
@@ -63,11 +72,9 @@ export function AppShell({
           </div>
           <DeferredFullPlayer />
           <MobileNav />
-          <FavoriteGenresSelector
-            mode="welcome"
-            locale={locale}
-            userId={user?.id ?? null}
-          />
+          {user ? (
+            <FavoriteGenresSelector mode="welcome" locale={locale} userId={user.id} />
+          ) : null}
         </PlayerProvider>
       </ToastProvider>
     </SessionProvider>
