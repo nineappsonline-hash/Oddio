@@ -265,6 +265,26 @@ export function PlayerProvider({
     return unsubscribe;
   }, []);
 
+  // Discard speculative audio when the listener pauses or changes the first
+  // queued track. Otherwise an unused standby MP3 can occupy iOS media memory
+  // indefinitely, even if the queue is cleared.
+  useEffect(() => {
+    const unsubscribe = usePlayer.subscribe((state, previous) => {
+      const nextChanged = state.queue[0]?.id !== previous.queue[0]?.id;
+      const paused = !state.isPlaying && previous.isPlaying;
+      if ((!nextChanged && !paused) || crossfadingRef.current) return;
+      warmedRef.current = null;
+      warmingRef.current = null;
+      const standby = standbyRef.current;
+      if (!standby?.getAttribute('src')) return;
+      standby.pause();
+      standby.removeAttribute('src');
+      standby.preload = 'none';
+      standby.load();
+    });
+    return unsubscribe;
+  }, []);
+
   // A track change invalidates all in-flight stream refresh attempts.
   useEffect(() => {
     recoveryGenerationRef.current += 1;
