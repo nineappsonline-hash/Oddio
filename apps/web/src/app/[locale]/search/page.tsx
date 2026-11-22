@@ -77,7 +77,9 @@ export default async function SearchPage({
           cursor: query.cursor,
           limit: query.limit,
           arabicOnly: contentLanguage === 'ar',
-        }).catch((error: unknown) => {
+        })
+          .then((result) => (query.q && result.total === 0 ? null : result))
+          .catch((error: unknown) => {
           console.error('Indexed catalog query failed:', error);
           return null;
         })
