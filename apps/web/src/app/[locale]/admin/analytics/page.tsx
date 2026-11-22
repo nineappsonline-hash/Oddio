@@ -96,6 +96,12 @@ export default async function AdminAnalyticsPage({
             ? 'لقطة من قاعدة البيانات عند فتح الصفحة. لا توجد تقديرات أو أرقام تجريبية في وضع الإنتاج.'
             : 'Database snapshot at page load. No estimated figures in production mode.'}
         </p>
+        <Link
+          href={`/${locale}/admin/analytics/performance`}
+          className="mt-4 inline-flex min-h-11 items-center rounded-xl border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20"
+        >
+          {ar ? 'أداء الموقع والمشغل ←' : 'Site & Player Performance →'}
+        </Link>
       </header>
       <section
         className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
