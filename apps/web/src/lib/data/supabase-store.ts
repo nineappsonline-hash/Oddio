@@ -147,7 +147,7 @@ export async function loadDbFromSupabase(options: {
     if (error) throw new Error(`Failed to read ${table}: ${error.message}`);
     return (data ?? []) as Row[];
   };
-  let [
+  const [
     profileRows,
     staffRows,
     artistRows,
@@ -173,8 +173,8 @@ export async function loadDbFromSupabase(options: {
     auditRows,
     quotaRows,
     uploadEventRows,
-    sessionRows,
-    playbackRows,
+    initialSessionRows,
+    initialPlaybackRows,
   ] = await Promise.all([
     fetchAll('profiles'),
     homeOnly ? empty() : fetchAll('staff_roles'),
@@ -204,6 +204,9 @@ export async function loadDbFromSupabase(options: {
     homeOnly ? empty() : fetchAll('playback_sessions'),
     homeOnly ? empty() : fetchAll('playback_events'),
   ]);
+
+  let sessionRows = initialSessionRows;
+  let playbackRows = initialPlaybackRows;
 
   // Recent personalized listening only: never load every listener's playback
   // events on a public homepage. The latest 150 sessions provide sufficient
