@@ -6,10 +6,9 @@ import { ToastProvider } from '@/components/providers/ToastProvider';
 import { PlayerProvider } from '@/components/player/PlayerProvider';
 import { PlayerBar } from '@/components/player/PlayerBar';
 import { DeferredFullPlayer } from '@/components/player/DeferredFullPlayer';
-import { Sidebar } from '@/components/layout/Sidebar';
 import { FavoriteGenresSelector } from '@/components/onboarding/FavoriteGenresSelector';
 import { DesktopTopBar } from '@/components/layout/DesktopTopBar';
-import { ListeningRail } from '@/components/layout/ListeningRail';
+import { DesktopChrome } from '@/components/layout/DesktopChrome';
 import { MobileHeader, MobileNav } from '@/components/layout/MobileNav';
 import { Footer } from '@/components/layout/Footer';
 import { useLocalePath } from '@/lib/use-locale-path';
@@ -44,7 +43,7 @@ export function AppShell({
             {locale === 'ar' ? 'تخطَّ إلى المحتوى الرئيسي' : 'Skip to main content'}
           </a>
           <AmbientBackground />
-          <Sidebar user={user} />
+          <DesktopChrome user={user} podcastMode={podcastMode} />
           <div
             className={`oddio-workspace relative z-10 w-full min-w-0 max-w-full overflow-x-clip lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}
           >
@@ -60,7 +59,6 @@ export function AppShell({
             </main>
             <Footer locale={locale} />
           </div>
-          {!podcastMode ? <ListeningRail /> : null}
           <DeferredFullPlayer />
           <MobileNav />
           <FavoriteGenresSelector
