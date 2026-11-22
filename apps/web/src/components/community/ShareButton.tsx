@@ -172,6 +172,7 @@ export function ShareButton({
           >
             <MessageCircle size={18} className="text-[#25D366]" /> WhatsApp
           </button>
+          {!storyTrack ? (
           <button
             type="button"
             role="menuitem"
@@ -180,6 +181,7 @@ export function ShareButton({
           >
             <Instagram size={18} className="text-[#f2a0d1]" /> Instagram
           </button>
+          ) : null}
           {storyTrack ? (
             <button
               type="button"
@@ -188,7 +190,7 @@ export function ShareButton({
               className="flex w-full items-center gap-3 rounded-xl border-t border-white/10 px-3 py-2.5 text-start font-semibold text-[#eed4ff] hover:bg-white/10"
             >
               <Instagram size={18} />
-              Share audio clip to Story
+              Instagram Story · Audio clip
             </button>
           ) : null}
           <button
