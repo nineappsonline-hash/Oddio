@@ -11,7 +11,7 @@ import { usePlayer } from '@/lib/player-store';
 
 const STORY_WIDTH = 720;
 const STORY_HEIGHT = 1280;
-const MAX_CLIP_SECONDS = 15;
+const MAX_CLIP_SECONDS = 30;
 
 function formatTime(value: number): string {
   const total = Math.max(0, Math.floor(value));
@@ -151,7 +151,9 @@ export function StoryClipComposer({ track, onClose }: {
 }) {
   const ar = useLocale() === 'ar';
   const currentSeconds = usePlayer((state) => state.track?.id === track.id ? state.currentTime : 0);
-  const duration = Math.max(0, track.durationMs / 1000);
+  const [measuredDuration, setMeasuredDuration] = useState(0);
+  const [loadingAudio, setLoadingAudio] = useState(true);
+  const duration = measuredDuration || Math.max(0, (track.durationMs || 0) / 1000);
   const [start, setStart] = useState(() => Math.min(Math.floor(currentSeconds), Math.max(0, duration - MAX_CLIP_SECONDS)));
   const [clipLength, setClipLength] = useState(15);
   const [working, setWorking] = useState(false);
@@ -177,6 +179,33 @@ export function StoryClipComposer({ track, onClose }: {
   };
   const audioSrc = `/api/story-audio/${podcast ? 'podcast' : 'track'}/${track.id}`;
   const effectiveLength = Math.min(clipLength, Math.max(1, duration - start));
+
+  useEffect(() => {
+    let active = true;
+    const audio = new Audio(audioSrc);
+    audio.preload = 'metadata';
+    const onDuration = () => {
+      if (!active) return;
+      if (Number.isFinite(audio.duration) && audio.duration > 0) setMeasuredDuration(audio.duration);
+      setLoadingAudio(false);
+    };
+    const onError = () => {
+      if (active) {
+        setLoadingAudio(false);
+        setError(ar ? 'تعذر تحميل ملف الصوت' : 'Could not load the audio file.');
+      }
+    };
+    audio.addEventListener('loadedmetadata', onDuration);
+    audio.addEventListener('durationchange', onDuration);
+    audio.addEventListener('error', onError);
+    audio.load();
+    return () => {
+      active = false;
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+    };
+  }, [audioSrc, ar]);
 
   useEffect(() => () => {
     cancelRef.current?.();
@@ -398,15 +427,15 @@ export function StoryClipComposer({ track, onClose }: {
               <label htmlFor="oddio-clip-start" className="mb-2 block text-sm font-semibold">{ar ? 'بداية المقطع' : 'Clip start'} — {formatTime(start)}</label>
               <input id="oddio-clip-start" type="range" min={0} max={Math.max(0, Math.floor(duration - 1))} value={start} step={1} disabled={working}
                 onChange={(event) => { setStart(Number(event.target.value)); setFile(null); }} className="w-full cursor-pointer accent-[#c16af1]" />
-              <div className="flex justify-between text-[11px] text-white/50" dir="ltr"><span>0:00</span><span>{formatTime(duration)}</span></div>
+              <div className="flex justify-between text-[11px] text-white/50" dir="ltr"><span>0:00</span><span>{loadingAudio ? '…' : formatTime(duration)}</span></div>
             </div>
             <div className="flex items-center gap-3">
               <label htmlFor="oddio-clip-length" className="text-sm font-semibold">{ar ? 'المدة' : 'Duration'}</label>
               <select id="oddio-clip-length" value={clipLength} disabled={working} onChange={(event) => { setClipLength(Number(event.target.value)); setFile(null); }}
                 className="rounded-xl border border-white/20 bg-[#30263d] px-3 py-2 text-sm text-white">
-                <option value={10}>10 {ar ? 'ثواني' : 'seconds'}</option><option value={15}>15 {ar ? 'ثانية' : 'seconds'}</option>
+                <option value={5}>5 {ar ? 'ثواني' : 'seconds'}</option><option value={10}>10 {ar ? 'ثواني' : 'seconds'}</option><option value={15}>15 {ar ? 'ثانية' : 'seconds'}</option><option value={30}>30 {ar ? 'ثانية' : 'seconds'}</option>
               </select>
-              <button type="button" onClick={togglePreview} disabled={working} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/20 px-3 text-xs hover:bg-white/10">
+              <button type="button" onClick={togglePreview} disabled={working || duration <= 0} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/20 px-3 text-xs hover:bg-white/10">
                 {previewing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 {previewing ? (ar ? 'إيقاف' : 'Stop') : (ar ? 'معاينة الصوت' : 'Preview audio')}
               </button>
