@@ -66,7 +66,9 @@ try {
         durationMs: Math.round(r.duration),
         initiator: r.initiatorType,
       }));
-    const fontResources = resources.filter((r) => /\.(woff2?|ttf)(\?|$)/i.test(r.name));
+    const fontResources = resources.filter((r) =>
+      /\.(woff2?|ttf)(\?|$)/i.test(r.name),
+    );
     const imageResources = resources.filter((r) =>
       r.initiatorType === 'img' || /\.(webp|avif|png|jpe?g)(\?|$)/i.test(r.name),
     );
@@ -114,7 +116,9 @@ try {
     throw new Error(`Mobile runtime errors: ${failures.join('; ')}`);
   }
   if (budgetKiB > 0 && report.jsTransferKiB > budgetKiB) {
-    throw new Error(`Mobile JS transfer ${report.jsTransferKiB} KiB exceeds ${budgetKiB} KiB budget`);
+    throw new Error(
+      `Mobile JS transfer ${report.jsTransferKiB} KiB exceeds ${budgetKiB} KiB budget`,
+    );
   }
   // Initial baseline is observational: budgets must be calibrated against
   // repeated runs and field Core Web Vitals before gating releases.
