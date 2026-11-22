@@ -121,7 +121,7 @@ export function enrichTrack(
   return {
     ...track,
     likeCount: track.likeCount,
-    commentCount: visibleCommentCount(db, track.id),
+    commentCount: db.comments.length ? visibleCommentCount(db, track.id) : track.commentCount,
     artist,
     album,
     genre,
