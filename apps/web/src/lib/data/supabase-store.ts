@@ -64,13 +64,13 @@ export function serviceClient(): SupabaseClient {
 
 const PAGE = 1000;
 
-async function fetchAll(table: string): Promise<Row[]> {
+async function fetchAll(table: string, columns = '*'): Promise<Row[]> {
   const client = serviceClient();
   const rows: Row[] = [];
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await client
       .from(table)
-      .select('*')
+      .select(columns)
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`Failed to read ${table}: ${error.message}`);
     rows.push(...((data ?? []) as Row[]));
@@ -176,12 +176,12 @@ export async function loadDbFromSupabase(options: {
     initialSessionRows,
     initialPlaybackRows,
   ] = await Promise.all([
-    fetchAll('profiles'),
+    fetchAll('profiles', homeOnly ? 'id,handle,display_name' : '*'),
     homeOnly ? empty() : fetchAll('staff_roles'),
     fetchAll('artists'),
     homeOnly ? empty() : fetchAll('artist_social_links'),
     fetchAll('albums'),
-    fetchAll('tracks'),
+    fetchAll('tracks', homeOnly ? 'id,artist_id,album_id,title,slug,description,genre_id,genre_ids,language_code,country_code,production_type,explicit,visibility,review_status,publish_status,release_at,duration_ms,artwork_key,artwork_accent,quality_label,qualified_plays,like_count,comment_count,created_at,updated_at' : '*'),
     fetchAll('track_moods'),
     fetchAll('audio_assets'),
     fetchAll('genres'),
