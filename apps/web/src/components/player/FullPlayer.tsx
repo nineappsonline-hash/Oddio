@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { OddioPlayIcon } from '@/components/ui/OddioPlayIcon';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
+import { activeLyricCueIndex } from '@/lib/lyrics-timing';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronDown,
@@ -341,9 +342,7 @@ export function FullPlayer() {
     }
   }
   const cues = useMemo(() => (srt ? parseSrt(srt) : []), [srt]);
-  const activeCue = cues.findIndex(
-    (cue) => currentTime >= cue.start && currentTime < cue.end,
-  );
+  const activeCue = lyricsRequested ? activeLyricCueIndex(cues, currentTime) : -1;
   if (!expanded || !track) return null;
 
   const accent = track.artwork.accent;
