@@ -20,7 +20,7 @@ import {
 import type { SessionUser } from '@ai-music/contracts';
 import { useSession } from '@/components/providers/SessionProvider';
 import { Avatar } from '@/components/ui/Artwork';
-import { Logo } from '@/components/layout/Sidebar';
+import { Logo } from '@/components/layout/BrandLogo';
 import { useT } from '@/i18n/use-translator';
 import { useLocalePath } from '@/lib/use-locale-path';
 import { Equalizer } from '@/components/visuals/Equalizer';
