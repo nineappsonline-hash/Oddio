@@ -8,7 +8,7 @@ import { notFound } from 'next/navigation';
 import type { Locale } from '@ai-music/contracts';
 import { getTrackPage } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
-import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { loadPageDbFromSupabase } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
@@ -36,7 +36,7 @@ export async function generateMetadata({
 }) {
   const { locale: raw, id } = await params;
   const safeLocale: Locale = isLocale(raw) ? raw : 'en';
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const db = demoMode ? readDb() : await loadPageDbFromSupabase();
   const page = getTrackPage(db, { userId: null, roles: [] }, idFromSegment(id));
   if (!page) {
     return buildMetadata({
@@ -72,7 +72,7 @@ export default async function TrackPage({
   const locale = raw;
   const t = createTranslator(locale);
   const viewer = await getViewer();
-  const db = demoMode ? readDb() : await loadDbFromSupabase();
+  const db = demoMode ? readDb() : await loadPageDbFromSupabase();
   const page = getTrackPage(db, viewer, idFromSegment(id));
   if (!page) notFound();
   const { track, comments } = page;
