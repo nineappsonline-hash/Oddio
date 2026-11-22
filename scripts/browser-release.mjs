@@ -505,6 +505,34 @@ try {
         assert.ok(overflow <= 2, `following page horizontal overflow: ${overflow}px`);
       });
 
+      if (locale === 'en' && viewport.width === 390) {
+        await test(`${label} anonymous performance endpoint validates input`, async () => {
+          const valid = {
+            metrics: [{ name: 'audio_startup', value: 450 }],
+            pageGroup: 'home',
+            deviceGroup: 'mobile',
+            browserGroup: 'chromium',
+            locale: 'en',
+          };
+          const accepted = await page.request.post(`${base}/api/performance`, {
+            data: valid,
+            headers: { origin: base },
+          });
+          // Demo mode intentionally records nothing.
+          assert.equal(accepted.status(), 204);
+          const invalid = await page.request.post(`${base}/api/performance`, {
+            data: { ...valid, metrics: [{ name: 'not_a_metric', value: 1 }] },
+            headers: { origin: base },
+          });
+          assert.equal(invalid.status(), 400);
+          const rejectedOrigin = await page.request.post(`${base}/api/performance`, {
+            data: valid,
+            headers: { origin: 'https://untrusted.invalid' },
+          });
+          assert.notEqual(rejectedOrigin.status(), 204);
+        });
+      }
+
       await test(`${label} anonymous discovery preference sync is protected`, async () => {
         const read = await page.request.get(`${base}/api/discovery/preferences`);
         assert.equal(read.status(), 401);
@@ -548,7 +576,26 @@ try {
               message.includes('due to access control checks')
             ),
         );
-        assert.equal(unexpectedErrors.length, 0, unexpectedErrors.join('; '));
+        // A stale, speculatively requested Next chunk can fail on Firefox
+        // even after the redirect was successful. Revisit the protected
+        // route once and require a clean second navigation; don't ignore
+        // real errors or treat a failed redirect as a pass.
+        if (
+          unexpectedErrors.length > 0 &&
+          unexpectedErrors.every((error) => /Loading chunk \\d+ failed/.test(error))
+        ) {
+          pageErrors.length = 0;
+          await page.goto(`${base}/${locale}/library/recap`, {
+            waitUntil: 'domcontentloaded',
+          });
+          await page.waitForURL((url) => url.pathname === `/${locale}/login`, {
+            timeout: 15_000,
+          });
+          await page.waitForTimeout(250);
+          assert.equal(pageErrors.length, 0, pageErrors.join('; '));
+        } else {
+          assert.equal(unexpectedErrors.length, 0, unexpectedErrors.join('; '));
+        }
       });
 
       if (locale === 'en' && viewport.width === 1366) {
