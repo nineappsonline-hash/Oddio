@@ -99,6 +99,14 @@ export function FullPlayer() {
   const [sideTab, setSideTab] = useState<'lyrics' | 'queue' | 'similar'>('similar');
   useEffect(() => {
     const showQueue = () => setSideTab('queue');
+    try {
+      if (window.sessionStorage.getItem('oddio:pending-player-tab') === 'queue') {
+        window.sessionStorage.removeItem('oddio:pending-player-tab');
+        setSideTab('queue');
+      }
+    } catch {
+      // Private browsing can disable optional session storage.
+    }
     window.addEventListener('oddio:open-queue', showQueue);
     return () => window.removeEventListener('oddio:open-queue', showQueue);
   }, []);
