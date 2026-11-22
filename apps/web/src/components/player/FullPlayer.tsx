@@ -45,7 +45,8 @@ const TimedComments = dynamic(
 );
 import { ShareButton } from '@/components/community/ShareButton';
 const SimilarPlayerPanel = dynamic(
-  () => import('@/components/player/SimilarPlayerPanel').then((m) => m.SimilarPlayerPanel),
+  () =>
+    import('@/components/player/SimilarPlayerPanel').then((m) => m.SimilarPlayerPanel),
   { ssr: false },
 );
 import { Sparkles } from 'lucide-react';
