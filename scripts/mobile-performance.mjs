@@ -115,6 +115,17 @@ try {
   if (failures.length) {
     throw new Error(`Mobile runtime errors: ${failures.join('; ')}`);
   }
+  // Prevent the app icon from silently regressing to the 688 KiB original.
+  const oversizedIcon = report.largestResources.find(
+    (resource) =>
+      resource.path === '/glossy-gradient-play-loop-logo.png' &&
+      resource.transferKiB > 200,
+  );
+  if (oversizedIcon) {
+    throw new Error(
+      `Mobile loaded oversized original app icon: ${oversizedIcon.transferKiB} KiB`,
+    );
+  }
   if (budgetKiB > 0 && report.jsTransferKiB > budgetKiB) {
     throw new Error(
       `Mobile JS transfer ${report.jsTransferKiB} KiB exceeds ${budgetKiB} KiB budget`,
