@@ -56,6 +56,9 @@ try {
         await page.locator('.oddio-home-feature-grid').waitFor();
         assert.equal(await page.locator('.oddio-featured-stage').count(), 1);
         assert.equal(await page.locator('.oddio-topbar-search').count(), 1);
+        if (viewport.width >= 1320) {
+          await page.locator('.oddio-listening-rail').waitFor({ state: 'visible' });
+        }
         assert.equal(await page.locator('.oddio-listening-rail').count(), 1);
         assert.equal(
           await page.locator('.oddio-listening-rail').isVisible(),
@@ -217,19 +220,19 @@ try {
         await page.evaluate(() =>
           window.scrollTo(0, document.documentElement.scrollHeight),
         );
-        const clearance = await page.evaluate(() => {
+        const playerOverlapsFooter = await page.evaluate(() => {
           const footerContent = document.querySelector('footer > div:last-child');
           const miniPlayer = document.querySelector('.oddio-player-bar[role="region"]');
           if (!footerContent || !miniPlayer) return null;
-          return (
-            miniPlayer.getBoundingClientRect().top -
-            footerContent.getBoundingClientRect().bottom
-          );
+          const footer = footerContent.getBoundingClientRect();
+          const player = miniPlayer.getBoundingClientRect();
+          // The mini-player now lives in the top workspace, not at the foot
+          // of the viewport. Compare actual intersections rather than assuming
+          // the player is positioned below the footer.
+          return player.top < footer.bottom && player.bottom > footer.top
+            && player.left < footer.right && player.right > footer.left;
         });
-        assert.ok(
-          clearance !== null && clearance >= 0,
-          `footer overlaps the mini player: ${clearance}px`,
-        );
+        assert.equal(playerOverlapsFooter, false, 'mini player visually overlaps footer');
         const documentOverflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         );
