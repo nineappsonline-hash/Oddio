@@ -11,8 +11,8 @@ export async function GET() {
   try {
     const viewer = await getViewer();
     const db = demoMode
-        ? readDb()
-        : await loadDbFromSupabase({ homeOnly: true, homeViewerId: viewer.userId });
+      ? readDb()
+      : await loadDbFromSupabase({ homeOnly: true, homeViewerId: viewer.userId });
     return jsonOk(getHomeData(db, viewer));
   } catch (error) {
     return jsonError(error);

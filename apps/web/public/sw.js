@@ -14,7 +14,8 @@ self.addEventListener('activate', (event) => {
     (async () => {
       const names = await caches.keys();
       await Promise.all(
-        names.filter((name) => name.startsWith('oddio-static-'))
+        names
+          .filter((name) => name.startsWith('oddio-static-'))
           .map((name) => caches.delete(name)),
       );
       await self.clients.claim();
