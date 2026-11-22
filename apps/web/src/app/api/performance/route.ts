@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { demoMode } from '@/lib/env';
 import { serviceClient } from '@/lib/data/supabase-store';
 import { assertSameOrigin, clientIp, rateLimit } from '@/lib/api-helpers';
+import { AppError } from '@/lib/errors';
 
 export const runtime = 'nodejs';
 
@@ -53,7 +54,13 @@ export async function POST(request: Request) {
     // The 30-day retention policy is enforced by a daily database cron job.
     // Don't add an extra DELETE query to every sampled page visit.
     return new Response(null, { status: 204, headers: responseHeaders });
-  } catch {
+  } catch (error) {
+    if (error instanceof AppError) {
+      return new Response(null, { status: error.status, headers: responseHeaders });
+    }
+    if (error instanceof SyntaxError) {
+      return new Response(null, { status: 400, headers: responseHeaders });
+    }
     return new Response(null, { status: 503, headers: responseHeaders });
   }
 }
