@@ -66,11 +66,11 @@ try {
         durationMs: Math.round(r.duration),
         initiator: r.initiatorType,
       }));
-    const fontResources = resources.filter((r) =>
-      /\.(woff2?|ttf)(\?|$)/i.test(r.name),
-    );
-    const imageResources = resources.filter((r) =>
-      r.initiatorType === 'img' || /\.(webp|avif|png|jpe?g)(\?|$)/i.test(r.name),
+    const fontResources = resources.filter((r) => /\.(woff2?|ttf)(\?|$)/i.test(r.name));
+    const imageResources = resources.filter(
+      (r) =>
+        r.initiatorType === 'img' ||
+        /\.(webp|avif|png|jpe?g)(\?|$)/i.test(r.name),
     );
     return {
       largestResources,
