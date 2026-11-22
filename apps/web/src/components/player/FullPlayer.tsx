@@ -83,6 +83,7 @@ function parseSrt(source: string): LyricCue[] {
 export function FullPlayer() {
   const t = useT();
   const [srt, setSrt] = useState<string | null>(null);
+  const loadedLyricsForRef = useRef<string | null>(null);
   const [plainLyrics, setPlainLyrics] = useState<string | null>(null);
   const [lyricsLoading, setLyricsLoading] = useState(false);
   const [generatingLyrics, setGeneratingLyrics] = useState(false);
@@ -263,25 +264,30 @@ export function FullPlayer() {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [expanded, hasTrack, mobileLyricsOpen, setExpanded]);
 
+  // Don't fetch and parse lyrics when the listener is looking at similar
+  // content or their queue. Most mobile sessions never open the lyrics panel.
+  const lyricsRequested = mobileLyricsOpen || sideTab === 'lyrics';
   useEffect(() => {
-    if (!track?.id || isPodcastPlayback(track)) {
-      setSrt(null);
-      setPlainLyrics(null);
-      setLyricsLoading(false);
-      return;
-    }
-    const controller = new AbortController();
+    loadedLyricsForRef.current = null;
     setSrt(null);
     setPlainLyrics(null);
     setLyricsMessage('');
+    setLyricsLoading(false);
     setMobileLyricsOpen(false);
+  }, [track?.id]);
+  useEffect(() => {
+    if (!track?.id || isPodcastPlayback(track) || !lyricsRequested ||
+        loadedLyricsForRef.current === track.id) return;
+    const id = track.id;
+    const controller = new AbortController();
     setLyricsLoading(true);
-    fetch('/api/tracks/' + encodeURIComponent(track.id) + '/synced-lyrics', {
+    fetch('/api/tracks/' + encodeURIComponent(id) + '/synced-lyrics', {
       signal: controller.signal,
     })
       .then((response) => (response.ok ? response.json() : null))
       .then((result) => {
         if (!controller.signal.aborted) {
+          loadedLyricsForRef.current = id;
           setSrt(result?.data?.srt || null);
           setPlainLyrics(result?.data?.text || null);
         }
@@ -291,7 +297,7 @@ export function FullPlayer() {
         if (!controller.signal.aborted) setLyricsLoading(false);
       });
     return () => controller.abort();
-  }, [track?.id]);
+  }, [track?.id, lyricsRequested]);
   async function generateLyrics() {
     if (!track || generatingLyrics) return;
     setGeneratingLyrics(true);
