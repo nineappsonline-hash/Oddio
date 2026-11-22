@@ -68,9 +68,7 @@ try {
       }));
     const fontResources = resources.filter((r) => /\.(woff2?|ttf)(\?|$)/i.test(r.name));
     const imageResources = resources.filter(
-      (r) =>
-        r.initiatorType === 'img' ||
-        /\.(webp|avif|png|jpe?g)(\?|$)/i.test(r.name),
+      (r) => r.initiatorType === 'img' || /\.(webp|avif|png|jpe?g)(\?|$)/i.test(r.name),
     );
     return {
       largestResources,
