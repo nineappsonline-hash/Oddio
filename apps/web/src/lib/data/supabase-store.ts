@@ -256,6 +256,61 @@ function audioAsset(row: Row): AudioAsset {
   };
 }
 
+
+/**
+ * Streaming hot path: avoid rebuilding the entire application snapshot for
+ * every browser Range request. Authorization is still evaluated by the
+ * streaming route against current track flags and artist ownership.
+ */
+export async function loadStreamAsset(trackId: string): Promise<{
+  track: {
+    visibility: 'public' | 'unlisted' | 'private';
+    reviewStatus: 'approved' | 'draft' | 'pending' | 'rejected';
+    publishStatus: 'published' | 'unpublished' | 'available_private';
+    releaseAt: string;
+    explicit: boolean;
+    artistOwnerId: string | null;
+  };
+  audio: AudioAsset | null;
+} | null> {
+  const client = serviceClient();
+  const { data: track, error: trackError } = await client
+    .from('tracks')
+    .select('id,artist_id,visibility,review_status,publish_status,release_at,explicit')
+    .eq('id', trackId)
+    .maybeSingle();
+  if (trackError) throw new Error(`Stream track lookup failed: ${trackError.message}`);
+  if (!track) return null;
+
+  const [artistResponse, audioResponse] = await Promise.all([
+    client.from('artists').select('owner_user_id').eq('id', track.artist_id).maybeSingle(),
+    client.from('audio_assets')
+      .select('kind,object_key,format,bitrate_kbps,sample_rate,channels,bytes,sha256,processing_status')
+      .eq('track_id', trackId),
+  ]);
+  if (artistResponse.error)
+    throw new Error(`Stream artist lookup failed: ${artistResponse.error.message}`);
+  if (audioResponse.error)
+    throw new Error(`Stream asset lookup failed: ${audioResponse.error.message}`);
+
+  const assets = ((audioResponse.data ?? []) as Row[]).map(audioAsset);
+  const audio = assets.find((asset) => asset.kind === 'rendition' && asset.processingStatus === 'ready')
+    ?? assets.find((asset) => asset.processingStatus === 'ready')
+    ?? assets.find((asset) => asset.kind === 'original')
+    ?? null;
+  return {
+    track: {
+      visibility: track.visibility,
+      reviewStatus: track.review_status,
+      publishStatus: track.publish_status,
+      releaseAt: track.release_at,
+      explicit: track.explicit,
+      artistOwnerId: artistResponse.data?.owner_user_id ?? null,
+    },
+    audio,
+  };
+}
+
 /**
  * Homepage discovery only needs public catalog and the active listener's signals.
  * Keep the full snapshot for legacy admin/write routes; never query staff,
