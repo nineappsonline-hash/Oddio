@@ -6,7 +6,7 @@ import type { Locale } from '@ai-music/contracts';
 import { searchQuery } from '@ai-music/contracts';
 import { searchCatalog } from '@/lib/data/queries';
 import { readDb } from '@/lib/data/db';
-import { loadDbFromSupabase } from '@/lib/data/supabase-store';
+import { loadDbFromSupabase, findPagedPublicTrackIds } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
@@ -63,14 +63,34 @@ export default async function SearchPage({
   const query = parsed.success ? parsed.data : searchQuery.parse({});
   const viewer = await getViewer();
   const contentLanguage = await getContentLanguagePreference();
+  // Database pagination is safe for category/language browsing. Free-text
+  // queries retain the richer artist-alias/album/mood relevance behavior.
+  const paged = !demoMode && !query.q && !query.mood && (query.genre || query.language)
+    ? await findPagedPublicTrackIds({
+        genreSlug: query.genre,
+        language: query.language,
+        sort: query.sort,
+        cursor: query.cursor,
+        limit: query.limit,
+        arabicOnly: contentLanguage === 'ar',
+      })
+    : null;
   const db = filterMusicDb(
-    demoMode ? readDb() : await loadDbFromSupabase({ homeOnly: true, homeViewerId: viewer.userId }),
+    demoMode ? readDb() : await loadDbFromSupabase({
+      homeOnly: true, homeViewerId: viewer.userId,
+      ...(paged ? { searchTrackIds: paged.ids } : {}),
+    }),
     contentLanguage,
   );
   const genres = db.genres.filter((genre) => genre.active);
   const moods = db.moods.filter((mood) => mood.active);
   const hasSearch = Boolean(query.q || query.genre || query.mood || query.language);
-  const results = hasSearch ? searchCatalog(db, viewer, query) : null;
+  const resultPage = hasSearch
+    ? searchCatalog(db, viewer, paged ? { ...query, cursor: undefined } : query)
+    : null;
+  const results = paged && resultPage
+    ? { ...resultPage, total: paged.total, nextCursor: paged.nextCursor }
+    : resultPage;
   const nextPageParams = new URLSearchParams();
   for (const key of ['q', 'genre', 'mood', 'language', 'sort'] as const) {
     const selected = query[key];
