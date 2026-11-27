@@ -145,8 +145,7 @@ body:has(.oddio-magicpath-home) .oddio-player-bar.oddio-top-mini-player {
       rgba(23, 24, 26, 0.6) 55%,
       rgba(23, 24, 26, 0.7) 100%
     ),
-    radial-gradient(ellipse at 27% 66%, rgba(85, 86, 88, 0.25), transparent 47%),
-    #17181a;
+    radial-gradient(ellipse at 27% 66%, rgba(85, 86, 88, 0.25), transparent 47%), #17181a;
   box-shadow:
     0 25px 68px rgba(18, 19, 21, 0.47),
     inset 0 1px rgba(246, 247, 249, 0.09);

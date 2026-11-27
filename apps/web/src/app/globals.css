@@ -2796,11 +2796,7 @@ body {
   border: 1px solid rgba(102, 103, 105, 0.22);
   border-radius: 28px;
   background:
-    radial-gradient(
-      ellipse 50% 85% at 87% 49%,
-      rgba(51, 52, 54, 0.45),
-      transparent 75%
-    ),
+    radial-gradient(ellipse 50% 85% at 87% 49%, rgba(51, 52, 54, 0.45), transparent 75%),
     radial-gradient(ellipse 55% 78% at 25% 92%, rgba(32, 33, 35, 0.39), transparent 78%),
     linear-gradient(112deg, #141517 0%, #161719 52%, #151618 100%);
   box-shadow:
@@ -3110,7 +3106,6 @@ body {
   }
 }
 
-
 /* Oddio Matte Graphite: finish with flat black / neutral dark surfaces.
    Existing audio artwork keeps its own color for recognizability. */
 body {
@@ -3125,17 +3120,23 @@ body {
 :focus-visible {
   outline-color: #c4c6ca;
 }
-.ambient-grid, .aurora-blob, .ambient-stars {
-  opacity: .07;
+.ambient-grid,
+.aurora-blob,
+.ambient-stars {
+  opacity: 0.07;
   filter: grayscale(1);
 }
-.card, .surface {
+.card,
+.surface {
   background: linear-gradient(145deg, #252629, #18191c);
-  border-color: rgba(190, 190, 190, .12);
+  border-color: rgba(190, 190, 190, 0.12);
 }
-.oddio-v2-cinematic-hero, .oddio-featured-stage {
-  box-shadow: 0 16px 44px rgba(0, 0, 0, .38);
+.oddio-v2-cinematic-hero,
+.oddio-featured-stage {
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.38);
 }
-.oddio-v2-art-halo, .oddio-featured-disc, .oddio-v2-hero-art::before {
-  box-shadow: 0 0 22px rgba(150, 150, 150, .10);
+.oddio-v2-art-halo,
+.oddio-featured-disc,
+.oddio-v2-hero-art::before {
+  box-shadow: 0 0 22px rgba(150, 150, 150, 0.1);
 }
