@@ -208,7 +208,9 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     // Normalize before deriving mute state: a value outside the native range
     // (for example from wheel/keyboard input) must never leave zero volume
     // marked as unmuted.
-    const normalized = Number.isFinite(volume) ? Math.min(1, Math.max(0, volume)) : 0;
+    const normalized = Number.isFinite(volume)
+      ? Math.min(1, Math.max(0, volume))
+      : 0;
     set({ volume: normalized, muted: normalized === 0 });
   },
   toggleMute: () => set((state) => ({ muted: !state.muted })),
