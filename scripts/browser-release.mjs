@@ -317,6 +317,13 @@ try {
             0,
             'track detail must not revert to legacy top mini player',
           );
+          if (engine === 'chromium') {
+            await page.screenshot({
+              path: 'artifacts/oddio-magicpath/en-track-detail-desktop.png',
+              fullPage: true,
+              animations: 'disabled',
+            });
+          }
         });
       }
 
@@ -714,6 +721,13 @@ try {
             1,
             'Library must be the active route in the persistent navigation',
           );
+          if (engine === 'chromium') {
+            await page.screenshot({
+              path: 'artifacts/oddio-magicpath/en-library-signed-in-desktop.png',
+              fullPage: true,
+              animations: 'disabled',
+            });
+          }
           assert.equal(pageErrors.length, 0, pageErrors.join('; '));
         });
       }
