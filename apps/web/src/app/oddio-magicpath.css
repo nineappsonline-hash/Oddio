@@ -1,0 +1,246 @@
+/* Oddio 2.0 — MagicPath design translated into real Oddio page chrome.
+   Source: MagicPath project 477175160743534592 / component quiet-lake-7477.
+   No mocked playback, user/playlist data or external Unsplash media is shipped. */
+body:has(.oddio-magicpath-home) {
+  --oddio-v2-magenta: #e147cf;
+  --oddio-v2-lavender: #ae6bff;
+  background: #0d0917;
+}
+body:has(.oddio-magicpath-home) .oddio-workspace {
+  background: radial-gradient(ellipse 70% 55% at 48% 0%, rgba(99, 40, 151, .20), transparent 70%), #0d0917;
+}
+body:has(.oddio-magicpath-home) .oddio-main-content {
+  padding-top: 24px;
+}
+body:has(.oddio-magicpath-home) .oddio-topbar {
+  background: rgba(22, 15, 36, .97);
+  border-bottom: 1px solid rgba(152, 97, 179, .22);
+}
+body:has(.oddio-magicpath-home) .oddio-topbar-search {
+  background: #241830;
+  border-color: rgba(174, 117, 203, .24);
+  border-radius: 12px;
+}
+body:has(.oddio-magicpath-home) .oddio-topbar-search:focus-within {
+  border-color: #a968eb;
+  box-shadow: 0 0 0 3px rgba(169, 104, 235, .13);
+}
+body:has(.oddio-magicpath-home) aside.fixed.inset-y-0 {
+  background: linear-gradient(165deg, #1e112d 0%, #100b1a 64%, #0c0915);
+  border-color: rgba(165, 102, 193, .24);
+}
+body:has(.oddio-magicpath-home) aside.fixed.inset-y-0 nav a[aria-current='page'] {
+  background: linear-gradient(115deg, rgba(139, 56, 166, .56), rgba(52, 33, 72, .82));
+  color: #fff;
+  box-shadow: inset 3px 0 0 #d657f2;
+}
+body:has(.oddio-magicpath-home) aside.fixed.inset-y-0 nav a[aria-current='page'] > span:first-child {
+  background: #f2a0ff;
+}
+body:has(.oddio-magicpath-home) aside.fixed.inset-y-0 nav a:not([aria-current='page']):hover {
+  background: rgba(129, 66, 162, .16);
+}
+body:has(.oddio-magicpath-home) .oddio-listening-rail {
+  background: linear-gradient(175deg, #25142f 0%, #140d1f 62%, #0f0a19);
+  border-color: rgba(175, 96, 202, .25);
+}
+body:has(.oddio-magicpath-home) .oddio-rail-heading,
+body:has(.oddio-magicpath-home) .oddio-rail-queue-header {
+  border-color: rgba(189, 128, 214, .20);
+}
+body:has(.oddio-magicpath-home) .oddio-rail-art-button {
+  border-color: rgba(191, 101, 235, .55);
+  box-shadow: 0 18px 54px rgba(23, 5, 40, .46);
+}
+body:has(.oddio-magicpath-home) .oddio-rail-queue-item:hover {
+  background: rgba(151, 79, 196, .13);
+}
+body:has(.oddio-magicpath-home) .oddio-player-bar.oddio-top-mini-player {
+  background: linear-gradient(112deg, rgba(32, 17, 49, .97), rgba(18, 12, 31, .97)) !important;
+  border: 1px solid rgba(179, 106, 216, .40) !important;
+  box-shadow: 0 12px 35px rgba(6, 3, 15, .48), 0 0 24px rgba(125, 58, 172, .11);
+  border-radius: 18px;
+}
+.oddio-magicpath-home {
+  gap: clamp(25px, 3vw, 42px);
+  min-width: 0;
+}
+.oddio-magicpath-welcome {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 4px 2px 0;
+}
+.oddio-magicpath-overline {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #cb8eea;
+  letter-spacing: .02em;
+}
+.oddio-magicpath-welcome h2 {
+  margin: 6px 0 0;
+  color: #fbf6ff;
+  font-size: clamp(25px, 2.3vw, 36px);
+  line-height: 1.28;
+  font-weight: 900;
+  letter-spacing: -.035em;
+}
+.oddio-magicpath-welcome h2 span {
+  color: #f07bef;
+}
+.oddio-magicpath-welcome p:last-child {
+  color: #b0a0c2;
+  margin: 5px 0 0;
+  line-height: 1.65;
+  font-size: 12px;
+}
+.oddio-magicpath-welcome-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #c5b1d9;
+  white-space: nowrap;
+  text-decoration: none;
+  padding: 8px 12px;
+  background: rgba(129, 65, 156, .10);
+  border: 1px solid rgba(190, 120, 227, .22);
+  border-radius: 50px;
+  transition: background .18s, color .18s;
+}
+.oddio-magicpath-welcome-action:hover,
+.oddio-magicpath-welcome-action:focus-visible {
+  color: white;
+  background: rgba(159, 65, 207, .25);
+}
+.oddio-magicpath-home .oddio-v2-cinematic-hero {
+  min-height: clamp(365px, 31vw, 500px);
+  margin-bottom: 0;
+  border-radius: 22px;
+  border: 1px solid rgba(205, 112, 236, .48);
+  background:
+    linear-gradient(95deg, rgba(17, 7, 34, .86) 2%, rgba(39, 13, 68, .60) 55%, rgba(38, 13, 65, .70) 100%),
+    radial-gradient(ellipse at 27% 66%, rgba(255, 77, 187, .25), transparent 47%),
+    #210f39;
+  box-shadow: 0 25px 68px rgba(6, 2, 14, .47), inset 0 1px rgba(255, 255, 255, .09);
+}
+.oddio-magicpath-home .oddio-v2-hero-layout {
+  grid-template-columns: minmax(0, 1.05fr) minmax(225px, .95fr);
+  padding: clamp(27px, 3.4vw, 51px);
+}
+.oddio-magicpath-home .oddio-v2-hero-copy h1 {
+  font-size: clamp(38px, 4.1vw, 65px);
+  line-height: 1.13;
+}
+.oddio-magicpath-home .oddio-v2-hero-copy h1 span {
+  background-image: linear-gradient(100deg, #ff81bf, #d27eff 60%, #f6a9d9);
+}
+.oddio-magicpath-home .oddio-v2-hero-copy .oddio-v2-hero-description {
+  margin-top: 16px;
+  max-width: 490px;
+  color: #e2d2ec;
+  line-height: 1.8;
+}
+.oddio-magicpath-home .oddio-v2-hero-actions {
+  margin-top: 23px;
+}
+.oddio-magicpath-home .oddio-v2-hero-button {
+  background: linear-gradient(120deg, rgba(195, 52, 189, .92), rgba(130, 68, 230, .96));
+  border: 1px solid rgba(255, 204, 253, .35);
+  box-shadow: 0 8px 24px rgba(179, 53, 192, .28);
+}
+.oddio-magicpath-home .oddio-v2-hero-art {
+  max-width: 400px;
+}
+.oddio-magicpath-home .oddio-genre-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+.oddio-magicpath-home .oddio-genre-tile {
+  min-height: 132px;
+  aspect-ratio: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(5, 1, 16, .22);
+}
+.oddio-magicpath-home .oddio-genre-tile:nth-child(6n + 1) {
+  background: linear-gradient(125deg, #a34f44, #381a38);
+}
+.oddio-magicpath-home .oddio-genre-tile:nth-child(6n + 2) {
+  background: linear-gradient(125deg, #9b3879, #34173d);
+}
+.oddio-magicpath-home .oddio-genre-tile:nth-child(6n + 3) {
+  background: linear-gradient(125deg, #395ab1, #171c48);
+}
+.oddio-magicpath-home .oddio-genre-tile:nth-child(6n + 4) {
+  background: linear-gradient(125deg, #783cb8, #28164b);
+}
+.oddio-magicpath-home .oddio-genre-tile:nth-child(6n + 5) {
+  background: linear-gradient(125deg, #ac3655, #3b1a3c);
+}
+.oddio-magicpath-home .oddio-genre-tile:nth-child(6n + 6) {
+  background: linear-gradient(125deg, #267e87, #162d48);
+}
+.oddio-magicpath-home .oddio-genre-tile:focus-visible {
+  outline: 2px solid #f3a1fd;
+  outline-offset: 3px;
+}
+.oddio-magicpath-home .oddio-genre-overlay {
+  background: linear-gradient(to top, rgba(9, 5, 19, .88), rgba(20, 8, 37, .08) 75%);
+}
+.oddio-magicpath-home .oddio-genre-label {
+  font-weight: 900;
+}
+.oddio-magicpath-home .oddio-section-title-row h2 {
+  font-weight: 900;
+  letter-spacing: -.025em;
+}
+.oddio-magicpath-home .oddio-featured-stage {
+  background:
+    radial-gradient(ellipse at 20% 45%, rgba(237, 74, 180, .25), transparent 46%),
+    linear-gradient(115deg, #401648, #1c0c37 80%);
+  border-radius: 20px;
+}
+.oddio-magicpath-home .oddio-featured-mood {
+  background: linear-gradient(135deg, #652a84, #24143c);
+  border-radius: 20px;
+}
+.oddio-magicpath-home .oddio-release-grid .card,
+.oddio-magicpath-home .oddio-playlists-grid .card {
+  border: 1px solid rgba(194, 137, 221, .19);
+  background: rgba(37, 23, 53, .66);
+  border-radius: 15px;
+}
+@media (max-width: 1350px) {
+  .oddio-magicpath-home .oddio-genre-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1023px) {
+  .oddio-magicpath-home .oddio-v2-hero-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(200px, .74fr);
+  }
+}
+@media (max-width: 700px) {
+  .oddio-magicpath-welcome {align-items: flex-start;}
+  .oddio-magicpath-welcome h2 {font-size: 27px;}
+  .oddio-magicpath-welcome p:last-child {font-size: 11px;}
+  .oddio-magicpath-welcome-action {display: none;}
+  .oddio-magicpath-home .oddio-v2-cinematic-hero {min-height: 0;}
+  .oddio-magicpath-home .oddio-v2-hero-layout {display: flex; padding: 26px 20px;}
+  .oddio-magicpath-home .oddio-v2-hero-copy h1 {font-size: clamp(34px, 9vw, 48px);}
+  .oddio-magicpath-home .oddio-genre-grid {grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px;}
+  .oddio-magicpath-home .oddio-genre-tile {min-height: 128px;}
+}
+@media (prefers-reduced-motion: reduce) {
+  .oddio-magicpath-home *,
+  .oddio-magicpath-welcome-action {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
