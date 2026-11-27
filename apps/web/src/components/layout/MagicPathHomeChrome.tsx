@@ -86,7 +86,9 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
             <X size={20} />
           </button>
         </div>
-        <p className="mp2-sidebar-heading">{ar ? 'استكشف عالمك' : 'EXPLORE YOUR WORLD'}</p>
+        <p className="mp2-sidebar-heading">
+          {ar ? 'استكشف عالمك' : 'EXPLORE YOUR WORLD'}
+        </p>
         <nav aria-label={ar ? 'التنقل الرئيسي' : 'Main navigation'}>
           {navItems.map(({ path, labelAr, labelEn, icon: Icon }) => (
             <Link
@@ -102,18 +104,36 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
           ))}
         </nav>
         <div className="mp2-sidebar-divider" />
-        <p className="mp2-sidebar-heading">{ar ? 'مكتبتك الموسيقية' : 'YOUR COLLECTION'}</p>
+        <p className="mp2-sidebar-heading">
+          {ar ? 'مكتبتك الموسيقية' : 'YOUR COLLECTION'}
+        </p>
         <nav aria-label={ar ? 'مجموعتك' : 'Your collection'}>
-          <Link href={`/${locale}/library`} onClick={() => setOpen(false)} className="mp2-nav-item">
+          <Link
+            href={`/${locale}/library`}
+            onClick={() => setOpen(false)}
+            className="mp2-nav-item"
+          >
             <Heart size={18} /> {ar ? 'الأغاني المفضلة' : 'Liked songs'}
           </Link>
-          <Link href={`/${locale}/soundspace`} onClick={() => setOpen(false)} className="mp2-nav-item">
+          <Link
+            href={`/${locale}/soundspace`}
+            onClick={() => setOpen(false)}
+            className="mp2-nav-item"
+          >
             <AudioLines size={18} /> {ar ? 'موسيقى على مزاجك' : 'Made for your mood'}
           </Link>
-          <Link href={`/${locale}/genres`} onClick={() => setOpen(false)} className="mp2-nav-item">
+          <Link
+            href={`/${locale}/genres`}
+            onClick={() => setOpen(false)}
+            className="mp2-nav-item"
+          >
             <Disc3 size={18} /> {ar ? 'الأنواع الموسيقية' : 'Music genres'}
           </Link>
-          <Link href={`/${locale}/charts`} onClick={() => setOpen(false)} className="mp2-nav-item">
+          <Link
+            href={`/${locale}/charts`}
+            onClick={() => setOpen(false)}
+            className="mp2-nav-item"
+          >
             <ListMusic size={18} /> {ar ? 'الأكثر استماعًا' : 'Top charts'}
           </Link>
         </nav>
@@ -133,9 +153,7 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
             <Settings size={17} /> {ar ? 'الإعدادات' : 'Settings'}
           </Link>
           {!user ? (
-            <Link href={`/${locale}/login`}>
-              {ar ? 'تسجيل الدخول' : 'Log in'}
-            </Link>
+            <Link href={`/${locale}/login`}>{ar ? 'تسجيل الدخول' : 'Log in'}</Link>
           ) : null}
         </div>
       </aside>
@@ -154,30 +172,54 @@ export function MagicPathHomeHeader({
     <header className="mp2-header">
       <div className="mp2-header-nav">
         <div className="mp2-header-history">
-          <button onClick={() => router.back()} aria-label={ar ? 'رجوع' : 'Back'} type="button">
+          <button
+            onClick={() => router.back()}
+            aria-label={ar ? 'رجوع' : 'Back'}
+            type="button"
+          >
             <ChevronRight size={18} />
           </button>
-          <button onClick={() => router.forward()} aria-label={ar ? 'التالي' : 'Forward'} type="button">
+          <button
+            onClick={() => router.forward()}
+            aria-label={ar ? 'التالي' : 'Forward'}
+            type="button"
+          >
             <ChevronLeft size={18} />
           </button>
         </div>
-        <form className="mp2-search" action={`/${locale}/search`} method="get" role="search">
+        <form
+          className="mp2-search"
+          action={`/${locale}/search`}
+          method="get"
+          role="search"
+        >
           <Search size={18} aria-hidden="true" />
           <input
             name="q"
             type="search"
             aria-label={ar ? 'ابحث في أوديو' : 'Search Oddio'}
-            placeholder={ar ? 'ابحث عن أغنية، فنان، أو بودكاست...' : 'Search songs, artists, podcasts...'}
+            placeholder={
+              ar
+                ? 'ابحث عن أغنية، فنان، أو بودكاست...'
+                : 'Search songs, artists, podcasts...'
+            }
           />
           <kbd aria-hidden="true">↵</kbd>
         </form>
       </div>
       <div className="mp2-header-actions">
         <ExperienceSwitcher contentLanguage={contentLanguage} />
-        <Link href={`/${locale}/notifications`} aria-label={ar ? 'الإشعارات' : 'Notifications'} className="mp2-header-bell">
+        <Link
+          href={`/${locale}/notifications`}
+          aria-label={ar ? 'الإشعارات' : 'Notifications'}
+          className="mp2-header-bell"
+        >
           <Bell size={18} />
         </Link>
-        <Link className="mp2-header-account" href={user ? `/${locale}/settings` : `/${locale}/login`}>
+        <Link
+          className="mp2-header-account"
+          href={user ? `/${locale}/settings` : `/${locale}/login`}
+        >
           {user ? user.displayName.slice(0, 1) : ar ? 'دخول' : 'Log in'}
         </Link>
       </div>
@@ -193,11 +235,25 @@ export function MagicPathHomeListeningRail({ locale }: { locale: 'ar' | 'en' }) 
   const setExpanded = usePlayer((s) => s.setExpanded);
   return (
     <aside className="mp2-listening" aria-label={ar ? 'شغّال دلوقتي' : 'Now playing'}>
-      <h2><AudioLines size={19} />{ar ? 'شغّال دلوقتي' : 'NOW PLAYING'}</h2>
+      <h2>
+        <AudioLines size={19} />
+        {ar ? 'شغّال دلوقتي' : 'NOW PLAYING'}
+      </h2>
       {track ? (
         <>
-          <button className="mp2-listening-cover" type="button" onClick={() => setExpanded(true)} aria-label={ar ? 'افتح المشغل' : 'Open player'}>
-            <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="aspect-square w-full" rounded="rounded-2xl" />
+          <button
+            className="mp2-listening-cover"
+            type="button"
+            onClick={() => setExpanded(true)}
+            aria-label={ar ? 'افتح المشغل' : 'Open player'}
+          >
+            <Artwork
+              title={track.title}
+              url={track.artwork.url}
+              accent={track.artwork.accent}
+              className="aspect-square w-full"
+              rounded="rounded-2xl"
+            />
           </button>
           <div className="mp2-listening-meta">
             <span>NOW PLAYING</span>
@@ -209,7 +265,9 @@ export function MagicPathHomeListeningRail({ locale }: { locale: 'ar' | 'en' }) 
         <div className="mp2-listening-idle">
           <Headphones size={40} />
           <strong>{ar ? 'الموسيقى مستنياك' : 'Your sound starts here'}</strong>
-          <small>{ar ? 'شغّل أي أغنية علشان تظهر هنا' : 'Play a track to fill this space'}</small>
+          <small>
+            {ar ? 'شغّل أي أغنية علشان تظهر هنا' : 'Play a track to fill this space'}
+          </small>
         </div>
       )}
       <div className="mp2-listening-rule" />
@@ -218,16 +276,33 @@ export function MagicPathHomeListeningRail({ locale }: { locale: 'ar' | 'en' }) 
         <span>{queue.length}</span>
       </div>
       <div className="mp2-listening-queue">
-        {queue.length ? queue.slice(0, 5).map((item) => (
-          <button type="button" key={item.id} onClick={() => jumpTo(item.id)} className="mp2-queue-item">
-            <Artwork title={item.title} url={item.artwork.url} accent={item.artwork.accent} className="h-11 w-11 shrink-0" rounded="rounded-lg" />
-            <span className="mp2-queue-label">
-              <strong dir="auto">{item.title}</strong>
-              <small dir="auto">{item.artist?.name}</small>
-            </span>
-            <Play size={14} />
-          </button>
-        )) : <p className="mp2-queue-empty">{ar ? 'الأغاني الجاية هتظهر هنا.' : 'Your upcoming tracks will appear here.'}</p>}
+        {queue.length ? (
+          queue.slice(0, 5).map((item) => (
+            <button
+              type="button"
+              key={item.id}
+              onClick={() => jumpTo(item.id)}
+              className="mp2-queue-item"
+            >
+              <Artwork
+                title={item.title}
+                url={item.artwork.url}
+                accent={item.artwork.accent}
+                className="h-11 w-11 shrink-0"
+                rounded="rounded-lg"
+              />
+              <span className="mp2-queue-label">
+                <strong dir="auto">{item.title}</strong>
+                <small dir="auto">{item.artist?.name}</small>
+              </span>
+              <Play size={14} />
+            </button>
+          ))
+        ) : (
+          <p className="mp2-queue-empty">
+            {ar ? 'الأغاني الجاية هتظهر هنا.' : 'Your upcoming tracks will appear here.'}
+          </p>
+        )}
       </div>
       <Link className="mp2-listening-discover" href={`/${locale}/discover`}>
         {ar ? 'اكتشف موسيقى جديدة' : 'Discover new music'} <ArrowUpLeft size={15} />
@@ -260,10 +335,24 @@ export function MagicPathHomeBottomPlayer({ locale }: { locale: 'ar' | 'en' }) {
       <div className="mp2-player-track">
         {track ? (
           <>
-            <button type="button" className="mp2-player-art" onClick={() => setExpanded(true)}>
-              <Artwork title={track.title} url={track.artwork.url} accent={track.artwork.accent} className="h-12 w-12" rounded="rounded-lg" />
+            <button
+              type="button"
+              className="mp2-player-art"
+              onClick={() => setExpanded(true)}
+            >
+              <Artwork
+                title={track.title}
+                url={track.artwork.url}
+                accent={track.artwork.accent}
+                className="h-12 w-12"
+                rounded="rounded-lg"
+              />
             </button>
-            <button className="mp2-player-track-name" type="button" onClick={() => setExpanded(true)}>
+            <button
+              className="mp2-player-track-name"
+              type="button"
+              onClick={() => setExpanded(true)}
+            >
               <strong dir="auto">{track.title}</strong>
               <small dir="auto">{track.artist?.name}</small>
             </button>
@@ -271,32 +360,72 @@ export function MagicPathHomeBottomPlayer({ locale }: { locale: 'ar' | 'en' }) {
         ) : (
           <div className="mp2-player-empty">
             <Headphones size={25} />
-            <span>{ar ? 'اختار أغنية وابدأ الاستماع' : 'Choose a track to start listening'}</span>
+            <span>
+              {ar ? 'اختار أغنية وابدأ الاستماع' : 'Choose a track to start listening'}
+            </span>
           </div>
         )}
       </div>
       <div className="mp2-player-main">
         <div className="mp2-player-controls">
-          <button type="button" aria-label={ar ? 'عشوائي' : 'Shuffle'} title={ar ? 'عشوائي' : 'Shuffle'} className={shuffle ? 'mp2-active' : ''} onClick={toggleShuffle}>
+          <button
+            type="button"
+            aria-label={ar ? 'عشوائي' : 'Shuffle'}
+            title={ar ? 'عشوائي' : 'Shuffle'}
+            className={shuffle ? 'mp2-active' : ''}
+            onClick={toggleShuffle}
+          >
             <Shuffle size={17} />
           </button>
-          <button type="button" aria-label={ar ? 'السابق' : 'Previous'} onClick={() => previous()}>
+          <button
+            type="button"
+            aria-label={ar ? 'السابق' : 'Previous'}
+            onClick={() => previous()}
+          >
             <SkipBack size={19} fill="currentColor" />
           </button>
-          <button type="button" className="mp2-main-play" onClick={toggle} disabled={!track} aria-label={playing ? ar ? 'إيقاف مؤقت' : 'Pause' : ar ? 'تشغيل' : 'Play'}>
-            {playing ? <Pause size={19} fill="currentColor" /> : <Play size={19} fill="currentColor" />}
+          <button
+            type="button"
+            className="mp2-main-play"
+            onClick={toggle}
+            disabled={!track}
+            aria-label={playing ? (ar ? 'إيقاف مؤقت' : 'Pause') : ar ? 'تشغيل' : 'Play'}
+          >
+            {playing ? (
+              <Pause size={19} fill="currentColor" />
+            ) : (
+              <Play size={19} fill="currentColor" />
+            )}
           </button>
-          <button type="button" aria-label={ar ? 'التالي' : 'Next'} onClick={() => next()}>
+          <button
+            type="button"
+            aria-label={ar ? 'التالي' : 'Next'}
+            onClick={() => next()}
+          >
             <SkipForward size={19} fill="currentColor" />
           </button>
-          <button type="button" aria-label={ar ? 'التكرار' : 'Repeat'} title={repeat} className={repeat !== 'off' ? 'mp2-active' : ''} onClick={cycleRepeat}>
+          <button
+            type="button"
+            aria-label={ar ? 'التكرار' : 'Repeat'}
+            title={repeat}
+            className={repeat !== 'off' ? 'mp2-active' : ''}
+            onClick={cycleRepeat}
+          >
             <Repeat2 size={17} />
           </button>
         </div>
-        {track ? <PlayerSeekProgress rtl={ar} label={ar ? 'موضع التشغيل' : 'Seek'} /> : <div className="mp2-player-inactive-progress" />}
+        {track ? (
+          <PlayerSeekProgress rtl={ar} label={ar ? 'موضع التشغيل' : 'Seek'} />
+        ) : (
+          <div className="mp2-player-inactive-progress" />
+        )}
       </div>
       <div className="mp2-player-extra">
-        <button type="button" onClick={showQueue} aria-label={ar ? 'قائمة التشغيل' : 'Queue'}>
+        <button
+          type="button"
+          onClick={showQueue}
+          aria-label={ar ? 'قائمة التشغيل' : 'Queue'}
+        >
           <ListMusic size={19} />
         </button>
         <Volume2 size={18} aria-hidden="true" />
