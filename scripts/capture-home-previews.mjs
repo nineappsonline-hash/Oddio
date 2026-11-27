@@ -10,6 +10,13 @@ const variants = [
   { locale: 'en', label: 'mobile', width: 390, height: 844 },
 ];
 
+const browseVariants = [
+  { locale: 'ar', route: 'discover', label: 'desktop', width: 1440, height: 960 },
+  { locale: 'ar', route: 'podcasts', label: 'mobile', width: 390, height: 844 },
+  { locale: 'en', route: 'search', label: 'desktop', width: 1440, height: 960 },
+  { locale: 'en', route: 'genres', label: 'mobile', width: 390, height: 844 },
+];
+
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const measurements = [];
@@ -61,6 +68,46 @@ try {
       });
       measurements.push({ locale, label, ...sizes });
       process.stdout.write(`Captured ${locale}/${label}: overflow=${sizes.overflow}px\n`);
+    } finally {
+      await context.close();
+    }
+  }
+  for (const { locale, route, label, width, height } of browseVariants) {
+    const context = await browser.newContext({
+      viewport: { width, height },
+      deviceScaleFactor: 1,
+      reducedMotion: 'reduce',
+    });
+    const page = await context.newPage();
+    try {
+      const response = await page.goto(`${base}/${locale}/${route}`, {
+        waitUntil: 'domcontentloaded',
+        timeout: 30000,
+      });
+      if (response?.status() !== 200) {
+        throw new Error(`Unexpected ${locale}/${route} HTTP ${response?.status()}`);
+      }
+      await page.locator('.mp2-header').waitFor({ state: 'visible' });
+      await page.locator('.mp2-player').waitFor({ state: 'visible' });
+      await page.screenshot({
+        path: `${output}/${locale}-${route}-${label}.png`,
+        fullPage: true,
+        animations: 'disabled',
+      });
+      const geometry = await page.evaluate(() => ({
+        overflow: document.documentElement.scrollWidth - window.innerWidth,
+        playerBottom: Math.round(
+          window.innerHeight -
+            document.querySelector('.mp2-player').getBoundingClientRect().bottom,
+        ),
+        navItems: document.querySelectorAll('.mp2-sidebar a[aria-current="page"]')
+          .length,
+      }));
+      if (geometry.overflow > 2 || Math.abs(geometry.playerBottom) > 2) {
+        throw new Error(`Layout regression on ${locale}/${route}: ${JSON.stringify(geometry)}`);
+      }
+      measurements.push({ locale, route, label, ...geometry });
+      process.stdout.write(`Captured ${locale}/${route}/${label}\n`);
     } finally {
       await context.close();
     }
