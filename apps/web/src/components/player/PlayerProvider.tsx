@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlaybackEventInput } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
-import { canPrepareNextTrack, crossfadeGains } from '@/lib/audio-transitions';
+import { canPrepareNextTrack, crossfadeGains, isActiveAudioTransition } from '@/lib/audio-transitions';
 import { readDiscoveryExclusions } from '@/lib/discovery-preferences';
 import {
   recoverablePlaybackPosition,
@@ -753,15 +753,23 @@ export function PlayerProvider({
         !isPodcastPlayback(queued)
       ) {
         const warmId = queued.id;
+        const sourceId = state.track?.id ?? null;
         if (warmedRef.current?.trackId !== warmId && warmingRef.current !== warmId) {
           warmingRef.current = warmId;
           void apiRequest<PlaybackAuthorization>(`/api/tracks/${warmId}/playback`, {
             method: 'POST',
           })
             .then((result) => {
+              const latest = usePlayer.getState();
               if (
                 warmingRef.current !== warmId ||
-                usePlayer.getState().queue[0]?.id !== warmId
+                !isActiveAudioTransition({
+                  sourceTrackId: sourceId,
+                  nextTrackId: warmId,
+                  activeTrackId: latest.track?.id ?? null,
+                  activeNextTrackId: latest.queue[0]?.id ?? null,
+                  playing: latest.isPlaying,
+                })
               )
                 return;
               warmedRef.current = { trackId: warmId, result };
@@ -792,13 +800,30 @@ export function PlayerProvider({
           !crossfadingRef.current &&
           standby.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
         ) {
+          const sourceId = state.track?.id ?? null;
+          const nextId = queued.id;
           standby.currentTime = 0;
           standby.volume = 0;
           void standby
             .play()
             .then(() => {
+              const latest = usePlayer.getState();
+              if (
+                !isActiveAudioTransition({
+                  sourceTrackId: sourceId,
+                  nextTrackId: nextId,
+                  activeTrackId: latest.track?.id ?? null,
+                  activeNextTrackId: latest.queue[0]?.id ?? null,
+                  playing: latest.isPlaying,
+                })
+              ) {
+                // The play promise settled after a manual change or pause.
+                // Never resurrect the now-unwanted standby audio element.
+                standby.pause();
+                return;
+              }
               crossfadingRef.current = true;
-              crossfadeTargetRef.current = queued.id;
+              crossfadeTargetRef.current = nextId;
             })
             .catch(() => undefined);
         }
