@@ -390,8 +390,8 @@ body:has(.oddio-magicpath-home) .oddio-player-bar.oddio-top-mini-player {
 
 /* Oddio Graphite + Blue: monochrome foundation with precise azure typography. */
 body:has(.oddio-magicpath-home) {
-  --oddio-v2-magenta: #579fee;
-  --oddio-v2-lavender: #81c4ff;
+  --oddio-v2-magenta: #3975c6;
+  --oddio-v2-lavender: #5489d1;
 }
 .oddio-magicpath-welcome h2,
 .oddio-magicpath-home .oddio-section-title-row h2 {
@@ -400,10 +400,10 @@ body:has(.oddio-magicpath-home) {
 .oddio-magicpath-welcome h2 span,
 .oddio-magicpath-overline,
 .oddio-magicpath-home .oddio-v2-hero-copy h1 span {
-  color: #77bdff;
+  color: #4e83ca;
 }
 .oddio-magicpath-home .oddio-v2-hero-copy h1 span {
-  background-image: linear-gradient(110deg, #dceeff 0%, #70b8ff 72%, #4e96e8 100%);
+  background-image: linear-gradient(110deg, #f2f5fb 0%, #578bd0 72%, #2d67b1 100%);
 }
 .oddio-magicpath-home .oddio-v2-cinematic-hero {
   background: linear-gradient(105deg, #161d25, #101316 64%, #172431);
@@ -419,7 +419,7 @@ body:has(.oddio-magicpath-home) {
   box-shadow: 0 0 42px rgba(43, 132, 224, 0.12);
 }
 .oddio-magicpath-home .oddio-v2-hero-button {
-  background: linear-gradient(120deg, #67b4ff, #3588df);
+  background: linear-gradient(120deg, #3975c6, #20549b);
   color: #081522;
   border-color: rgba(170, 216, 255, 0.65);
   box-shadow: 0 9px 24px rgba(52, 139, 227, 0.17);
@@ -427,11 +427,15 @@ body:has(.oddio-magicpath-home) {
 .oddio-magicpath-home .oddio-v2-hero-shortcuts a:hover,
 .oddio-magicpath-home .oddio-section-title-row a:hover,
 .oddio-magicpath-welcome-action:hover {
-  color: #8cc7ff;
+  color: #5488cd;
 }
 .oddio-magicpath-home .oddio-genre-tile:focus-visible {
-  outline-color: #81c4ff;
+  outline-color: #5489d1;
 }
 .oddio-magicpath-home .oddio-genre-tile:hover {
   border-color: rgba(116, 191, 255, 0.65);
 }
+
+/* Deep Blue contrast: muted cobalt buttons and restrained editorial accents. */
+.oddio-magicpath-home .oddio-v2-hero-button {background:linear-gradient(120deg,#3975c6,#20549b);color:#fff;border-color:#4a76ad;box-shadow:0 8px 22px rgba(20,65,120,.17)}
+.oddio-magicpath-home .oddio-v2-hero-copy h1 span {background-image:linear-gradient(105deg,#eff4fb,#5688c9 78%,#326bae)}
