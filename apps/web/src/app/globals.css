@@ -2716,3 +2716,60 @@ body {
     transition: none;
   }
 }
+
+
+/* Desktop volume: native input semantics with Oddio's gradient rail.
+   The 28px hit-area stays generous while its visible rail stays compact. */
+.oddio-desktop-volume-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  accent-color: #a45cff;
+}
+.oddio-desktop-volume-slider::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    #a45cff 0%,
+    #f43db4 var(--oddio-volume-progress, 80%),
+    rgba(232, 214, 255, .23) var(--oddio-volume-progress, 80%),
+    rgba(232, 214, 255, .23) 100%
+  );
+}
+.oddio-desktop-volume-slider::-moz-range-track {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(232, 214, 255, .23);
+}
+.oddio-desktop-volume-slider::-moz-range-progress {
+  height: 5px;
+  border-radius: 999px;
+  background: #a45cff;
+}
+.oddio-desktop-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -4.5px;
+  border-radius: 50%;
+  border: 2px solid #e2c8ff;
+  background: #af63f3;
+  box-shadow: 0 0 10px rgba(157, 92, 255, .48);
+}
+.oddio-desktop-volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #e2c8ff;
+  background: #af63f3;
+}
+.oddio-desktop-volume-slider:focus-visible {
+  outline: 2px solid #c180ff;
+  outline-offset: 3px;
+}
