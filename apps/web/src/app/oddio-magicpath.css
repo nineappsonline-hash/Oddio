@@ -407,22 +407,22 @@ body:has(.oddio-magicpath-home) {
 }
 .oddio-magicpath-home .oddio-v2-cinematic-hero {
   background: linear-gradient(105deg, #161d25, #101316 64%, #172431);
-  border-color: rgba(95, 151, 206, 0.4);
+  border-color: rgba(64, 117, 129, 0.4);
 }
 .oddio-magicpath-home .oddio-v2-hero-art::before {
-  border-color: rgba(89, 167, 242, 0.48);
+  border-color: rgba(59, 124, 137, 0.48);
   background: radial-gradient(
     circle at center,
-    rgba(47, 116, 189, 0.14),
+    rgba(32, 89, 100, 0.14),
     transparent 72%
   );
-  box-shadow: 0 0 42px rgba(43, 132, 224, 0.12);
+  box-shadow: 0 0 42px rgba(26, 98, 110, 0.12);
 }
 .oddio-magicpath-home .oddio-v2-hero-button {
   background: linear-gradient(120deg, #2c6875, #16424e);
   color: #081522;
-  border-color: rgba(170, 216, 255, 0.65);
-  box-shadow: 0 9px 24px rgba(52, 139, 227, 0.17);
+  border-color: rgba(104, 153, 162, 0.65);
+  box-shadow: 0 9px 24px rgba(24, 86, 99, 0.17);
 }
 .oddio-magicpath-home .oddio-v2-hero-shortcuts a:hover,
 .oddio-magicpath-home .oddio-section-title-row a:hover,
@@ -433,7 +433,7 @@ body:has(.oddio-magicpath-home) {
   outline-color: #598b95;
 }
 .oddio-magicpath-home .oddio-genre-tile:hover {
-  border-color: rgba(116, 191, 255, 0.65);
+  border-color: rgba(81, 151, 161, 0.65);
 }
 
 /* Deep Blue contrast: muted cobalt buttons and restrained editorial accents. */
@@ -441,7 +441,7 @@ body:has(.oddio-magicpath-home) {
   background: linear-gradient(120deg, #2c6875, #16424e);
   color: #fff;
   border-color: #467480;
-  box-shadow: 0 8px 22px rgba(20, 65, 120, 0.17);
+  box-shadow: 0 8px 22px rgba(18, 69, 79, 0.17);
 }
 .oddio-magicpath-home .oddio-v2-hero-copy h1 span {
   background-image: linear-gradient(105deg, #eff4fb, #578994 78%, #2b606d);
