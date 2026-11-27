@@ -44,11 +44,15 @@ export function PlayerVolumeControl({
   useEffect(() => {
     const slider = sliderRef.current;
     if (slider && document.activeElement !== slider) {
+      // Keep the pointer-up/blur commit aligned with external mute, volume,
+      // account restore or media-key updates. Otherwise blur can rewind volume
+      // to the value that was present when this component first mounted.
+      pendingRef.current = muted ? 0 : volume;
       slider.value = String(pct);
       slider.style.setProperty('--oddio-volume-progress', `${pct}%`);
     }
     if (outputRef.current) outputRef.current.textContent = String(pct);
-  }, [pct]);
+  }, [pct, muted, volume]);
 
   const updateFromInput = (element: HTMLInputElement) => {
     const value = Math.max(0, Math.min(100, Number(element.value)));
@@ -170,8 +174,9 @@ export function PlayerVolumeControl({
           onInput={(event) => updateFromInput(event.currentTarget)}
           onChange={(event) => updateFromInput(event.currentTarget)}
           onPointerUp={finishDrag}
+          onPointerCancel={finishDrag}
           onBlur={finishDrag}
-          className={mobile ? 'oddio-glass-volume-slider w-full' : 'w-12 sm:w-20 xl:w-24'}
+          className={mobile ? 'oddio-glass-volume-slider w-full' : 'oddio-desktop-volume-slider w-12 sm:w-20 xl:w-24'}
           style={{ '--oddio-volume-progress': `${pct}%` } as CSSProperties}
           aria-label={rtl ? 'مستوى الصوت' : 'Volume level'}
           title={label}
