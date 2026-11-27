@@ -387,3 +387,48 @@ body:has(.oddio-magicpath-home) .oddio-player-bar.oddio-top-mini-player {
     z-index: 5;
   }
 }
+
+
+/* Oddio Graphite + Blue: monochrome foundation with precise azure typography. */
+body:has(.oddio-magicpath-home) {
+  --oddio-v2-magenta: #579fee;
+  --oddio-v2-lavender: #81c4ff;
+}
+.oddio-magicpath-welcome h2,
+.oddio-magicpath-home .oddio-section-title-row h2 {
+  color: #f5f7fb;
+}
+.oddio-magicpath-welcome h2 span,
+.oddio-magicpath-overline,
+.oddio-magicpath-home .oddio-v2-hero-copy h1 span {
+  color: #77bdff;
+}
+.oddio-magicpath-home .oddio-v2-hero-copy h1 span {
+  background-image: linear-gradient(110deg, #dceeff 0%, #70b8ff 72%, #4e96e8 100%);
+}
+.oddio-magicpath-home .oddio-v2-cinematic-hero {
+  background: linear-gradient(105deg, #161d25, #101316 64%, #172431);
+  border-color: rgba(95, 151, 206, 0.4);
+}
+.oddio-magicpath-home .oddio-v2-hero-art::before {
+  border-color: rgba(89, 167, 242, 0.48);
+  background: radial-gradient(circle at center, rgba(47, 116, 189, 0.14), transparent 72%);
+  box-shadow: 0 0 42px rgba(43, 132, 224, 0.12);
+}
+.oddio-magicpath-home .oddio-v2-hero-button {
+  background: linear-gradient(120deg, #67b4ff, #3588df);
+  color: #081522;
+  border-color: rgba(170, 216, 255, 0.65);
+  box-shadow: 0 9px 24px rgba(52, 139, 227, 0.17);
+}
+.oddio-magicpath-home .oddio-v2-hero-shortcuts a:hover,
+.oddio-magicpath-home .oddio-section-title-row a:hover,
+.oddio-magicpath-welcome-action:hover {
+  color: #8cc7ff;
+}
+.oddio-magicpath-home .oddio-genre-tile:focus-visible {
+  outline-color: #81c4ff;
+}
+.oddio-magicpath-home .oddio-genre-tile:hover {
+  border-color: rgba(116, 191, 255, 0.65);
+}
