@@ -1,6 +1,6 @@
 import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
-import { ArrowRight, ArrowUpRight, Disc3 } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Disc3, Headphones, Sparkles } from 'lucide-react';
 import type { Locale } from '@ai-music/contracts';
 import { getHomeData } from '@/lib/data/queries';
 import { recommendTracks } from '@/lib/data/recommendations';
@@ -28,6 +28,7 @@ import { PlaylistCard } from '@/components/music/PlaylistCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { notFound } from 'next/navigation';
 import { OddioGlyph } from '@/components/ui/OddioGlyph';
+import '../oddio-magicpath.css';
 
 export async function generateMetadata({
   params,
@@ -86,7 +87,28 @@ export default async function HomePage({
     ar ? item.labelAr : item.labelEn;
 
   return (
-    <div className="oddio-home-dashboard">
+    <div className="oddio-home-dashboard oddio-magicpath-home">
+      <div className="oddio-magicpath-welcome">
+        <div>
+          <p className="oddio-magicpath-overline">
+            <Sparkles size={14} aria-hidden="true" />
+            {ar ? 'أهلاً بيك في عالم Oddio' : 'WELCOME TO YOUR ODDIO UNIVERSE'}
+          </p>
+          <h2>
+            {ar ? 'الموسيقى ' : 'Music for '}
+            <span>{ar ? 'على مزاجك.' : 'your mood.'}</span>
+          </h2>
+          <p>
+            {ar
+              ? 'أصوات جديدة، لحظات مميزة، وموسيقى تحكي قصتك.'
+              : 'Fresh sounds, unforgettable moments, and music that tells your story.'}
+          </p>
+        </div>
+        <Link className="oddio-magicpath-welcome-action" href={`/${locale}/soundspace`}>
+          <Headphones size={16} aria-hidden="true" />
+          {ar ? 'اسمع اللي يشبهك' : 'Find your sound'}
+        </Link>
+      </div>
       <section
         className="oddio-v2-cinematic-hero"
         aria-label={ar ? 'ابدأ رحلتك الموسيقية' : 'Your listening journey starts here'}
