@@ -69,18 +69,19 @@ Images are bundled in the handoff archive delivered with this plan. Figma master
 - This corrects a specific testable defect; it does **not** yet verify live media audio output or Figma screenshot parity.
 - Follow-up required: green GitHub Actions verify/browser/database on current head, successful Vercel preview, dependency advisory review.
 
-
 ## MagicPath visual migration — 2026-11-27
 
 **Approved visual direction:** MagicPath component `quiet-lake-7477` in project `477175160743534592` (Oddio 2.0 — Premium Music Experience). Preview: https://designs.magicpath.ai/v1/quiet-lake-7477
 
 ### Implemented
+
 - Added a dedicated home-only MagicPath visual layer `apps/web/src/app/oddio-magicpath.css` and a bilingual welcome section in `apps/web/src/app/[locale]/page.tsx`.
 - Redesigned home page chrome using the MagicPath color, spacing and elevation system: navigation panel, top search, actual Now Playing/queue rail, active mini-player, immersive hero, and colored genre tiles.
 - Preserved real Supabase/catalog data, streaming playback, signed Cloudflare audio URLs, existing routing and interactive actions. No MagicPath dummy music, fake sign-in controls, or image dependencies were copied into the production code.
 - The MagicPath reference's intended fixed-bottom player requires separate interaction/mobile QA because the current site uses a sticky top mini-player and its browser tests assume that layout. This first migration deliberately preserves its functional behavior.
 
 ### Remaining validation / work
+
 - Confirm Vercel build, Github CI (including responsive browser flows), visual screenshots at desktop and mobile widths.
 - Continue migrating navigation and player geometry beyond styling, and implement an authentic responsive bottom player with no footer overlap once behavior is tested.
 - Align English copy and podcast browsing in the next dedicated component, not by sending users to fake mock routes.
