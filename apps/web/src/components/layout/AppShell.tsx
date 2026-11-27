@@ -10,6 +10,13 @@ import { PlayerBar } from '@/components/player/PlayerBar';
 import { DeferredFullPlayer } from '@/components/player/DeferredFullPlayer';
 import { DesktopTopBar } from '@/components/layout/DesktopTopBar';
 import { DesktopChrome } from '@/components/layout/DesktopChrome';
+import {
+  MagicPathHomeSidebar,
+  MagicPathHomeHeader,
+  MagicPathHomeListeningRail,
+  MagicPathHomeBottomPlayer,
+} from '@/components/layout/MagicPathHomeChrome';
+import '@/components/layout/magicpath-home-shell.css';
 import { MobileHeader, MobileNav } from '@/components/layout/MobileNav';
 import { Footer } from '@/components/layout/Footer';
 import { useLocalePath } from '@/lib/use-locale-path';
@@ -40,6 +47,7 @@ export function AppShell({
 }) {
   const t = useT();
   const { pathname } = useLocalePath();
+  const homeMode = pathname === `/${locale}` || pathname === `/${locale}/`;
   const podcastMode =
     pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   return (
@@ -54,13 +62,30 @@ export function AppShell({
             {locale === 'ar' ? 'تخطَّ إلى المحتوى الرئيسي' : 'Skip to main content'}
           </a>
           <AmbientBackground />
-          <DesktopChrome user={user} podcastMode={podcastMode} />
+          {homeMode ? (
+            <>
+              <MagicPathHomeSidebar locale={locale} user={user} />
+              <MagicPathHomeListeningRail locale={locale} />
+            </>
+          ) : (
+            <DesktopChrome user={user} podcastMode={podcastMode} />
+          )}
           <div
-            className={`oddio-workspace relative z-10 w-full min-w-0 max-w-full overflow-x-clip lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}
+            className={`oddio-workspace relative z-10 w-full min-w-0 max-w-full overflow-x-clip ${homeMode ? 'mp2-workspace' : `lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}`}
           >
-            <MobileHeader user={user} contentLanguage={contentLanguage} />
-            <DesktopTopBar contentLanguage={contentLanguage} />
-            <PlayerBar podcastMode={podcastMode} />
+            {homeMode ? (
+              <MagicPathHomeHeader
+                locale={locale}
+                user={user}
+                contentLanguage={contentLanguage}
+              />
+            ) : (
+              <>
+                <MobileHeader user={user} contentLanguage={contentLanguage} />
+                <DesktopTopBar contentLanguage={contentLanguage} />
+                <PlayerBar podcastMode={podcastMode} />
+              </>
+            )}
             <main
               id="main"
               tabIndex={-1}
@@ -70,8 +95,9 @@ export function AppShell({
             </main>
             <Footer locale={locale} />
           </div>
+          {homeMode ? <MagicPathHomeBottomPlayer locale={locale} /> : null}
           <DeferredFullPlayer />
-          <MobileNav />
+          {!homeMode ? <MobileNav /> : null}
           {user ? (
             <FavoriteGenresSelector mode="welcome" locale={locale} userId={user.id} />
           ) : null}
