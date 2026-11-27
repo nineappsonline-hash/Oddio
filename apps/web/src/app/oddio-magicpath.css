@@ -288,3 +288,100 @@ body:has(.oddio-magicpath-home) .oddio-player-bar.oddio-top-mini-player {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Visual QA: reveal discovery sooner; reference hero is a compact neon halo,
+   not the previous 600px-tall stacked-cover promotion. */
+.oddio-magicpath-home .oddio-v2-cinematic-hero {
+  min-height: 420px;
+}
+.oddio-magicpath-home .oddio-v2-hero-layout {
+  min-height: 0;
+  height: 420px;
+  padding: 26px 30px;
+  grid-template-columns: minmax(0, 1.12fr) minmax(210px, 0.88fr);
+}
+.oddio-magicpath-home .oddio-v2-hero-copy h1 {
+  font-size: clamp(34px, 3.15vw, 48px);
+  line-height: 1.17;
+}
+.oddio-magicpath-home .oddio-v2-hero-copy .oddio-v2-eyebrow {
+  margin-bottom: 12px;
+}
+.oddio-magicpath-home .oddio-v2-hero-copy .oddio-v2-hero-description {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.oddio-magicpath-home .oddio-v2-hero-actions {
+  margin-top: 17px;
+}
+.oddio-magicpath-home .oddio-v2-hero-art {
+  width: min(100%, 315px);
+  aspect-ratio: 1;
+}
+.oddio-magicpath-home .oddio-v2-hero-art::before {
+  content: '';
+  position: absolute;
+  width: 92%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(192, 83, 246, 0.47);
+  background: radial-gradient(
+    circle at 52% 49%,
+    rgba(32, 14, 51, 0.08) 30%,
+    rgba(153, 48, 204, 0.14) 65%,
+    rgba(36, 10, 63, 0.42) 100%
+  );
+  box-shadow: 0 0 75px rgba(173, 52, 222, 0.21);
+}
+.oddio-magicpath-home .oddio-v2-hero-art .oddio-v2-art-front,
+.oddio-magicpath-home .oddio-v2-art-backplate {
+  display: none;
+}
+@media (max-width: 700px) {
+  .oddio-magicpath-home .oddio-v2-cinematic-hero {
+    min-height: 420px;
+  }
+  .oddio-magicpath-home .oddio-v2-hero-layout {
+    display: block;
+    height: auto;
+    min-height: 420px;
+    padding: 25px 20px;
+  }
+  .oddio-magicpath-home .oddio-v2-hero-copy h1 {
+    font-size: clamp(31px, 8.1vw, 39px);
+    line-height: 1.16;
+  }
+  .oddio-magicpath-home .oddio-v2-hero-copy .oddio-v2-hero-description {
+    margin-top: 12px;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .oddio-magicpath-home .oddio-v2-hero-actions {
+    margin-top: 16px;
+  }
+  .oddio-magicpath-home .oddio-v2-hero-art {
+    position: absolute;
+    left: -38px;
+    bottom: -125px;
+    width: 255px;
+    opacity: 0.44;
+    pointer-events: none;
+  }
+  [dir='ltr'] .oddio-magicpath-home .oddio-v2-hero-art {
+    left: auto;
+    right: -38px;
+  }
+  .oddio-magicpath-home .oddio-v2-art-caption {
+    display: none;
+  }
+  .oddio-magicpath-home .oddio-v2-hero-copy {
+    position: relative;
+    z-index: 4;
+  }
+  .oddio-magicpath-home .oddio-v2-hero-shortcuts {
+    position: relative;
+    z-index: 5;
+  }
+}
