@@ -51,3 +51,12 @@ Images are bundled in the handoff archive delivered with this plan. Figma master
 - Corrected volume slider's stale blur write: `PlayerVolumeControl` now commits only after actual input and retains the previous non-zero volume when muted. Volume range and mute state regression tests added to `player-store.test.ts`.
 - GitHub Actions CI runs on this draft PR (verify / browser / database). The newest commits still require green checks.
 - Dependency audit from Vercel still reports seven moderate and two high issues. Do not assume all vulnerabilities belong to production dependencies; inspect npm advisory details before upgrading.
+
+
+### CI regression discovered and addressed — 2026-11-27
+- GitHub Actions verify for commit `c8a4428` failed at `npm test` (222 of 223 tests passed); specifically `player-store.test.ts` expected `muted=true` when `setVolume(-0.1)` clamped the level to zero.
+- Root cause: `setVolume` computed `muted` from raw input (`volume === 0`) instead of the clamped value.
+- Fixed `player-store.ts`: clamp finite volumes to [0, 1], normalize non-finite input to 0, and derive `muted` from the normalized number.
+- Added coverage for NaN and Infinity, retained tests for clamping, and formatted the changed implementation.
+- This corrects a specific testable defect; it does **not** yet verify live media audio output or Figma screenshot parity.
+- Follow-up required: green GitHub Actions verify/browser/database on current head, successful Vercel preview, dependency advisory review.
