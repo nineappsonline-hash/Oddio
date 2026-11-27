@@ -169,8 +169,7 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
           <Link
             href={`/${locale}/library`}
             onClick={() => setOpen(false)}
-            aria-current={isCurrentRoute('/library') ? 'page' : undefined}
-            className={`mp2-nav-item ${isCurrentRoute('/library') ? 'mp2-nav-active' : ''}`}
+            className="mp2-nav-item"
           >
             <Heart size={18} /> {ar ? 'الأغاني المفضلة' : 'Liked songs'}
           </Link>
