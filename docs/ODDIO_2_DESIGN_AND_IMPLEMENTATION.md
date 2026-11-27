@@ -45,3 +45,9 @@ Images are bundled in the handoff archive delivered with this plan. Figma master
 - Added `isActiveAudioTransition` guard in `audio-transitions.ts`. Applied it to pending speculative authorization and asynchronous `standby.play()` completion in `PlayerProvider.tsx`.
 - Added four regression tests to `audio-transitions.test.ts` for active transitions, manual track change, pause/queue replacement, and missing source/target.
 - **Verification:** Vercel preview was BUILDING at inspection time, tests not yet confirmed, Figma visual verification blocked by Starter tool call limit. Keep PR as draft and do not deploy to production.
+
+### Player and visual verification update — 2026-11-27
+- Preview for `e6901ef` reached READY: Next.js production build completed, but real-device UX/audio QA remains outstanding.
+- Corrected volume slider's stale blur write: `PlayerVolumeControl` now commits only after actual input and retains the previous non-zero volume when muted. Volume range and mute state regression tests added to `player-store.test.ts`.
+- GitHub Actions CI runs on this draft PR (verify / browser / database). The newest commits still require green checks.
+- Dependency audit from Vercel still reports seven moderate and two high issues. Do not assume all vulnerabilities belong to production dependencies; inspect npm advisory details before upgrading.
