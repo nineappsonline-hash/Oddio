@@ -66,17 +66,28 @@ try {
           header: bounds('.mp2-header'),
         };
       });
-      const petrol = await page.locator('.mp2-player-controls > button.mp2-main-play').evaluate(
-        (button) => {
+      const petrol = await page
+        .locator('.mp2-player-controls > button.mp2-main-play')
+        .evaluate((button) => {
           const gradient = getComputedStyle(button).backgroundImage;
-          const rgb = gradient.match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/);
+          const rgb = gradient.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
           return rgb
-            ? { red: Number(rgb[1]), green: Number(rgb[2]), blue: Number(rgb[3]), gradient }
+            ? {
+                red: Number(rgb[1]),
+                green: Number(rgb[2]),
+                blue: Number(rgb[3]),
+                gradient,
+              }
             : null;
-        },
-      );
-      if (!petrol || petrol.green < petrol.red + 20 || Math.abs(petrol.blue - petrol.green) > 22) {
-        throw new Error(`Petrol player theme regression on ${locale}/${label}: ${JSON.stringify(petrol)}`);
+        });
+      if (
+        !petrol ||
+        petrol.green < petrol.red + 20 ||
+        Math.abs(petrol.blue - petrol.green) > 22
+      ) {
+        throw new Error(
+          `Petrol player theme regression on ${locale}/${label}: ${JSON.stringify(petrol)}`,
+        );
       }
       measurements.push({ locale, label, ...sizes, petrolPlayer: petrol });
       process.stdout.write(`Captured ${locale}/${label}: overflow=${sizes.overflow}px\n`);
