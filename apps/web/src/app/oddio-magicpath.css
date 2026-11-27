@@ -289,7 +289,6 @@ body:has(.oddio-magicpath-home) .oddio-player-bar.oddio-top-mini-player {
   }
 }
 
-
 /* Visual QA: reveal discovery sooner; reference hero is a compact neon halo,
    not the previous 600px-tall stacked-cover promotion. */
 .oddio-magicpath-home .oddio-v2-cinematic-hero {
