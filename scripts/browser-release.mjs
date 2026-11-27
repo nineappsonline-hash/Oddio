@@ -55,40 +55,25 @@ try {
         assert.equal(response?.status(), 200);
         await page.locator('.oddio-home-feature-grid').waitFor();
         assert.equal(await page.locator('.oddio-featured-stage').count(), 1);
-        assert.equal(await page.locator('.oddio-topbar-search').count(), 1);
-        // Desktop-only rail is a deferred chunk. Wait for the settled
-        // breakpoint state instead of sampling while WebKit is hydrating.
+        // MagicPath home has genuinely new shell geometry (not just CSS skin).
+        await page.locator('.mp2-header .mp2-search').waitFor({ state: 'visible' });
         await page.waitForFunction(
-          (expectedVisible) => {
-            const rail = document.querySelector('.oddio-listening-rail');
+          (expectRail) => {
+            const rail = document.querySelector('.mp2-listening');
             if (!rail) return false;
-            const style = getComputedStyle(rail);
-            const rect = rail.getBoundingClientRect();
-            const visible =
-              style.display !== 'none' &&
-              style.visibility !== 'hidden' &&
-              rect.width > 0 &&
-              rect.height > 0;
-            return visible === expectedVisible;
+            const bounds = rail.getBoundingClientRect();
+            const visible = getComputedStyle(rail).display !== 'none' && bounds.width > 0;
+            return visible === expectRail;
           },
-          viewport.width >= 1320,
-          { timeout: 15000 },
+          viewport.width > 1120,
         );
-        // A visibility assertion is resilient to client hydration replacing the
-        // initially hidden rail placeholder with its desktop component.
-        if (viewport.width >= 1320) {
-          await page.locator('.oddio-listening-rail:visible').waitFor();
-        } else {
-          await page.locator('.oddio-listening-rail:visible').waitFor({
-            state: 'hidden',
-          });
-        }
-        assert.equal(
-          await page.locator('.oddio-topbar-search').isVisible(),
-          viewport.width >= 1024,
-          'Persistent search should appear on desktop, not inside mobile chrome',
-        );
-        await page.locator('.oddio-idle-player').waitFor({ state: 'visible' });
+        await page.locator('.mp2-player:visible').waitFor();
+        const playerGeometry = await page.locator('.mp2-player').evaluate((node) => {
+          const rect = node.getBoundingClientRect();
+          return { bottom: window.innerHeight - rect.bottom, position: getComputedStyle(node).position };
+        });
+        assert.equal(playerGeometry.position, 'fixed');
+        assert.ok(Math.abs(playerGeometry.bottom) <= 2, 'player must stay on viewport bottom');
         assert.equal(await page.locator('.oddio-home-intro h1').count(), 1);
         assert.equal(await page.locator('.oddio-home-dashboard').count(), 1);
         const overflow = await page.evaluate(
@@ -171,16 +156,14 @@ try {
         const play = page.locator('.oddio-stage-play');
         await play.waitFor({ state: 'visible' });
         await play.click();
-        const mini = page.getByRole('region', {
-          name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
-        });
+        const mini = page.locator('.mp2-player[role="region"]');
         await mini.waitFor({ state: 'visible' });
         // The mobile mini-player includes a full-size background hotspot
         // under the title and controls; click its actual visible expand
         // control, rather than the covered background hotspot.
         await mini
           .getByRole('button', { name: /expand|كبّر|توسيع|تكبير|فتح/i })
-          .last()
+          .first()
           .click();
         const dialog = page.getByRole('dialog', { name: /player|مشغل/i });
         await dialog.waitFor({ state: 'visible' });
@@ -240,7 +223,7 @@ try {
         );
         const playerOverlapsFooter = await page.evaluate(() => {
           const footerContent = document.querySelector('footer > div:last-child');
-          const miniPlayer = document.querySelector('.oddio-player-bar[role="region"]');
+          const miniPlayer = document.querySelector('.mp2-player[role="region"]');
           if (!footerContent || !miniPlayer) return null;
           const footer = footerContent.getBoundingClientRect();
           const player = miniPlayer.getBoundingClientRect();
@@ -254,7 +237,7 @@ try {
             player.right > footer.left
           );
         });
-        assert.equal(playerOverlapsFooter, false, 'mini player visually overlaps footer');
+        assert.equal(playerOverlapsFooter, false, 'fixed bottom player must not cover footer content');
         const documentOverflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         );
@@ -959,7 +942,7 @@ try {
             'signed-in state must use persistent localStorage',
           );
           await page.reload({ waitUntil: 'domcontentloaded' });
-          const mini = page.getByRole('region', { name: /mini player/i });
+          const mini = page.locator('.mp2-player[role="region"]');
           await mini.waitFor({ state: 'visible' });
           assert.ok(
             await mini.getByRole('button', { name: /play|resume/i }).count(),
