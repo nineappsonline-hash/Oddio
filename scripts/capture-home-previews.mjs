@@ -100,11 +100,12 @@ try {
           window.innerHeight -
             document.querySelector('.mp2-player').getBoundingClientRect().bottom,
         ),
-        navItems: document.querySelectorAll('.mp2-sidebar a[aria-current="page"]')
-          .length,
+        navItems: document.querySelectorAll('.mp2-sidebar a[aria-current="page"]').length,
       }));
       if (geometry.overflow > 2 || Math.abs(geometry.playerBottom) > 2) {
-        throw new Error(`Layout regression on ${locale}/${route}: ${JSON.stringify(geometry)}`);
+        throw new Error(
+          `Layout regression on ${locale}/${route}: ${JSON.stringify(geometry)}`,
+        );
       }
       measurements.push({ locale, route, label, ...geometry });
       process.stdout.write(`Captured ${locale}/${route}/${label}\n`);

@@ -278,7 +278,9 @@ try {
           'selected song must remain in the bottom player across navigation',
         );
         assert.equal(
-          await page.locator('.mp2-sidebar a[aria-current="page"][href$="/discover"]').count(),
+          await page
+            .locator('.mp2-sidebar a[aria-current="page"][href$="/discover"]')
+            .count(),
           1,
           'current navigation item should follow the client route',
         );

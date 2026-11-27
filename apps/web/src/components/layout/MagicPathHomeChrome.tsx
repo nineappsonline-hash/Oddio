@@ -148,7 +148,11 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
             <Link
               key={path}
               href={`/${locale}${path}`}
-              aria-current={pathname === `/${locale}${path}` || (!path && pathname === `/${locale}/`) ? 'page' : undefined}
+              aria-current={
+                pathname === `/${locale}${path}` || (!path && pathname === `/${locale}/`)
+                  ? 'page'
+                  : undefined
+              }
               className={`mp2-nav-item ${pathname === `/${locale}${path}` || (!path && pathname === `/${locale}/`) ? 'mp2-nav-active' : ''}`}
               onClick={() => setOpen(false)}
             >
