@@ -268,18 +268,12 @@ try {
           (title) => document.body.textContent?.includes(title),
           selected.trim(),
         );
-        const storedTrack = await page.evaluate(() =>
-          Object.values(window.localStorage)
-            .filter((entry) => typeof entry === 'string')
-            .some((entry) => entry.includes('"title"')),
-        );
         // The UI should preserve the selected song even when the header and
         // player chrome change between the MagicPath home and other pages.
         assert.ok(
           await page.locator('.oddio-top-mini-player').getByText(selected.trim()).count(),
           'selected song must remain in the player when navigation changes its layout',
         );
-        void storedTrack;
       });
 
       // Isolate the audio player's pending network requests from unrelated
