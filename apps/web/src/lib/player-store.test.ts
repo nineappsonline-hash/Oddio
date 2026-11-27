@@ -104,4 +104,13 @@ describe('player volume state', () => {
     expect(usePlayer.getState().volume).toBe(0);
     expect(usePlayer.getState().muted).toBe(true);
   });
+
+  it('normalizes non-finite input without leaving an invalid slider value', () => {
+    usePlayer.getState().setVolume(Number.NaN);
+    expect(usePlayer.getState().volume).toBe(0);
+    expect(usePlayer.getState().muted).toBe(true);
+    usePlayer.getState().setVolume(Number.POSITIVE_INFINITY);
+    expect(usePlayer.getState().volume).toBe(0);
+    expect(usePlayer.getState().muted).toBe(true);
+  });
 });
