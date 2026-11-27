@@ -152,7 +152,16 @@ jobs:
             cat /tmp/oddio-browser-server.log
             exit 1
           fi
+          SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/capture-home-previews.mjs
           for browser in chromium firefox webkit; do
             BROWSER_ENGINE="$browser" SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/browser-release.mjs
           done
           SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/mobile-performance.mjs
+      - name: Save Oddio visual QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oddio-magicpath-visual-qa
+          path: artifacts/oddio-magicpath/
+          if-no-files-found: warn
+          retention-days: 7
