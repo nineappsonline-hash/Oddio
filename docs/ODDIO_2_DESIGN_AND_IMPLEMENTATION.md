@@ -36,5 +36,12 @@ Images are bundled in the handoff archive delivered with this plan. Figma master
 - [x] Saved this design contract and delivery plan alongside existing UX roadmap.
 - [x] Created new Figma design file as reference workspace.
 - [ ] Reproduce the referenced screens as editable Figma layers and verify visually.
-- [ ] Audit current player regression, fix with unit/E2E tests.
+- [x] Audited speculative track warmup and asynchronous crossfade; added a source/next-track continuity guard with four unit cases (tests committed, not yet run).
+- [ ] Confirm unit tests, TypeScript and Next.js build on preview CI; verify playback on real browser/device.
 - [ ] Apply validated screen changes only after Figma review.
+
+## Implementation update — 2026-11-27
+- Extended visual styling in `apps/web/src/app/globals.css` with scoped Oddio 2.0 hero, genre-card, glass and responsive rules.
+- Added `isActiveAudioTransition` guard in `audio-transitions.ts`. Applied it to pending speculative authorization and asynchronous `standby.play()` completion in `PlayerProvider.tsx`.
+- Added four regression tests to `audio-transitions.test.ts` for active transitions, manual track change, pause/queue replacement, and missing source/target.
+- **Verification:** Vercel preview was BUILDING at inspection time, tests not yet confirmed, Figma visual verification blocked by Starter tool call limit. Keep PR as draft and do not deploy to production.
