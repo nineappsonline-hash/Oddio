@@ -301,7 +301,7 @@ body:has(.oddio-magicpath-home) .oddio-player-bar.oddio-top-mini-player {
   grid-template-columns: minmax(0, 1.12fr) minmax(210px, 0.88fr);
 }
 .oddio-magicpath-home .oddio-v2-hero-copy h1 {
-  font-size: clamp(34px, 3.15vw, 48px);
+  font-size: clamp(34px, 3.15vw, 44px);
   line-height: 1.17;
 }
 .oddio-magicpath-home .oddio-v2-hero-copy .oddio-v2-eyebrow {
@@ -314,6 +314,10 @@ body:has(.oddio-magicpath-home) .oddio-player-bar.oddio-top-mini-player {
 }
 .oddio-magicpath-home .oddio-v2-hero-actions {
   margin-top: 17px;
+}
+.oddio-magicpath-home .oddio-v2-hero-shortcuts {
+  margin-top: 14px;
+  gap: 8px 14px;
 }
 .oddio-magicpath-home .oddio-v2-hero-art {
   width: min(100%, 315px);
