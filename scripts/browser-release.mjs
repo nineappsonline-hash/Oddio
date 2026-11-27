@@ -257,7 +257,9 @@ try {
       await test(`${label} player keeps selected track across client-side navigation`, async () => {
         await page.goto(`${base}/${locale}`, { waitUntil: 'domcontentloaded' });
         await page.locator('.oddio-stage-play').click();
-        const selected = await page.locator('.mp2-player-track-name strong').textContent();
+        const selected = await page
+          .locator('.mp2-player-track-name strong')
+          .textContent();
         assert.ok(selected?.trim(), 'track should be selected before navigating');
         if (viewport.width === 390) {
           await page.locator('#oddio-mobile-menu-trigger').click();
