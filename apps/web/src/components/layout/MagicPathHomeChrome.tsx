@@ -58,6 +58,10 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
   const [open, setOpen] = useState(false);
   const ar = locale === 'ar';
   const pathname = usePathname();
+  const isCurrentRoute = (route: string) =>
+    pathname === `/${locale}${route}` ||
+    (!route && pathname === `/${locale}/`) ||
+    (!!route && pathname.startsWith(`/${locale}${route}/`));
   const drawerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -149,11 +153,11 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
               key={path}
               href={`/${locale}${path}`}
               aria-current={
-                pathname === `/${locale}${path}` || (!path && pathname === `/${locale}/`)
+                isCurrentRoute(path)
                   ? 'page'
                   : undefined
               }
-              className={`mp2-nav-item ${pathname === `/${locale}${path}` || (!path && pathname === `/${locale}/`) ? 'mp2-nav-active' : ''}`}
+              className={`mp2-nav-item ${isCurrentRoute(path) ? 'mp2-nav-active' : ''}`}
               onClick={() => setOpen(false)}
             >
               <Icon size={19} aria-hidden="true" />
@@ -169,7 +173,8 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
           <Link
             href={`/${locale}/library`}
             onClick={() => setOpen(false)}
-            className="mp2-nav-item"
+            aria-current={isCurrentRoute('/library') ? 'page' : undefined}
+            className={`mp2-nav-item ${isCurrentRoute('/library') ? 'mp2-nav-active' : ''}`}
           >
             <Heart size={18} /> {ar ? 'الأغاني المفضلة' : 'Liked songs'}
           </Link>
