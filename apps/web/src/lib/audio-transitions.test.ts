@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { crossfadeGains, canPrepareNextTrack, isActiveAudioTransition } from './audio-transitions';
+import {
+  crossfadeGains,
+  canPrepareNextTrack,
+  isActiveAudioTransition,
+} from './audio-transitions';
 
 describe('audio transition safety', () => {
   it('uses equal power with correct start and end amplitudes', () => {
@@ -77,15 +81,13 @@ describe('stale async playback transitions', () => {
 
   it('rejects a crossfade play promise after pause or queue replacement', () => {
     expect(isActiveAudioTransition({ ...candidate, playing: false })).toBe(false);
-    expect(
-      isActiveAudioTransition({ ...candidate, activeNextTrackId: 'song-d' }),
-    ).toBe(false);
+    expect(isActiveAudioTransition({ ...candidate, activeNextTrackId: 'song-d' })).toBe(
+      false,
+    );
   });
 
   it('rejects a transition that no longer has an active source or target', () => {
-    expect(isActiveAudioTransition({ ...candidate, sourceTrackId: null })).toBe(
-      false,
-    );
+    expect(isActiveAudioTransition({ ...candidate, sourceTrackId: null })).toBe(false);
     expect(isActiveAudioTransition({ ...candidate, activeNextTrackId: null })).toBe(
       false,
     );

@@ -4,7 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlaybackEventInput } from '@ai-music/contracts';
 import { apiRequest } from '@/lib/client-api';
 import { usePlayer } from '@/lib/player-store';
-import { canPrepareNextTrack, crossfadeGains, isActiveAudioTransition } from '@/lib/audio-transitions';
+import {
+  canPrepareNextTrack,
+  crossfadeGains,
+  isActiveAudioTransition,
+} from '@/lib/audio-transitions';
 import { readDiscoveryExclusions } from '@/lib/discovery-preferences';
 import {
   recoverablePlaybackPosition,

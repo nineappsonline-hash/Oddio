@@ -185,7 +185,11 @@ export function PlayerVolumeControl({
           onPointerUp={finishDrag}
           onPointerCancel={finishDrag}
           onBlur={finishDrag}
-          className={mobile ? 'oddio-glass-volume-slider w-full' : 'oddio-desktop-volume-slider w-12 sm:w-20 xl:w-24'}
+          className={
+            mobile
+              ? 'oddio-glass-volume-slider w-full'
+              : 'oddio-desktop-volume-slider w-12 sm:w-20 xl:w-24'
+          }
           style={{ '--oddio-volume-progress': `${pct}%` } as CSSProperties}
           aria-label={rtl ? 'مستوى الصوت' : 'Volume level'}
           title={label}

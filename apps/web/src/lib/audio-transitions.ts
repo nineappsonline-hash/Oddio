@@ -31,7 +31,6 @@ export function canPrepareNextTrack(args: {
   );
 }
 
-
 /**
  * A speculative audio authorization or async play() completion is valid only
  * while the exact source/next-track pair that requested it remains active.

@@ -81,7 +81,6 @@ describe('reversible queue edits', () => {
   });
 });
 
-
 describe('player volume state', () => {
   beforeEach(() => {
     usePlayer.setState({ volume: 0.8, muted: false });

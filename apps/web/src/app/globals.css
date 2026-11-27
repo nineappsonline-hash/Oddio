@@ -49,7 +49,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid #C180FF;
+  outline: 2px solid #c180ff;
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -92,7 +92,7 @@ a {
   }
 
   .heading-gradient {
-    background: linear-gradient(110deg, #f7f7f7 12%, #D8B8FF 45%, #F43DB4 90%);
+    background: linear-gradient(110deg, #f7f7f7 12%, #d8b8ff 45%, #f43db4 90%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -2623,7 +2623,6 @@ body {
   }
 }
 
-
 /* Oddio 2.0 — homepage visual contract (desktop + mobile, EN + RTL).
    Kept separate from the legacy monochrome theme so the preview can be reviewed
    and reverted without disrupting layout or application behavior. */
@@ -2650,7 +2649,9 @@ body {
   color: #f2e6ff;
   border-color: rgba(157, 92, 255, 0.35);
   background: rgba(157, 92, 255, 0.08);
-  transition: background-color 200ms ease, border-color 200ms ease;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease;
 }
 .oddio-home-dashboard .oddio-intro-link:hover {
   background: rgba(157, 92, 255, 0.19);
@@ -2658,8 +2659,8 @@ body {
 }
 .oddio-home-dashboard .oddio-featured-stage {
   background:
-    radial-gradient(ellipse at 21% 30%, rgba(244, 61, 180, .33), transparent 38%),
-    radial-gradient(ellipse at 79% 50%, rgba(113, 49, 214, .52), transparent 48%),
+    radial-gradient(ellipse at 21% 30%, rgba(244, 61, 180, 0.33), transparent 38%),
+    radial-gradient(ellipse at 79% 50%, rgba(113, 49, 214, 0.52), transparent 48%),
     linear-gradient(116deg, #321242 0%, #1b103a 58%, #110e2d 100%);
   border-color: rgba(190, 130, 255, 0.26);
   border-radius: 24px;
@@ -2667,13 +2668,20 @@ body {
 }
 .oddio-home-dashboard .oddio-featured-stage::after {
   opacity: 0.55;
-  background: linear-gradient(125deg, rgba(255,255,255,.07), transparent 42%, rgba(255,83,180,.04));
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0.07),
+    transparent 42%,
+    rgba(255, 83, 180, 0.04)
+  );
 }
 .oddio-home-dashboard .oddio-featured-disc {
   opacity: 0.73;
-  border-color: rgba(226, 164, 255, .23);
+  border-color: rgba(226, 164, 255, 0.23);
   background: repeating-radial-gradient(circle, #120b2b 0 9px, #5c3088 10px 11px);
-  box-shadow: 0 0 0 22px rgba(178, 77, 255, .07), 0 0 0 50px rgba(244, 61, 180, .035);
+  box-shadow:
+    0 0 0 22px rgba(178, 77, 255, 0.07),
+    0 0 0 50px rgba(244, 61, 180, 0.035);
 }
 .oddio-home-dashboard .oddio-featured-copy h2 {
   color: #ffffff;
@@ -2685,13 +2693,18 @@ body {
 .oddio-home-dashboard .oddio-genre-tile {
   border-radius: 18px;
   border-color: rgba(190, 130, 255, 0.23);
-  box-shadow: 0 14px 30px -24px rgba(157,92,255,.52);
+  box-shadow: 0 14px 30px -24px rgba(157, 92, 255, 0.52);
 }
 .oddio-home-dashboard .oddio-genre-tile:hover {
-  border-color: rgba(225, 142, 255, .72);
+  border-color: rgba(225, 142, 255, 0.72);
 }
 .oddio-home-dashboard .oddio-genre-overlay {
-  background: linear-gradient(0deg, rgba(9, 7, 26, .88) 0%, rgba(23, 16, 45, .44) 55%, transparent 100%);
+  background: linear-gradient(
+    0deg,
+    rgba(9, 7, 26, 0.88) 0%,
+    rgba(23, 16, 45, 0.44) 55%,
+    transparent 100%
+  );
 }
 .oddio-home-dashboard .oddio-featured-tile {
   border-color: rgba(190, 130, 255, 0.25);
@@ -2704,7 +2717,7 @@ body {
   .oddio-home-dashboard .oddio-featured-stage {
     border-radius: 19px;
     background:
-      radial-gradient(ellipse at 100% 0%, rgba(244, 61, 180, .27), transparent 55%),
+      radial-gradient(ellipse at 100% 0%, rgba(244, 61, 180, 0.27), transparent 55%),
       linear-gradient(125deg, #28143f, #100c28);
   }
   .oddio-home-dashboard .oddio-featured-copy h2 {
@@ -2716,7 +2729,6 @@ body {
     transition: none;
   }
 }
-
 
 /* Desktop volume: native input semantics with Oddio's gradient rail.
    The 28px hit-area stays generous while its visible rail stays compact. */
@@ -2737,14 +2749,14 @@ body {
     to right,
     #a45cff 0%,
     #f43db4 var(--oddio-volume-progress, 80%),
-    rgba(232, 214, 255, .23) var(--oddio-volume-progress, 80%),
-    rgba(232, 214, 255, .23) 100%
+    rgba(232, 214, 255, 0.23) var(--oddio-volume-progress, 80%),
+    rgba(232, 214, 255, 0.23) 100%
   );
 }
 .oddio-desktop-volume-slider::-moz-range-track {
   height: 5px;
   border-radius: 999px;
-  background: rgba(232, 214, 255, .23);
+  background: rgba(232, 214, 255, 0.23);
 }
 .oddio-desktop-volume-slider::-moz-range-progress {
   height: 5px;
@@ -2760,7 +2772,7 @@ body {
   border-radius: 50%;
   border: 2px solid #e2c8ff;
   background: #af63f3;
-  box-shadow: 0 0 10px rgba(157, 92, 255, .48);
+  box-shadow: 0 0 10px rgba(157, 92, 255, 0.48);
 }
 .oddio-desktop-volume-slider::-moz-range-thumb {
   width: 14px;
