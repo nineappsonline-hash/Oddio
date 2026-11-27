@@ -1,0 +1,39 @@
+name: Oddio V2 formatting repair (temporary)
+on:
+  push:
+    branches: [feature/oddio-2-foundation]
+    paths:
+      - .github/workflows/oddio-v2-format-fix.yml
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply repository-pinned Prettier to files changed in Oddio V2
+        run: |
+          npx prettier --write \
+            apps/web/src/app/globals.css \
+            apps/web/src/components/player/PlayerProvider.tsx \
+            apps/web/src/components/player/PlayerVolumeControl.tsx \
+            apps/web/src/lib/audio-transitions.test.ts \
+            apps/web/src/lib/audio-transitions.ts \
+            apps/web/src/lib/player-store.test.ts \
+            apps/web/src/lib/player-store.ts \
+            docs/ODDIO_2_DESIGN_AND_IMPLEMENTATION.md
+      - name: Commit only formatting changes to the feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- apps/web/src/app/globals.css apps/web/src/components/player/PlayerProvider.tsx apps/web/src/components/player/PlayerVolumeControl.tsx apps/web/src/lib/audio-transitions.test.ts apps/web/src/lib/audio-transitions.ts apps/web/src/lib/player-store.test.ts apps/web/src/lib/player-store.ts docs/ODDIO_2_DESIGN_AND_IMPLEMENTATION.md
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "style: format Oddio V2 changes with pinned Prettier"
+          git push origin HEAD:feature/oddio-2-foundation
