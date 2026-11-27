@@ -106,7 +106,7 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
         className="mp2-mobile-menu-trigger"
         aria-expanded={open}
         aria-controls="oddio-magicpath-mobile-menu"
-        aria-label={ar ? 'افتح القائمة' : 'Open navigation'}
+        aria-label={ar ? 'افتح القائمة' : 'Open menu'}
         onClick={() => setOpen(true)}
       >
         <Menu size={21} />
@@ -394,6 +394,7 @@ export function MagicPathHomeBottomPlayer({ locale }: { locale: 'ar' | 'en' }) {
             <button
               type="button"
               className="mp2-player-art"
+              aria-label={ar ? 'فتح المشغل الكامل' : 'Expand full player'}
               onClick={() => setExpanded(true)}
             >
               <Artwork
@@ -407,6 +408,7 @@ export function MagicPathHomeBottomPlayer({ locale }: { locale: 'ar' | 'en' }) {
             <button
               className="mp2-player-track-name"
               type="button"
+              aria-label={ar ? 'فتح المشغل الكامل' : 'Expand full player'}
               onClick={() => setExpanded(true)}
             >
               <strong dir="auto">{track.title}</strong>
