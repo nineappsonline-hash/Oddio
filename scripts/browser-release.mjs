@@ -679,6 +679,13 @@ try {
             );
           }
           await page.getByRole('heading', { level: 1 }).waitFor();
+          await page.locator('.mp2-player').waitFor({ state: 'visible' });
+          await page.locator('.mp2-header').waitFor({ state: 'visible' });
+          assert.equal(
+            await page.locator('.mp2-sidebar a[href="/en/library"][aria-current="page"]').count(),
+            1,
+            'Library must be the active route in the persistent navigation',
+          );
           assert.equal(pageErrors.length, 0, pageErrors.join('; '));
         });
       }
