@@ -294,6 +294,30 @@ try {
       page = await context.newPage();
       page.on('pageerror', (error) => pageErrors.push(error.message));
 
+      if (locale === 'en' && viewport.width === 1366) {
+        await test('music track detail shares the persistent bottom player', async () => {
+          await page.goto(`${base}/en`, { waitUntil: 'domcontentloaded' });
+          const trackLink = page.locator('a[href^="/en/tracks/"]').first();
+          if (!(await trackLink.count())) {
+            process.stdout.write('No public music track link in homepage fixture; skipping detail layout check.\\n');
+            return;
+          }
+          const href = await trackLink.getAttribute('href');
+          assert.ok(href, 'missing track href');
+          const response = await page.goto(`${base}${href}`, {
+            waitUntil: 'domcontentloaded',
+          });
+          assert.equal(response?.status(), 200);
+          await page.locator('.mp2-player').waitFor({ state: 'visible' });
+          await page.locator('.mp2-header').waitFor({ state: 'visible' });
+          assert.equal(
+            await page.locator('.oddio-top-mini-player').count(),
+            0,
+            'track detail must not revert to legacy top mini player',
+          );
+        });
+      }
+
       await test(`${label} discover and search without crashes`, async () => {
         const discover = await page.goto(`${base}/${locale}/discover`, {
           waitUntil: 'domcontentloaded',
