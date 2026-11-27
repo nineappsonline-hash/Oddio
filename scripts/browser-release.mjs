@@ -270,11 +270,17 @@ try {
           (title) => document.body.textContent?.includes(title),
           selected.trim(),
         );
-        // The UI should preserve the selected song even when the header and
-        // player chrome change between the MagicPath home and other pages.
+        // Browse routes share the new shell, so transport controls should
+        // remain mounted while preserving the selected track.
+        await page.locator('.mp2-player').waitFor({ state: 'visible' });
         assert.ok(
-          await page.locator('.oddio-top-mini-player').getByText(selected.trim()).count(),
-          'selected song must remain in the player when navigation changes its layout',
+          await page.locator('.mp2-player-track-name').getByText(selected.trim()).count(),
+          'selected song must remain in the bottom player across navigation',
+        );
+        assert.equal(
+          await page.locator('.mp2-sidebar a[aria-current="page"][href$="/discover"]').count(),
+          1,
+          'current navigation item should follow the client route',
         );
       });
 
@@ -291,6 +297,8 @@ try {
           waitUntil: 'domcontentloaded',
         });
         assert.equal(discover?.status(), 200);
+        await page.locator('.mp2-header').waitFor({ state: 'visible' });
+        await page.locator('.mp2-player').waitFor({ state: 'visible' });
         const search = await page.goto(`${base}/${locale}/search`, {
           waitUntil: 'domcontentloaded',
         });
