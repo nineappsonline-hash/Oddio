@@ -57,23 +57,26 @@ try {
         assert.equal(await page.locator('.oddio-featured-stage').count(), 1);
         // MagicPath home has genuinely new shell geometry (not just CSS skin).
         await page.locator('.mp2-header .mp2-search').waitFor({ state: 'visible' });
-        await page.waitForFunction(
-          (expectRail) => {
-            const rail = document.querySelector('.mp2-listening');
-            if (!rail) return false;
-            const bounds = rail.getBoundingClientRect();
-            const visible = getComputedStyle(rail).display !== 'none' && bounds.width > 0;
-            return visible === expectRail;
-          },
-          viewport.width > 1120,
-        );
+        await page.waitForFunction((expectRail) => {
+          const rail = document.querySelector('.mp2-listening');
+          if (!rail) return false;
+          const bounds = rail.getBoundingClientRect();
+          const visible = getComputedStyle(rail).display !== 'none' && bounds.width > 0;
+          return visible === expectRail;
+        }, viewport.width > 1120);
         await page.locator('.mp2-player:visible').waitFor();
         const playerGeometry = await page.locator('.mp2-player').evaluate((node) => {
           const rect = node.getBoundingClientRect();
-          return { bottom: window.innerHeight - rect.bottom, position: getComputedStyle(node).position };
+          return {
+            bottom: window.innerHeight - rect.bottom,
+            position: getComputedStyle(node).position,
+          };
         });
         assert.equal(playerGeometry.position, 'fixed');
-        assert.ok(Math.abs(playerGeometry.bottom) <= 2, 'player must stay on viewport bottom');
+        assert.ok(
+          Math.abs(playerGeometry.bottom) <= 2,
+          'player must stay on viewport bottom',
+        );
         assert.equal(await page.locator('.oddio-home-intro h1').count(), 1);
         assert.equal(await page.locator('.oddio-home-dashboard').count(), 1);
         const overflow = await page.evaluate(
@@ -237,7 +240,11 @@ try {
             player.right > footer.left
           );
         });
-        assert.equal(playerOverlapsFooter, false, 'fixed bottom player must not cover footer content');
+        assert.equal(
+          playerOverlapsFooter,
+          false,
+          'fixed bottom player must not cover footer content',
+        );
         const documentOverflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         );

@@ -383,7 +383,11 @@ export function MagicPathHomeBottomPlayer({ locale }: { locale: 'ar' | 'en' }) {
   };
 
   return (
-    <section className="mp2-player" role="region" aria-label={ar ? 'مشغل أوديو' : 'Oddio music player'}>
+    <section
+      className="mp2-player"
+      role="region"
+      aria-label={ar ? 'مشغل أوديو' : 'Oddio music player'}
+    >
       <div className="mp2-player-track">
         {track ? (
           <>
