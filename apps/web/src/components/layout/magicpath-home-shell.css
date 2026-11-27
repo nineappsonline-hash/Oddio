@@ -721,3 +721,15 @@
     padding-inline-start: unset;
   }
 }
+
+/* Keep the Oddio emblem, not the old neon treatment; artwork remains colorful. */
+.mp2-sidebar-brand img {
+  filter: grayscale(1) brightness(1.3) contrast(1.06);
+}
+.mp2-header-account {
+  background: #494b4f;
+  border-color: #73767b;
+}
+.mp2-main-play {
+  box-shadow: 0 3px 15px rgba(0, 0, 0, .35) !important;
+}
