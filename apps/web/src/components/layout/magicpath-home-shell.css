@@ -737,42 +737,42 @@
 /* Graphite Blue: blue only for navigation, controls, focus and microcopy. */
 .mp2-sidebar-heading,
 .mp2-listening-meta > span {
-  color: #5488cd;
+  color: #6597a0;
 }
 .mp2-nav-active,
 .mp2-nav-item[aria-current='page'] {
   background: linear-gradient(110deg, rgba(46, 108, 177, 0.45), rgba(32, 38, 46, 0.9));
-  box-shadow: inset 3px 0 0 #3975c6;
+  box-shadow: inset 3px 0 0 #2c6875;
   color: #f7faff;
 }
 [dir='rtl'] .mp2-nav-active,
 [dir='rtl'] .mp2-nav-item[aria-current='page'] {
-  box-shadow: inset -3px 0 0 #3975c6;
+  box-shadow: inset -3px 0 0 #2c6875;
 }
 .mp2-nav-active svg,
 .mp2-sidebar-footer a:hover,
 .mp2-queue-item:hover svg {
-  color: #5b8cd0;
+  color: #6597a0;
 }
 .mp2-nav-item:hover,
 .mp2-nav-item:focus-visible {
   background: rgba(55, 119, 184, 0.18);
 }
 .mp2-search:focus-within {
-  border-color: #3a76bf;
+  border-color: #3d7782;
   box-shadow: 0 0 0 3px rgba(93, 169, 245, 0.13);
 }
 .mp2-search input {
   color: #f6f8fc;
 }
 .mp2-artist-cta {
-  background: linear-gradient(120deg, #233344, #1b2027);
+  background: linear-gradient(120deg, #20353a, #1b2027);
   border-color: #466681;
 }
 .mp2-artist-cta > svg:first-child,
 .mp2-listening h2 svg,
 .mp2-listening-discover {
-  color: #5488cd;
+  color: #6597a0;
 }
 .mp2-listening-cover {
   border-color: #496581;
@@ -782,24 +782,24 @@
   border-color: rgba(82, 126, 170, 0.4);
 }
 .mp2-queue-item:hover {
-  background: #263a4b;
+  background: #233b41;
   border-color: #507fa7;
 }
 .mp2-header-account {
-  background: #285d9f;
-  border-color: #4b83cd;
+  background: #205360;
+  border-color: #56848e;
   color: #f8fbff;
 }
 .mp2-player-controls > button.mp2-main-play {
-  background: linear-gradient(135deg, #3975c6, #20549b);
+  background: linear-gradient(135deg, #2c6875, #16424e);
   color: #061626;
   box-shadow: 0 3px 16px rgba(49, 129, 211, 0.22) !important;
 }
 .mp2-player-controls > button.mp2-active {
-  color: #5488cd;
+  color: #6597a0;
 }
 .mp2-player-controls > button:hover {
-  background: #29445c;
+  background: #29454b;
 }
 .mp2-mobile-menu-trigger {
   border-color: #496d8e;
@@ -807,17 +807,37 @@
 .mp2-player :focus-visible,
 .mp2-header :focus-visible,
 .mp2-sidebar :focus-visible {
-  outline-color: #5488cd;
+  outline-color: #6597a0;
 }
 
 /* Deep Blue transport buttons: keep glyphs white on cobalt. */
 .mp2-player-controls > button.mp2-main-play {
-  background: linear-gradient(135deg, #3975c6, #20549b);
+  background: linear-gradient(135deg, #2c6875, #16424e);
   color: #fff;
   box-shadow: 0 3px 14px rgba(22, 66, 128, 0.2) !important;
 }
 .mp2-header-account {
-  background: #285d9f;
-  border-color: #4f7fba;
+  background: #205360;
+  border-color: #56848e;
   color: #fff;
 }
+
+/* Oddio petrol: subtle teal-dark-blue active surfaces and white controls. */
+.mp2-nav-active,.mp2-nav-item[aria-current='page'] {
+  background:linear-gradient(110deg,rgba(31,79,90,.55),rgba(28,38,42,.92));
+  box-shadow:inset 3px 0 0 #387783;color:#f7fafb;
+}
+[dir='rtl'] .mp2-nav-active,[dir='rtl'] .mp2-nav-item[aria-current='page'] {
+  box-shadow:inset -3px 0 0 #387783;
+}
+.mp2-nav-active svg,.mp2-sidebar-heading,.mp2-listening-meta>span {
+  color:#7fa7af;
+}
+.mp2-player-controls>button.mp2-main-play {
+  background:linear-gradient(135deg,#306b76,#17434e);
+  color:#fff;box-shadow:0 3px 13px rgba(0,0,0,.25)!important;
+}
+.mp2-header-account {background:#245864;border-color:#4a7b85;color:white}
+.mp2-search:focus-within {border-color:#4a838e;box-shadow:0 0 0 3px rgba(55,115,128,.16)}
+.mp2-sidebar a:focus-visible,.mp2-player button:focus-visible,
+.mp2-header :focus-visible {outline-color:#81abb4}
