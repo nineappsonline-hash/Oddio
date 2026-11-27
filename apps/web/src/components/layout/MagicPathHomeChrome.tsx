@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   ArrowUpLeft,
   AudioLines,
@@ -57,6 +57,7 @@ const navItems = [
 export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
   const [open, setOpen] = useState(false);
   const ar = locale === 'ar';
+  const pathname = usePathname();
   const drawerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -147,8 +148,8 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
             <Link
               key={path}
               href={`/${locale}${path}`}
-              aria-current={!path ? 'page' : undefined}
-              className={`mp2-nav-item ${!path ? 'mp2-nav-active' : ''}`}
+              aria-current={pathname === `/${locale}${path}` || (!path && pathname === `/${locale}/`) ? 'page' : undefined}
+              className={`mp2-nav-item ${pathname === `/${locale}${path}` || (!path && pathname === `/${locale}/`) ? 'mp2-nav-active' : ''}`}
               onClick={() => setOpen(false)}
             >
               <Icon size={19} aria-hidden="true" />
