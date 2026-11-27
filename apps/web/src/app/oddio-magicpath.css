@@ -388,7 +388,6 @@ body:has(.oddio-magicpath-home) .oddio-player-bar.oddio-top-mini-player {
   }
 }
 
-
 /* Oddio Graphite + Blue: monochrome foundation with precise azure typography. */
 body:has(.oddio-magicpath-home) {
   --oddio-v2-magenta: #579fee;
@@ -412,7 +411,11 @@ body:has(.oddio-magicpath-home) {
 }
 .oddio-magicpath-home .oddio-v2-hero-art::before {
   border-color: rgba(89, 167, 242, 0.48);
-  background: radial-gradient(circle at center, rgba(47, 116, 189, 0.14), transparent 72%);
+  background: radial-gradient(
+    circle at center,
+    rgba(47, 116, 189, 0.14),
+    transparent 72%
+  );
   box-shadow: 0 0 42px rgba(43, 132, 224, 0.12);
 }
 .oddio-magicpath-home .oddio-v2-hero-button {
