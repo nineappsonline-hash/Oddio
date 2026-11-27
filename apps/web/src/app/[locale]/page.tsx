@@ -87,24 +87,80 @@ export default async function HomePage({
 
   return (
     <div className="oddio-home-dashboard">
-      <header className="oddio-home-intro">
-        <div>
-          <p className="oddio-micro-label">
-            <span className="oddio-live-dot" />{' '}
-            {ar ? 'موسيقى على مزاجك' : 'YOUR MUSIC UNIVERSE'}
-          </p>
-          <h1>{ar ? 'اكتشف صوتك.' : 'Find your frequency.'}</h1>
-          <p>
-            {ar
-              ? 'اكتشف واسمع أغاني أصلية وموسيقى بالذكاء الاصطناعي، وتعرّف على فنانين جدد واستكشف أنواع موسيقية تناسب مزاجك.'
-              : 'Discover and listen to original AI-generated music, new songs, independent AI music artists and playlists for every mood.'}
-          </p>
+      <section className="oddio-v2-cinematic-hero" aria-label={ar ? 'ابدأ رحلتك الموسيقية' : 'Your listening journey starts here'}>
+        <div className="oddio-v2-hero-light oddio-v2-hero-light-a" aria-hidden="true" />
+        <div className="oddio-v2-hero-light oddio-v2-hero-light-b" aria-hidden="true" />
+        <div className="oddio-v2-hero-layout">
+          <header className="oddio-home-intro oddio-v2-hero-copy">
+            <p className="oddio-v2-eyebrow">
+              <span className="oddio-v2-eyebrow-signal" />
+              {ar ? 'ده عالمك. دي موسيقاك.' : 'THIS IS YOUR SOUND UNIVERSE'}
+            </p>
+            <h1>
+              {ar ? (
+                <>رحلتك الموسيقية <span>تبدأ من هنا.</span></>
+              ) : (
+                <>Your music journey <span>starts here.</span></>
+              )}
+            </h1>
+            <p className="oddio-v2-hero-description">
+              {ar
+                ? 'موسيقى عربية وعالمية وبودكاست من عالم الذكاء الاصطناعي. اكتشف أصوات جديدة، وخلّي كل لحظة ليها موسيقاها.'
+                : 'Discover original AI music, new voices and podcasts from every corner of your imagination. A new sound for every moment.'}
+            </p>
+            <div className="oddio-v2-hero-actions">
+              {hero ? (
+                <PlayButton
+                  track={hero}
+                  queue={heroQueue}
+                  size="lg"
+                  className="oddio-v2-hero-play"
+                />
+              ) : null}
+              <Link href={`/${locale}/discover`} className="oddio-v2-hero-button">
+                {ar ? 'اكتشف الموسيقى' : 'Explore new music'}
+                <ArrowUpRight size={19} className="rtl:-scale-x-100" />
+              </Link>
+            </div>
+            <div className="oddio-v2-hero-shortcuts" aria-label={ar ? 'روابط سريعة' : 'Quick links'}>
+              <Link href={`/${locale}/genres`}>
+                <OddioGlyph name="soundspace" size={17} />
+                {ar ? 'الأنواع الموسيقية' : 'Music genres'}
+              </Link>
+              <Link href={`/${locale}/podcasts`}>
+                <Disc3 size={17} />
+                {ar ? 'البودكاست' : 'Podcasts'}
+              </Link>
+              <Link href={`/${locale}/artists`}>
+                <ArrowUpRight size={17} />
+                {ar ? 'الفنانين' : 'Artists'}
+              </Link>
+            </div>
+          </header>
+          <div className="oddio-v2-hero-art" aria-hidden="true">
+            <div className="oddio-v2-art-halo oddio-v2-art-halo-one" />
+            <div className="oddio-v2-art-halo oddio-v2-art-halo-two" />
+            <div className="oddio-v2-art-halo oddio-v2-art-halo-three" />
+            <div className="oddio-v2-art-backplate" />
+            {hero ? (
+              <Artwork
+                title={hero.title}
+                url={hero.artwork.url}
+                accent={hero.artwork.accent}
+                className="oddio-v2-art-front"
+                priority
+                rounded="rounded-[2rem]"
+              />
+            ) : (
+              <Disc3 className="oddio-v2-art-disc" strokeWidth={0.6} />
+            )}
+            <div className="oddio-v2-art-caption">
+              <span className="oddio-v2-art-live-dot" />
+              {ar ? 'اكتشف صوت مختلف' : 'THE NEXT SOUND IS YOURS'}
+            </div>
+          </div>
         </div>
-        <Link href={`/${locale}/discover`} className="oddio-intro-link">
-          {ar ? 'كل الموسيقى' : 'Explore music'}{' '}
-          <ArrowUpRight size={16} className="rtl:-scale-x-100" />
-        </Link>
-      </header>
+      </section>
 
       <div className="oddio-home-feature-grid">
         <section
