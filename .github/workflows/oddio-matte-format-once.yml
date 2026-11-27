@@ -1,0 +1,38 @@
+name: Oddio matte palette formatting (one-time)
+on:
+  push:
+    branches: [feature/oddio-2-foundation]
+    paths: [.github/workflows/oddio-matte-format-once.yml]
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply repository-pinned Prettier
+        run: |
+          npx prettier --write \
+            packages/ui/src/index.ts \
+            apps/web/tailwind.config.ts \
+            apps/web/src/app/[locale]/layout.tsx \
+            apps/web/src/app/globals.css \
+            apps/web/src/app/oddio-magicpath.css \
+            apps/web/src/components/layout/magicpath-home-shell.css
+      - name: Commit formatted monochrome theme
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- packages/ui/src/index.ts apps/web/tailwind.config.ts apps/web/src/app/[locale]/layout.tsx apps/web/src/app/globals.css apps/web/src/app/oddio-magicpath.css apps/web/src/components/layout/magicpath-home-shell.css
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "style: format matte graphite theme with pinned Prettier"
+          git fetch origin feature/oddio-2-foundation
+          git rebase origin/feature/oddio-2-foundation
+          git push origin HEAD:feature/oddio-2-foundation
