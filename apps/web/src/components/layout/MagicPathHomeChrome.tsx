@@ -47,6 +47,7 @@ type ChromeProps = {
 
 const navItems = [
   { path: '', labelAr: 'الرئيسية', labelEn: 'Home', icon: Home },
+  { path: '/search', labelAr: 'بحث', labelEn: 'Search', icon: Search },
   { path: '/discover', labelAr: 'اكتشف', labelEn: 'Discover', icon: Compass },
   { path: '/library', labelAr: 'مكتبتي', labelEn: 'Your library', icon: Library },
   { path: '/podcasts', labelAr: 'البودكاست', labelEn: 'Podcasts', icon: Mic2 },
