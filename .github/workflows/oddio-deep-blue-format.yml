@@ -1,0 +1,26 @@
+name: Format deep blue theme (temporary)
+on:
+  push:
+    branches: [feature/oddio-2-foundation]
+    paths: [.github/workflows/oddio-deep-blue-format.yml]
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm}
+      - run: npm ci
+      - run: npx prettier --write packages/ui/src/index.ts apps/web/src/app/oddio-magicpath.css apps/web/src/components/layout/magicpath-home-shell.css
+      - name: Commit formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/ui/src/index.ts apps/web/src/app/oddio-magicpath.css apps/web/src/components/layout/magicpath-home-shell.css
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "style: format deep blue accent palette"
+          git fetch origin feature/oddio-2-foundation
+          git rebase origin/feature/oddio-2-foundation
+          git push origin HEAD:feature/oddio-2-foundation
