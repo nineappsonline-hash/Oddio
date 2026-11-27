@@ -823,21 +823,37 @@
 }
 
 /* Oddio petrol: subtle teal-dark-blue active surfaces and white controls. */
-.mp2-nav-active,.mp2-nav-item[aria-current='page'] {
-  background:linear-gradient(110deg,rgba(31,79,90,.55),rgba(28,38,42,.92));
-  box-shadow:inset 3px 0 0 #387783;color:#f7fafb;
+.mp2-nav-active,
+.mp2-nav-item[aria-current='page'] {
+  background: linear-gradient(110deg, rgba(31, 79, 90, 0.55), rgba(28, 38, 42, 0.92));
+  box-shadow: inset 3px 0 0 #387783;
+  color: #f7fafb;
 }
-[dir='rtl'] .mp2-nav-active,[dir='rtl'] .mp2-nav-item[aria-current='page'] {
-  box-shadow:inset -3px 0 0 #387783;
+[dir='rtl'] .mp2-nav-active,
+[dir='rtl'] .mp2-nav-item[aria-current='page'] {
+  box-shadow: inset -3px 0 0 #387783;
 }
-.mp2-nav-active svg,.mp2-sidebar-heading,.mp2-listening-meta>span {
-  color:#7fa7af;
+.mp2-nav-active svg,
+.mp2-sidebar-heading,
+.mp2-listening-meta > span {
+  color: #7fa7af;
 }
-.mp2-player-controls>button.mp2-main-play {
-  background:linear-gradient(135deg,#306b76,#17434e);
-  color:#fff;box-shadow:0 3px 13px rgba(0,0,0,.25)!important;
+.mp2-player-controls > button.mp2-main-play {
+  background: linear-gradient(135deg, #306b76, #17434e);
+  color: #fff;
+  box-shadow: 0 3px 13px rgba(0, 0, 0, 0.25) !important;
 }
-.mp2-header-account {background:#245864;border-color:#4a7b85;color:white}
-.mp2-search:focus-within {border-color:#4a838e;box-shadow:0 0 0 3px rgba(55,115,128,.16)}
-.mp2-sidebar a:focus-visible,.mp2-player button:focus-visible,
-.mp2-header :focus-visible {outline-color:#81abb4}
+.mp2-header-account {
+  background: #245864;
+  border-color: #4a7b85;
+  color: white;
+}
+.mp2-search:focus-within {
+  border-color: #4a838e;
+  box-shadow: 0 0 0 3px rgba(55, 115, 128, 0.16);
+}
+.mp2-sidebar a:focus-visible,
+.mp2-player button:focus-visible,
+.mp2-header :focus-visible {
+  outline-color: #81abb4;
+}

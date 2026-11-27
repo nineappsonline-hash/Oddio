@@ -453,21 +453,24 @@ body:has(.oddio-magicpath-home) {
   --oddio-v2-lavender: #6597a0;
 }
 .oddio-magicpath-welcome h2 span,
-.oddio-magicpath-overline { color:#7aaab3; }
+.oddio-magicpath-overline {
+  color: #7aaab3;
+}
 .oddio-magicpath-home .oddio-v2-hero-copy h1 span {
-  background-image: linear-gradient(110deg,#eef4f5 0%,#709aa3 70%,#467b85);
+  background-image: linear-gradient(110deg, #eef4f5 0%, #709aa3 70%, #467b85);
 }
 .oddio-magicpath-home .oddio-v2-cinematic-hero {
-  background:linear-gradient(105deg,#15272c,#101416 60%,#182c30);
-  border-color:rgba(76,125,136,.43);
+  background: linear-gradient(105deg, #15272c, #101416 60%, #182c30);
+  border-color: rgba(76, 125, 136, 0.43);
 }
 .oddio-magicpath-home .oddio-v2-hero-art::before {
-  border-color:rgba(69,119,130,.40);
-  background:radial-gradient(circle at center,rgba(37,85,96,.16),transparent 72%);
-  box-shadow:0 0 35px rgba(14,62,73,.12);
+  border-color: rgba(69, 119, 130, 0.4);
+  background: radial-gradient(circle at center, rgba(37, 85, 96, 0.16), transparent 72%);
+  box-shadow: 0 0 35px rgba(14, 62, 73, 0.12);
 }
 .oddio-magicpath-home .oddio-v2-hero-button {
-  background:linear-gradient(120deg,#2d6874,#16414c);
-  color:#f9fcfd;border-color:#447783;
-  box-shadow:0 8px 20px rgba(0,0,0,.19);
+  background: linear-gradient(120deg, #2d6874, #16414c);
+  color: #f9fcfd;
+  border-color: #447783;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.19);
 }
