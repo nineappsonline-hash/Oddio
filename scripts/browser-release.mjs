@@ -362,9 +362,7 @@ try {
         // and does NOT make a personalized discovery API request.
         await start.click();
         await page
-          .getByRole('region', {
-            name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
-          })
+          .locator('.mp2-player[role="region"]')
           .waitFor({ state: 'visible', timeout: 15_000 });
         const weeklyTitle =
           locale === 'ar' ? 'شغّل Discover Weekly' : 'Play Discover Weekly';
