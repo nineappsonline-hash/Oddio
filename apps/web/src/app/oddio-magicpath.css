@@ -411,11 +411,7 @@ body:has(.oddio-magicpath-home) {
 }
 .oddio-magicpath-home .oddio-v2-hero-art::before {
   border-color: rgba(59, 124, 137, 0.48);
-  background: radial-gradient(
-    circle at center,
-    rgba(32, 89, 100, 0.14),
-    transparent 72%
-  );
+  background: radial-gradient(circle at center, rgba(32, 89, 100, 0.14), transparent 72%);
   box-shadow: 0 0 42px rgba(26, 98, 110, 0.12);
 }
 .oddio-magicpath-home .oddio-v2-hero-button {

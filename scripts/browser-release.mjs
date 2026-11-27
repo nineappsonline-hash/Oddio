@@ -299,7 +299,9 @@ try {
           await page.goto(`${base}/en`, { waitUntil: 'domcontentloaded' });
           const trackLink = page.locator('a[href^="/en/tracks/"]').first();
           if (!(await trackLink.count())) {
-            process.stdout.write('No public music track link in homepage fixture; skipping detail layout check.\\n');
+            process.stdout.write(
+              'No public music track link in homepage fixture; skipping detail layout check.\\n',
+            );
             return;
           }
           const href = await trackLink.getAttribute('href');
@@ -706,7 +708,9 @@ try {
           await page.locator('.mp2-player').waitFor({ state: 'visible' });
           await page.locator('.mp2-header').waitFor({ state: 'visible' });
           assert.equal(
-            await page.locator('.mp2-sidebar a[href="/en/library"][aria-current="page"]').count(),
+            await page
+              .locator('.mp2-sidebar a[href="/en/library"][aria-current="page"]')
+              .count(),
             1,
             'Library must be the active route in the persistent navigation',
           );
