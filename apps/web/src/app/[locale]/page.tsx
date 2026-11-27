@@ -87,7 +87,10 @@ export default async function HomePage({
 
   return (
     <div className="oddio-home-dashboard">
-      <section className="oddio-v2-cinematic-hero" aria-label={ar ? 'ابدأ رحلتك الموسيقية' : 'Your listening journey starts here'}>
+      <section
+        className="oddio-v2-cinematic-hero"
+        aria-label={ar ? 'ابدأ رحلتك الموسيقية' : 'Your listening journey starts here'}
+      >
         <div className="oddio-v2-hero-light oddio-v2-hero-light-a" aria-hidden="true" />
         <div className="oddio-v2-hero-light oddio-v2-hero-light-b" aria-hidden="true" />
         <div className="oddio-v2-hero-layout">
@@ -98,9 +101,13 @@ export default async function HomePage({
             </p>
             <h1>
               {ar ? (
-                <>رحلتك الموسيقية <span>تبدأ من هنا.</span></>
+                <>
+                  رحلتك الموسيقية <span>تبدأ من هنا.</span>
+                </>
               ) : (
-                <>Your music journey <span>starts here.</span></>
+                <>
+                  Your music journey <span>starts here.</span>
+                </>
               )}
             </h1>
             <p className="oddio-v2-hero-description">
@@ -122,7 +129,10 @@ export default async function HomePage({
                 <ArrowUpRight size={19} className="rtl:-scale-x-100" />
               </Link>
             </div>
-            <div className="oddio-v2-hero-shortcuts" aria-label={ar ? 'روابط سريعة' : 'Quick links'}>
+            <div
+              className="oddio-v2-hero-shortcuts"
+              aria-label={ar ? 'روابط سريعة' : 'Quick links'}
+            >
               <Link href={`/${locale}/genres`}>
                 <OddioGlyph name="soundspace" size={17} />
                 {ar ? 'الأنواع الموسيقية' : 'Music genres'}
@@ -192,7 +202,6 @@ export default async function HomePage({
           <EmptyState title={t('common.noResults')} />
         )}
       </section>
-
 
       <div className="oddio-home-feature-grid">
         <section
@@ -332,7 +341,6 @@ export default async function HomePage({
           </div>
         </section>
       ) : null}
-
 
       <div className="oddio-home-editorial-columns">
         <section className="oddio-dashboard-section oddio-releases-section">
