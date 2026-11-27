@@ -1,4 +1,4 @@
-name: Format Oddio browser smoke (one-time)
+name: Format Oddio MagicPath QA (one-time)
 on:
   push:
     branches: [feature/oddio-2-foundation]
@@ -17,15 +17,15 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Format browser test with the repository's pinned Prettier
-        run: npx prettier --write scripts/browser-release.mjs
+      - name: Format MagicPath QA changes with pinned Prettier
+        run: npx prettier --write scripts/browser-release.mjs scripts/mobile-performance.mjs apps/web/src/components/layout/MagicPathHomeChrome.tsx apps/web/src/app/oddio-magicpath.css
       - name: Commit formatted browser test
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/browser-release.mjs
+          git add scripts/browser-release.mjs scripts/mobile-performance.mjs apps/web/src/components/layout/MagicPathHomeChrome.tsx apps/web/src/app/oddio-magicpath.css
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "style: format MagicPath browser navigation smoke test"
+          git commit -m "style: format MagicPath visual and mobile QA"
           git fetch origin feature/oddio-2-foundation
           git rebase origin/feature/oddio-2-foundation
           git push origin HEAD:feature/oddio-2-foundation
