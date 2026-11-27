@@ -2622,3 +2622,97 @@ body {
     contain-intrinsic-size: auto 60px;
   }
 }
+
+
+/* Oddio 2.0 — homepage visual contract (desktop + mobile, EN + RTL).
+   Kept separate from the legacy monochrome theme so the preview can be reviewed
+   and reverted without disrupting layout or application behavior. */
+.oddio-home-dashboard {
+  --oddio-v2-violet: #9d5cff;
+  --oddio-v2-pink: #f43db4;
+  --oddio-v2-sky: #33b8ff;
+  --oddio-v2-surface: #17102d;
+  gap: clamp(22px, 3vw, 38px);
+}
+.oddio-home-dashboard .oddio-home-intro h1 {
+  color: #f8f3ff;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+[dir='rtl'] .oddio-home-dashboard .oddio-home-intro h1 {
+  letter-spacing: normal;
+}
+.oddio-home-dashboard .oddio-home-intro p:not(.oddio-micro-label) {
+  color: #c7badc;
+  line-height: 1.75;
+}
+.oddio-home-dashboard .oddio-intro-link {
+  color: #f2e6ff;
+  border-color: rgba(157, 92, 255, 0.35);
+  background: rgba(157, 92, 255, 0.08);
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+.oddio-home-dashboard .oddio-intro-link:hover {
+  background: rgba(157, 92, 255, 0.19);
+  border-color: rgba(200, 128, 255, 0.65);
+}
+.oddio-home-dashboard .oddio-featured-stage {
+  background:
+    radial-gradient(ellipse at 21% 30%, rgba(244, 61, 180, .33), transparent 38%),
+    radial-gradient(ellipse at 79% 50%, rgba(113, 49, 214, .52), transparent 48%),
+    linear-gradient(116deg, #321242 0%, #1b103a 58%, #110e2d 100%);
+  border-color: rgba(190, 130, 255, 0.26);
+  border-radius: 24px;
+  box-shadow: 0 28px 70px -40px rgba(153, 55, 249, 0.42);
+}
+.oddio-home-dashboard .oddio-featured-stage::after {
+  opacity: 0.55;
+  background: linear-gradient(125deg, rgba(255,255,255,.07), transparent 42%, rgba(255,83,180,.04));
+}
+.oddio-home-dashboard .oddio-featured-disc {
+  opacity: 0.73;
+  border-color: rgba(226, 164, 255, .23);
+  background: repeating-radial-gradient(circle, #120b2b 0 9px, #5c3088 10px 11px);
+  box-shadow: 0 0 0 22px rgba(178, 77, 255, .07), 0 0 0 50px rgba(244, 61, 180, .035);
+}
+.oddio-home-dashboard .oddio-featured-copy h2 {
+  color: #ffffff;
+  text-wrap: balance;
+}
+.oddio-home-dashboard .oddio-featured-subtitle {
+  color: #eadff7;
+}
+.oddio-home-dashboard .oddio-genre-tile {
+  border-radius: 18px;
+  border-color: rgba(190, 130, 255, 0.23);
+  box-shadow: 0 14px 30px -24px rgba(157,92,255,.52);
+}
+.oddio-home-dashboard .oddio-genre-tile:hover {
+  border-color: rgba(225, 142, 255, .72);
+}
+.oddio-home-dashboard .oddio-genre-overlay {
+  background: linear-gradient(0deg, rgba(9, 7, 26, .88) 0%, rgba(23, 16, 45, .44) 55%, transparent 100%);
+}
+.oddio-home-dashboard .oddio-featured-tile {
+  border-color: rgba(190, 130, 255, 0.25);
+  background: linear-gradient(130deg, #3b1c59 0%, #17102d 82%);
+}
+.oddio-home-dashboard .oddio-featured-tile:hover {
+  background: linear-gradient(130deg, #57247e, #211337);
+}
+@media (max-width: 640px) {
+  .oddio-home-dashboard .oddio-featured-stage {
+    border-radius: 19px;
+    background:
+      radial-gradient(ellipse at 100% 0%, rgba(244, 61, 180, .27), transparent 55%),
+      linear-gradient(125deg, #28143f, #100c28);
+  }
+  .oddio-home-dashboard .oddio-featured-copy h2 {
+    text-wrap: pretty;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oddio-home-dashboard .oddio-intro-link {
+    transition: none;
+  }
+}
