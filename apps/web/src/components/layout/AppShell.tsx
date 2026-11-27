@@ -47,7 +47,16 @@ export function AppShell({
 }) {
   const t = useT();
   const { pathname } = useLocalePath();
-  const homeMode = pathname === `/${locale}` || pathname === `/${locale}/`;
+  const musicBrowseRoutes = new Set([
+    `/${locale}`,
+    `/${locale}/`,
+    `/${locale}/discover`,
+    `/${locale}/search`,
+    `/${locale}/genres`,
+    `/${locale}/artists`,
+    `/${locale}/podcasts`,
+  ]);
+  const useMagicPathShell = musicBrowseRoutes.has(pathname);
   const podcastMode =
     pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   return (
@@ -62,7 +71,7 @@ export function AppShell({
             {locale === 'ar' ? 'تخطَّ إلى المحتوى الرئيسي' : 'Skip to main content'}
           </a>
           <AmbientBackground />
-          {homeMode ? (
+          {useMagicPathShell ? (
             <>
               <MagicPathHomeSidebar locale={locale} user={user} />
               <MagicPathHomeListeningRail locale={locale} />
@@ -71,9 +80,9 @@ export function AppShell({
             <DesktopChrome user={user} podcastMode={podcastMode} />
           )}
           <div
-            className={`oddio-workspace relative z-10 w-full min-w-0 max-w-full overflow-x-clip ${homeMode ? 'mp2-workspace' : `lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}`}
+            className={`oddio-workspace relative z-10 w-full min-w-0 max-w-full overflow-x-clip ${useMagicPathShell ? 'mp2-workspace' : `lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}`}
           >
-            {homeMode ? (
+            {useMagicPathShell ? (
               <MagicPathHomeHeader
                 locale={locale}
                 user={user}
@@ -95,9 +104,9 @@ export function AppShell({
             </main>
             <Footer locale={locale} />
           </div>
-          {homeMode ? <MagicPathHomeBottomPlayer locale={locale} /> : null}
+          {useMagicPathShell ? <MagicPathHomeBottomPlayer locale={locale} /> : null}
           <DeferredFullPlayer />
-          {!homeMode ? <MobileNav /> : null}
+          {!useMagicPathShell ? <MobileNav /> : null}
           {user ? (
             <FavoriteGenresSelector mode="welcome" locale={locale} userId={user.id} />
           ) : null}
