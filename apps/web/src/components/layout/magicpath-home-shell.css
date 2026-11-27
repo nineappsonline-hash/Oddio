@@ -6,7 +6,7 @@
   padding-inline-end: 242px !important;
   padding-bottom: 106px;
   background:
-    radial-gradient(ellipse at 30% 0, rgba(104, 38, 154, 0.23), transparent 44%), #0d0917;
+    radial-gradient(ellipse at 30% 0, rgba(38, 39, 41, 0.23), transparent 44%), #141517;
 }
 .mp2-workspace .oddio-main-content {
   max-width: 1450px;
@@ -24,9 +24,9 @@
   display: flex;
   flex-direction: column;
   padding: 29px 14px 20px;
-  border-inline-end: 1px solid rgba(155, 82, 189, 0.25);
-  background: linear-gradient(163deg, #21122f, #110c1c 64%, #0d0918);
-  color: #e3d4f1;
+  border-inline-end: 1px solid rgba(70, 71, 73, 0.25);
+  background: linear-gradient(163deg, #18191b, #151618 64%, #141517);
+  color: #b9babc;
 }
 .mp2-sidebar-brand {
   min-height: 70px;
@@ -39,7 +39,7 @@
   max-width: 156px;
 }
 .mp2-sidebar-heading {
-  color: #9f8bad;
+  color: #6c6d6f;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.07em;
@@ -60,30 +60,30 @@
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
-  color: #b9a8ca;
+  color: #898a8c;
   transition:
     background 0.2s ease,
     color 0.2s ease;
 }
 .mp2-nav-item:hover,
 .mp2-nav-item:focus-visible {
-  background: rgba(125, 56, 167, 0.22);
+  background: rgba(51, 52, 54, 0.22);
   color: white;
 }
 .mp2-nav-active {
-  color: #fff;
-  background: linear-gradient(115deg, rgba(133, 47, 169, 0.72), rgba(62, 35, 85, 0.82));
-  box-shadow: inset 3px 0 0 #e17bfa;
+  color: #f6f7f9;
+  background: linear-gradient(115deg, rgba(48, 49, 51, 0.72), rgba(29, 30, 32, 0.82));
+  box-shadow: inset 3px 0 0 #747577;
 }
 [dir='rtl'] .mp2-nav-active {
-  box-shadow: inset -3px 0 0 #e17bfa;
+  box-shadow: inset -3px 0 0 #747577;
 }
 .mp2-nav-active svg {
-  color: #f7bbff;
+  color: #aaabad;
 }
 .mp2-sidebar-divider {
   height: 1px;
-  background: rgba(193, 145, 216, 0.16);
+  background: rgba(123, 124, 126, 0.16);
   margin: 19px 6px 8px;
 }
 .mp2-artist-cta {
@@ -91,11 +91,11 @@
   align-items: center;
   gap: 9px;
   margin-top: auto;
-  border: 1px solid rgba(193, 110, 231, 0.48);
+  border: 1px solid rgba(99, 100, 102, 0.48);
   padding: 14px 10px;
   border-radius: 13px;
-  color: #f7eaff;
-  background: linear-gradient(145deg, #53276a, #24142f);
+  color: #d0d1d3;
+  background: linear-gradient(145deg, #212224, #18191b);
 }
 .mp2-artist-cta strong,
 .mp2-artist-cta small {
@@ -107,7 +107,7 @@
 }
 .mp2-artist-cta small {
   font-size: 10px;
-  color: #cfacd7;
+  color: #919294;
   margin-top: 3px;
 }
 .mp2-artist-cta > svg:last-child {
@@ -119,10 +119,10 @@
   gap: 5px;
   margin-top: 19px;
   padding: 13px 5px 0;
-  border-top: 1px solid rgba(193, 145, 216, 0.17);
+  border-top: 1px solid rgba(123, 124, 126, 0.17);
 }
 .mp2-sidebar-footer a {
-  color: #a99cbb;
+  color: #7b7c7e;
   display: flex;
   align-items: center;
   gap: 11px;
@@ -142,8 +142,8 @@
   justify-content: space-between;
   gap: 16px;
   padding-inline: 25px;
-  background: rgba(24, 15, 37, 0.96);
-  border-bottom: 1px solid rgba(171, 114, 195, 0.2);
+  background: rgba(22, 23, 25, 0.96);
+  border-bottom: 1px solid rgba(94, 95, 97, 0.2);
   backdrop-filter: blur(18px);
 }
 .mp2-header-nav {
@@ -165,8 +165,8 @@
   height: 34px;
   border: 0;
   border-radius: 50%;
-  background: #2e203b;
-  color: #b0a0c0;
+  background: #1b1c1e;
+  color: #808183;
 }
 .mp2-search {
   min-width: 0;
@@ -178,29 +178,29 @@
   height: 42px;
   padding: 0 13px;
   border-radius: 11px;
-  color: #b09ac5;
-  border: 1px solid rgba(176, 119, 208, 0.32);
-  background: #24172f;
+  color: #7c7d7f;
+  border: 1px solid rgba(100, 101, 103, 0.32);
+  background: #191a1c;
 }
 .mp2-search:focus-within {
-  border-color: #ba76e9;
-  box-shadow: 0 0 0 3px rgba(168, 91, 234, 0.12);
+  border-color: #67686a;
+  box-shadow: 0 0 0 3px rgba(80, 81, 83, 0.12);
 }
 .mp2-search input {
   min-width: 0;
   flex: 1;
-  color: #fff;
+  color: #f6f7f9;
   background: transparent;
   outline: none;
   border: 0;
   font-size: 12px;
 }
 .mp2-search input::placeholder {
-  color: #a18eaf;
+  color: #6f7072;
 }
 .mp2-search kbd {
   font-size: 10px;
-  color: #8b7899;
+  color: #595a5c;
 }
 .mp2-header-actions {
   display: flex;
@@ -209,26 +209,26 @@
   flex-shrink: 0;
 }
 .mp2-header-bell {
-  border: 1px solid rgba(180, 130, 200, 0.24);
-  background: #30203f;
+  border: 1px solid rgba(108, 109, 111, 0.24);
+  background: #1c1d1f;
   border-radius: 50%;
   width: 36px;
   height: 36px;
   display: grid;
   place-items: center;
-  color: #dbbbed;
+  color: #a2a3a5;
 }
 .mp2-header-account {
   display: grid;
   place-items: center;
   min-width: 37px;
   height: 37px;
-  border: 1px solid rgba(224, 135, 255, 0.57);
+  border: 1px solid rgba(125, 126, 128, 0.57);
   border-radius: 20px;
   padding: 0 12px;
   font-weight: 800;
   color: white;
-  background: linear-gradient(135deg, #a33bcc, #6535a4);
+  background: linear-gradient(135deg, #3d3e40, #2e2f31);
 }
 .mp2-listening {
   position: fixed;
@@ -238,10 +238,10 @@
   z-index: 42;
   width: 242px;
   overflow-y: auto;
-  background: linear-gradient(175deg, #25152f, #120c1d 70%);
-  border-inline-start: 1px solid rgba(179, 96, 212, 0.28);
+  background: linear-gradient(175deg, #18191b, #151618 70%);
+  border-inline-start: 1px solid rgba(84, 85, 87, 0.28);
   padding: 27px 16px 106px;
-  color: #f4eaff;
+  color: #cfd0d2;
 }
 .mp2-listening h2 {
   display: flex;
@@ -252,17 +252,17 @@
   margin: 0 0 22px;
 }
 .mp2-listening h2 svg {
-  color: #dd74ef;
+  color: #6e6f71;
 }
 .mp2-listening-cover {
   display: block;
   width: 100%;
   padding: 0;
-  border: 1px solid #83509b;
+  border: 1px solid #404143;
   border-radius: 16px;
   overflow: hidden;
-  background: #241536;
-  box-shadow: 0 17px 38px rgba(0, 0, 0, 0.42);
+  background: #18191b;
+  box-shadow: 0 17px 38px rgba(11, 12, 14, 0.42);
 }
 .mp2-listening-meta {
   display: grid;
@@ -273,7 +273,7 @@
 .mp2-listening-meta > span {
   font-size: 10px;
   letter-spacing: 0.1em;
-  color: #d27ae9;
+  color: #6f7072;
   font-weight: 900;
 }
 .mp2-listening-meta strong {
@@ -283,7 +283,7 @@
 }
 .mp2-listening-meta small {
   font-size: 12px;
-  color: #a99bb8;
+  color: #7b7c7e;
 }
 .mp2-listening-idle {
   min-height: 240px;
@@ -294,8 +294,8 @@
   gap: 12px;
   text-align: center;
   border-radius: 16px;
-  background: linear-gradient(125deg, #4d226b, #181127);
-  color: #d2b4e8;
+  background: linear-gradient(125deg, #1f2022, #17181a);
+  color: #9a9b9d;
 }
 .mp2-listening-idle strong {
   font-size: 14px;
@@ -308,7 +308,7 @@
 .mp2-listening-rule {
   height: 1px;
   margin: 25px 0 18px;
-  background: rgba(204, 143, 224, 0.2);
+  background: rgba(124, 125, 127, 0.2);
 }
 .mp2-listening-queue-title {
   display: flex;
@@ -322,8 +322,8 @@
 }
 .mp2-listening-queue-title span {
   font-size: 10px;
-  color: #d1b0e1;
-  border: 1px solid #674273;
+  color: #959698;
+  border: 1px solid #323335;
   border-radius: 8px;
   padding: 3px 7px;
 }
@@ -339,13 +339,13 @@
   padding: 7px;
   border: 1px solid transparent;
   border-radius: 10px;
-  background: rgba(70, 40, 91, 0.44);
+  background: rgba(31, 32, 34, 0.44);
   color: white;
   text-align: start;
 }
 .mp2-queue-item:hover {
-  border-color: #8e50ae;
-  background: #45245c;
+  border-color: #424345;
+  background: #1e1f21;
 }
 .mp2-queue-label {
   min-width: 0;
@@ -363,10 +363,10 @@
 }
 .mp2-queue-label small {
   font-size: 10px;
-  color: #ac99be;
+  color: #7a7b7d;
 }
 .mp2-queue-empty {
-  color: #a695b7;
+  color: #757678;
   font-size: 12px;
   line-height: 1.7;
 }
@@ -374,7 +374,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #daa0fb;
+  color: #8e8f91;
   font-size: 11px;
   font-weight: 800;
   margin-top: 22px;
@@ -393,12 +393,12 @@
   color: white;
   background: linear-gradient(
     115deg,
-    rgba(26, 16, 41, 0.97),
-    rgba(40, 20, 56, 0.98),
-    rgba(18, 13, 30, 0.98)
+    rgba(23, 24, 26, 0.97),
+    rgba(25, 26, 28, 0.98),
+    rgba(21, 22, 24, 0.98)
   );
-  border-top: 1px solid rgba(202, 119, 236, 0.54);
-  box-shadow: 0 -12px 42px rgba(3, 0, 9, 0.72);
+  border-top: 1px solid rgba(107, 108, 110, 0.54);
+  box-shadow: 0 -12px 42px rgba(11, 12, 14, 0.72);
   backdrop-filter: blur(22px);
 }
 .mp2-player-track {
@@ -434,14 +434,14 @@
   font-size: 13px;
 }
 .mp2-player-track-name small {
-  color: #ada1bf;
+  color: #808183;
   font-size: 11px;
 }
 .mp2-player-empty {
   display: flex;
   align-items: center;
   gap: 11px;
-  color: #c9b3d7;
+  color: #959698;
   font-size: 12px;
 }
 .mp2-player-main {
@@ -467,22 +467,22 @@
   place-items: center;
   border: 0;
   background: transparent;
-  color: #c7b6d3;
+  color: #969799;
   border-radius: 50%;
 }
 .mp2-player-controls > button:hover {
-  color: #fff;
-  background: #5c2c77;
+  color: #f6f7f9;
+  background: #262729;
 }
 .mp2-player-controls > button.mp2-active {
-  color: #f48bfb;
+  color: #848587;
 }
 .mp2-player-controls > button.mp2-main-play {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #b839e4, #ee48b4);
+  background: linear-gradient(135deg, #404143, #4d4e50);
   color: white;
-  box-shadow: 0 0 24px rgba(187, 65, 210, 0.4);
+  box-shadow: 0 0 24px rgba(67, 68, 70, 0.4);
 }
 .mp2-player-controls > button.mp2-main-play:disabled {
   opacity: 0.45;
@@ -494,7 +494,7 @@
 .mp2-player-inactive-progress {
   height: 5px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(246, 247, 249, 0.12);
   max-width: 440px;
   width: 100%;
   margin: auto;
@@ -511,12 +511,12 @@
   place-items: center;
   border: 0;
   background: none;
-  color: #c6b8d3;
+  color: #98999b;
   width: 34px;
   height: 34px;
 }
 .mp2-player-extra > button:hover {
-  color: #fff;
+  color: #f6f7f9;
 }
 .mp2-mobile-menu-trigger,
 .mp2-drawer-close,
@@ -565,10 +565,10 @@
   .mp2-drawer-close {
     display: grid;
     place-items: center;
-    background: #382344;
+    background: #1d1e20;
     border: 0;
     border-radius: 9px;
-    color: #fff;
+    color: #f6f7f9;
     width: 35px;
     height: 35px;
   }
@@ -582,7 +582,7 @@
     inset: 0;
     z-index: 100;
     border: 0;
-    background: rgba(2, 1, 7, 0.75);
+    background: rgba(11, 12, 14, 0.75);
   }
   .mp2-mobile-menu-trigger {
     display: grid;
@@ -593,10 +593,10 @@
     z-index: 48;
     width: 39px;
     height: 39px;
-    border: 1px solid #664377;
+    border: 1px solid #333436;
     border-radius: 10px;
-    background: #291a37;
-    color: #f6eaff;
+    background: #1a1b1d;
+    color: #d0d1d3;
   }
   .mp2-header {
     height: 70px;
