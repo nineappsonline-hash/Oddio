@@ -80,3 +80,28 @@ describe('reversible queue edits', () => {
     expect(ids()).toEqual(['c', 'b']);
   });
 });
+
+
+describe('player volume state', () => {
+  beforeEach(() => {
+    usePlayer.setState({ volume: 0.8, muted: false });
+  });
+
+  it('preserves the previous volume while mute is toggled', () => {
+    usePlayer.getState().setVolume(0.65);
+    usePlayer.getState().toggleMute();
+    expect(usePlayer.getState().muted).toBe(true);
+    expect(usePlayer.getState().volume).toBe(0.65);
+    usePlayer.getState().toggleMute();
+    expect(usePlayer.getState().muted).toBe(false);
+    expect(usePlayer.getState().volume).toBe(0.65);
+  });
+
+  it('clamps dragged volume and mutes at zero', () => {
+    usePlayer.getState().setVolume(1.5);
+    expect(usePlayer.getState().volume).toBe(1);
+    usePlayer.getState().setVolume(-0.1);
+    expect(usePlayer.getState().volume).toBe(0);
+    expect(usePlayer.getState().muted).toBe(true);
+  });
+});
