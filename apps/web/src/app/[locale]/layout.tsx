@@ -25,7 +25,7 @@ const cairo = Cairo({
 });
 
 export const viewport: Viewport = {
-  themeColor: '#100C0D',
+  themeColor: '#0E0F11',
   width: 'device-width',
   initialScale: 1,
   colorScheme: 'dark',
