@@ -1,0 +1,28 @@
+name: Oddio V2 homepage formatting (one-time)
+on:
+  push:
+    branches: [feature/oddio-2-foundation]
+    paths:
+      - .github/workflows/oddio-v2-home-format.yml
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format redesigned homepage with pinned project Prettier
+        run: npx prettier --write 'apps/web/src/app/[locale]/page.tsx' apps/web/src/app/globals.css
+      - name: Commit new homepage layout formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- 'apps/web/src/app/[locale]/page.tsx' apps/web/src/app/globals.css
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "style(home): format redesigned Oddio 2.0 homepage"
+          git push origin HEAD:feature/oddio-2-foundation
