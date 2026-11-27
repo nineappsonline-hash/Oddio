@@ -204,8 +204,13 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   setPlaying: (playing) => set({ isPlaying: playing }),
   setCurrentTime: (seconds) => set({ currentTime: seconds }),
   setDuration: (seconds) => set({ duration: seconds }),
-  setVolume: (volume) =>
-    set({ volume: Math.min(1, Math.max(0, volume)), muted: volume === 0 }),
+  setVolume: (volume) => {
+    // Normalize before deriving mute state: a value outside the native range
+    // (for example from wheel/keyboard input) must never leave zero volume
+    // marked as unmuted.
+    const normalized = Number.isFinite(volume) ? Math.min(1, Math.max(0, volume)) : 0;
+    set({ volume: normalized, muted: normalized === 0 });
+  },
   toggleMute: () => set((state) => ({ muted: !state.muted })),
   setExpanded: (expanded) => {
     if (get().expanded === expanded) return;
