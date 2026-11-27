@@ -13,14 +13,12 @@ import {
   MoreHorizontal,
   Mic2,
   Pause,
-  Play,
   Repeat,
   Repeat1,
   Shuffle,
   SkipBack,
   SkipForward,
   Trash2,
-  X,
 } from 'lucide-react';
 import { usePlayer } from '@/lib/player-store';
 import { useLocale, useT } from '@/i18n/use-translator';
@@ -96,7 +94,7 @@ export function FullPlayer() {
   const [srt, setSrt] = useState<string | null>(null);
   const loadedLyricsForRef = useRef<string | null>(null);
   const [plainLyrics, setPlainLyrics] = useState<string | null>(null);
-  const [lyricsLoading, setLyricsLoading] = useState(false);
+  const [lyricsResultFor, setLyricsResultFor] = useState<string | null>(null);
   const [generatingLyrics, setGeneratingLyrics] = useState(false);
   const [lyricsMessage, setLyricsMessage] = useState('');
   const [mobileLyricsOpen, setMobileLyricsOpen] = useState(false);
@@ -187,6 +185,7 @@ export function FullPlayer() {
   const expanded = usePlayer((state) => state.expanded);
   const track = usePlayer((state) => state.track);
   const podcast = isPodcastPlayback(track);
+  const trackId = track?.id;
   useEffect(() => {
     if (track?.id) setSideTab('similar');
   }, [track?.id]);
@@ -284,25 +283,20 @@ export function FullPlayer() {
   // Don't fetch and parse lyrics when the listener is looking at similar
   // content or their queue. Most mobile sessions never open the lyrics panel.
   const lyricsRequested = mobileLyricsOpen || sideTab === 'lyrics';
+  const lyricsLoading = lyricsRequested && !podcast && lyricsResultFor !== trackId;
   useEffect(() => {
     loadedLyricsForRef.current = null;
     setSrt(null);
     setPlainLyrics(null);
     setLyricsMessage('');
-    setLyricsLoading(false);
+    setLyricsResultFor(null);
     setMobileLyricsOpen(false);
-  }, [track?.id]);
+  }, [trackId]);
   useEffect(() => {
-    if (
-      !track?.id ||
-      isPodcastPlayback(track) ||
-      !lyricsRequested ||
-      loadedLyricsForRef.current === track.id
-    )
+    if (!trackId || podcast || !lyricsRequested || loadedLyricsForRef.current === trackId)
       return;
-    const id = track.id;
+    const id = trackId;
     const controller = new AbortController();
-    setLyricsLoading(true);
     fetch('/api/tracks/' + encodeURIComponent(id) + '/synced-lyrics', {
       signal: controller.signal,
     })
@@ -316,10 +310,10 @@ export function FullPlayer() {
       })
       .catch(() => {})
       .finally(() => {
-        if (!controller.signal.aborted) setLyricsLoading(false);
+        if (!controller.signal.aborted) setLyricsResultFor(id);
       });
     return () => controller.abort();
-  }, [track?.id, lyricsRequested]);
+  }, [trackId, podcast, lyricsRequested]);
   async function generateLyrics() {
     if (!track || generatingLyrics) return;
     setGeneratingLyrics(true);
@@ -536,6 +530,14 @@ export function FullPlayer() {
                               {activeCue >= 0 ? cues[activeCue]?.text : '♪'}
                             </p>
                           </div>
+                        ) : plainLyrics?.trim() ? (
+                          <p
+                            data-plain-lyrics
+                            dir="auto"
+                            className="my-auto w-full self-start whitespace-pre-wrap break-words px-2 py-2 text-center text-base leading-relaxed text-white"
+                          >
+                            {plainLyrics}
+                          </p>
                         ) : (
                           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
                             <p className="text-sm text-white/80">
@@ -1286,6 +1288,13 @@ export function FullPlayer() {
                       {activeCue >= 0 ? cues[activeCue]?.text : '♪'}
                     </p>
                   </div>
+                ) : plainLyrics?.trim() ? (
+                  <p
+                    dir="auto"
+                    className="whitespace-pre-wrap break-words px-4 py-6 text-center text-lg leading-relaxed text-ink"
+                  >
+                    {plainLyrics}
+                  </p>
                 ) : (
                   <div className="flex min-h-56 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/15 px-6 text-center">
                     <Mic2 className="h-8 w-8 text-neutral-300/70" />
