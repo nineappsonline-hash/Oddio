@@ -689,3 +689,35 @@
     transition: none;
   }
 }
+
+/* Mobile navigation is physically left in both LTR and RTL (Oddio UX contract). */
+@media (max-width: 850px) {
+  .mp2-mobile-menu-trigger {
+    left: 13px;
+    right: auto;
+    inset-inline-start: auto;
+  }
+  .mp2-header {
+    padding-left: 65px;
+    padding-right: 14px;
+    padding-inline-start: unset;
+    padding-inline-end: unset;
+  }
+  .mp2-sidebar,
+  [dir='ltr'] .mp2-sidebar {
+    left: 0;
+    right: auto;
+    inset-inline-start: auto;
+    transform: translateX(-115%);
+  }
+  .mp2-sidebar.mp2-sidebar-open {
+    transform: translateX(0);
+  }
+}
+@media (max-width: 640px) {
+  .mp2-header {
+    padding-left: 65px;
+    padding-right: 14px;
+    padding-inline-start: unset;
+  }
+}
