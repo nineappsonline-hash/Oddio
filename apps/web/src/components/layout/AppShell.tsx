@@ -56,7 +56,20 @@ export function AppShell({
     `/${locale}/artists`,
     `/${locale}/podcasts`,
   ]);
-  const useMagicPathShell = musicBrowseRoutes.has(pathname);
+  const detailPrefixes = [
+    `/${locale}/tracks/`,
+    `/${locale}/albums/`,
+    `/${locale}/artists/`,
+    `/${locale}/genres/`,
+    `/${locale}/moods/`,
+    `/${locale}/playlists/`,
+  ];
+  const useMagicPathShell =
+    musicBrowseRoutes.has(pathname) ||
+    pathname === `/${locale}/library` ||
+    pathname === `/${locale}/charts` ||
+    pathname === `/${locale}/soundspace` ||
+    detailPrefixes.some((prefix) => pathname.startsWith(prefix));
   const podcastMode =
     pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   return (
