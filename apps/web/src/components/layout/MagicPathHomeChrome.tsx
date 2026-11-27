@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -56,11 +56,56 @@ const navItems = [
 export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
   const [open, setOpen] = useState(false);
   const ar = locale === 'ar';
+  const drawerRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const focusable = () =>
+      Array.from(
+        drawerRef.current?.querySelectorAll<HTMLElement>(
+          'a[href],button:not([disabled]),[tabindex="0"]',
+        ) ?? [],
+      );
+    focusable()[0]?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const nodes = focusable();
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', handleKey);
+      triggerRef.current?.focus();
+    };
+  }, [open]);
+
   return (
     <>
       <button
         type="button"
+        id="oddio-mobile-menu-trigger"
+        ref={triggerRef}
         className="mp2-mobile-menu-trigger"
+        aria-expanded={open}
+        aria-controls="oddio-magicpath-mobile-menu"
         aria-label={ar ? 'افتح القائمة' : 'Open navigation'}
         onClick={() => setOpen(true)}
       >
@@ -74,7 +119,14 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
           onClick={() => setOpen(false)}
         />
       ) : null}
-      <aside className={`mp2-sidebar ${open ? 'mp2-sidebar-open' : ''}`}>
+      <aside
+        ref={drawerRef}
+        id="oddio-magicpath-mobile-menu"
+        role={open ? 'dialog' : undefined}
+        aria-modal={open ? true : undefined}
+        aria-label={open ? (ar ? 'القائمة' : 'Menu') : undefined}
+        className={`mp2-sidebar ${open ? 'mp2-sidebar-open' : ''}`}
+      >
         <div className="mp2-sidebar-brand">
           <Logo locale={locale} />
           <button
@@ -245,7 +297,7 @@ export function MagicPathHomeListeningRail({ locale }: { locale: 'ar' | 'en' }) 
             className="mp2-listening-cover"
             type="button"
             onClick={() => setExpanded(true)}
-            aria-label={ar ? 'افتح المشغل' : 'Open player'}
+            aria-label={ar ? 'فتح المشغل' : 'Open player'}
           >
             <Artwork
               title={track.title}
@@ -331,7 +383,7 @@ export function MagicPathHomeBottomPlayer({ locale }: { locale: 'ar' | 'en' }) {
   };
 
   return (
-    <section className="mp2-player" aria-label={ar ? 'مشغل أوديو' : 'Oddio music player'}>
+    <section className="mp2-player" role="region" aria-label={ar ? 'مشغل أوديو' : 'Oddio music player'}>
       <div className="mp2-player-track">
         {track ? (
           <>
