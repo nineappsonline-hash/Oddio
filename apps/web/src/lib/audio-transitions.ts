@@ -30,3 +30,26 @@ export function canPrepareNextTrack(args: {
     args.remainingSeconds <= 16
   );
 }
+
+
+/**
+ * A speculative audio authorization or async play() completion is valid only
+ * while the exact source/next-track pair that requested it remains active.
+ * Matching a queued ID alone is not enough: the listener may have selected
+ * another song or paused while the asynchronous operation was in flight.
+ */
+export function isActiveAudioTransition(args: {
+  sourceTrackId: string | null;
+  nextTrackId: string;
+  activeTrackId: string | null;
+  activeNextTrackId: string | null;
+  playing: boolean;
+}): boolean {
+  return (
+    Boolean(args.sourceTrackId) &&
+    Boolean(args.nextTrackId) &&
+    args.playing &&
+    args.activeTrackId === args.sourceTrackId &&
+    args.activeNextTrackId === args.nextTrackId
+  );
+}
