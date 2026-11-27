@@ -162,6 +162,38 @@ export default async function HomePage({
         </div>
       </section>
 
+      <section className="oddio-dashboard-section oddio-genres-section">
+        <div className="oddio-section-title-row">
+          <div>
+            <p className="oddio-micro-label">{ar ? 'ابدأ من هنا' : 'FIND YOUR SOUND'}</p>
+            <h2>{ar ? 'استكشف حسب النوع' : 'Explore by genre'}</h2>
+          </div>
+          <Link href={`/${locale}/genres`} className="oddio-section-action">
+            {ar ? 'شوف الكل' : 'See all'}{' '}
+            <ArrowRight size={16} className="rtl:-scale-x-100" />
+          </Link>
+        </div>
+        {data.genres.length > 0 ? (
+          <div className="oddio-genre-grid">
+            {data.genres.slice(0, 6).map((genre, index) => (
+              <Link
+                key={genre.id}
+                href={`/${locale}/genres/${genre.slug}`}
+                className="oddio-genre-tile"
+              >
+                <GenreArtwork slug={genre.slug} index={index} />
+                <span className="oddio-genre-overlay" />
+                <span className="oddio-genre-label">{label(genre)}</span>
+                <ArrowUpRight className="oddio-genre-arrow" size={17} />
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <EmptyState title={t('common.noResults')} />
+        )}
+      </section>
+
+
       <div className="oddio-home-feature-grid">
         <section
           className="oddio-featured-stage"
@@ -301,36 +333,6 @@ export default async function HomePage({
         </section>
       ) : null}
 
-      <section className="oddio-dashboard-section oddio-genres-section">
-        <div className="oddio-section-title-row">
-          <div>
-            <p className="oddio-micro-label">{ar ? 'ابدأ من هنا' : 'FIND YOUR SOUND'}</p>
-            <h2>{ar ? 'استكشف حسب النوع' : 'Explore by genre'}</h2>
-          </div>
-          <Link href={`/${locale}/genres`} className="oddio-section-action">
-            {ar ? 'شوف الكل' : 'See all'}{' '}
-            <ArrowRight size={16} className="rtl:-scale-x-100" />
-          </Link>
-        </div>
-        {data.genres.length > 0 ? (
-          <div className="oddio-genre-grid">
-            {data.genres.slice(0, 6).map((genre, index) => (
-              <Link
-                key={genre.id}
-                href={`/${locale}/genres/${genre.slug}`}
-                className="oddio-genre-tile"
-              >
-                <GenreArtwork slug={genre.slug} index={index} />
-                <span className="oddio-genre-overlay" />
-                <span className="oddio-genre-label">{label(genre)}</span>
-                <ArrowUpRight className="oddio-genre-arrow" size={17} />
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <EmptyState title={t('common.noResults')} />
-        )}
-      </section>
 
       <div className="oddio-home-editorial-columns">
         <section className="oddio-dashboard-section oddio-releases-section">
