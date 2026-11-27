@@ -811,5 +811,13 @@
 }
 
 /* Deep Blue transport buttons: keep glyphs white on cobalt. */
-.mp2-player-controls > button.mp2-main-play {background:linear-gradient(135deg,#3975c6,#20549b);color:#fff;box-shadow:0 3px 14px rgba(22,66,128,.20)!important}
-.mp2-header-account{background:#285d9f;border-color:#4f7fba;color:#fff}
+.mp2-player-controls > button.mp2-main-play {
+  background: linear-gradient(135deg, #3975c6, #20549b);
+  color: #fff;
+  box-shadow: 0 3px 14px rgba(22, 66, 128, 0.2) !important;
+}
+.mp2-header-account {
+  background: #285d9f;
+  border-color: #4f7fba;
+  color: #fff;
+}

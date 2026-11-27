@@ -437,5 +437,12 @@ body:has(.oddio-magicpath-home) {
 }
 
 /* Deep Blue contrast: muted cobalt buttons and restrained editorial accents. */
-.oddio-magicpath-home .oddio-v2-hero-button {background:linear-gradient(120deg,#3975c6,#20549b);color:#fff;border-color:#4a76ad;box-shadow:0 8px 22px rgba(20,65,120,.17)}
-.oddio-magicpath-home .oddio-v2-hero-copy h1 span {background-image:linear-gradient(105deg,#eff4fb,#5688c9 78%,#326bae)}
+.oddio-magicpath-home .oddio-v2-hero-button {
+  background: linear-gradient(120deg, #3975c6, #20549b);
+  color: #fff;
+  border-color: #4a76ad;
+  box-shadow: 0 8px 22px rgba(20, 65, 120, 0.17);
+}
+.oddio-magicpath-home .oddio-v2-hero-copy h1 span {
+  background-image: linear-gradient(105deg, #eff4fb, #5688c9 78%, #326bae);
+}
