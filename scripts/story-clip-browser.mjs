@@ -276,6 +276,7 @@ try {
       result.handoff?.active && result.handoff.size > 1000,
       JSON.stringify(result),
     );
+    await dialog.getByText('Show link', { exact: true }).tap();
     const link = new URL(
       await dialog.getByRole('textbox', { name: 'Full audio URL' }).inputValue(),
     );
