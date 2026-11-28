@@ -153,6 +153,28 @@ export function PodcastShowCard({
   );
 }
 
+function PodcastEpisodeDetails({
+  episode,
+  locale,
+}: {
+  episode: PodcastEpisode;
+  locale: 'ar' | 'en';
+}) {
+  const ar = locale === 'ar';
+  return (
+    <Link
+      prefetch={false}
+      href={`/${locale}/podcasts/episodes/${episode.id}`}
+      aria-label={
+        ar ? `تفاصيل الحلقة: ${episode.title}` : `Episode details: ${episode.title}`
+      }
+      className="inline-flex min-h-10 items-center self-start rounded-lg px-3 text-xs font-semibold text-[#b0ebdc] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b0ebdc]"
+    >
+      {ar ? 'تفاصيل الحلقة' : 'Episode details'}
+    </Link>
+  );
+}
+
 export function PodcastEpisodeCard({
   episode,
   show,
@@ -164,48 +186,51 @@ export function PodcastEpisodeCard({
 }) {
   if (!show) return null;
   return (
-    <PodcastPlaySurface
-      episode={episode}
-      show={show}
-      locale={locale}
-      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-colors duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.09] sm:p-3.5"
-    >
-      <span className="relative block w-full">
-        <PodcastArtwork
-          title={episode.title}
-          coverUrl={show.coverUrl}
-          className="w-full !rounded-2xl"
+    <article className="flex h-full min-w-0 flex-col gap-1">
+      <PodcastPlaySurface
+        episode={episode}
+        show={show}
+        locale={locale}
+        className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-white/[0.13] bg-white/[0.055] p-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary shadow-[0_14px_35px_rgba(0,0,0,.18),inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl transition-colors duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.09] sm:p-3.5"
+      >
+        <span className="relative block w-full">
+          <PodcastArtwork
+            title={episode.title}
+            coverUrl={show.coverUrl}
+            className="w-full !rounded-2xl"
+          />
+          <span
+            className="absolute bottom-2 end-2 grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-[#171819]/85 shadow-lg backdrop-blur-xl transition-transform group-hover:scale-110"
+            aria-hidden="true"
+          >
+            <OddioPlayIcon size={39} />
+          </span>
+        </span>
+        <AutoScrollTitle
+          text={episode.title}
+          lines={2}
+          className="mt-3 text-sm font-bold text-white sm:text-base"
         />
         <span
-          className="absolute bottom-2 end-2 grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-[#171819]/85 shadow-lg backdrop-blur-xl transition-transform group-hover:scale-110"
-          aria-hidden="true"
+          dir="auto"
+          className="mt-1 block w-full truncate text-xs leading-5 text-[#c4c4c4]"
         >
-          <OddioPlayIcon size={39} />
+          {show.title}
         </span>
-      </span>
-      <AutoScrollTitle
-        text={episode.title}
-        lines={2}
-        className="mt-3 text-sm font-bold text-white sm:text-base"
-      />
-      <span
-        dir="auto"
-        className="mt-1 block w-full truncate text-xs leading-5 text-[#c4c4c4]"
-      >
-        {show.title}
-      </span>
-      <span
-        className="mt-auto flex w-full items-center gap-1.5 pt-3 text-xs text-[#c4c4c4]"
-        dir="ltr"
-      >
-        <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
-        {episode.durationSeconds > 0
-          ? formatPodcastTime(episode.durationSeconds)
-          : locale === 'ar'
-            ? 'حلقة صوتية'
-            : 'Audio episode'}
-      </span>
-    </PodcastPlaySurface>
+        <span
+          className="mt-auto flex w-full items-center gap-1.5 pt-3 text-xs text-[#c4c4c4]"
+          dir="ltr"
+        >
+          <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
+          {episode.durationSeconds > 0
+            ? formatPodcastTime(episode.durationSeconds)
+            : locale === 'ar'
+              ? 'حلقة صوتية'
+              : 'Audio episode'}
+        </span>
+      </PodcastPlaySurface>
+      <PodcastEpisodeDetails episode={episode} locale={locale} />
+    </article>
   );
 }
 
@@ -231,49 +256,53 @@ export function PodcastEpisodeRow({
   const duration =
     episode.durationSeconds > 0 ? formatPodcastTime(episode.durationSeconds) : null;
   return (
-    <PodcastPlaySurface
-      episode={episode}
-      show={show}
-      locale={locale}
-      upcoming={upcoming}
-      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[20px] border border-white/[0.13] bg-white/[0.055] backdrop-blur-2xl p-3.5 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary shadow-[0_12px_32px_rgba(0,0,0,0.15)] transition-colors duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.09] hover:shadow-[0_18px_42px_rgba(0,0,0,0.25)] sm:p-4"
-    >
-      <span className="relative block w-full overflow-hidden rounded-2xl">
-        <PodcastArtwork
-          title={show.title}
-          coverUrl={show.coverUrl}
-          className="w-full !rounded-2xl"
-        />
-        <span
-          aria-hidden="true"
-          className="absolute bottom-3 end-3 grid h-12 w-12 place-items-center rounded-full border border-white/20 bg-[#171819]/85 shadow-lg backdrop-blur-sm transition-transform group-hover:scale-110"
-        >
-          <OddioPlayIcon size={43} />
-        </span>
-      </span>
-      <span className="mt-4 flex w-full min-w-0 flex-1 flex-col gap-2 px-0.5 pb-1">
-        <span className="flex items-center gap-2 text-[11px] font-semibold tracking-wide text-[#cccccc]">
-          {ar ? `الحلقة ${number}` : `EPISODE ${number}`}
-          {episode.seasonNumber && episode.seasonNumber > 1 ? (
-            <span className="text-[#999999]">
-              · {ar ? `الموسم ${episode.seasonNumber}` : `Season ${episode.seasonNumber}`}
-            </span>
-          ) : null}
-        </span>
-        <AutoScrollTitle
-          text={episode.title}
-          lines={2}
-          className="text-base font-bold text-white sm:text-lg"
-        />
-        <span className="mt-auto flex items-center justify-between gap-2 pt-2 text-xs text-[#c4c4c4]">
-          <span className="inline-flex items-center gap-1.5" dir="ltr">
-            <Clock3 size={14} aria-hidden="true" />
-            {duration ?? (ar ? 'حلقة صوتية' : 'Audio episode')}
+    <article className="flex h-full min-w-0 flex-col gap-1">
+      <PodcastPlaySurface
+        episode={episode}
+        show={show}
+        locale={locale}
+        upcoming={upcoming}
+        className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[20px] border border-white/[0.13] bg-white/[0.055] backdrop-blur-2xl p-3.5 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary shadow-[0_12px_32px_rgba(0,0,0,0.15)] transition-colors duration-200 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.09] hover:shadow-[0_18px_42px_rgba(0,0,0,0.25)] sm:p-4"
+      >
+        <span className="relative block w-full overflow-hidden rounded-2xl">
+          <PodcastArtwork
+            title={show.title}
+            coverUrl={show.coverUrl}
+            className="w-full !rounded-2xl"
+          />
+          <span
+            aria-hidden="true"
+            className="absolute bottom-3 end-3 grid h-12 w-12 place-items-center rounded-full border border-white/20 bg-[#171819]/85 shadow-lg backdrop-blur-sm transition-transform group-hover:scale-110"
+          >
+            <OddioPlayIcon size={43} />
           </span>
-          <span className="text-[#dddddd]">{ar ? 'استمع الآن' : 'Listen now'}</span>
         </span>
-      </span>
-    </PodcastPlaySurface>
+        <span className="mt-4 flex w-full min-w-0 flex-1 flex-col gap-2 px-0.5 pb-1">
+          <span className="flex items-center gap-2 text-[11px] font-semibold tracking-wide text-[#cccccc]">
+            {ar ? `الحلقة ${number}` : `EPISODE ${number}`}
+            {episode.seasonNumber && episode.seasonNumber > 1 ? (
+              <span className="text-[#999999]">
+                ·{' '}
+                {ar ? `الموسم ${episode.seasonNumber}` : `Season ${episode.seasonNumber}`}
+              </span>
+            ) : null}
+          </span>
+          <AutoScrollTitle
+            text={episode.title}
+            lines={2}
+            className="text-base font-bold text-white sm:text-lg"
+          />
+          <span className="mt-auto flex items-center justify-between gap-2 pt-2 text-xs text-[#c4c4c4]">
+            <span className="inline-flex items-center gap-1.5" dir="ltr">
+              <Clock3 size={14} aria-hidden="true" />
+              {duration ?? (ar ? 'حلقة صوتية' : 'Audio episode')}
+            </span>
+            <span className="text-[#dddddd]">{ar ? 'استمع الآن' : 'Listen now'}</span>
+          </span>
+        </span>
+      </PodcastPlaySurface>
+      <PodcastEpisodeDetails episode={episode} locale={locale} />
+    </article>
   );
 }
 

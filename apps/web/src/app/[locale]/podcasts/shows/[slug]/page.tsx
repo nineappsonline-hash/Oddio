@@ -33,11 +33,12 @@ export async function generateMetadata({
     title: show?.title ?? 'Podcast show',
     socialTitle: show?.title,
     description: show
-      ? arabic
-        ? `🎙️ بودكاست: ${show.title}\n🎤 تقديم: ${show.author}\n🎧 استمع للحلقات على Oddio.`
-        : `🎙️ Podcast: ${show.title}\n🎤 By: ${show.author}\n🎧 Listen on Oddio.`
+      ? show.description.trim().replace(/\s+/g, ' ').slice(0, 160) ||
+        (arabic
+          ? `استمع لحلقات بودكاست ${show.title} مع ${show.author} على Oddio.`
+          : `Listen to episodes of ${show.title} with ${show.author} on Oddio.`)
       : '',
-    noindex: !show,
+    noindex: !show || !catalog.episodes.some((episode) => episode.showId === show.id),
     image: show?.coverUrl,
     imageAlt: show ? `${show.title} — ${show.author}` : undefined,
   });

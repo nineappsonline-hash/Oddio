@@ -10,9 +10,20 @@ import { getPodcastCatalog } from '@/lib/podcasts/catalog';
 export const dynamic = 'force-dynamic';
 
 function languages(path: string) {
-  return Object.fromEntries(
-    locales.map((locale) => [locale, absoluteUrl(`/${locale}${path}`)]),
-  );
+  return {
+    ...Object.fromEntries(
+      locales.map((locale) => [locale, absoluteUrl(`/${locale}${path}`)]),
+    ),
+    'x-default': absoluteUrl(`/en${path}`),
+  };
+}
+
+function validDate(value: string | undefined) {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isFinite(date.valueOf()) && date.valueOf() <= Date.now()
+    ? date
+    : undefined;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -38,6 +49,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/legal/copyright',
   ];
 
+  const episodeShowIds = new Set(podcasts.episodes.map((episode) => episode.showId));
+  const activeShows = podcasts.shows.filter((show) => episodeShowIds.has(show.id));
+  const activePodcastCategoryIds = new Set(activeShows.map((show) => show.categoryId));
+  if (entries.artists.length) staticPaths.push('/artists');
+
   for (const locale of locales) {
     for (const path of staticPaths) {
       items.push({
@@ -47,9 +63,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         alternates: { languages: languages(path) },
       });
     }
-    const activePodcastCategoryIds = new Set(
-      podcasts.shows.map((show) => show.categoryId),
-    );
     for (const category of podcasts.categories.filter((item) =>
       activePodcastCategoryIds.has(item.id),
     )) {
@@ -61,7 +74,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         alternates: { languages: languages(path) },
       });
     }
-    for (const show of podcasts.shows) {
+    for (const show of activeShows) {
       const path = `/podcasts/shows/${show.slug}`;
       items.push({
         url: absoluteUrl(`/${locale}${path}`),
@@ -74,7 +87,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const path = `/podcasts/episodes/${episode.id}`;
       items.push({
         url: absoluteUrl(`/${locale}${path}`),
-        lastModified: episode.publishedAt ? new Date(episode.publishedAt) : undefined,
+        lastModified: validDate(episode.publishedAt),
         changeFrequency: 'monthly',
         priority: 0.7,
         alternates: { languages: languages(path) },
@@ -111,7 +124,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const path = `/tracks/${track.id}-${track.slug}`;
       items.push({
         url: absoluteUrl(`/${locale}${path}`),
-        lastModified: new Date(track.updatedAt),
+        lastModified: validDate(track.updatedAt),
         changeFrequency: 'weekly',
         priority: 0.8,
         alternates: { languages: languages(path) },

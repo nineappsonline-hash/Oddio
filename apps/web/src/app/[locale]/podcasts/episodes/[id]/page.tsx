@@ -34,9 +34,10 @@ export async function generateMetadata({
     title: episode ? episode.title : 'Podcast episode',
     socialTitle: episode?.title,
     description: episode
-      ? arabic
-        ? `🎙️ بودكاست: ${author}\n🎧 استمع للحلقة على Oddio.${episode.description ? `\n${episode.description.slice(0, 110)}` : ''}`
-        : `🎙️ Podcast: ${author}\n🎧 Listen to this episode on Oddio.${episode.description ? `\n${episode.description.slice(0, 110)}` : ''}`
+      ? episode.description.trim().replace(/\s+/g, ' ').slice(0, 160) ||
+        (arabic
+          ? `اسمع «${episode.title}» من بودكاست ${author} على Oddio.`
+          : `Listen to “${episode.title}” from ${author} on Oddio.`)
       : '',
     noindex: !episode || !show,
     image: show?.coverUrl,
