@@ -471,7 +471,6 @@ body:has(.oddio-magicpath-home) {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.19);
 }
 
-
 /* Oddio 2.0 production integration — restrained petrol accents.
    Scoped to the actual data-backed home page; player and routing remain untouched. */
 body:has(.oddio-magicpath-home) {
@@ -488,7 +487,11 @@ body:has(.oddio-magicpath-home) aside.fixed.inset-y-0 nav a[aria-current='page']
   background: linear-gradient(105deg, rgba(35, 85, 95, 0.48), rgba(27, 30, 33, 0.82));
   box-shadow: inset 3px 0 0 var(--oddio-petrol-hover);
 }
-[dir='rtl'] body:has(.oddio-magicpath-home) aside.fixed.inset-y-0 nav a[aria-current='page'] {
+[dir='rtl']
+  body:has(.oddio-magicpath-home)
+  aside.fixed.inset-y-0
+  nav
+  a[aria-current='page'] {
   box-shadow: inset -3px 0 0 var(--oddio-petrol-hover);
 }
 .oddio-magicpath-home .oddio-v2-hero-button:hover {
@@ -504,7 +507,10 @@ body:has(.oddio-magicpath-home) aside.fixed.inset-y-0 nav a[aria-current='page']
 }
 .oddio-magicpath-home .oddio-v2-hero-shortcuts a,
 .oddio-magicpath-home .oddio-v2-hero-button {
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
 }
 @media (max-width: 700px) {
   .oddio-magicpath-home,
