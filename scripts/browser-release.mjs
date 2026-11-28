@@ -163,6 +163,7 @@ try {
                   'oddio-gradient-play-logo.png',
                 ),
               );
+              await page.mouse.move(0, 0);
               const cardPlay = page.locator('.art-frame .oddio-card-play').first();
               const style = await cardPlay.evaluate((element) => {
                 const rect = element.getBoundingClientRect();

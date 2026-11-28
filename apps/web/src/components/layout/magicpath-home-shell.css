@@ -859,7 +859,7 @@
 }
 
 /* Shared 2.0 transport treatment: high contrast without obscuring cover art. */
-.mp2-workspace .oddio-card-play,
+.mp2-workspace .art-frame button.oddio-card-play,
 .mp2-player-controls > button.mp2-main-play {
   width: 46px;
   height: 46px;
@@ -868,17 +868,17 @@
   border: 1px solid #c9dedc;
   box-shadow: 0 3px 12px #060d1066 !important;
 }
-.mp2-workspace .oddio-card-play:hover,
+.mp2-workspace .art-frame button.oddio-card-play:hover,
 .mp2-player-controls > button.mp2-main-play:hover:not(:disabled) {
   background: #d7eeeb;
   color: #132f36;
 }
-.mp2-workspace .oddio-card-play > svg {
+.mp2-workspace .art-frame button.oddio-card-play > svg {
   width: 17px;
   height: 17px;
 }
 @media (max-width: 640px) {
-  .mp2-workspace .oddio-card-play,
+  .mp2-workspace .art-frame button.oddio-card-play,
   .mp2-player-controls > button.mp2-main-play {
     width: 44px;
     height: 44px;
