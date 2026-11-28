@@ -66,30 +66,35 @@ try {
           header: bounds('.mp2-header'),
         };
       });
-      const petrol = await page
+      const playerButton = await page
         .locator('.mp2-player-controls > button.mp2-main-play')
         .evaluate((button) => {
-          const gradient = getComputedStyle(button).backgroundImage;
-          const rgb = gradient.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-          return rgb
-            ? {
-                red: Number(rgb[1]),
-                green: Number(rgb[2]),
-                blue: Number(rgb[3]),
-                gradient,
-              }
-            : null;
+          const style = getComputedStyle(button);
+          const rect = button.getBoundingClientRect();
+          return {
+            background: style.backgroundColor,
+            color: style.color,
+            width: rect.width,
+            height: rect.height,
+          };
         });
+      const size = width <= 640 ? 44 : 46;
       if (
-        !petrol ||
-        petrol.green < petrol.red + 20 ||
-        Math.abs(petrol.blue - petrol.green) > 22
+        playerButton.background !== 'rgb(239, 246, 245)' ||
+        playerButton.color !== 'rgb(23, 63, 70)' ||
+        playerButton.width !== size ||
+        playerButton.height !== size
       ) {
         throw new Error(
-          `Petrol player theme regression on ${locale}/${label}: ${JSON.stringify(petrol)}`,
+          'Player button styling regression on ' +
+            locale +
+            '/' +
+            label +
+            ': ' +
+            JSON.stringify(playerButton),
         );
       }
-      measurements.push({ locale, label, ...sizes, petrolPlayer: petrol });
+      measurements.push({ locale, label, ...sizes, playerButton });
       process.stdout.write(`Captured ${locale}/${label}: overflow=${sizes.overflow}px\n`);
     } finally {
       await context.close();

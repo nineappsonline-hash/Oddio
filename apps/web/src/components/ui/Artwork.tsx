@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useCallback, useState } from 'react';
 import { cn, initials } from '@/lib/utils';
 
 export function Artwork({
@@ -19,6 +22,18 @@ export function Artwork({
   priority?: boolean;
   sizes?: string;
 }) {
+  const [failedUrl, setFailedUrl] = useState<string>();
+  const showCover = Boolean(url && failedUrl !== url);
+  const markFailed = useCallback(() => {
+    if (url) setFailedUrl(url);
+  }, [url]);
+  const checkCachedCover = useCallback(
+    (image: HTMLImageElement | null) => {
+      // A failed image can finish before this client component hydrates.
+      if (image?.complete && image.currentSrc && image.naturalWidth === 0) markFailed();
+    },
+    [markFailed],
+  );
   const localSource = Boolean(url && url.startsWith('/') && !url.startsWith('//'));
   const cloudinarySource = Boolean(url && /^https:\/\/res\.cloudinary\.com\//i.test(url));
   const optimizedCloudinary =
@@ -44,15 +59,18 @@ export function Artwork({
         className,
       )}
       style={{
-        backgroundImage: url
+        backgroundImage: showCover
           ? 'linear-gradient(135deg, #17112e, #090912)'
           : 'linear-gradient(150deg, #202b2e, #131617 72%)',
       }}
     >
-      {url ? (
+      {showCover ? (
         <>
           {localSource ? (
             <Image
+              key={url}
+              ref={checkCachedCover}
+              onError={markFailed}
               src={url!}
               alt=""
               fill
@@ -67,6 +85,9 @@ export function Artwork({
             // private hosts through the public Next.js image proxy.
             // eslint-disable-next-line @next/next/no-img-element
             <img
+              key={url}
+              ref={checkCachedCover}
+              onError={markFailed}
               src={optimizedCloudinary}
               srcSet={cloudinarySet}
               sizes={cloudinarySet ? sizes : undefined}
@@ -84,7 +105,7 @@ export function Artwork({
           />
         </>
       ) : null}
-      {!url ? (
+      {!showCover ? (
         <div
           aria-hidden="true"
           data-oddio-artwork-fallback

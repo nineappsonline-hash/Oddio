@@ -552,7 +552,15 @@ try {
         const hidden = page.getByRole('button', {
           name: locale === 'ar' ? 'مش مهتم' : 'Not interested',
         });
-        await hidden.first().click();
+        assert.equal(await hidden.count(), 0, 'feedback starts collapsed');
+        const options = page.locator('[data-discovery-options]').first();
+        await options.click();
+        await waitForAttribute(options, 'aria-expanded', 'true');
+        await hidden.waitFor({ state: 'visible' });
+        await page.keyboard.press('Escape');
+        await waitForAttribute(options, 'aria-expanded', 'false');
+        await options.click();
+        await hidden.click();
         const clear = page.getByRole('button', {
           name: locale === 'ar' ? 'مسح الاستبعادات' : 'Clear hidden music',
         });

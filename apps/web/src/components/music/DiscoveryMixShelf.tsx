@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { Ellipsis } from 'lucide-react';
 import {
   homePersonalizationKey,
   parseHomePersonalizationPreference,
@@ -18,6 +19,84 @@ import {
   type DiscoveryExclusions,
 } from '@/lib/discovery-preferences';
 
+function DiscoveryTrackActions({
+  title,
+  ar,
+  open,
+  onToggle,
+  onDismiss,
+  onHideTrack,
+  onHideGenre,
+}: {
+  title: string;
+  ar: boolean;
+  open: boolean;
+  onToggle: () => void;
+  onDismiss: () => void;
+  onHideTrack: () => void;
+  onHideGenre?: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    function onOutside(event: PointerEvent) {
+      if (!ref.current?.contains(event.target as Node)) onDismiss();
+    }
+    function onEscape(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return;
+      onDismiss();
+      trigger.current?.focus();
+    }
+    document.addEventListener('pointerdown', onOutside);
+    document.addEventListener('keydown', onEscape);
+    return () => {
+      document.removeEventListener('pointerdown', onOutside);
+      document.removeEventListener('keydown', onEscape);
+    };
+  }, [open, onDismiss]);
+
+  const actionClass =
+    'min-h-11 w-full rounded-lg px-3 py-2 text-start text-sm text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary';
+
+  return (
+    <div
+      ref={ref}
+      className={open ? 'absolute end-3 top-3 z-30' : 'absolute end-3 top-3 z-20'}
+    >
+      <button
+        ref={trigger}
+        data-discovery-options
+        type="button"
+        aria-label={ar ? 'اختيارات ' + title : 'Options for ' + title}
+        aria-expanded={open}
+        aria-controls={open ? panelId : undefined}
+        onClick={onToggle}
+        className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/75 text-white shadow-md backdrop-blur-sm hover:bg-black/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+      >
+        <Ellipsis size={20} aria-hidden="true" />
+      </button>
+      {open ? (
+        <div
+          id={panelId}
+          className="absolute end-0 top-full mt-1 w-44 max-w-[calc((100vw-4rem)/2)] rounded-xl sm:max-w-none border border-white/15 bg-[#202829] p-1 shadow-xl"
+        >
+          <button type="button" className={actionClass} onClick={onHideTrack}>
+            {ar ? 'مش مهتم' : 'Not interested'}
+          </button>
+          {onHideGenre ? (
+            <button type="button" className={actionClass} onClick={onHideGenre}>
+              {ar ? 'إخفاء النوع ده' : 'Hide this genre'}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function DiscoveryMixShelf({
   tracks,
   publicTracks,
@@ -34,6 +113,20 @@ export function DiscoveryMixShelf({
   viewerId: string | null;
 }) {
   const ar = locale === 'ar';
+  const [openOptionsId, setOpenOptionsId] = useState<string | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const clearRef = useRef<HTMLButtonElement>(null);
+  const dismissOptions = () => setOpenOptionsId(null);
+  const applyExclusion = (next: DiscoveryExclusions) => {
+    dismissOptions();
+    update(next);
+    requestAnimationFrame(() => {
+      (
+        gridRef.current?.querySelector<HTMLButtonElement>('[data-discovery-options]') ??
+        clearRef.current
+      )?.focus({ preventScroll: true });
+    });
+  };
   const [cloudSynced, setCloudSynced] = useState(false);
   const [personalizationEnabled, setPersonalizationEnabled] = useState(true);
   const [personalizationLoaded, setPersonalizationLoaded] = useState(false);
@@ -263,40 +356,39 @@ export function DiscoveryMixShelf({
             : 'Guest exclusions are saved in this tab.'}
       </p>
       {cards.length ? (
-        <div className="oddio-explore-results-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div
+          ref={gridRef}
+          className="oddio-explore-results-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+        >
           {cards.map((track) => (
-            <div key={track.id} className="min-w-0">
+            <div key={track.id} className="relative min-w-0" data-discovery-track>
               <TrackCard track={track} queue={visible} />
-              <div className="mt-2 flex flex-wrap gap-1">
-                <button
-                  type="button"
-                  className="min-h-9 rounded-full border border-white/10 px-3 text-xs text-muted hover:text-ink"
-                  onClick={() =>
-                    update({
-                      ...prefs,
-                      trackIds: [...new Set([...prefs.trackIds, track.id])].slice(-100),
-                    })
-                  }
-                >
-                  {ar ? 'مش مهتم' : 'Not interested'}
-                </button>
-                {track.genreId ? (
-                  <button
-                    type="button"
-                    className="min-h-9 rounded-full border border-white/10 px-3 text-xs text-muted hover:text-ink"
-                    onClick={() =>
-                      update({
-                        ...prefs,
-                        genreIds: [...new Set([...prefs.genreIds, track.genreId])].slice(
-                          -50,
-                        ),
-                      })
-                    }
-                  >
-                    {ar ? 'إخفاء النوع ده' : 'Hide this genre'}
-                  </button>
-                ) : null}
-              </div>
+              <DiscoveryTrackActions
+                title={track.title}
+                ar={ar}
+                open={openOptionsId === track.id}
+                onToggle={() =>
+                  setOpenOptionsId((id) => (id === track.id ? null : track.id))
+                }
+                onDismiss={dismissOptions}
+                onHideTrack={() =>
+                  applyExclusion({
+                    ...prefs,
+                    trackIds: [...new Set([...prefs.trackIds, track.id])].slice(-100),
+                  })
+                }
+                onHideGenre={
+                  track.genreId
+                    ? () =>
+                        applyExclusion({
+                          ...prefs,
+                          genreIds: [
+                            ...new Set([...prefs.genreIds, track.genreId]),
+                          ].slice(-50),
+                        })
+                    : undefined
+                }
+              />
             </div>
           ))}
         </div>
@@ -310,6 +402,7 @@ export function DiscoveryMixShelf({
       {prefs.trackIds.length > 0 || prefs.genreIds.length > 0 ? (
         <button
           type="button"
+          ref={clearRef}
           className="mt-4 min-h-10 rounded-full border border-primary/40 px-4 text-sm text-primary"
           onClick={() => update({ trackIds: [], genreIds: [] })}
         >
