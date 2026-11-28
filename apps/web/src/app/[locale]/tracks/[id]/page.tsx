@@ -166,7 +166,10 @@ export default async function TrackPage({
               </Link>
             ) : null}
           </div>
-          <h1 dir="auto" className="text-3xl font-black tracking-tight text-ink sm:text-4xl">
+          <h1
+            dir="auto"
+            className="text-3xl font-black tracking-tight text-ink sm:text-4xl"
+          >
             {track.title}
           </h1>
           {artist ? (
