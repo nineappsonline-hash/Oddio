@@ -83,6 +83,7 @@ jobs:
             exit 1
           fi
           SMOKE_AUDIO=true SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/smoke-release.mjs
+          SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/social-preview-smoke.mjs
       - run: npm run lint
       - run: npm run format:check
 
