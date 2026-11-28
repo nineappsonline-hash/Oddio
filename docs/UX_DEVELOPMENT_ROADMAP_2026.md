@@ -3,6 +3,8 @@
 **Status:** In progress. **Owner:** Product / Engineering. **Target:** Responsive web, EN + AR (RTL).  
 **Working branch:** `feature/ux-roadmap-2026`. **Production:** no deployment or merge without functional, accessibility, security and data-persistence checks.
 
+For current release evidence and remaining gaps, see the [2026-11-28 audit](UX_ROADMAP_STATUS_2026-11-28.md). The tracking table below is the starting snapshot.
+
 ## Ground rules
 
 - Audit the actual implementation before making a feature; **do not rebuild shipped features**. README currently documents persistent player, queue, shuffle/repeat, keyboard support, search, moods, playlists, follows, OG sharing, localized routes and artist pages. Verify live behavior rather than assume all are complete.

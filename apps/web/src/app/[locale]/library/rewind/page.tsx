@@ -34,21 +34,27 @@ export default async function RewindPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ year?: string }>;
+  searchParams: Promise<{ year?: string | string[] }>;
 }) {
   const { locale: raw } = await params;
   if (!isLocale(raw)) redirect('/en');
   const locale = raw;
   const ar = locale === 'ar';
-  const user = await getSessionUser();
-  if (!user)
-    redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/library/rewind`)}`);
   const currentYear = new Date().getUTCFullYear();
-  const requested = Number((await searchParams).year);
-  const year =
-    Number.isInteger(requested) && requested >= 2020 && requested <= currentYear
+  const { year: requested } = await searchParams;
+  const selectedYear =
+    typeof requested === 'string' &&
+    /^\d{4}$/.test(requested) &&
+    Number(requested) >= 2020 &&
+    Number(requested) <= currentYear
       ? requested
-      : currentYear;
+      : null;
+  const year = selectedYear ? Number(selectedYear) : currentYear;
+  const user = await getSessionUser();
+  if (!user) {
+    const next = `/${locale}/library/rewind${selectedYear ? `?year=${selectedYear}` : ''}`;
+    redirect(`/${locale}/login?next=${encodeURIComponent(next)}`);
+  }
   const db = await readRuntimeDb();
   const allowed = getHistoryData(db, { userId: user.id, roles: user.roles });
   const events = qualifiedRecapEvents(
