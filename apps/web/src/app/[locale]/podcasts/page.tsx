@@ -1,3 +1,4 @@
+import '../../oddio-podcasts-v2.css';
 import {
   filterPodcastCatalog,
   getContentLanguagePreference,
@@ -87,8 +88,8 @@ export default async function PodcastsHome({
   const showById = new Map(catalog.shows.map((show) => [show.id, show]));
 
   return (
-    <div className="relative space-y-10 bg-[#0a0b0d] pb-8 text-white">
-      <section className="relative isolate overflow-hidden rounded-3xl border border-white/[0.13] bg-gradient-to-br from-[#242527]/90 via-[#161719]/90 to-[#101113]/90 p-6 shadow-[0_24px_80px_rgba(0,0,0,.24),inset_0_1px_0_rgba(255,255,255,.08)] backdrop-blur-2xl sm:p-10">
+    <div className="oddio-v2-podcasts relative space-y-10 pb-8 text-white">
+      <section className="oddio-v2-podcast-hero relative isolate overflow-hidden rounded-3xl border p-6 backdrop-blur-2xl sm:p-10">
         <div
           className="pointer-events-none absolute -right-12 -top-14 grid h-64 w-64 place-items-center rounded-full border-[32px] border-[#e9e9e9]/10 text-[#e9e9e9]/20"
           aria-hidden="true"
@@ -110,27 +111,27 @@ export default async function PodcastsHome({
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href={`/${locale}/podcasts/categories`}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#e9e9e9] px-5 text-sm font-bold text-[#100d13] hover:brightness-110"
+              className="oddio-v2-podcast-primary inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold"
             >
               {ar ? 'استكشف التصنيفات' : 'Browse categories'}{' '}
               <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
             </Link>
             <Link
               href={`/${locale}/podcasts/for-you`}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#e9e9e9] px-5 text-sm font-bold text-[#211625] transition hover:bg-white"
+              className="oddio-v2-podcast-primary inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold"
             >
               {ar ? 'مقترحات ليك' : 'For you'}
               <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
             </Link>
             <Link
               href={`/${locale}/podcasts/notifications`}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#d4b0f4]/50 bg-[#d4b0f4]/10 px-5 text-sm font-semibold text-white transition hover:bg-[#d4b0f4]/20"
+              className="oddio-v2-podcast-secondary inline-flex min-h-11 items-center gap-2 rounded-xl border px-5 text-sm font-semibold text-white transition"
             >
               <Bell className="h-4 w-4" aria-hidden="true" />
               {ar ? 'إشعارات البودكاست' : 'Notifications'}
               {podcastUnreadCount > 0 ? (
                 <span
-                  className="rounded-full bg-[#d4b0f4] px-2 py-0.5 text-xs font-bold text-[#211527]"
+                  className="oddio-v2-podcast-unread rounded-full px-2 py-0.5 text-xs font-bold"
                   aria-label={
                     ar
                       ? `${podcastUnreadCount} إشعارات غير مقروءة`
@@ -188,7 +189,7 @@ export default async function PodcastsHome({
       <form
         action={`/${locale}/podcasts`}
         role="search"
-        className="flex max-w-2xl items-center gap-3 rounded-2xl border border-white/[0.14] bg-white/[0.055] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.07)] backdrop-blur-2xl focus-within:border-white/40"
+        className="oddio-v2-podcast-search flex max-w-2xl items-center gap-3 rounded-2xl border px-4 py-3 backdrop-blur-2xl"
       >
         <Search aria-hidden="true" className="h-5 w-5 shrink-0 text-[#e9e9e9]" />
         <input
