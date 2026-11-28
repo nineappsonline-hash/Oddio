@@ -529,7 +529,7 @@ export function StoryClipComposer({
             try {
               if (videoRecorder.state === 'inactive') {
                 videoRecorder.start(500);
-              reportedMime = videoRecorder.mimeType;
+                reportedMime = videoRecorder.mimeType;
                 draw();
               } else if (videoRecorder.state === 'paused') {
                 videoRecorder.resume();
