@@ -68,10 +68,18 @@ export default async function ArtistsPage({
             : 'Meet the artists publishing original AI music on Oddio. Open an artist profile to play their releases, or browse by genre to find a sound you like.'}
         </p>
         <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold">
-          <Link className="oddio-v2-artists-link" prefetch={false} href={`/${locale}/genres`}>
+          <Link
+            className="oddio-v2-artists-link"
+            prefetch={false}
+            href={`/${locale}/genres`}
+          >
             {ar ? 'تصفّح أنواع الموسيقى' : 'Browse music genres'}
           </Link>
-          <Link className="oddio-v2-artists-link" prefetch={false} href={`/${locale}/discover`}>
+          <Link
+            className="oddio-v2-artists-link"
+            prefetch={false}
+            href={`/${locale}/discover`}
+          >
             {ar ? 'اكتشف أحدث الإصدارات' : 'Discover new releases'}
           </Link>
         </div>
