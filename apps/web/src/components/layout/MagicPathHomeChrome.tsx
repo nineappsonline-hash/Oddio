@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -45,6 +45,12 @@ import {
 import { isPodcastPlayback } from '@/lib/podcast-playback';
 import { ExperienceSwitcher } from '@/components/layout/ExperienceSwitcher';
 import type { ContentLanguagePreference } from '@/lib/content-language';
+
+// The persistent shell is present on every browse route. Avoid speculative
+// requests across locale changes and auth redirects, especially on WebKit.
+function ShellLink(props: ComponentProps<typeof Link>) {
+  return <Link {...props} prefetch={false} />;
+}
 
 type ChromeProps = {
   locale: 'ar' | 'en';
@@ -213,21 +219,16 @@ export function MagicPathHomeSidebar({
         </p>
         <nav aria-label={ar ? 'التنقل الرئيسي' : 'Main navigation'}>
           {navItems.map(({ path, labelAr, labelEn, icon: Icon }) => (
-            <Link
+            <ShellLink
               key={path}
               href={`/${locale}${path}`}
-              prefetch={
-                path === '/library' || path === '/podcasts/notifications'
-                  ? false
-                  : undefined
-              }
               aria-current={isCurrentRoute(path) ? 'page' : undefined}
               className={`mp2-nav-item ${isCurrentRoute(path) ? 'mp2-nav-active' : ''}`}
               onClick={() => setOpen(false)}
             >
               <Icon size={19} aria-hidden="true" />
               <span>{ar ? labelAr : labelEn}</span>
-            </Link>
+            </ShellLink>
           ))}
         </nav>
         <div className="mp2-sidebar-divider" />
@@ -238,10 +239,9 @@ export function MagicPathHomeSidebar({
             </p>
             <nav aria-label={ar ? 'تصفّح البودكاست' : 'Explore podcasts'}>
               {podcastLinks.map(({ path, labelAr, labelEn, icon: Icon }) => (
-                <Link
+                <ShellLink
                   key={path}
                   href={`/${locale}${path}`}
-                  prefetch={false}
                   className="mp2-nav-item"
                   onClick={() => {
                     if (pathname === '/' + locale + path.split('#')[0]) setOpen(false);
@@ -249,28 +249,26 @@ export function MagicPathHomeSidebar({
                 >
                   <Icon size={18} aria-hidden="true" />{' '}
                   <span>{ar ? labelAr : labelEn}</span>
-                </Link>
+                </ShellLink>
               ))}
               {canPublishPodcast ? (
                 <>
-                  <Link
+                  <ShellLink
                     href={`/${locale}/podcasts/me`}
-                    prefetch={false}
                     className="mp2-nav-item"
                     onClick={() => setOpen(false)}
                   >
                     <Mic2 size={18} aria-hidden="true" />{' '}
                     {ar ? 'ملفي' : 'My creator profile'}
-                  </Link>
-                  <Link
+                  </ShellLink>
+                  <ShellLink
                     href={`/${locale}/podcasts/manage`}
-                    prefetch={false}
                     className="mp2-nav-item"
                     onClick={() => setOpen(false)}
                   >
                     <Mic2 size={18} aria-hidden="true" />{' '}
                     {ar ? 'استوديو البودكاست' : 'Podcast Studio'}
-                  </Link>
+                  </ShellLink>
                 </>
               ) : null}
             </nav>
@@ -281,57 +279,56 @@ export function MagicPathHomeSidebar({
               {ar ? 'مكتبتك الموسيقية' : 'YOUR COLLECTION'}
             </p>
             <nav aria-label={ar ? 'مجموعتك' : 'Your collection'}>
-              <Link
+              <ShellLink
                 href={`/${locale}/library`}
-                prefetch={false}
                 onClick={() => setOpen(false)}
                 className="mp2-nav-item"
               >
                 <Heart size={18} /> {ar ? 'الأغاني المفضلة' : 'Liked songs'}
-              </Link>
-              <Link
+              </ShellLink>
+              <ShellLink
                 href={`/${locale}/soundspace`}
                 onClick={() => setOpen(false)}
                 className="mp2-nav-item"
               >
                 <AudioLines size={18} /> {ar ? 'موسيقى على مزاجك' : 'Made for your mood'}
-              </Link>
-              <Link
+              </ShellLink>
+              <ShellLink
                 href={`/${locale}/genres`}
                 onClick={() => setOpen(false)}
                 className="mp2-nav-item"
               >
                 <Disc3 size={18} /> {ar ? 'الأنواع الموسيقية' : 'Music genres'}
-              </Link>
-              <Link
+              </ShellLink>
+              <ShellLink
                 href={`/${locale}/charts`}
                 onClick={() => setOpen(false)}
                 className="mp2-nav-item"
               >
                 <ListMusic size={18} /> {ar ? 'الأكثر استماعًا' : 'Top charts'}
-              </Link>
+              </ShellLink>
             </nav>
           </>
         )}
-        <Link href={`/${locale}/apply/artist`} className="mp2-artist-cta">
+        <ShellLink href={`/${locale}/apply/artist`} className="mp2-artist-cta">
           <Sparkles size={23} aria-hidden="true" />
           <span>
             <strong>{ar ? 'عالم جديد مستني صوتك' : 'Your sound belongs here'}</strong>
             <small>{ar ? 'ابدأ مشوارك كفنان' : 'Become an Oddio artist'}</small>
           </span>
           <ArrowUpLeft size={18} aria-hidden="true" />
-        </Link>
+        </ShellLink>
         <div className="mp2-sidebar-footer">
-          <Link href={`/${locale}/notifications`} prefetch={false}>
+          <ShellLink href={`/${locale}/notifications`}>
             <Bell size={17} /> {ar ? 'الإشعارات' : 'Notifications'}
-          </Link>
-          <Link href={`/${locale}/settings`} prefetch={false}>
+          </ShellLink>
+          <ShellLink href={`/${locale}/settings`}>
             <Settings size={17} /> {ar ? 'الإعدادات' : 'Settings'}
-          </Link>
+          </ShellLink>
           {!user ? (
-            <Link href={`/${locale}/login`} prefetch={false}>
+            <ShellLink href={`/${locale}/login`}>
               {ar ? 'تسجيل الدخول' : 'Log in'}
-            </Link>
+            </ShellLink>
           ) : null}
         </div>
       </aside>
@@ -387,21 +384,19 @@ export function MagicPathHomeHeader({
       </div>
       <div className="mp2-header-actions">
         <ExperienceSwitcher contentLanguage={contentLanguage} />
-        <Link
+        <ShellLink
           href={`/${locale}/notifications`}
-          prefetch={false}
           aria-label={ar ? 'الإشعارات' : 'Notifications'}
           className="mp2-header-bell"
         >
           <Bell size={18} />
-        </Link>
-        <Link
+        </ShellLink>
+        <ShellLink
           className="mp2-header-account"
           href={user ? `/${locale}/settings` : `/${locale}/login`}
-          prefetch={false}
         >
           {user ? user.displayName.slice(0, 1) : ar ? 'دخول' : 'Log in'}
-        </Link>
+        </ShellLink>
       </div>
     </header>
   );
@@ -496,7 +491,7 @@ export function MagicPathHomeListeningRail({
           </p>
         )}
       </div>
-      <Link
+      <ShellLink
         className="mp2-listening-discover"
         href={`/${locale}/${podcastMode ? 'podcasts/categories' : 'discover'}`}
       >
@@ -508,7 +503,7 @@ export function MagicPathHomeListeningRail({
             ? 'اكتشف موسيقى جديدة'
             : 'Discover new music'}{' '}
         <ArrowUpLeft size={15} />
-      </Link>
+      </ShellLink>
     </aside>
   );
 }

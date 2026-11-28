@@ -258,12 +258,21 @@ try {
         await test(label + ' compact volume and direct queue on 320px', async () => {
           await page.setViewportSize({ width: 320, height: 760 });
           try {
-            await page.goto(base + '/' + locale, { waitUntil: 'domcontentloaded' });
-            await page.locator('.oddio-stage-play').click();
+            await page.goto(base + '/' + locale, { waitUntil: 'load' });
+            const play = page.locator('.oddio-stage-play');
             const mini = page.locator('.mp2-player[role="region"]');
-            await mini
-              .locator('.mp2-player-track-name strong')
-              .waitFor({ state: 'visible' });
+            const title = mini.locator('.mp2-player-track-name strong');
+            // Hydration can race the very first fixture click on slow WebKit.
+            // Once selected, do not click again (which would toggle playback).
+            await play.click();
+            if (!(await title.isVisible())) {
+              try {
+                await title.waitFor({ state: 'visible', timeout: 1500 });
+              } catch {
+                if (!(await title.isVisible())) await play.click();
+              }
+            }
+            await title.waitFor({ state: 'visible' });
             const volume = mini.getByRole('button', {
               name: locale === 'ar' ? 'مستوى الصوت' : 'Volume',
               exact: true,
