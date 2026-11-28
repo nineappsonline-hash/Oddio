@@ -31,4 +31,32 @@ describe('public podcast notes', () => {
     expect(podcastEditorialNote(city, show, 'ar')).toMatch(/^حكاية خيالية/);
     expect(podcastEditorialNote(city, show, 'en')).toMatch(/^A fictional mystery/);
   });
+
+  it.each([
+    [
+      'be01daec-0527-433e-86da-8b3e453160a7',
+      'هل ممكن تكون حياتك كلها مجرد وهم؟',
+      'فرضية المحاكاة',
+      'simulation hypothesis',
+    ],
+    [
+      'c2b4cc22-0b92-4b99-9b97-0ac711c0bea1',
+      'هل النجاح محتاج موهبة ولا حظ',
+      'الحظ',
+      'opportunity',
+    ],
+    [
+      'abe36723-d7e0-4ec7-a151-5ff2574f51c8',
+      'إنت حر... بس على مزاج مين',
+      'مبدأ الضرر',
+      'harm principle',
+    ],
+  ])(
+    'uses verified bilingual philosophy copy for %s only in its own series',
+    (id, title, ar, en) => {
+      expect(podcastEditorialNote({ id, title }, 'show-mwjp231e', 'ar')).toContain(ar);
+      expect(podcastEditorialNote({ id, title }, 'show-mwjp231e', 'en')).toContain(en);
+      expect(podcastEditorialNote({ id, title }, show, 'ar')).toBe('');
+    },
+  );
 });
