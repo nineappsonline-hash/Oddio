@@ -594,8 +594,8 @@
     display: grid;
     place-items: center;
     position: fixed;
-    top: 17px;
-    inset-inline-start: 13px;
+    top: 13px;
+    left: max(12px, env(safe-area-inset-left, 0px));
     z-index: 48;
     width: 44px;
     height: 44px;
@@ -606,8 +606,8 @@
   }
   .mp2-header {
     height: 70px;
-    padding-inline-start: 66px;
-    padding-inline-end: 14px;
+    padding-left: calc(max(12px, env(safe-area-inset-left, 0px)) + 54px);
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
     gap: 8px;
   }
   .mp2-header-history {
@@ -623,9 +623,6 @@
 @media (max-width: 640px) {
   .mp2-workspace {
     padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
-  }
-  .mp2-header {
-    padding-inline-start: 62px;
   }
   .mp2-header .mp2-header-actions > :first-child {
     display: none;
@@ -713,17 +710,6 @@
 
 /* Mobile navigation is physically left in both LTR and RTL (Oddio UX contract). */
 @media (max-width: 850px) {
-  .mp2-mobile-menu-trigger {
-    left: 13px;
-    right: auto;
-    inset-inline-start: auto;
-  }
-  .mp2-header {
-    padding-left: 65px;
-    padding-right: 14px;
-    padding-inline-start: unset;
-    padding-inline-end: unset;
-  }
   .mp2-sidebar,
   [dir='ltr'] .mp2-sidebar {
     left: 0;
@@ -733,13 +719,6 @@
   }
   .mp2-sidebar.mp2-sidebar-open {
     transform: translateX(0);
-  }
-}
-@media (max-width: 640px) {
-  .mp2-header {
-    padding-left: 65px;
-    padding-right: 14px;
-    padding-inline-start: unset;
   }
 }
 
@@ -877,4 +856,31 @@
 .mp2-player button:focus-visible,
 .mp2-header :focus-visible {
   outline-color: #81abb4;
+}
+
+/* Shared 2.0 transport treatment: high contrast without obscuring cover art. */
+.mp2-workspace .oddio-card-play,
+.mp2-player-controls > button.mp2-main-play {
+  width: 46px;
+  height: 46px;
+  background: #eff6f5;
+  color: #173f46;
+  border: 1px solid #c9dedc;
+  box-shadow: 0 3px 12px #060d1066 !important;
+}
+.mp2-workspace .oddio-card-play:hover,
+.mp2-player-controls > button.mp2-main-play:hover:not(:disabled) {
+  background: #d7eeeb;
+  color: #132f36;
+}
+.mp2-workspace .oddio-card-play > svg {
+  width: 17px;
+  height: 17px;
+}
+@media (max-width: 640px) {
+  .mp2-workspace .oddio-card-play,
+  .mp2-player-controls > button.mp2-main-play {
+    width: 44px;
+    height: 44px;
+  }
 }

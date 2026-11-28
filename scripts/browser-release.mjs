@@ -114,6 +114,80 @@ try {
       });
 
       if (viewport.width === 390) {
+        await test(
+          label + ' branded artwork and mobile header keep the right proportions',
+          async () => {
+            await page.goto(base + '/' + locale + '/discover', {
+              waitUntil: 'domcontentloaded',
+            });
+            try {
+              for (const width of [320, 390, 430]) {
+                await page.setViewportSize({ width, height: 844 });
+                const header = await page.locator('.mp2-header').boundingBox();
+                const menu = await page.locator('.mp2-mobile-menu-trigger').boundingBox();
+                const search = await page.locator('.mp2-search').boundingBox();
+                const account = await page.locator('.mp2-header-account').boundingBox();
+                assert.ok(
+                  header && menu && search && account,
+                  'mobile header controls must be visible',
+                );
+                assert.ok(
+                  menu.x >= 10 &&
+                    menu.x + menu.width + 8 <= Math.min(search.x, account.x),
+                  'menu must have its own space',
+                );
+                assert.ok(
+                  search.width >= 130 &&
+                    Math.max(search.x + search.width, account.x + account.width) <= width,
+                  'search must fit inside the viewport',
+                );
+                assert.ok(
+                  await page.evaluate(
+                    () => document.documentElement.scrollWidth - innerWidth <= 2,
+                  ),
+                );
+              }
+              const fallback = page
+                .locator('.art-frame [data-oddio-artwork-fallback] img')
+                .first();
+              await fallback.scrollIntoViewIfNeeded();
+              await page.waitForFunction(() =>
+                Array.from(
+                  document.querySelectorAll(
+                    '.art-frame [data-oddio-artwork-fallback] img',
+                  ),
+                ).some((image) => image.complete && image.naturalWidth > 0),
+              );
+              assert.ok(
+                (await fallback.getAttribute('src'))?.includes(
+                  'oddio-gradient-play-logo.png',
+                ),
+              );
+              const cardPlay = page.locator('.art-frame .oddio-card-play').first();
+              const style = await cardPlay.evaluate((element) => {
+                const rect = element.getBoundingClientRect();
+                const style = getComputedStyle(element);
+                return {
+                  width: rect.width,
+                  height: rect.height,
+                  background: style.backgroundColor,
+                  color: style.color,
+                };
+              });
+              assert.deepEqual(style, {
+                width: 44,
+                height: 44,
+                background: 'rgb(239, 246, 245)',
+                color: 'rgb(23, 63, 70)',
+              });
+            } finally {
+              await page.setViewportSize(viewport);
+            }
+          },
+        );
+      }
+
+      if (viewport.width === 390) {
         await test(`${label} mobile drawer stays left and closes on Escape`, async () => {
           await page.goto(`${base}/${locale}`, { waitUntil: 'domcontentloaded' });
           const headerMenu = page.getByRole('button', {

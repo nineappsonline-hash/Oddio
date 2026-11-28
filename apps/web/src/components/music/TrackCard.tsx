@@ -58,12 +58,12 @@ export function TrackCard({
             {isPlaying ? t('player.live') : t('player.paused')}
           </span>
         ) : null}
-        <div className="absolute bottom-2 end-2 translate-y-2 opacity-100 transition duration-300 group-hover:translate-y-0 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+        <div className="absolute bottom-2 end-2 sm:translate-y-2 opacity-100 transition duration-300 group-hover:translate-y-0 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
           <PlayButton
             track={track}
             queue={queue}
             size="md"
-            className="shadow-glow-lg ring-2 ring-white/15"
+            className="oddio-card-play shadow-glow-lg ring-2 ring-white/15"
           />
         </div>
       </div>

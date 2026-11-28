@@ -17,12 +17,14 @@ describe('catalog artwork loading', () => {
     expect(html).toContain('src="https://example.com/artwork.webp"');
     expect(html).not.toContain('url(https://example.com/artwork.webp)');
     expect(html).toContain('aria-label="Test album"');
+    expect(html).not.toContain('data-oddio-artwork-fallback');
   });
 
-  it('retains the decorative fallback and accessible title when art is missing', () => {
+  it('uses the official Oddio logo and preserves the accessible title when art is missing', () => {
     const html = renderToStaticMarkup(createElement(Artwork, { title: 'Missing cover' }));
     expect(html).toContain('aria-label="Missing cover"');
-    expect(html).not.toContain('<img');
-    expect(html).toContain('<svg');
+    expect(html).toContain('data-oddio-artwork-fallback');
+    expect(html).toContain('oddio-gradient-play-logo.png');
+    expect(html).not.toContain('<svg');
   });
 });
