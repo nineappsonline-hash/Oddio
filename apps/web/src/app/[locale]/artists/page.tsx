@@ -1,3 +1,4 @@
+import '../../oddio-discovery-artists.css';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Artwork } from '@/components/ui/Artwork';
@@ -53,24 +54,24 @@ export default async function ArtistsPage({
   const artists = await publicArtists();
   const number = new Intl.NumberFormat(ar ? 'ar-EG' : 'en');
   return (
-    <section className="mx-auto max-w-6xl space-y-7 pb-12">
-      <header className="rounded-3xl border border-white/10 bg-[#172b30] p-6 sm:p-9">
-        <p className="text-xs font-bold uppercase tracking-widest text-[#aee8d9]">
+    <section className="oddio-v2-artists mx-auto max-w-6xl space-y-7 pb-12">
+      <header className="oddio-v2-artists-hero rounded-3xl p-6 sm:p-9">
+        <p className="oddio-v2-artists-kicker text-xs font-bold uppercase tracking-widest">
           Oddio / {ar ? 'الفنانون' : 'Artists'}
         </p>
         <h1 className="mt-3 text-3xl font-bold text-white sm:text-5xl">
           {ar ? 'فنانو الموسيقى بالذكاء الاصطناعي' : 'Discover AI music artists'}
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">
+        <p className="oddio-v2-artists-description mt-3 max-w-2xl text-sm leading-7 sm:text-base">
           {ar
             ? 'اتعرّف على الفنانين اللي بينشروا موسيقى أصلية على Oddio، واستمع لأغانيهم من صفحة كل فنان. لو بتدور على صوت معيّن، ابدأ من أنواع الموسيقى.'
             : 'Meet the artists publishing original AI music on Oddio. Open an artist profile to play their releases, or browse by genre to find a sound you like.'}
         </p>
-        <div className="mt-5 flex flex-wrap gap-4 text-sm font-semibold text-[#aee8d9]">
-          <Link prefetch={false} href={`/${locale}/genres`}>
+        <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold">
+          <Link className="oddio-v2-artists-link" prefetch={false} href={`/${locale}/genres`}>
             {ar ? 'تصفّح أنواع الموسيقى' : 'Browse music genres'}
           </Link>
-          <Link prefetch={false} href={`/${locale}/discover`}>
+          <Link className="oddio-v2-artists-link" prefetch={false} href={`/${locale}/discover`}>
             {ar ? 'اكتشف أحدث الإصدارات' : 'Discover new releases'}
           </Link>
         </div>
@@ -82,7 +83,7 @@ export default async function ArtistsPage({
               <Link
                 prefetch={false}
                 href={`/${locale}/artists/${artist.slug}`}
-                className="flex h-full items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 hover:border-[#aee8d9]/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#aee8d9]"
+                className="oddio-v2-artist-card flex h-full items-center gap-4 rounded-2xl p-4"
               >
                 <Artwork
                   title={artist.name}
@@ -99,7 +100,7 @@ export default async function ArtistsPage({
                       {artist.bio}
                     </p>
                   ) : null}
-                  <p className="mt-1 text-xs text-[#aee8d9]">
+                  <p className="oddio-v2-artist-count mt-1 text-xs">
                     {ar
                       ? `الأغاني المتاحة: ${number.format(artist.trackCount)}`
                       : `${number.format(artist.trackCount)} ${artist.trackCount === 1 ? 'track' : 'tracks'}`}
