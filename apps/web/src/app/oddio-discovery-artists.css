@@ -1,0 +1,129 @@
+/* Data-backed Discover and Artist pages — Oddio 2.0 graphite/petrol identity. */
+.oddio-v2-discover,
+.oddio-v2-artists,
+.oddio-v2-artist-profile {
+  --oddio-v2-accent: #367583;
+  --oddio-v2-highlight: #92b9c1;
+  --oddio-v2-stroke: rgba(91, 143, 153, .28);
+  color: #f0f3f4;
+  min-width: 0;
+}
+.oddio-v2-discover .oddio-explore-heading {
+  border: 1px solid var(--oddio-v2-stroke);
+  border-radius: 22px;
+  padding: clamp(22px, 3vw, 38px);
+  background:
+    radial-gradient(ellipse at 88% 15%, rgba(38, 101, 114, .21), transparent 45%),
+    linear-gradient(115deg, #19282d, #141719 70%);
+}
+.oddio-v2-discover .oddio-explore-heading h1 {
+  color: #f6f8f9;
+  font-weight: 900;
+  letter-spacing: -.035em;
+}
+.oddio-v2-discover .oddio-explore-heading p,
+.oddio-v2-artists .oddio-v2-artists-description {
+  color: #b5c5c9;
+}
+.oddio-v2-discover .oddio-explore-mood-link,
+.oddio-v2-artists .oddio-v2-artists-link {
+  border: 1px solid rgba(104, 160, 171, .4);
+  background: rgba(33, 81, 91, .25);
+  color: #d5e9ec;
+  border-radius: 999px;
+  padding: 10px 14px;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+.oddio-v2-discover .oddio-explore-mood-link:hover,
+.oddio-v2-artists .oddio-v2-artists-link:hover {
+  background: rgba(43, 110, 124, .45);
+  border-color: #82b0b8;
+}
+.oddio-v2-discover .oddio-explore-shortcut {
+  border: 1px solid rgba(100, 145, 153, .28);
+  border-radius: 15px;
+  overflow: hidden;
+}
+.oddio-v2-discover .oddio-explore-shortcut:hover {
+  border-color: #699fa8;
+}
+.oddio-v2-discover .oddio-explore-filter-card {
+  border: 1px solid var(--oddio-v2-stroke);
+  border-radius: 18px;
+  background: linear-gradient(140deg, #20272a, #15181a);
+}
+.oddio-v2-discover .oddio-explore-filter-card .input {
+  background: #121719;
+  border-color: rgba(112, 143, 151, .3);
+  color: #f1f5f6;
+}
+.oddio-v2-discover .oddio-explore-filter-card .input:focus {
+  border-color: #699da8;
+  box-shadow: 0 0 0 3px rgba(52, 124, 138, .2);
+}
+.oddio-v2-discover .oddio-v2-discover-submit {
+  background: linear-gradient(115deg, #336f7c, #20515d);
+  border: 1px solid #497f8a;
+  color: #fff;
+}
+.oddio-v2-discover .oddio-v2-discover-submit:hover {
+  background: #397f8d;
+}
+.oddio-v2-discover .oddio-explore-track-list {
+  background: rgba(26, 31, 34, .8);
+  border: 1px solid var(--oddio-v2-stroke);
+  border-radius: 18px;
+}
+.oddio-v2-discover .oddio-v2-artist-result {
+  background: #1c292d;
+  border-color: rgba(88, 143, 153, .32);
+}
+.oddio-v2-discover .oddio-v2-artist-result:hover { border-color: #79a6af; }
+.oddio-v2-artists .oddio-v2-artists-hero {
+  background:
+    radial-gradient(ellipse at 85% 0%, rgba(54, 117, 130, .22), transparent 52%),
+    linear-gradient(125deg, #1b3035, #15191b 75%);
+  border: 1px solid var(--oddio-v2-stroke);
+}
+.oddio-v2-artists .oddio-v2-artists-kicker,
+.oddio-v2-artists .oddio-v2-artist-count { color: var(--oddio-v2-highlight); }
+.oddio-v2-artists .oddio-v2-artist-card {
+  background: linear-gradient(130deg, #202629, #171b1d);
+  border: 1px solid rgba(102, 141, 149, .24);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+.oddio-v2-artists .oddio-v2-artist-card:hover {
+  border-color: #709da7;
+  background: #223137;
+  transform: translateY(-2px);
+}
+.oddio-v2-artist-profile .oddio-v2-artist-cover {
+  background: linear-gradient(135deg, #20383e, #121719 75%);
+  border-color: var(--oddio-v2-stroke);
+}
+.oddio-v2-artist-profile .oddio-v2-artist-identity {
+  background: linear-gradient(120deg, #1c2c31, #171b1e);
+  border-color: var(--oddio-v2-stroke);
+}
+.oddio-v2-artist-profile .oddio-v2-artist-series {
+  background: linear-gradient(125deg, #1d2a30, #171b1e);
+  border-color: var(--oddio-v2-stroke);
+}
+.oddio-v2-artist-profile .oddio-v2-artist-series-description { color: #b7c8cc; }
+.oddio-v2-discover :is(a,button,input,select):focus-visible,
+.oddio-v2-artists a:focus-visible,
+.oddio-v2-artist-profile :is(a,button):focus-visible {
+  outline: 2px solid #a2ccd4;
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  .oddio-v2-discover .oddio-explore-heading { padding: 20px 16px; }
+  .oddio-v2-discover .oddio-explore-shortcuts { min-width: 0; }
+  .oddio-v2-discover .oddio-explore-filter-card { padding: 14px; }
+  .oddio-v2-artists .oddio-v2-artists-hero { padding: 22px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oddio-v2-discover .oddio-explore-mood-link,
+  .oddio-v2-artists .oddio-v2-artists-link,
+  .oddio-v2-artists .oddio-v2-artist-card { transition: none; transform: none; }
+}
