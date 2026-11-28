@@ -1,3 +1,4 @@
+import '../../oddio-library-release-v2.css';
 import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -73,7 +74,7 @@ export default async function LibraryPage({
     likedTracks.sort((a, b) => b.qualifiedPlays - a.qualifiedPlays);
 
   return (
-    <div className="space-y-12">
+    <div className="oddio-v2-library-page space-y-12">
       <PageHeader
         title={t('library.title')}
         subtitle={t('library.subtitle')}
@@ -86,7 +87,7 @@ export default async function LibraryPage({
 
       <nav
         aria-label={locale === 'ar' ? 'أقسام المكتبة' : 'Library sections'}
-        className="flex flex-wrap gap-2"
+        className="oddio-v2-library-nav flex flex-wrap gap-2"
       >
         <a href="#liked" className="chip">
           {t('library.likes')}
@@ -108,12 +109,12 @@ export default async function LibraryPage({
         </Link>
       </nav>
 
-      <section id="liked" className="scroll-mt-24">
+      <section id="liked" className="oddio-v2-library-section scroll-mt-24">
         <SectionHeader title={t('library.likes')} />
         {likedTracks.length > 0 ? (
           <nav
             aria-label={locale === 'ar' ? 'ترتيب الأغاني المفضلة' : 'Sort liked songs'}
-            className="mb-4 flex flex-wrap gap-2"
+            className="oddio-v2-liked-sort mb-4 flex flex-wrap gap-2"
           >
             {(
               [
@@ -147,7 +148,7 @@ export default async function LibraryPage({
         )}
       </section>
 
-      <section id="smart-playlists" className="scroll-mt-24">
+      <section id="smart-playlists" className="oddio-v2-library-section scroll-mt-24">
         <SectionHeader title={locale === 'ar' ? 'قوائم ذكية' : 'Smart playlists'} />
         <SmartPlaylists
           userId={user.id}
@@ -174,7 +175,7 @@ export default async function LibraryPage({
         />
       </section>
 
-      <section id="playlists" className="scroll-mt-24">
+      <section id="playlists" className="oddio-v2-library-section scroll-mt-24">
         <SectionHeader
           title={t('library.playlists')}
           action={
@@ -217,7 +218,7 @@ export default async function LibraryPage({
         ) : null}
       </section>
 
-      <section id="recent" className="scroll-mt-24">
+      <section id="recent" className="oddio-v2-library-section scroll-mt-24">
         <SectionHeader title={t('library.history')} />
         {history.length > 0 ? (
           <div className="mb-4">
@@ -227,7 +228,7 @@ export default async function LibraryPage({
         {history.length === 0 ? (
           <EmptyState title={t('library.emptyHistory')} />
         ) : (
-          <div className="card divide-y divide-white/5 p-2">
+          <div className="oddio-v2-library-history card divide-y divide-white/5 p-2">
             {history.slice(0, 50).map((track, index) => (
               <TrackRow
                 key={`${track.id}-${track.playedAt}`}
