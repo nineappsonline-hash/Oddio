@@ -1,3 +1,4 @@
+import '../../../oddio-library-release-v2.css';
 import {
   getContentLanguagePreference,
   matchesContentLanguage,
@@ -109,7 +110,7 @@ export default async function TrackPage({
   ].filter((item) => item.value);
 
   return (
-    <div>
+    <div className="oddio-v2-track-page">
       <SeoBreadcrumbs
         items={[
           { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
@@ -137,7 +138,7 @@ export default async function TrackPage({
         })}
       />
 
-      <section className="mb-10 grid gap-6 sm:grid-cols-[auto_minmax(0,1fr)]">
+      <section className="oddio-v2-release-hero mb-10 grid gap-6 sm:grid-cols-[auto_minmax(0,1fr)]">
         <Artwork
           title={track.title}
           url={track.artwork.url}
@@ -165,13 +166,14 @@ export default async function TrackPage({
               </Link>
             ) : null}
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-ink sm:text-4xl">
+          <h1 dir="auto" className="text-3xl font-black tracking-tight text-ink sm:text-4xl">
             {track.title}
           </h1>
           {artist ? (
             <Link
               href={`/${locale}/artists/${artist.slug}`}
               className="mt-2 w-fit text-base font-semibold text-muted hover:text-ink"
+              dir="auto"
             >
               {artist.name}
             </Link>
@@ -213,7 +215,7 @@ export default async function TrackPage({
         </div>
       </section>
 
-      <div className="grid gap-10 lg:grid-cols-[1.5fr_0.5fr]">
+      <div className="oddio-v2-release-details grid gap-10 lg:grid-cols-[1.5fr_0.5fr]">
         <div className="space-y-8">
           {track.lyrics ? (
             <section className="card p-5">
