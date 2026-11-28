@@ -248,6 +248,13 @@ try {
     await dialog.getByRole('button', { name: 'Create Story video' }).tap();
     setTimeout(releaseLyrics, 900);
     await dialog.getByRole('button', { name: 'Share video' }).tap({ timeout: 40_000 });
+    assert.equal(
+      await dialog
+        .getByText(/MP4 with H\.264 video|Instagram may not accept its encoding/)
+        .count(),
+      1,
+      'The export describes its actual video format before the user shares it',
+    );
 
     const result = await page.evaluate(() => window.__story);
     assert.ok(
