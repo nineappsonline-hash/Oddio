@@ -1,3 +1,4 @@
+import '../../../oddio-discovery-artists.css';
 import {
   filterMusicDb,
   filterPodcastCatalog,
@@ -119,7 +120,7 @@ export default async function ArtistPage({
     .sort((a, b) => b.releaseAt.localeCompare(a.releaseAt));
 
   return (
-    <div>
+    <div className="oddio-v2-artist-profile">
       <SeoBreadcrumbs
         items={[
           { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
@@ -134,11 +135,11 @@ export default async function ArtistPage({
           description: artist.bio,
         })}
       />
-      <section className="relative mb-8 overflow-hidden rounded-card border border-white/10">
+      <section className="oddio-v2-artist-cover relative mb-8 overflow-hidden rounded-card border">
         <div
           className="h-36 w-full sm:h-48"
           style={{
-            backgroundImage: `radial-gradient(ellipse at 80% 15%, ${artist.accent}66, transparent 55%), linear-gradient(125deg, #311B25, #191215 75%)`,
+            backgroundImage: `radial-gradient(ellipse at 80% 15%, ${artist.accent}30, transparent 55%), linear-gradient(125deg, #1f373d, #15191b 75%)`,
           }}
         />
         <div className="relative -mt-14 flex flex-col gap-5 p-5 sm:-mt-16 sm:flex-row sm:items-end sm:p-8">
@@ -196,7 +197,7 @@ export default async function ArtistPage({
 
       <section
         aria-label={locale === 'ar' ? 'هوية الفنان الموسيقية' : 'Artist sound identity'}
-        className="mb-9 rounded-[1.5rem] border border-primary/20 bg-surface/75 p-5 sm:p-7"
+        className="oddio-v2-artist-identity mb-9 rounded-[1.5rem] border p-5 sm:p-7"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -252,7 +253,7 @@ export default async function ArtistPage({
 
       {artistSeries.length > 0 ? (
         <section
-          className="mb-10 space-y-5 rounded-3xl border border-white/10 bg-[#241b2d]/70 p-5 sm:p-7"
+          className="oddio-v2-artist-series mb-10 space-y-5 rounded-3xl border p-5 sm:p-7"
           aria-labelledby="artist-podcast-series-heading"
         >
           <h2
@@ -263,7 +264,7 @@ export default async function ArtistPage({
               ? `سلاسل بودكاست ${artist.name}`
               : `Podcast series by ${artist.name}`}
           </h2>
-          <p className="text-sm leading-7 text-[#b8adbf]">
+          <p className="oddio-v2-artist-series-description text-sm leading-7">
             {locale === 'ar'
               ? 'استكشف سلاسل بتناقش مواضيع مختلفة من نفس الفنان، وكل سلسلة تجمع حلقاتها في مكان واحد.'
               : 'Explore this artist’s themed podcast series, with all related episodes together in one place.'}
