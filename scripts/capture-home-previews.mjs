@@ -121,6 +121,14 @@ try {
       }
       await page.locator('.mp2-header').waitFor({ state: 'visible' });
       await page.locator('.mp2-player').waitFor({ state: 'visible' });
+      // Next.js streams a route fallback at domcontentloaded. Capture the
+      // actual discovery UI instead of treating its skeleton as the design.
+      if (route === 'discover') {
+        await page.locator('.oddio-v2-discover .oddio-explore-heading h1').waitFor({
+          state: 'visible',
+          timeout: 30000,
+        });
+      }
       await page.screenshot({
         path: `${output}/${locale}-${route}-${label}.png`,
         fullPage: true,
