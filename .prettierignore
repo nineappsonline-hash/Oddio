@@ -3,3 +3,6 @@ node_modules
 apps/web/.data
 package-lock.json
 coverage
+
+# Google Search Console ownership file; preserve the supplied bytes.
+/apps/web/public/googlee3f5dc6b147bcad6.html

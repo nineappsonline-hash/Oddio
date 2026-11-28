@@ -34,7 +34,12 @@ export async function generateMetadata({
     : slug;
   return buildMetadata({
     locale: safeLocale,
-    title: label,
+    title:
+      slug === 'arabic-pop' && page
+        ? safeLocale === 'ar'
+          ? 'استمع لأغاني بوب عربي بالذكاء الاصطناعي'
+          : 'Listen to Arabic Pop AI Music'
+        : label,
     description:
       safeLocale === 'ar'
         ? `استكشف أغاني ${label} على Oddio. اسمع أحدث الموسيقى المصنوعة بالذكاء الاصطناعي في النوع ده، وتعرّف على الفنانين والإصدارات.`
@@ -143,12 +148,20 @@ export default async function GenrePage({
             {ar ? 'اكتشف النوع الموسيقي' : 'EXPLORE THE SOUND'}
           </p>
           <h1 className="text-4xl font-black text-white drop-shadow-lg sm:text-6xl">
-            {label}
+            {slug === 'arabic-pop'
+              ? ar
+                ? 'استمع لأغاني بوب عربي بالذكاء الاصطناعي'
+                : 'Listen to Arabic pop AI music'
+              : label}
           </h1>
           <p className="text-sm text-white/80">
-            {ar
-              ? 'اكتشف أحدث وأشهر الأغاني في النوع ده.'
-              : 'The latest releases and most-loved tracks in one place.'}
+            {slug === 'arabic-pop'
+              ? ar
+                ? 'شغّل أغاني البوب العربي المنشورة على Oddio، وشوف اسم الفنان وصفحة كل أغنية. دي صفحة للاستماع، مش أداة لتوليد الأغاني.'
+                : 'Play the Arabic pop releases listed on Oddio and discover their artists. This is a listening collection, not a song generator.'
+              : ar
+                ? 'اكتشف أحدث وأشهر الأغاني في النوع ده.'
+                : 'The latest releases and most-loved tracks in one place.'}
           </p>
           <div className="flex flex-wrap gap-2 pt-2 text-xs font-semibold text-white">
             <span className="rounded-full border border-white/25 bg-black/40 px-4 py-2">
