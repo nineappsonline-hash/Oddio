@@ -24,7 +24,8 @@ const paths = [
 ];
 const botHeaders = {
   accept: 'text/html',
-  'user-agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+  'user-agent':
+    'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
 };
 
 function attributes(tag) {
@@ -91,9 +92,20 @@ for (const path of paths) {
     const image = tags.get('og:image');
     assert.ok(image, 'missing og:image');
     const imageUrl = new URL(image);
-    assert.equal(imageUrl.origin, canonical.origin, 'social image must be on canonical host');
-    assert.equal(imageUrl.pathname, '/api/og', 'social image must use first-party OG renderer');
-    assert.equal(new URL(tags.get('twitter:image') ?? '').toString(), imageUrl.toString());
+    assert.equal(
+      imageUrl.origin,
+      canonical.origin,
+      'social image must be on canonical host',
+    );
+    assert.equal(
+      imageUrl.pathname,
+      '/api/og',
+      'social image must use first-party OG renderer',
+    );
+    assert.equal(
+      new URL(tags.get('twitter:image') ?? '').toString(),
+      imageUrl.toString(),
+    );
     assert.equal(tags.get('og:image:width'), '1200');
     assert.equal(tags.get('og:image:height'), '630');
     assert.ok(
@@ -129,8 +141,12 @@ for (const path of paths) {
   }
 }
 if (failures.length) {
-  console.error(`Social card gate failed on ${failures.length} of ${paths.length} pages.`);
+  console.error(
+    `Social card gate failed on ${failures.length} of ${paths.length} pages.`,
+  );
   process.exitCode = 1;
 } else {
-  console.log(`Social card gate passed on ${paths.length} routes; valid first-party PNG confirmed.`);
+  console.log(
+    `Social card gate passed on ${paths.length} routes; valid first-party PNG confirmed.`,
+  );
 }
