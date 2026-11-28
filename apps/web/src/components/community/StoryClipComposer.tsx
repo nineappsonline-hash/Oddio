@@ -126,7 +126,16 @@ function drawStory(
   ctx.roundRect(x, y, size, size, 26);
   ctx.clip();
   if (cover && cover.complete && cover.naturalWidth) {
-    const scale = Math.max(size / cover.naturalWidth, size / cover.naturalHeight);
+    const isOddioLogo = /(?:oddio[-%]|glossy-gradient-play-loop).*logo/i.test(cover.src);
+    const fit = isOddioLogo ? size * 0.78 : size;
+    const scale = (isOddioLogo ? Math.min : Math.max)(
+      fit / cover.naturalWidth,
+      fit / cover.naturalHeight,
+    );
+    if (isOddioLogo) {
+      ctx.fillStyle = '#162d32';
+      ctx.fillRect(x, y, size, size);
+    }
     const w = cover.naturalWidth * scale,
       h = cover.naturalHeight * scale;
     ctx.drawImage(cover, x + (size - w) / 2, y + (size - h) / 2, w, h);
@@ -793,6 +802,7 @@ export function StoryClipComposer({
                   type="button"
                   disabled={working || clipStart <= 0}
                   onClick={() => updateStart(clipStart - 5)}
+                  dir="ltr"
                   aria-label={ar ? 'ارجع ٥ ثواني' : 'Back 5 seconds'}
                 >
                   −5s
@@ -801,6 +811,7 @@ export function StoryClipComposer({
                   type="button"
                   disabled={working || clipStart >= maxStart}
                   onClick={() => updateStart(clipStart + 5)}
+                  dir="ltr"
                   aria-label={ar ? 'قدّم ٥ ثواني' : 'Forward 5 seconds'}
                 >
                   +5s
