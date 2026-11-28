@@ -129,7 +129,10 @@ export default async function AlbumPage({
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
             {t('common.albums')}
           </p>
-          <h1 dir="auto" className="mt-1 text-3xl font-black tracking-tight text-ink sm:text-4xl">
+          <h1
+            dir="auto"
+            className="mt-1 text-3xl font-black tracking-tight text-ink sm:text-4xl"
+          >
             {album.title}
           </h1>
           <Link
