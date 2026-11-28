@@ -3,7 +3,7 @@
 .oddio-v2-album-page,
 .oddio-v2-library-page {
   --v2-petrol: #367584;
-  --v2-outline: rgba(103, 152, 162, .32);
+  --v2-outline: rgba(103, 152, 162, 0.32);
   --v2-muted: #aabdc2;
   min-width: 0;
   color: #f3f6f7;
@@ -14,9 +14,9 @@
   border: 1px solid var(--v2-outline);
   border-radius: 24px;
   background:
-    radial-gradient(ellipse at 84% 8%, rgba(54, 117, 132, .21), transparent 52%),
+    radial-gradient(ellipse at 84% 8%, rgba(54, 117, 132, 0.21), transparent 52%),
     linear-gradient(125deg, #1d2c30, #14191b 77%);
-  box-shadow: 0 19px 44px rgba(0,0,0,.18);
+  box-shadow: 0 19px 44px rgba(0, 0, 0, 0.18);
 }
 .oddio-v2-track-page .oddio-v2-release-hero h1,
 .oddio-v2-album-page .oddio-v2-release-hero h1 {
@@ -26,9 +26,13 @@
   text-wrap: pretty;
 }
 .oddio-v2-track-page .oddio-v2-release-hero a,
-.oddio-v2-album-page .oddio-v2-release-hero a { color: #9ac3cc; }
+.oddio-v2-album-page .oddio-v2-release-hero a {
+  color: #9ac3cc;
+}
 .oddio-v2-track-page .oddio-v2-release-hero a:hover,
-.oddio-v2-album-page .oddio-v2-release-hero a:hover { color: #d0ecf0; }
+.oddio-v2-album-page .oddio-v2-release-hero a:hover {
+  color: #d0ecf0;
+}
 .oddio-v2-track-page .oddio-v2-release-details .card,
 .oddio-v2-album-page .oddio-v2-album-tracks,
 .oddio-v2-library-page .oddio-v2-library-history {
@@ -41,9 +45,11 @@
   unicode-bidi: plaintext;
 }
 .oddio-v2-album-page .oddio-v2-related-album {
-  border-color: rgba(112, 158, 168, .27);
+  border-color: rgba(112, 158, 168, 0.27);
   background: #1d282b;
-  transition: border-color .18s ease, transform .18s ease;
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
 .oddio-v2-album-page .oddio-v2-related-album:hover {
   border-color: #77aab5;
@@ -58,7 +64,7 @@
 }
 .oddio-v2-library-page .oddio-v2-library-nav .chip,
 .oddio-v2-library-page .oddio-v2-liked-sort .chip {
-  border-color: rgba(110, 150, 159, .31);
+  border-color: rgba(110, 150, 159, 0.31);
   background: #242e32;
   color: #d4e0e3;
 }
@@ -73,20 +79,31 @@
   scroll-margin-top: 110px;
   min-width: 0;
 }
-.oddio-v2-library-page :is(a,button,input,select):focus-visible,
-.oddio-v2-track-page :is(a,button,input):focus-visible,
-.oddio-v2-album-page :is(a,button,input):focus-visible {
+.oddio-v2-library-page :is(a, button, input, select):focus-visible,
+.oddio-v2-track-page :is(a, button, input):focus-visible,
+.oddio-v2-album-page :is(a, button, input):focus-visible {
   outline: 2px solid #a4cbd3;
   outline-offset: 3px;
 }
 @media (max-width: 640px) {
   .oddio-v2-track-page .oddio-v2-release-hero,
-  .oddio-v2-album-page .oddio-v2-release-hero { padding: 18px 15px; }
+  .oddio-v2-album-page .oddio-v2-release-hero {
+    padding: 18px 15px;
+  }
   .oddio-v2-track-page .oddio-v2-release-hero h1,
-  .oddio-v2-album-page .oddio-v2-release-hero h1 { font-size: clamp(26px, 8vw, 36px); }
-  .oddio-v2-library-page .oddio-v2-library-nav { padding: 9px; gap: 7px; }
+  .oddio-v2-album-page .oddio-v2-release-hero h1 {
+    font-size: clamp(26px, 8vw, 36px);
+  }
+  .oddio-v2-library-page .oddio-v2-library-nav {
+    padding: 9px;
+    gap: 7px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .oddio-v2-album-page .oddio-v2-related-album { transition: none; }
-  .oddio-v2-album-page .oddio-v2-related-album:hover { transform: none; }
+  .oddio-v2-album-page .oddio-v2-related-album {
+    transition: none;
+  }
+  .oddio-v2-album-page .oddio-v2-related-album:hover {
+    transform: none;
+  }
 }
