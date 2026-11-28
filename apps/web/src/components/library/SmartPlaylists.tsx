@@ -20,20 +20,41 @@ type Version = string | null;
 type SyncState = 'loading' | 'saving' | 'synced' | 'local' | 'conflict';
 type AccountCopy = { updatedAt: Version; rules: SmartPlaylistRule[] };
 type Pending = { updatedAt?: Version; rules: SmartPlaylistRule[] };
+type PendingSnapshot = { raw: string | null; legacyRules?: string | null };
 
-function rememberPending(key: string, pending: Pending): boolean {
+function snapshotPending(key: string): PendingSnapshot {
+  const raw = localStorage.getItem(key + ':pending');
+  return raw === '1' ? { raw, legacyRules: localStorage.getItem(key) } : { raw };
+}
+
+function rememberPending(key: string, pending: Pending): PendingSnapshot | undefined {
   try {
-    localStorage.setItem(key + ':pending', JSON.stringify(pending));
-    return true;
+    // Even two identical edits in different tabs are separate attempts.
+    const attempt =
+      globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
+    const raw = JSON.stringify({ ...pending, attempt });
+    localStorage.setItem(key + ':pending', raw);
+    return { raw };
   } catch {
-    return false;
+    return undefined;
   }
 }
 
-function rememberSynced(key: string, rules: SmartPlaylistRule[]) {
+function rememberSynced(
+  key: string,
+  rules: SmartPlaylistRule[],
+  acknowledged: PendingSnapshot | undefined,
+) {
+  if (!acknowledged) return;
   try {
+    const current = snapshotPending(key);
+    if (
+      current.raw !== acknowledged.raw ||
+      current.legacyRules !== acknowledged.legacyRules
+    )
+      return;
     localStorage.setItem(key, JSON.stringify(rules));
-    localStorage.removeItem(key + ':pending');
+    if (acknowledged.raw !== null) localStorage.removeItem(key + ':pending');
   } catch {
     // A later load can still reconcile the pending edit with the account.
   }
@@ -70,7 +91,9 @@ export function SmartPlaylists({
   const [rules, setRules] = useState<SmartPlaylistRule[]>([]);
   const [syncState, setSyncState] = useState<SyncState>('loading');
   const [version, setVersion] = useState<Version | undefined>(undefined);
-  const [conflict, setConflict] = useState<AccountCopy | null>(null);
+  const [conflict, setConflict] = useState<
+    (AccountCopy & { pendingSnapshot?: PendingSnapshot }) | null
+  >(null);
   const [reload, setReload] = useState(0);
   const storageKey = smartPlaylistStorageKey(userId);
   const [form, setForm] = useState(blank);
@@ -91,9 +114,17 @@ export function SmartPlaylists({
       validateSmartPlaylistRules(input, validGenres, validMoods);
     let local: SmartPlaylistRule[] = [];
     let pending: Pending | undefined;
+    let pendingSnapshot: PendingSnapshot | undefined;
     try {
-      local = clean(JSON.parse(localStorage.getItem(storageKey) ?? '[]'));
-      const raw = localStorage.getItem(storageKey + ':pending');
+      pendingSnapshot = snapshotPending(storageKey);
+      local = clean(
+        JSON.parse(
+          (pendingSnapshot.raw === '1'
+            ? pendingSnapshot.legacyRules
+            : localStorage.getItem(storageKey)) ?? '[]',
+        ),
+      );
+      const raw = pendingSnapshot.raw;
       // Older builds saved the rules separately with a plain "1" marker.
       if (raw === '1') pending = { rules: local };
       else if (raw) {
@@ -128,7 +159,7 @@ export function SmartPlaylists({
             unsaved.updatedAt !== account.updatedAt &&
             !(unsaved.updatedAt === undefined && account.updatedAt === null)
           ) {
-            setConflict(account);
+            setConflict({ ...account, pendingSnapshot });
             setSyncState('conflict');
             return;
           }
@@ -139,12 +170,12 @@ export function SmartPlaylists({
             return;
           }
           setVersion(saved.updatedAt);
-          rememberSynced(storageKey, unsaved.rules);
+          rememberSynced(storageKey, unsaved.rules, pendingSnapshot);
         } else {
           setRules(account.rules);
           setActiveId(account.rules[0]?.id ?? null);
           setVersion(account.updatedAt);
-          rememberSynced(storageKey, account.rules);
+          rememberSynced(storageKey, account.rules, pendingSnapshot);
         }
         setSyncState('synced');
       } catch (error) {
@@ -167,7 +198,11 @@ export function SmartPlaylists({
 
   const save = (next: SmartPlaylistRule[], base = version) => {
     const clean = validateSmartPlaylistRules(next, validGenres, validMoods);
-    if (base === undefined && !rememberPending(storageKey, { rules: clean })) {
+    const pendingSnapshot = rememberPending(storageKey, {
+      updatedAt: base,
+      rules: clean,
+    });
+    if (base === undefined && !pendingSnapshot) {
       setMessage(
         ar
           ? 'تعذر الحفظ على الجهاز. جرّب تاني لما الاتصال يرجع.'
@@ -175,9 +210,7 @@ export function SmartPlaylists({
       );
       return false;
     }
-    const keptLocally =
-      base === undefined ||
-      rememberPending(storageKey, { updatedAt: base, rules: clean });
+    const keptLocally = Boolean(pendingSnapshot);
     setRules(clean);
     setConflict(null);
     if (base === undefined) {
@@ -191,7 +224,7 @@ export function SmartPlaylists({
         const result = await saveAccount(userId, { updatedAt: base, rules: clean });
         if (!result.saved || !result.updatedAt) throw new Error('Account save failed');
         setVersion(result.updatedAt);
-        rememberSynced(storageKey, clean);
+        rememberSynced(storageKey, clean, pendingSnapshot);
         setSyncState('synced');
         setMessage(ar ? 'اتحفظت على حسابك.' : 'Saved to your account.');
       } catch (error) {
@@ -285,7 +318,7 @@ export function SmartPlaylists({
                 setRules(conflict.rules);
                 setActiveId(conflict.rules[0]?.id ?? null);
                 setVersion(conflict.updatedAt);
-                rememberSynced(storageKey, conflict.rules);
+                rememberSynced(storageKey, conflict.rules, conflict.pendingSnapshot);
                 setConflict(null);
                 setSyncState('synced');
               }}

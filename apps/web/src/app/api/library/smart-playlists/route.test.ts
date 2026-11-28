@@ -83,6 +83,19 @@ describe('smart playlist account route', () => {
     expect((await read()).rules).toEqual(playlist('Newer account copy'));
   });
 
+  it('does not allow a tab from the previous release to overwrite without a version', async () => {
+    expect((await save(null, 'Account copy')).status).toBe(200);
+    const before = await read();
+    const response = await PUT(
+      new Request('https://oddio.test/api/library/smart-playlists', {
+        method: 'PUT',
+        body: JSON.stringify({ rules: playlist('Unversioned legacy edit') }),
+      }),
+    );
+    expect(response.status).toBe(422);
+    expect(await read()).toEqual(before);
+  });
+
   it('does not leak another account or write after the signed-in account has changed', async () => {
     expect((await save(null, 'Private list')).status).toBe(200);
     session.user = { id: 'listener-b' };

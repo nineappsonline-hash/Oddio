@@ -59,6 +59,18 @@ try {
   const firstRead = new Promise((resolve) => {
     releaseFirstRead = resolve;
   });
+  let releaseNewerWrite;
+  const delayedWrite = new Promise((resolve) => {
+    releaseNewerWrite = resolve;
+  });
+  let releaseStaleRead;
+  const delayedRead = new Promise((resolve) => {
+    releaseStaleRead = resolve;
+  });
+  let markStaleReadStarted;
+  const staleReadStarted = new Promise((resolve) => {
+    markStaleReadStarted = resolve;
+  });
   // A real local HTTP proxy avoids WebKit interception dropping intercepted
   // PUT request bodies. Only the Smart Playlist endpoint is simulated.
   proxy = createServer(async (request, response) => {
@@ -78,7 +90,8 @@ try {
       request.pipe(upstream);
       return;
     }
-    const deviceA = request.headers['x-oddio-test-device'] === 'a';
+    const device = request.headers['x-oddio-test-device'];
+    const deviceA = device === 'a';
     const json = (status, data, error = null) =>
       response
         .writeHead(status, {
@@ -89,9 +102,15 @@ try {
     try {
       if (request.method === 'GET') {
         if (deviceA) await firstRead;
+        if (device === 'race-read') {
+          const snapshot = account;
+          markStaleReadStarted();
+          await delayedRead;
+          return json(200, { available: true, accountId, ...snapshot });
+        }
         return json(200, { available: true, accountId, ...account });
       }
-      if (offline && deviceA)
+      if ((offline && deviceA) || device === 'race-offline')
         return json(503, null, { code: 'offline', message: 'Offline' });
       const chunks = [];
       for await (const chunk of request) chunks.push(chunk);
@@ -102,6 +121,7 @@ try {
       const updatedAt = new Date(Date.parse(account.updatedAt) + 1000).toISOString();
       writes++;
       account = { updatedAt, rules: payload.rules };
+      if (device === 'race-success') await delayedWrite;
       return json(200, { saved: true, updatedAt });
     } catch (error) {
       return json(500, null, { code: 'fixture_error', message: String(error) });
@@ -194,6 +214,83 @@ try {
   );
   console.log(
     'PASS Offline work stays local when another device saves; no silent overwrite',
+  );
+
+  const shared = b.context;
+  async function tab(tag, waitForSync = true) {
+    const page = await shared.newPage();
+    await page.setExtraHTTPHeaders({ 'x-oddio-test-device': tag });
+    await page.goto(syncOrigin + '/en/library', { waitUntil: 'domcontentloaded' });
+    const view = { page, area: page.locator('#smart-playlists') };
+    if (waitForSync) await synced(view);
+    return view;
+  }
+  const racingWrite = await tab('race-success');
+  const racingOffline = await tab('race-offline');
+  const racingRead = await tab('race-read', false);
+  await Promise.race([
+    staleReadStarted,
+    racingRead.page
+      .getByText('Account sync unavailable; using local rules.')
+      .waitFor()
+      .then(() => {
+        throw new Error('Delayed Smart Playlist read did not reach fixture');
+      }),
+  ]);
+  await fill(racingWrite, 'Successful delayed write');
+  await saveButton(racingWrite).press('Enter');
+  await racingWrite.area.getByText('Saving changes…').waitFor();
+  await fill(racingOffline, 'Newer local edit');
+  await saveButton(racingOffline).press('Enter');
+  await racingOffline.area
+    .getByText('Saved on this device. Sync will retry when you revisit the library.')
+    .waitFor();
+  const storageKey = 'oddio-smart-playlists-v1:' + accountId;
+  const pending = () =>
+    racingOffline.page.evaluate(
+      (key) => localStorage.getItem(key + ':pending'),
+      storageKey,
+    );
+  assert.match(await pending(), /Newer local edit/);
+  releaseNewerWrite();
+  await racingWrite.area.getByText('Saved to your account.').waitFor();
+  assert.match(
+    await pending(),
+    /Newer local edit/,
+    'A completed save in tab A erased the newer pending edit in tab B',
+  );
+  releaseStaleRead();
+  await synced(racingRead);
+  assert.match(
+    await pending(),
+    /Newer local edit/,
+    'A late GET in another tab erased the newer pending edit',
+  );
+  await racingOffline.page.setExtraHTTPHeaders({ 'x-oddio-test-device': 'b' });
+  await racingOffline.page.reload();
+  await racingOffline.area
+    .getByText('Smart playlists changed on another device.')
+    .waitFor();
+  await racingOffline.area.getByRole('button', { name: 'Newer local edit' }).waitFor();
+
+  // An old, still-open Library tab writes this marker when its legacy PUT
+  // fails after an upgrade. Reopening must preserve it without a blind PUT.
+  const beforeLegacy = writes;
+  await racingOffline.page.evaluate(
+    ({ key, rules }) => {
+      localStorage.setItem(key, JSON.stringify(rules));
+      localStorage.setItem(key + ':pending', '1');
+    },
+    { key: storageKey, rules: [...account.rules, rule('legacy', 'Legacy browser edit')] },
+  );
+  await racingOffline.page.reload();
+  await racingOffline.area
+    .getByText('Smart playlists changed on another device.')
+    .waitFor();
+  await racingOffline.area.getByRole('button', { name: 'Legacy browser edit' }).waitFor();
+  assert.equal(writes, beforeLegacy);
+  console.log(
+    'PASS Shared-browser late reads/writes preserve a newer pending edit; legacy storage survives refresh',
   );
 } finally {
   await browser.close();
