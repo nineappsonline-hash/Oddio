@@ -193,18 +193,22 @@ try {
     () => Number(document.querySelector('#oddio-clip-start')?.max) === 39,
   );
   const slider = dialog.locator('#oddio-clip-start');
-  const length = dialog.locator('#oddio-clip-length');
+  const chooseLength = (seconds) =>
+    dialog.getByRole('button', { name: `${seconds} seconds`, exact: true }).tap();
+  assert.ok(await dialog.getByText('Story preview', { exact: false }).isVisible());
   const preview = dialog.getByRole('button', { name: 'Preview audio' });
   const stopPreview = dialog.getByRole('button', { name: 'Stop', exact: true });
-  await slider.fill('24');
-  await length.selectOption('10');
+  await slider.fill('19');
+  await dialog.getByRole('button', { name: 'Forward 5 seconds' }).tap();
+  await chooseLength(10);
+  assert.equal(await dialog.getByTestId('story-selection').innerText(), '0:24 – 0:34');
   await preview.tap();
   await page.waitForFunction(() => Math.abs(window.__story.previewStart - 24) < 0.3);
   await slider.fill('29');
   await preview.waitFor({ state: 'visible', timeout: 1500 });
   await preview.tap();
   await page.waitForFunction(() => Math.abs(window.__story.previewStart - 29) < 0.3);
-  await length.selectOption('15');
+  await chooseLength(15);
   await preview.waitFor({ state: 'visible', timeout: 1500 });
   await slider.fill('39');
   await preview.tap();
@@ -242,7 +246,7 @@ try {
     );
   } else {
     await slider.fill('24');
-    await length.selectOption('10');
+    await chooseLength(10);
     await preview.tap();
     await stopPreview.tap();
     await dialog.getByRole('button', { name: 'Create Story video' }).tap();
