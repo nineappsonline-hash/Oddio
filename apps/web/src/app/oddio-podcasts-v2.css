@@ -92,7 +92,6 @@
   }
 }
 
-
 /* Keep podcast discovery actions readable without a seven-row CTA stack on phones. */
 @media (max-width: 640px) {
   .oddio-v2-podcasts .oddio-v2-podcast-hero .flex.flex-wrap.items-center.gap-3 {
@@ -111,7 +110,10 @@
     line-height: 1.4;
     gap: 5px;
   }
-  .oddio-v2-podcasts .oddio-v2-podcast-hero .flex.flex-wrap.items-center.gap-3 > a:last-child {
+  .oddio-v2-podcasts
+    .oddio-v2-podcast-hero
+    .flex.flex-wrap.items-center.gap-3
+    > a:last-child {
     grid-column: 1 / -1;
     justify-self: stretch;
   }
