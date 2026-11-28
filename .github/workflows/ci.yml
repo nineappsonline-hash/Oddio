@@ -156,5 +156,7 @@ jobs:
             BROWSER_ENGINE="$browser" SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/browser-release.mjs
           done
           SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/mobile-performance.mjs
+          SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/roadmap-browser.mjs
+          BROWSER_ENGINE=webkit SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/roadmap-browser.mjs
           SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/story-clip-browser.mjs
           BROWSER_ENGINE=webkit SMOKE_BASE_URL=http://127.0.0.1:3100 node scripts/story-clip-browser.mjs
