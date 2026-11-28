@@ -209,7 +209,10 @@ try {
   await slider.fill('39');
   await preview.tap();
   await page.waitForFunction(() => Math.abs(window.__story.previewStart - 39) < 0.3);
-  await preview.waitFor({ state: 'visible', timeout: 3500 });
+  // The end-of-file audio 'ended' event can be delayed by browser scheduling,
+  // especially on CI WebKit under CPU contention. Still require automatic
+  // recovery to Preview (without clicking Stop), but don't assume 3.5 seconds.
+  await preview.waitFor({ state: 'visible', timeout: 12_000 });
   assert.equal(await dialog.getByRole('alert').count(), 0);
   breakAudio = true;
   await preview.tap();
