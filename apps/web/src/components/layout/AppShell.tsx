@@ -21,7 +21,6 @@ import { MobileHeader, MobileNav } from '@/components/layout/MobileNav';
 import { Footer } from '@/components/layout/Footer';
 import { useLocalePath } from '@/lib/use-locale-path';
 import { AmbientBackground } from '@/components/visuals/AmbientBackground';
-import { useT } from '@/i18n/use-translator';
 import type { Locale } from '@ai-music/contracts';
 import type { ContentLanguagePreference } from '@/lib/content-language';
 
@@ -45,7 +44,6 @@ export function AppShell({
   user: SessionUser | null;
   children: React.ReactNode;
 }) {
-  const t = useT();
   const { pathname } = useLocalePath();
   const musicBrowseRoutes = new Set([
     `/${locale}`,
@@ -54,7 +52,6 @@ export function AppShell({
     `/${locale}/search`,
     `/${locale}/genres`,
     `/${locale}/artists`,
-    `/${locale}/podcasts`,
   ]);
   const detailPrefixes = [
     `/${locale}/tracks/`,
@@ -63,15 +60,17 @@ export function AppShell({
     `/${locale}/genres/`,
     `/${locale}/moods/`,
     `/${locale}/playlists/`,
+    `/${locale}/library/`,
   ];
+  const podcastMode =
+    pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   const useMagicPathShell =
+    podcastMode ||
     musicBrowseRoutes.has(pathname) ||
     pathname === `/${locale}/library` ||
     pathname === `/${locale}/charts` ||
     pathname === `/${locale}/soundspace` ||
     detailPrefixes.some((prefix) => pathname.startsWith(prefix));
-  const podcastMode =
-    pathname === `/${locale}/podcasts` || pathname.startsWith(`/${locale}/podcasts/`);
   return (
     <SessionProvider user={user}>
       <ToastProvider>
@@ -86,11 +85,15 @@ export function AppShell({
           <AmbientBackground />
           {useMagicPathShell ? (
             <>
-              <MagicPathHomeSidebar locale={locale} user={user} />
-              <MagicPathHomeListeningRail locale={locale} />
+              <MagicPathHomeSidebar
+                locale={locale}
+                user={user}
+                podcastMode={podcastMode}
+              />
+              <MagicPathHomeListeningRail locale={locale} podcastMode={podcastMode} />
             </>
           ) : (
-            <DesktopChrome user={user} podcastMode={podcastMode} />
+            <DesktopChrome user={user} podcastMode={false} />
           )}
           <div
             className={`oddio-workspace relative z-10 w-full min-w-0 max-w-full overflow-x-clip ${useMagicPathShell ? 'mp2-workspace' : `lg:ps-[244px] ${podcastMode ? 'oddio-podcast-workspace 2xl:pe-0' : '2xl:pe-[300px]'}`}`}
@@ -105,7 +108,7 @@ export function AppShell({
               <>
                 <MobileHeader user={user} contentLanguage={contentLanguage} />
                 <DesktopTopBar contentLanguage={contentLanguage} />
-                <PlayerBar podcastMode={podcastMode} />
+                <PlayerBar />
               </>
             )}
             <main
@@ -117,7 +120,9 @@ export function AppShell({
             </main>
             <Footer locale={locale} />
           </div>
-          {useMagicPathShell ? <MagicPathHomeBottomPlayer locale={locale} /> : null}
+          {useMagicPathShell ? (
+            <MagicPathHomeBottomPlayer locale={locale} podcastMode={podcastMode} />
+          ) : null}
           <DeferredFullPlayer />
           {!useMagicPathShell ? <MobileNav /> : null}
           {user ? (

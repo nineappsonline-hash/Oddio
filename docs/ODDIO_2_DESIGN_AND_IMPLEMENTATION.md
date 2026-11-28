@@ -86,3 +86,10 @@ Images are bundled in the handoff archive delivered with this plan. Figma master
 - Continue migrating navigation and player geometry beyond styling, and implement an authentic responsive bottom player with no footer overlap once behavior is tested.
 - Align English copy and podcast browsing in the next dedicated component, not by sending users to fake mock routes.
 - Do not merge/deploy until visual review against MagicPath reference and release gate checks pass.
+
+## Integration and mobile parity — 2026-11-28
+
+- Integrated the live fixes for fast full-player expansion and plain lyrics (#38), Story timing/export (#39), and Rewind / Smart Playlist recovery (#40) without promoting 2.0 to production.
+- Petrol blue is the current branch's visual direction. The opening neon reference remains historical; use the MagicPath composition and the current petrol palette to evaluate the 2.0 preview.
+- Extended the 2.0 shell to Library subpages and all podcast pages, including creator navigation for users permitted to publish. The bottom player shows a compact volume popover and direct queue on mobile. Existing iOS hardware volume guidance remains in place; on other devices the same player volume/mute applies. A playing episode gets timed skips rather than music-track change buttons; full-player speed/sleep controls remain in place.
+- Kept the visual screenshots in CI alongside the current Rewind, Smart Playlist, and Story regressions. Still required before production: actual iPhone/Android playback and sharing, signed-in creator creation/upload/publish with real storage, and visual approval of the final preview.

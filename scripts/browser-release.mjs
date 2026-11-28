@@ -254,6 +254,64 @@ try {
         );
       });
 
+      if (viewport.width === 390) {
+        await test(label + ' compact volume and direct queue on 320px', async () => {
+          await page.setViewportSize({ width: 320, height: 760 });
+          try {
+            await page.goto(base + '/' + locale, { waitUntil: 'domcontentloaded' });
+            await page.locator('.oddio-stage-play').click();
+            const mini = page.locator('.mp2-player[role="region"]');
+            const volume = mini.getByRole('button', {
+              name: locale === 'ar' ? 'مستوى الصوت' : 'Volume',
+              exact: true,
+            });
+            await volume.click();
+            assert.equal(await volume.getAttribute('aria-expanded'), 'true');
+            const group = mini.getByRole('group', {
+              name: locale === 'ar' ? 'مستوى الصوت' : 'Volume',
+              exact: true,
+            });
+            const slider = group.getByRole('slider');
+            await slider.fill('37');
+            assert.equal(await slider.inputValue(), '37');
+            const mute = group.getByRole('button', {
+              name: locale === 'ar' ? 'كتم الصوت' : 'Mute',
+              exact: true,
+            });
+            await mute.click();
+            assert.equal(await slider.inputValue(), '0');
+            await group
+              .getByRole('button', {
+                name: locale === 'ar' ? 'تشغيل الصوت' : 'Unmute',
+                exact: true,
+              })
+              .click();
+            assert.equal(await slider.inputValue(), '37');
+            const box = await group.boundingBox();
+            assert.ok(
+              box && box.x >= 0 && box.x + box.width <= 322,
+              'compact volume must fit a 320px viewport',
+            );
+            await page.keyboard.press('Escape');
+            assert.equal(await volume.getAttribute('aria-expanded'), 'false');
+            const queue = mini.getByRole('button', {
+              name: locale === 'ar' ? 'قائمة التشغيل' : 'Queue',
+              exact: true,
+            });
+            const touchTarget = await queue.boundingBox();
+            assert.ok(touchTarget && touchTarget.height >= 44 && touchTarget.width >= 44);
+            await queue.click();
+            const activeQueue = page
+              .getByRole('dialog', { name: /player|مشغل/i })
+              .locator('#oddio-tab-queue');
+            await waitForAttribute(activeQueue, 'aria-selected', 'true');
+            await page.keyboard.press('Escape');
+          } finally {
+            await page.setViewportSize(viewport);
+          }
+        });
+      }
+
       await test(`${label} player keeps selected track across client-side navigation`, async () => {
         await page.goto(`${base}/${locale}`, { waitUntil: 'domcontentloaded' });
         await page.locator('.oddio-stage-play').click();
@@ -535,6 +593,39 @@ try {
         assert.ok(overflow <= 2, `discovery page horizontal overflow: ${overflow}px`);
       });
 
+      await test(
+        label + ' Podcast categories keep the 2.0 shell and podcast navigation',
+        async () => {
+          const response = await page.goto(base + '/' + locale + '/podcasts/categories', {
+            waitUntil: 'domcontentloaded',
+          });
+          assert.equal(response?.status(), 200);
+          await page.locator('.mp2-player').waitFor({ state: 'visible' });
+          assert.equal(
+            await page
+              .locator('.oddio-top-mini-player:visible, .oddio-idle-player:visible')
+              .count(),
+            0,
+          );
+          if (viewport.width === 390)
+            await page.locator('#oddio-mobile-menu-trigger').click();
+          const navigation = page.getByRole('navigation', {
+            name: locale === 'ar' ? 'تصفّح البودكاست' : 'Explore podcasts',
+          });
+          await navigation
+            .locator('a[href$="/podcasts/categories"]')
+            .waitFor({ state: 'visible' });
+          await navigation.locator('a[href$="/podcasts/history"]').click();
+          await page.waitForURL((url) => url.pathname.endsWith('/podcasts/history'));
+          await page.locator('.mp2-player').waitFor({ state: 'visible' });
+          assert.ok(
+            await page.evaluate(
+              () => document.documentElement.scrollWidth - innerWidth <= 2,
+            ),
+          );
+        },
+      );
+
       await test(`${label} podcast notifications page and guest API privacy`, async () => {
         const response = await page.goto(`${base}/${locale}/podcasts/notifications`, {
           waitUntil: 'domcontentloaded',
@@ -748,6 +839,7 @@ try {
             waitUntil: 'domcontentloaded',
           });
           assert.equal(response?.status(), 200);
+          await page.locator('.mp2-player').waitFor({ state: 'visible' });
           await page
             .getByRole('heading', { level: 1, name: /2026 Music Rewind/ })
             .waitFor();
@@ -765,6 +857,7 @@ try {
             waitUntil: 'domcontentloaded',
           });
           assert.equal(arabic?.status(), 200);
+          await page.locator('.mp2-player').waitFor({ state: 'visible' });
           assert.equal(await page.locator('html').getAttribute('dir'), 'rtl');
           await page.getByRole('heading', { level: 1 }).waitFor();
           await page.setViewportSize({ width: 390, height: 844 });

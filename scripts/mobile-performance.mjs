@@ -182,3 +182,6 @@ try {
 } finally {
   await browser.close();
 }
+
+// CI already runs this script against a demo catalog. Cover actual player interactions too.
+await import('./mobile-player-performance.mjs');

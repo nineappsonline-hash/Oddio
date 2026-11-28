@@ -13,6 +13,9 @@ import {
   Disc3,
   Headphones,
   Heart,
+  History,
+  RotateCcw,
+  RotateCw,
   Home,
   Library,
   ListMusic,
@@ -28,7 +31,6 @@ import {
   SkipForward,
   Sparkles,
   Users,
-  Volume2,
   X,
 } from 'lucide-react';
 import type { SessionUser } from '@ai-music/contracts';
@@ -36,7 +38,11 @@ import { Artwork } from '@/components/ui/Artwork';
 import { Logo } from '@/components/layout/BrandLogo';
 import { usePlayer } from '@/lib/player-store';
 import { PlayerSeekProgress } from '@/components/player/PlayerProgress';
-import { PlayerVolumeControl } from '@/components/player/PlayerVolumeControl';
+import {
+  CompactPlayerVolumeControl,
+  PlayerVolumeControl,
+} from '@/components/player/PlayerVolumeControl';
+import { isPodcastPlayback } from '@/lib/podcast-playback';
 import { ExperienceSwitcher } from '@/components/layout/ExperienceSwitcher';
 import type { ContentLanguagePreference } from '@/lib/content-language';
 
@@ -54,7 +60,56 @@ const navItems = [
   { path: '/artists', labelAr: 'الفنانون', labelEn: 'Artists', icon: Users },
 ];
 
-export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
+const podcastLinks = [
+  {
+    path: '/podcasts/categories',
+    labelAr: 'تصنيفات البودكاست',
+    labelEn: 'Podcast categories',
+    icon: Compass,
+  },
+  {
+    path: '/podcasts#series',
+    labelAr: 'السلاسل',
+    labelEn: 'Podcast series',
+    icon: Library,
+  },
+  {
+    path: '/podcasts/creators',
+    labelAr: 'صنّاع البودكاست',
+    labelEn: 'Podcast creators',
+    icon: Users,
+  },
+  {
+    path: '/podcasts/for-you',
+    labelAr: 'مقترحات ليك',
+    labelEn: 'For you',
+    icon: Sparkles,
+  },
+  {
+    path: '/podcasts/history',
+    labelAr: 'سجل الاستماع',
+    labelEn: 'Listening history',
+    icon: History,
+  },
+  {
+    path: '/podcasts/following',
+    labelAr: 'متابعات البودكاست',
+    labelEn: 'Following',
+    icon: Heart,
+  },
+  {
+    path: '/podcasts/notifications',
+    labelAr: 'إشعارات البودكاست',
+    labelEn: 'Podcast notifications',
+    icon: Bell,
+  },
+];
+
+export function MagicPathHomeSidebar({
+  locale,
+  user,
+  podcastMode = false,
+}: ChromeProps & { podcastMode?: boolean }) {
   const [open, setOpen] = useState(false);
   const ar = locale === 'ar';
   const pathname = usePathname();
@@ -62,6 +117,9 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
     pathname === `/${locale}${route}` ||
     (!route && pathname === `/${locale}/`) ||
     (!!route && pathname.startsWith(`/${locale}${route}/`));
+  const canPublishPodcast =
+    user?.isArtistManager ||
+    user?.roles.some((role) => role === 'super_admin' || role === 'admin');
   const drawerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -162,39 +220,82 @@ export function MagicPathHomeSidebar({ locale, user }: ChromeProps) {
           ))}
         </nav>
         <div className="mp2-sidebar-divider" />
-        <p className="mp2-sidebar-heading">
-          {ar ? 'مكتبتك الموسيقية' : 'YOUR COLLECTION'}
-        </p>
-        <nav aria-label={ar ? 'مجموعتك' : 'Your collection'}>
-          <Link
-            href={`/${locale}/library`}
-            onClick={() => setOpen(false)}
-            className="mp2-nav-item"
-          >
-            <Heart size={18} /> {ar ? 'الأغاني المفضلة' : 'Liked songs'}
-          </Link>
-          <Link
-            href={`/${locale}/soundspace`}
-            onClick={() => setOpen(false)}
-            className="mp2-nav-item"
-          >
-            <AudioLines size={18} /> {ar ? 'موسيقى على مزاجك' : 'Made for your mood'}
-          </Link>
-          <Link
-            href={`/${locale}/genres`}
-            onClick={() => setOpen(false)}
-            className="mp2-nav-item"
-          >
-            <Disc3 size={18} /> {ar ? 'الأنواع الموسيقية' : 'Music genres'}
-          </Link>
-          <Link
-            href={`/${locale}/charts`}
-            onClick={() => setOpen(false)}
-            className="mp2-nav-item"
-          >
-            <ListMusic size={18} /> {ar ? 'الأكثر استماعًا' : 'Top charts'}
-          </Link>
-        </nav>
+        {podcastMode ? (
+          <>
+            <p className="mp2-sidebar-heading">
+              {ar ? 'تصفّح البودكاست' : 'EXPLORE PODCASTS'}
+            </p>
+            <nav aria-label={ar ? 'تصفّح البودكاست' : 'Explore podcasts'}>
+              {podcastLinks.map(({ path, labelAr, labelEn, icon: Icon }) => (
+                <Link
+                  key={path}
+                  href={`/${locale}${path}`}
+                  className="mp2-nav-item"
+                  onClick={() => setOpen(false)}
+                >
+                  <Icon size={18} aria-hidden="true" />{' '}
+                  <span>{ar ? labelAr : labelEn}</span>
+                </Link>
+              ))}
+              {canPublishPodcast ? (
+                <>
+                  <Link
+                    href={`/${locale}/podcasts/me`}
+                    className="mp2-nav-item"
+                    onClick={() => setOpen(false)}
+                  >
+                    <Mic2 size={18} aria-hidden="true" />{' '}
+                    {ar ? 'ملفي' : 'My creator profile'}
+                  </Link>
+                  <Link
+                    href={`/${locale}/podcasts/manage`}
+                    className="mp2-nav-item"
+                    onClick={() => setOpen(false)}
+                  >
+                    <Mic2 size={18} aria-hidden="true" />{' '}
+                    {ar ? 'استوديو البودكاست' : 'Podcast Studio'}
+                  </Link>
+                </>
+              ) : null}
+            </nav>
+          </>
+        ) : (
+          <>
+            <p className="mp2-sidebar-heading">
+              {ar ? 'مكتبتك الموسيقية' : 'YOUR COLLECTION'}
+            </p>
+            <nav aria-label={ar ? 'مجموعتك' : 'Your collection'}>
+              <Link
+                href={`/${locale}/library`}
+                onClick={() => setOpen(false)}
+                className="mp2-nav-item"
+              >
+                <Heart size={18} /> {ar ? 'الأغاني المفضلة' : 'Liked songs'}
+              </Link>
+              <Link
+                href={`/${locale}/soundspace`}
+                onClick={() => setOpen(false)}
+                className="mp2-nav-item"
+              >
+                <AudioLines size={18} /> {ar ? 'موسيقى على مزاجك' : 'Made for your mood'}
+              </Link>
+              <Link
+                href={`/${locale}/genres`}
+                onClick={() => setOpen(false)}
+                className="mp2-nav-item"
+              >
+                <Disc3 size={18} /> {ar ? 'الأنواع الموسيقية' : 'Music genres'}
+              </Link>
+              <Link
+                href={`/${locale}/charts`}
+                onClick={() => setOpen(false)}
+                className="mp2-nav-item"
+              >
+                <ListMusic size={18} /> {ar ? 'الأكثر استماعًا' : 'Top charts'}
+              </Link>
+            </nav>
+          </>
+        )}
         <Link href={`/${locale}/apply/artist`} className="mp2-artist-cta">
           <Sparkles size={23} aria-hidden="true" />
           <span>
@@ -285,7 +386,13 @@ export function MagicPathHomeHeader({
   );
 }
 
-export function MagicPathHomeListeningRail({ locale }: { locale: 'ar' | 'en' }) {
+export function MagicPathHomeListeningRail({
+  locale,
+  podcastMode = false,
+}: {
+  locale: 'ar' | 'en';
+  podcastMode?: boolean;
+}) {
   const ar = locale === 'ar';
   const track = usePlayer((s) => s.track);
   const queue = usePlayer((s) => s.queue);
@@ -324,7 +431,13 @@ export function MagicPathHomeListeningRail({ locale }: { locale: 'ar' | 'en' }) 
           <Headphones size={40} />
           <strong>{ar ? 'الموسيقى مستنياك' : 'Your sound starts here'}</strong>
           <small>
-            {ar ? 'شغّل أي أغنية علشان تظهر هنا' : 'Play a track to fill this space'}
+            {podcastMode
+              ? ar
+                ? 'شغّل حلقة علشان تظهر هنا'
+                : 'Play an episode to fill this space'
+              : ar
+                ? 'شغّل أي أغنية علشان تظهر هنا'
+                : 'Play a track to fill this space'}
           </small>
         </div>
       )}
@@ -362,16 +475,38 @@ export function MagicPathHomeListeningRail({ locale }: { locale: 'ar' | 'en' }) 
           </p>
         )}
       </div>
-      <Link className="mp2-listening-discover" href={`/${locale}/discover`}>
-        {ar ? 'اكتشف موسيقى جديدة' : 'Discover new music'} <ArrowUpLeft size={15} />
+      <Link
+        className="mp2-listening-discover"
+        href={`/${locale}/${podcastMode ? 'podcasts/categories' : 'discover'}`}
+      >
+        {podcastMode
+          ? ar
+            ? 'اكتشف بودكاست جديد'
+            : 'Discover podcasts'
+          : ar
+            ? 'اكتشف موسيقى جديدة'
+            : 'Discover new music'}{' '}
+        <ArrowUpLeft size={15} />
       </Link>
     </aside>
   );
 }
 
-export function MagicPathHomeBottomPlayer({ locale }: { locale: 'ar' | 'en' }) {
+export function MagicPathHomeBottomPlayer({
+  locale,
+  podcastMode = false,
+}: {
+  locale: 'ar' | 'en';
+  podcastMode?: boolean;
+}) {
   const ar = locale === 'ar';
   const track = usePlayer((s) => s.track);
+  const isEpisode = isPodcastPlayback(track);
+  const volumeLabel = ar ? 'مستوى الصوت' : 'Volume';
+  const skipEpisode = (seconds: number) => {
+    const { seek, currentTime, duration } = usePlayer.getState();
+    seek(Math.max(0, Math.min(duration || Infinity, currentTime + seconds)));
+  };
   const playing = usePlayer((s) => s.isPlaying);
   const toggle = usePlayer((s) => s.toggle);
   const next = usePlayer((s) => s.next);
@@ -425,28 +560,49 @@ export function MagicPathHomeBottomPlayer({ locale }: { locale: 'ar' | 'en' }) {
           <div className="mp2-player-empty">
             <Headphones size={25} />
             <span>
-              {ar ? 'اختار أغنية وابدأ الاستماع' : 'Choose a track to start listening'}
+              {podcastMode
+                ? ar
+                  ? 'اختار حلقة وابدأ الاستماع'
+                  : 'Choose an episode to start listening'
+                : ar
+                  ? 'اختار أغنية وابدأ الاستماع'
+                  : 'Choose a track to start listening'}
             </span>
           </div>
         )}
       </div>
       <div className="mp2-player-main">
         <div className="mp2-player-controls">
+          {!isEpisode ? (
+            <button
+              type="button"
+              aria-label={ar ? 'عشوائي' : 'Shuffle'}
+              title={ar ? 'عشوائي' : 'Shuffle'}
+              className={`mp2-mode-button ${shuffle ? 'mp2-active' : ''}`}
+              onClick={toggleShuffle}
+            >
+              <Shuffle size={17} />
+            </button>
+          ) : null}
           <button
             type="button"
-            aria-label={ar ? 'عشوائي' : 'Shuffle'}
-            title={ar ? 'عشوائي' : 'Shuffle'}
-            className={shuffle ? 'mp2-active' : ''}
-            onClick={toggleShuffle}
+            className={isEpisode ? 'mp2-episode-back' : 'mp2-track-back'}
+            aria-label={
+              isEpisode
+                ? ar
+                  ? 'ارجع ١٥ ثانية'
+                  : 'Back 15 seconds'
+                : ar
+                  ? 'السابق'
+                  : 'Previous'
+            }
+            onClick={() => (isEpisode ? skipEpisode(-15) : previous())}
           >
-            <Shuffle size={17} />
-          </button>
-          <button
-            type="button"
-            aria-label={ar ? 'السابق' : 'Previous'}
-            onClick={() => previous()}
-          >
-            <SkipBack size={19} fill="currentColor" />
+            {isEpisode ? (
+              <RotateCcw size={19} />
+            ) : (
+              <SkipBack size={19} fill="currentColor" />
+            )}
           </button>
           <button
             type="button"
@@ -463,20 +619,34 @@ export function MagicPathHomeBottomPlayer({ locale }: { locale: 'ar' | 'en' }) {
           </button>
           <button
             type="button"
-            aria-label={ar ? 'التالي' : 'Next'}
-            onClick={() => next()}
+            aria-label={
+              isEpisode
+                ? ar
+                  ? 'قدّم ٣٠ ثانية'
+                  : 'Forward 30 seconds'
+                : ar
+                  ? 'التالي'
+                  : 'Next'
+            }
+            onClick={() => (isEpisode ? skipEpisode(30) : next())}
           >
-            <SkipForward size={19} fill="currentColor" />
+            {isEpisode ? (
+              <RotateCw size={19} />
+            ) : (
+              <SkipForward size={19} fill="currentColor" />
+            )}
           </button>
-          <button
-            type="button"
-            aria-label={ar ? 'التكرار' : 'Repeat'}
-            title={repeat}
-            className={repeat !== 'off' ? 'mp2-active' : ''}
-            onClick={cycleRepeat}
-          >
-            <Repeat2 size={17} />
-          </button>
+          {!isEpisode ? (
+            <button
+              type="button"
+              aria-label={ar ? 'التكرار' : 'Repeat'}
+              title={repeat}
+              className={`mp2-mode-button ${repeat !== 'off' ? 'mp2-active' : ''}`}
+              onClick={cycleRepeat}
+            >
+              <Repeat2 size={17} />
+            </button>
+          ) : null}
         </div>
         {track ? (
           <PlayerSeekProgress rtl={ar} label={ar ? 'موضع التشغيل' : 'Seek'} />
@@ -488,12 +658,17 @@ export function MagicPathHomeBottomPlayer({ locale }: { locale: 'ar' | 'en' }) {
         <button
           type="button"
           onClick={showQueue}
+          disabled={!track}
           aria-label={ar ? 'قائمة التشغيل' : 'Queue'}
         >
           <ListMusic size={19} />
         </button>
-        <Volume2 size={18} aria-hidden="true" />
-        <PlayerVolumeControl rtl={ar} label={ar ? 'مستوى الصوت' : 'Volume'} />
+        <div className="mp2-player-volume-desktop">
+          <PlayerVolumeControl rtl={ar} label={volumeLabel} />
+        </div>
+        <div className="mp2-player-volume-mobile">
+          <CompactPlayerVolumeControl rtl={ar} label={volumeLabel} />
+        </div>
       </div>
     </section>
   );

@@ -515,7 +515,13 @@
   width: 34px;
   height: 34px;
 }
-.mp2-player-extra > button:hover {
+.mp2-player-volume-mobile {
+  display: none;
+}
+.mp2-player-extra > button:disabled {
+  opacity: 0.4;
+}
+.mp2-player-extra > button:hover:not(:disabled) {
   color: #f6f7f9;
 }
 .mp2-mobile-menu-trigger,
@@ -591,8 +597,8 @@
     top: 17px;
     inset-inline-start: 13px;
     z-index: 48;
-    width: 39px;
-    height: 39px;
+    width: 44px;
+    height: 44px;
     border: 1px solid #333436;
     border-radius: 10px;
     background: #1a1b1d;
@@ -616,7 +622,7 @@
 }
 @media (max-width: 640px) {
   .mp2-workspace {
-    padding-bottom: 92px;
+    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
   }
   .mp2-header {
     padding-inline-start: 62px;
@@ -641,10 +647,10 @@
     display: none;
   }
   .mp2-player {
-    height: 77px;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px;
-    padding: 9px 12px;
+    height: calc(77px + env(safe-area-inset-bottom, 0px));
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 4px;
+    padding: 9px 8px calc(9px + env(safe-area-inset-bottom, 0px));
   }
   .mp2-player-main {
     display: flex;
@@ -652,21 +658,31 @@
     justify-content: flex-end;
   }
   .mp2-player-controls {
-    gap: 8px;
+    gap: 2px;
   }
-  .mp2-player-controls > button:first-child,
-  .mp2-player-controls > button:last-child {
+  .mp2-player-controls > .mp2-mode-button {
     display: none;
   }
   .mp2-player-main > :last-child {
     display: none;
   }
   .mp2-player-controls > button.mp2-main-play {
-    width: 39px;
-    height: 39px;
+    width: 44px;
+    height: 44px;
   }
   .mp2-player-extra {
+    gap: 0;
+  }
+  .mp2-player-extra > button,
+  .mp2-player-volume-mobile button[aria-expanded] {
+    width: 44px;
+    height: 44px;
+  }
+  .mp2-player-volume-desktop {
     display: none;
+  }
+  .mp2-player-volume-mobile {
+    display: block;
   }
   .mp2-player-track-name strong {
     font-size: 12px;
@@ -676,11 +692,16 @@
   }
 }
 @media (max-width: 390px) {
-  .mp2-player-controls > button:nth-child(2) {
+  .mp2-player-controls > .mp2-track-back {
     display: none;
   }
   .mp2-player-track {
     gap: 6px;
+  }
+}
+@media (max-width: 350px) {
+  .mp2-player-controls > .mp2-episode-back {
+    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -792,7 +813,7 @@
 }
 .mp2-player-controls > button.mp2-main-play {
   background: linear-gradient(135deg, #2c6875, #16424e);
-  color: #061626;
+  color: #f8fbff;
   box-shadow: 0 3px 16px rgba(35, 90, 100, 0.22) !important;
 }
 .mp2-player-controls > button.mp2-active {

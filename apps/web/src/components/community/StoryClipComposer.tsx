@@ -230,7 +230,7 @@ export function StoryClipComposer({
   );
   const [measuredDuration, setMeasuredDuration] = useState(0);
   const [loadingAudio, setLoadingAudio] = useState(true);
-  const [lyricCues, setLyricCues] = useState<LyricCue[]>([]);
+  const lyricsRef = useRef<Promise<LyricCue[]> | null>(null);
   const duration = measuredDuration || Math.max(0, (track.durationMs || 0) / 1000);
   const [start, setStart] = useState(() =>
     Math.min(Math.floor(currentSeconds), Math.max(0, duration - MAX_CLIP_SECONDS)),
@@ -242,7 +242,7 @@ export function StoryClipComposer({
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [previewing, setPreviewing] = useState(false);
-  const previewRef = useRef<HTMLAudioElement | null>(null);
+  const previewRef = useRef<(() => void) | null>(null);
   const cancelRef = useRef<(() => void) | null>(null);
   const fileUrl = useRef<string | null>(null);
   const podcast = isPodcastPlayback(track);
@@ -259,8 +259,6 @@ export function StoryClipComposer({
   };
   const audioSrc = `/api/story-audio/${podcast ? 'podcast' : 'track'}/${track.id}`;
   const effectiveLength = Math.min(clipLength, Math.max(1, duration - start));
-  const lyricAt = (position: number) =>
-    lyricCues.find((cue) => cue.start <= position && position < cue.end)?.text;
 
   useEffect(() => {
     let active = true;
@@ -292,23 +290,28 @@ export function StoryClipComposer({
 
   useEffect(() => {
     if (podcast) return;
-    let active = true;
-    fetch(`/api/tracks/${track.id}/synced-lyrics`)
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 8_000);
+    lyricsRef.current = fetch(`/api/tracks/${track.id}/synced-lyrics`, {
+      signal: controller.signal,
+    })
       .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (active && typeof data?.data?.srt === 'string')
-          setLyricCues(parseStorySrt(data.data.srt));
-      })
-      .catch(() => {});
+      .then((data) =>
+        typeof data?.data?.srt === 'string' ? parseStorySrt(data.data.srt) : [],
+      )
+      .catch(() => [])
+      .finally(() => clearTimeout(timer));
     return () => {
-      active = false;
+      clearTimeout(timer);
+      controller.abort();
+      lyricsRef.current = null;
     };
   }, [podcast, track.id]);
 
   useEffect(
     () => () => {
       cancelRef.current?.();
-      previewRef.current?.pause();
+      previewRef.current?.();
       if (fileUrl.current) URL.revokeObjectURL(fileUrl.current);
     },
     [],
@@ -328,38 +331,46 @@ export function StoryClipComposer({
     }
   };
 
-  const togglePreview = async () => {
+  const stopPreview = () => {
+    previewRef.current?.();
+    setPreviewing(false);
+  };
+
+  const togglePreview = () => {
     if (previewRef.current) {
-      previewRef.current.pause();
-      previewRef.current.src = '';
-      previewRef.current = null;
-      setPreviewing(false);
+      stopPreview();
       return;
     }
-    const audio = new Audio(audioSrc);
-    previewRef.current = audio;
+    setError('');
+    const audio = new Audio();
     audio.preload = 'auto';
-    try {
-      await new Promise<void>((resolve, reject) => {
-        audio.onloadedmetadata = () => resolve();
-        audio.onerror = () => reject(new Error('Could not load audio preview'));
-        audio.load();
-      });
-      audio.currentTime = start;
-      audio.ontimeupdate = () => {
-        if (audio.currentTime >= start + effectiveLength) {
-          audio.pause();
-          setPreviewing(false);
-          previewRef.current = null;
-        }
-      };
-      await audio.play();
-      setPreviewing(true);
-    } catch {
-      setPreviewing(false);
+    audio.src = audioSrc;
+    // Set the initial position and call play in the tap, including on cold media.
+    audio.currentTime = start;
+    const dispose = () => {
       previewRef.current = null;
+      clearTimeout(timer);
+      audio.onended = null;
+      audio.onerror = null;
+      audio.ontimeupdate = null;
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+    };
+    const onError = () => {
+      if (previewRef.current !== dispose) return;
+      stopPreview();
       setError(ar ? 'تعذر تشغيل معاينة المقطع' : 'Could not preview this excerpt.');
-    }
+    };
+    const timer = window.setTimeout(onError, 15_000);
+    previewRef.current = dispose;
+    audio.onended = stopPreview;
+    audio.onerror = onError;
+    audio.ontimeupdate = () => {
+      if (audio.currentTime >= start + effectiveLength) stopPreview();
+    };
+    setPreviewing(true);
+    void audio.play().then(() => clearTimeout(timer), onError);
   };
 
   async function createClip() {
@@ -367,11 +378,7 @@ export function StoryClipComposer({
     setWorking(true);
     setPercent(0);
     setFile(null);
-    if (previewRef.current) {
-      previewRef.current.pause();
-      previewRef.current = null;
-      setPreviewing(false);
-    }
+    stopPreview();
     let audio: HTMLAudioElement | null = null;
     let context: AudioContext | null = null;
     let recorder: MediaRecorder | null = null;
@@ -400,26 +407,38 @@ export function StoryClipComposer({
       audio = document.createElement('audio');
       audio.preload = 'auto';
       audio.src = audioSrc;
+      const recordingAudio = audio;
       await new Promise<void>((resolve, reject) => {
-        audio!.onloadedmetadata = () => resolve();
-        audio!.onerror = () => reject(new Error('Could not load the audio source'));
-        audio!.load();
+        const settle = (loaded: boolean) => {
+          clearTimeout(timer);
+          recordingAudio.onloadedmetadata = null;
+          recordingAudio.onerror = null;
+          if (loaded) resolve();
+          else reject(new Error('Could not load the audio source'));
+        };
+        const timer = window.setTimeout(() => settle(false), 15_000);
+        recordingAudio.onloadedmetadata = () => settle(true);
+        recordingAudio.onerror = () => settle(false);
+        recordingAudio.load();
       });
       audio.currentTime = start;
-      await new Promise<void>((resolve) => {
-        if (!audio!.seeking && Math.abs(audio!.currentTime - start) < 0.15) resolve();
-        else {
-          const timer = setTimeout(resolve, 1200);
-          audio!.addEventListener(
-            'seeked',
-            () => {
-              clearTimeout(timer);
-              resolve();
-            },
-            { once: true },
-          );
-        }
-      });
+      if (audio.seeking || Math.abs(audio.currentTime - start) >= 0.15) {
+        await new Promise<void>((resolve, reject) => {
+          const onSeek = () => {
+            clearTimeout(timer);
+            if (Math.abs(recordingAudio.currentTime - start) < 0.15) resolve();
+            else reject(new Error('Could not reach the selected clip start'));
+          };
+          const timer = window.setTimeout(() => {
+            recordingAudio.removeEventListener('seeked', onSeek);
+            reject(new Error('Could not reach the selected clip start'));
+          }, 12_000);
+          recordingAudio.addEventListener('seeked', onSeek, { once: true });
+        });
+      }
+      const lyricCues = await lyricsRef.current;
+      const lyricAt = (position: number) =>
+        lyricCues?.find((cue) => cue.start <= position && position < cue.end)?.text;
       const source = context.createMediaElementSource(audio);
       const destination = context.createMediaStreamDestination();
       source.connect(destination);
@@ -439,14 +458,50 @@ export function StoryClipComposer({
         videoBitsPerSecond: 2_200_000,
       });
       const chunks: Blob[] = [];
-      const finalFile = new Promise<File>((resolve, reject) => {
-        recorder!.ondataavailable = (event) => {
+      const videoRecorder = recorder;
+      const generated = await new Promise<File>((resolve, reject) => {
+        let finished = false;
+        const stop = (failure?: Error) => {
+          if (finished) return;
+          finished = true;
+          if (raf) cancelAnimationFrame(raf);
+          recordingAudio.onplaying = null;
+          recordingAudio.onwaiting = null;
+          recordingAudio.onended = null;
+          recordingAudio.onerror = null;
+          if (failure) reject(failure);
+          if (videoRecorder.state !== 'inactive') videoRecorder.stop();
+          recordingAudio.pause();
+        };
+        const failed = () =>
+          new Error(
+            ar
+              ? 'تعذر تسجيل المقطع كاملًا. جرّب تاني.'
+              : 'Could not record the full excerpt. Try again.',
+          );
+        cancelRef.current = () => stop(failed());
+        const target = Math.min(start + effectiveLength, recordingAudio.duration);
+        const length = target - start;
+        if (!(length > 0)) {
+          stop(failed());
+          return;
+        }
+        const draw = () => {
+          if (finished) return;
+          const position = Math.min(target, recordingAudio.currentTime);
+          const seconds = Math.max(0, position - start);
+          drawStory(ctx, track, cover, seconds, length, ar, lyricAt(position));
+          setPercent(Math.round((100 * seconds) / length));
+          if (position >= target) stop();
+          else raf = requestAnimationFrame(draw);
+        };
+        videoRecorder.ondataavailable = (event) => {
           if (event.data.size) chunks.push(event.data);
         };
-        recorder!.onerror = () => reject(new Error('Video encoding failed'));
-        recorder!.onstop = () => {
+        videoRecorder.onerror = () => stop(new Error('Video encoding failed'));
+        videoRecorder.onstop = () => {
           if (!chunks.length) return reject(new Error('The video could not be recorded'));
-          const type = mime.startsWith('video/mp4') ? 'video/mp4' : 'video/webm';
+          const type = (chunks[0]?.type || videoRecorder.mimeType || mime).split(';')[0];
           resolve(
             new File(
               chunks,
@@ -455,45 +510,35 @@ export function StoryClipComposer({
             ),
           );
         };
+        recordingAudio.onplaying = () => {
+          try {
+            if (videoRecorder.state === 'inactive') {
+              videoRecorder.start(500);
+              draw();
+            } else if (videoRecorder.state === 'paused') {
+              videoRecorder.resume();
+            }
+          } catch {
+            stop(new Error('Video encoding failed'));
+          }
+        };
+        recordingAudio.onwaiting = () => {
+          if (videoRecorder.state === 'recording') videoRecorder.pause();
+        };
+        recordingAudio.onended = () =>
+          stop(recordingAudio.currentTime >= target - 0.05 ? undefined : failed());
+        recordingAudio.onerror = () => stop(failed());
+        timeout = window.setTimeout(() => stop(failed()), (length + 18) * 1000);
+        void recordingAudio.play().catch(() => {
+          stop(
+            new Error(
+              ar
+                ? 'المتصفح منع تشغيل الصوت أثناء التسجيل'
+                : 'Browser blocked audio playback while recording.',
+            ),
+          );
+        });
       });
-      const startTime = performance.now();
-      let finished = false;
-      const stop = () => {
-        if (finished) return;
-        finished = true;
-        if (recorder?.state === 'recording') recorder.stop();
-        audio?.pause();
-      };
-      cancelRef.current = stop;
-      const draw = () => {
-        const seconds = Math.min(effectiveLength, (performance.now() - startTime) / 1000);
-        drawStory(
-          ctx,
-          track,
-          cover,
-          seconds,
-          effectiveLength,
-          ar,
-          lyricAt(start + seconds),
-        );
-        setPercent(Math.round((100 * seconds) / effectiveLength));
-        if (seconds >= effectiveLength) stop();
-        else raf = requestAnimationFrame(draw);
-      };
-      recorder.start(500);
-      try {
-        await audio.play();
-      } catch {
-        stop();
-        throw new Error(
-          ar
-            ? 'المتصفح منع تشغيل الصوت أثناء التسجيل'
-            : 'Browser blocked audio playback while recording.',
-        );
-      }
-      raf = requestAnimationFrame(draw);
-      timeout = window.setTimeout(stop, (effectiveLength + 3) * 1000);
-      const generated = await finalFile;
       if (generated.size < 1000) throw new Error('The recorded file is empty');
       setFile(generated);
       setPercent(100);
@@ -508,7 +553,7 @@ export function StoryClipComposer({
         audio.load();
       }
       if (stream) stream.getTracks().forEach((item) => item.stop());
-      if (recorder?.state === 'recording') recorder.stop();
+      if (recorder && recorder.state !== 'inactive') recorder.stop();
       if (context) void context.close();
       cancelRef.current = null;
       setWorking(false);
@@ -528,14 +573,7 @@ export function StoryClipComposer({
 
   async function shareFile() {
     if (!file) return;
-    // Prepare the URL for Instagram's native Link sticker before opening the
-    // system share sheet. Never claim that a sticker was added automatically.
-    try {
-      await navigator.clipboard.writeText(link());
-      setCopied(true);
-    } catch {
-      // Copy link remains available as an explicit separate action.
-    }
+    // Start native sharing in the tap; the link sticker uses Copy link.
     try {
       if (navigator.canShare?.({ files: [file] }) && navigator.share) {
         await navigator.share({ files: [file], title: track.title });
@@ -628,6 +666,7 @@ export function StoryClipComposer({
                 step={1}
                 disabled={working}
                 onChange={(event) => {
+                  stopPreview();
                   setStart(Number(event.target.value));
                   setFile(null);
                 }}
@@ -647,6 +686,7 @@ export function StoryClipComposer({
                 value={clipLength}
                 disabled={working}
                 onChange={(event) => {
+                  stopPreview();
                   setClipLength(Number(event.target.value));
                   setFile(null);
                 }}
