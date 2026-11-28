@@ -83,15 +83,16 @@ export function ShareButton({
       );
     }
     position();
-    const observer = new ResizeObserver(position);
-    if (panel.current) observer.observe(panel.current);
+    const observer =
+      typeof ResizeObserver === 'function' ? new ResizeObserver(position) : null;
+    if (panel.current) observer?.observe(panel.current);
     window.addEventListener('resize', position);
     window.addEventListener('scroll', position, true);
     panel.current
       ?.querySelector<HTMLElement>('[role="menuitem"]')
       ?.focus({ preventScroll: true });
     return () => {
-      observer.disconnect();
+      observer?.disconnect();
       window.removeEventListener('resize', position);
       window.removeEventListener('scroll', position, true);
     };
@@ -215,6 +216,11 @@ export function ShareButton({
     { key: 'x' as const, name: 'X', Icon: X },
   ];
   const displayLabel = ar && label === 'Share' ? 'شارك' : label;
+  const artwork = storyTrack?.artwork.url;
+  const cover =
+    artwork && !/(?:oddio[-%]|glossy-gradient-play-loop).*logo/i.test(artwork)
+      ? artwork
+      : undefined;
 
   return (
     <div className="relative inline-flex">
@@ -249,7 +255,7 @@ export function ShareButton({
                 <header className={styles.header}>
                   <Artwork
                     title={title}
-                    url={storyTrack?.artwork.url || '/oddio-gradient-play-logo.png'}
+                    url={cover}
                     className={styles.artwork}
                     rounded=""
                     sizes="44px"
