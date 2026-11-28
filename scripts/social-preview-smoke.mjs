@@ -72,7 +72,22 @@ for (const path of paths) {
     assert.ok(tags.get('twitter:title')?.trim(), 'missing twitter:title');
     assert.equal(tags.get('twitter:card'), 'summary_large_image');
     assert.equal(tags.get('og:locale'), locale);
-    assert.equal(tags.get('og:url'), expectedCanonical);
+    const pageCanonical = tags.get('og:url');
+    if (path.includes('/tracks/')) {
+      // The ID-only route resolves the same recording but its canonical
+      // includes the descriptive slug. The preview must advertise that
+      // canonical consistently rather than a duplicate ID-only URL.
+      assert.ok(
+        pageCanonical?.startsWith(`${expectedCanonical}-`),
+        'track must canonically identify the same ID with its slug',
+      );
+      assert.match(
+        new URL(pageCanonical).pathname,
+        /\/tracks\/50000000-0000-4000-8000-000000000001-[a-z0-9-]+$/,
+      );
+    } else {
+      assert.equal(pageCanonical, expectedCanonical);
+    }
     const image = tags.get('og:image');
     assert.ok(image, 'missing og:image');
     const imageUrl = new URL(image);
@@ -82,7 +97,7 @@ for (const path of paths) {
     assert.equal(tags.get('og:image:width'), '1200');
     assert.equal(tags.get('og:image:height'), '630');
     assert.ok(
-      html.includes(`href="${expectedCanonical}"`),
+      html.includes(`href="${pageCanonical}"`),
       'missing matching canonical link',
     );
     assert.doesNotMatch(
