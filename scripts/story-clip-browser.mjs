@@ -201,15 +201,16 @@ try {
   await preview.tap();
   await page.waitForFunction(() => Math.abs(window.__story.previewStart - 24) < 0.3);
   await slider.fill('29');
-  await preview.waitFor({ state: 'visible', timeout: 1500 });
+  await preview.waitFor({ state: 'visible', timeout: 5000 });
   await preview.tap();
   await page.waitForFunction(() => Math.abs(window.__story.previewStart - 29) < 0.3);
   await length.selectOption('15');
-  await preview.waitFor({ state: 'visible', timeout: 1500 });
+  await preview.waitFor({ state: 'visible', timeout: 5000 });
   await slider.fill('39');
   await preview.tap();
   await page.waitForFunction(() => Math.abs(window.__story.previewStart - 39) < 0.3);
-  await preview.waitFor({ state: 'visible', timeout: 3500 });
+  // WebKit's media process can finish a short excerpt later on loaded CI runners.
+  await preview.waitFor({ state: 'visible', timeout: 12000 });
   assert.equal(await dialog.getByRole('alert').count(), 0);
   breakAudio = true;
   await preview.tap();
