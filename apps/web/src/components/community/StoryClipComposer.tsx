@@ -2,17 +2,27 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, Copy, Download, Instagram, Pause, Play, X } from 'lucide-react';
+import {
+  Check,
+  Copy,
+  Download,
+  Instagram,
+  Link2,
+  Pause,
+  Play,
+  Share2,
+  X,
+} from 'lucide-react';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
 import { canonicalOddioShareUrl } from '@/lib/share-url';
 import { describeStoryVideo, selectStoryVideoType } from '@/lib/story-video-format';
 import { useLocale } from '@/i18n/use-translator';
 import { usePlayer } from '@/lib/player-store';
+import styles from './StoryClipComposer.module.css';
 
 const STORY_WIDTH = 720;
 const STORY_HEIGHT = 1280;
-const MAX_CLIP_SECONDS = 30;
 
 type LyricCue = { start: number; end: number; text: string };
 
@@ -85,27 +95,28 @@ function drawStory(
   ar: boolean,
   lyric?: string,
 ) {
-  const { width, height } = ctx.canvas;
+  const width = STORY_WIDTH,
+    height = STORY_HEIGHT;
   ctx.clearRect(0, 0, width, height);
   const bg = ctx.createLinearGradient(0, 0, width, height);
-  bg.addColorStop(0, '#291039');
-  bg.addColorStop(0.46, '#10121e');
-  bg.addColorStop(1, '#07090f');
+  bg.addColorStop(0, '#174348');
+  bg.addColorStop(0.46, '#12272b');
+  bg.addColorStop(1, '#080e11');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, width, height);
   const halo = ctx.createRadialGradient(360, 450, 20, 360, 450, 500);
-  halo.addColorStop(0, 'rgba(171,74,245,.32)');
-  halo.addColorStop(1, 'rgba(171,74,245,0)');
+  halo.addColorStop(0, 'rgba(121,224,202,.22)');
+  halo.addColorStop(1, 'rgba(121,224,202,0)');
   ctx.fillStyle = halo;
   ctx.fillRect(0, 0, width, height);
 
-  const x = 85,
-    y = 255,
-    size = 550;
+  const x = 105,
+    y = 218,
+    size = 510;
   ctx.save();
-  ctx.shadowColor = 'rgba(191,77,255,.38)';
+  ctx.shadowColor = 'rgba(121,224,202,.27)';
   ctx.shadowBlur = 65;
-  ctx.fillStyle = '#1d1534';
+  ctx.fillStyle = '#142b2d';
   ctx.beginPath();
   ctx.roundRect(x - 6, y - 6, size + 12, size + 12, 30);
   ctx.fill();
@@ -115,15 +126,24 @@ function drawStory(
   ctx.roundRect(x, y, size, size, 26);
   ctx.clip();
   if (cover && cover.complete && cover.naturalWidth) {
-    const scale = Math.max(size / cover.naturalWidth, size / cover.naturalHeight);
+    const isOddioLogo = /(?:oddio[-%]|glossy-gradient-play-loop).*logo/i.test(cover.src);
+    const fit = isOddioLogo ? size * 0.78 : size;
+    const scale = (isOddioLogo ? Math.min : Math.max)(
+      fit / cover.naturalWidth,
+      fit / cover.naturalHeight,
+    );
+    if (isOddioLogo) {
+      ctx.fillStyle = '#162d32';
+      ctx.fillRect(x, y, size, size);
+    }
     const w = cover.naturalWidth * scale,
       h = cover.naturalHeight * scale;
     ctx.drawImage(cover, x + (size - w) / 2, y + (size - h) / 2, w, h);
   } else {
     const glow = ctx.createRadialGradient(360, 480, 30, 360, 480, 390);
     glow.addColorStop(0, '#11d4f8');
-    glow.addColorStop(0.48, '#8422ba');
-    glow.addColorStop(1, '#1d102c');
+    glow.addColorStop(0.48, '#2a6363');
+    glow.addColorStop(1, '#112428');
     ctx.fillStyle = glow;
     ctx.fillRect(x, y, size, size);
     ctx.beginPath();
@@ -138,13 +158,13 @@ function drawStory(
     ctx.stroke();
   }
   ctx.restore();
-  ctx.strokeStyle = '#b961ff';
+  ctx.strokeStyle = '#74a9a2';
   ctx.lineWidth = 6;
   ctx.beginPath();
   ctx.roundRect(x - 5, y - 5, size + 10, size + 10, 30);
   ctx.stroke();
 
-  ctx.fillStyle = '#d9b7ff';
+  ctx.fillStyle = '#b4efe2';
   ctx.textAlign = 'center';
   ctx.font = 'bold 28px Arial, sans-serif';
   ctx.fillText(
@@ -157,14 +177,14 @@ function drawStory(
   ctx.font = 'bold 42px Arial, sans-serif';
   const titleLines = wrapText(ctx, track.title, 590, 2);
   // The right-to-left title is drawn in the center with the same alignment.
-  titleLines.forEach((line, i) => ctx.fillText(line, 360, 900 + i * 52));
-  ctx.fillStyle = '#c6b7d5';
+  titleLines.forEach((line, i) => ctx.fillText(line, 360, 827 + i * 52));
+  ctx.fillStyle = '#b9cecf';
   ctx.font = '27px Arial, sans-serif';
   const artist = track.artist?.name || 'Oddio';
-  ctx.fillText(artist.slice(0, 65), 360, 1015);
+  ctx.fillText(artist.slice(0, 65), 360, 922, 580);
 
   if (lyric) {
-    ctx.fillStyle = 'rgba(10,7,20,.87)';
+    ctx.fillStyle = 'rgba(8,17,20,.93)';
     ctx.beginPath();
     ctx.roundRect(50, 947, 620, 110, 20);
     ctx.fill();
@@ -180,7 +200,7 @@ function drawStory(
     const phase = seconds * 7 + i * 0.71;
     const amplitude =
       10 + Math.abs(Math.sin(phase)) * (14 + Math.sin(i * 0.37) ** 2 * 32);
-    ctx.fillStyle = i / 37 <= seconds / Math.max(length, 1) ? '#e5b0ff' : '#77588d';
+    ctx.fillStyle = i / 37 <= seconds / Math.max(length, 1) ? '#a7ebdc' : '#44696b';
     ctx.beginPath();
     ctx.roundRect(117 + i * 13.1, 1083 - amplitude / 2, 7, amplitude, 4);
     ctx.fill();
@@ -194,8 +214,8 @@ function drawStory(
     1180,
   );
   ctx.font = '24px Arial, sans-serif';
-  ctx.fillStyle = '#b7a6cc';
-  ctx.fillText('oddio.online  •  LINK IN STORY', 360, 1222);
+  ctx.fillStyle = '#adcac4';
+  ctx.fillText('oddio.online', 360, 1222);
 }
 
 async function coverImage(
@@ -234,7 +254,7 @@ export function StoryClipComposer({
   const lyricsRef = useRef<Promise<LyricCue[]> | null>(null);
   const duration = measuredDuration || Math.max(0, (track.durationMs || 0) / 1000);
   const [start, setStart] = useState(() =>
-    Math.min(Math.floor(currentSeconds), Math.max(0, duration - MAX_CLIP_SECONDS)),
+    Math.min(Math.floor(currentSeconds), Math.max(0, Math.floor(duration - 1))),
   );
   const [clipLength, setClipLength] = useState(15);
   const [working, setWorking] = useState(false);
@@ -247,6 +267,17 @@ export function StoryClipComposer({
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [previewing, setPreviewing] = useState(false);
+  const [previewTime, setPreviewTime] = useState(0);
+  const previewCanvas = useRef<HTMLCanvasElement>(null);
+  const coverRef = useRef<Promise<HTMLImageElement | null> | null>(null);
+  const [cover, setCover] = useState<HTMLImageElement | null>(null);
+  const [previewLyrics, setPreviewLyrics] = useState<LyricCue[]>([]);
+  const dialogRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const shareRef = useRef<HTMLButtonElement>(null);
+  const linkDetailsRef = useRef<HTMLDetailsElement>(null);
+  const linkInputRef = useRef<HTMLInputElement>(null);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const previewRef = useRef<(() => void) | null>(null);
   const cancelRef = useRef<(() => void) | null>(null);
   const fileUrl = useRef<string | null>(null);
@@ -263,7 +294,49 @@ export function StoryClipComposer({
     return url.toString();
   };
   const audioSrc = `/api/story-audio/${podcast ? 'podcast' : 'track'}/${track.id}`;
-  const effectiveLength = Math.min(clipLength, Math.max(1, duration - start));
+  const maxStart = Math.max(0, Math.floor(duration - 1));
+  const clipStart = Math.min(start, maxStart);
+  const effectiveLength = Math.min(clipLength, Math.max(0, duration - clipStart));
+
+  useEffect(() => {
+    const previous =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeRef.current?.focus();
+    return () => {
+      document.body.style.overflow = overflow;
+      if (previous?.isConnected) previous.focus();
+      clearTimeout(copyTimer.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const promise = coverImage(track.artwork.url).then(
+      (image) => image ?? coverImage('/oddio-gradient-play-logo.png'),
+    );
+    coverRef.current = promise;
+    void promise.then((image) => {
+      if (active) setCover(image);
+    });
+    return () => {
+      active = false;
+    };
+  }, [track.artwork.url]);
+
+  useEffect(() => {
+    const ctx = previewCanvas.current?.getContext('2d');
+    if (!ctx) return;
+    const cue = previewLyrics.find(
+      (item) =>
+        item.start <= clipStart + previewTime && item.end > clipStart + previewTime,
+    );
+    ctx.save();
+    ctx.scale(0.5, 0.5);
+    drawStory(ctx, track, cover, previewTime, effectiveLength, ar, cue?.text);
+    ctx.restore();
+  }, [track, cover, previewTime, effectiveLength, ar, clipStart, previewLyrics]);
 
   useEffect(() => {
     let active = true;
@@ -305,6 +378,10 @@ export function StoryClipComposer({
         typeof data?.data?.srt === 'string' ? parseStorySrt(data.data.srt) : [],
       )
       .catch(() => [])
+      .then((cues) => {
+        if (!controller.signal.aborted) setPreviewLyrics(cues);
+        return cues;
+      })
       .finally(() => clearTimeout(timer));
     return () => {
       clearTimeout(timer);
@@ -312,6 +389,10 @@ export function StoryClipComposer({
       lyricsRef.current = null;
     };
   }, [podcast, track.id]);
+
+  useEffect(() => {
+    if (file) shareRef.current?.focus({ preventScroll: true });
+  }, [file]);
 
   useEffect(
     () => () => {
@@ -326,19 +407,24 @@ export function StoryClipComposer({
     try {
       await navigator.clipboard.writeText(link());
       setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopied(false), 2500);
     } catch {
-      setError(
-        ar
-          ? 'انسخ الرابط يدويًا من الحقل الموجود تحت'
-          : 'Copy the link manually from the field below.',
-      );
+      if (linkDetailsRef.current) linkDetailsRef.current.open = true;
+      linkInputRef.current?.focus();
     }
   };
 
   const stopPreview = () => {
     previewRef.current?.();
     setPreviewing(false);
+    setPreviewTime(0);
+  };
+
+  const updateStart = (value: number) => {
+    stopPreview();
+    setStart(Math.max(0, Math.min(Math.floor(value), maxStart)));
+    setStoryVideo(null);
   };
 
   const togglePreview = () => {
@@ -347,11 +433,12 @@ export function StoryClipComposer({
       return;
     }
     setError('');
+    if (usePlayer.getState().isPlaying) usePlayer.getState().setPlaying(false);
     const audio = new Audio();
     audio.preload = 'auto';
     audio.src = audioSrc;
     // Set the initial position and call play in the tap, including on cold media.
-    audio.currentTime = start;
+    audio.currentTime = clipStart;
     const dispose = () => {
       previewRef.current = null;
       clearTimeout(timer);
@@ -372,7 +459,8 @@ export function StoryClipComposer({
     audio.onended = stopPreview;
     audio.onerror = onError;
     audio.ontimeupdate = () => {
-      if (audio.currentTime >= start + effectiveLength) stopPreview();
+      if (audio.currentTime >= clipStart + effectiveLength) stopPreview();
+      else setPreviewTime(Math.max(0, audio.currentTime - clipStart));
     };
     setPreviewing(true);
     void audio.play().then(() => clearTimeout(timer), onError);
@@ -384,6 +472,7 @@ export function StoryClipComposer({
     setPercent(0);
     setStoryVideo(null);
     stopPreview();
+    if (usePlayer.getState().isPlaying) usePlayer.getState().setPlaying(false);
     let audio: HTMLAudioElement | null = null;
     let context: AudioContext | null = null;
     let recorder: MediaRecorder | null = null;
@@ -408,7 +497,7 @@ export function StoryClipComposer({
       canvas.height = STORY_HEIGHT;
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Canvas unavailable');
-      const cover = await coverImage(track.artwork.url);
+      const cover = await (coverRef.current ?? coverImage(track.artwork.url));
       audio = document.createElement('audio');
       audio.preload = 'auto';
       audio.src = audioSrc;
@@ -426,12 +515,12 @@ export function StoryClipComposer({
         recordingAudio.onerror = () => settle(false);
         recordingAudio.load();
       });
-      audio.currentTime = start;
-      if (audio.seeking || Math.abs(audio.currentTime - start) >= 0.15) {
+      audio.currentTime = clipStart;
+      if (audio.seeking || Math.abs(audio.currentTime - clipStart) >= 0.15) {
         await new Promise<void>((resolve, reject) => {
           const onSeek = () => {
             clearTimeout(timer);
-            if (Math.abs(recordingAudio.currentTime - start) < 0.15) resolve();
+            if (Math.abs(recordingAudio.currentTime - clipStart) < 0.15) resolve();
             else reject(new Error('Could not reach the selected clip start'));
           };
           const timer = window.setTimeout(() => {
@@ -447,7 +536,7 @@ export function StoryClipComposer({
       const source = context.createMediaElementSource(audio);
       const destination = context.createMediaStreamDestination();
       source.connect(destination);
-      drawStory(ctx, track, cover, 0, effectiveLength, ar, lyricAt(start));
+      drawStory(ctx, track, cover, 0, effectiveLength, ar, lyricAt(clipStart));
       stream = canvas.captureStream(24);
       for (const item of destination.stream.getAudioTracks()) stream.addTrack(item);
       const mime = selectStoryVideoType((type) => MediaRecorder.isTypeSupported(type));
@@ -481,8 +570,8 @@ export function StoryClipComposer({
                 : 'Could not record the full excerpt. Try again.',
             );
           cancelRef.current = () => stop(failed());
-          const target = Math.min(start + effectiveLength, recordingAudio.duration);
-          const length = target - start;
+          const target = Math.min(clipStart + effectiveLength, recordingAudio.duration);
+          const length = target - clipStart;
           if (!(length > 0)) {
             stop(failed());
             return;
@@ -490,7 +579,7 @@ export function StoryClipComposer({
           const draw = () => {
             if (finished) return;
             const position = Math.min(target, recordingAudio.currentTime);
-            const seconds = Math.max(0, position - start);
+            const seconds = Math.max(0, position - clipStart);
             drawStory(ctx, track, cover, seconds, length, ar, lyricAt(position));
             setPercent(Math.round((100 * seconds) / length));
             if (position >= target) stop();
@@ -605,126 +694,231 @@ export function StoryClipComposer({
   if (typeof document === 'undefined') return null;
   return createPortal(
     <div
-      className="fixed inset-0 z-[300] flex items-center justify-center bg-black/85 p-3 backdrop-blur-lg sm:p-6"
+      className={styles.overlay}
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !working) onClose();
       }}
     >
       <section
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="oddio-story-clip-title"
-        className="flex max-h-[92dvh] w-full max-w-[780px] flex-col overflow-y-auto rounded-3xl border border-white/20 bg-[#1b1725] p-4 text-white shadow-2xl sm:p-6"
+        className={styles.studio}
         dir={ar ? 'rtl' : 'ltr'}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape' && !working) {
+            event.stopPropagation();
+            onClose();
+          }
+          if (event.key !== 'Tab') return;
+          const controls = [
+            ...event.currentTarget.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), input:not([disabled]), summary',
+            ),
+          ].filter((item) => item.getClientRects().length > 0);
+          const edge = event.shiftKey ? controls[0] : controls.at(-1);
+          if (document.activeElement === edge) {
+            event.preventDefault();
+            (event.shiftKey ? controls.at(-1) : controls[0])?.focus();
+          }
+        }}
       >
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <header className={styles.header}>
+          <span className={styles.mark}>
+            <Instagram size={22} />
+          </span>
           <div>
-            <h2 id="oddio-story-clip-title" className="text-xl font-black">
-              {ar ? 'شارك مقطع على Instagram Story' : 'Share an Instagram Story clip'}
+            <p className={styles.eyebrow}>ODDIO / SHARE STUDIO</p>
+            <h2 id="oddio-story-clip-title">
+              {ar ? 'جهّز Instagram Story' : 'Create an Instagram Story'}
             </h2>
-            <p className="mt-1 text-xs text-white/60">
-              {ar
-                ? 'اختار جزء صغير من التسجيل وصدّره كفيديو رأسي بالصوت.'
-                : 'Choose a short audio excerpt and export a vertical Story video.'}
-            </p>
           </div>
           <button
+            ref={closeRef}
             type="button"
             disabled={working}
             onClick={onClose}
             aria-label={ar ? 'إغلاق' : 'Close'}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-40"
+            className={styles.close}
           >
-            <X className="h-5 w-5" />
+            <X size={19} />
           </button>
-        </div>
-        <div className="grid gap-5 sm:grid-cols-[190px_minmax(0,1fr)]">
-          <div className="relative mx-auto aspect-[9/16] w-[155px] max-w-full overflow-hidden rounded-2xl border border-[#ac65df]/50 bg-[radial-gradient(circle_at_50%_35%,#5b2692,#120d20_65%,#08090e)] p-3 shadow-lg sm:w-full">
-            <p className="mb-3 text-center text-[10px] font-bold uppercase tracking-widest text-[#ddbaff]">
-              ODDIO / {podcast ? 'PODCAST' : 'MUSIC'}
-            </p>
-            {track.artwork.url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={track.artwork.url}
-                alt=""
-                className="mx-auto aspect-square w-full rounded-xl border border-white/15 object-cover"
-              />
-            ) : (
-              <div className="mx-auto aspect-square w-full rounded-xl bg-[#7438ae]" />
-            )}
-            <p dir="auto" className="mt-3 line-clamp-3 text-center text-sm font-black">
-              {track.title}
-            </p>
-            <p dir="auto" className="mt-1 truncate text-center text-[10px] text-white/60">
-              {track.artist?.name}
-            </p>
-            <div className="absolute inset-x-2 bottom-3 text-center text-[10px] font-bold">
-              oddio.online
-              <br />
-              <span className="text-[#d8b3f7]">LINK IN STORY</span>
+        </header>
+
+        <div className={styles.body}>
+          <figure className={styles.preview}>
+            <div className={styles.previewFrame}>
+              <canvas ref={previewCanvas} width={360} height={640} aria-hidden="true" />
             </div>
-          </div>
-          <div className="min-w-0 space-y-4">
-            <div>
-              <label
-                htmlFor="oddio-clip-start"
-                className="mb-2 block text-sm font-semibold"
-              >
-                {ar ? 'بداية المقطع' : 'Clip start'} — {formatTime(start)}
-              </label>
+            <figcaption>
+              {ar ? 'معاينة الستوري' : 'Story preview'} <span>9:16</span>
+            </figcaption>
+          </figure>
+
+          <div className={styles.editor}>
+            <div className={styles.track}>
+              <span className={styles.eyebrow}>
+                {podcast ? (ar ? 'بودكاست' : 'PODCAST') : ar ? 'موسيقى' : 'MUSIC'}
+              </span>
+              <p dir="auto">{track.title}</p>
+              <span dir="auto">{track.artist?.name || 'Oddio'}</span>
+            </div>
+            <div className={styles.rangeCard}>
+              <div className={styles.fieldHeader}>
+                <label htmlFor="oddio-clip-start">
+                  {ar ? 'اختار المقطع' : 'Choose your excerpt'}
+                </label>
+                <output
+                  htmlFor="oddio-clip-start"
+                  dir="ltr"
+                  className={styles.timePill}
+                  data-testid="story-selection"
+                >
+                  {formatTime(clipStart)} –{' '}
+                  {formatTime(Math.min(duration, clipStart + effectiveLength))}
+                </output>
+              </div>
               <input
                 id="oddio-clip-start"
                 type="range"
                 min={0}
-                max={Math.max(0, Math.floor(duration - 1))}
-                value={start}
+                max={maxStart}
+                value={clipStart}
                 step={1}
-                disabled={working}
-                onChange={(event) => {
-                  stopPreview();
-                  setStart(Number(event.target.value));
-                  setStoryVideo(null);
-                }}
-                className="w-full cursor-pointer accent-[#c16af1]"
+                disabled={working || maxStart === 0}
+                aria-valuetext={formatTime(clipStart)}
+                onChange={(event) => updateStart(Number(event.target.value))}
+                dir="ltr"
+                className={styles.slider}
               />
-              <div className="flex justify-between text-[11px] text-white/50" dir="ltr">
+              <div className={styles.ruler} dir="ltr">
                 <span>0:00</span>
                 <span>{loadingAudio ? '…' : formatTime(duration)}</span>
               </div>
+              <div className={styles.shortcuts}>
+                <button
+                  type="button"
+                  disabled={working || clipStart <= 0}
+                  onClick={() => updateStart(clipStart - 5)}
+                  dir="ltr"
+                  aria-label={ar ? 'ارجع ٥ ثواني' : 'Back 5 seconds'}
+                >
+                  −5s
+                </button>
+                <button
+                  type="button"
+                  disabled={working || clipStart >= maxStart}
+                  onClick={() => updateStart(clipStart + 5)}
+                  dir="ltr"
+                  aria-label={ar ? 'قدّم ٥ ثواني' : 'Forward 5 seconds'}
+                >
+                  +5s
+                </button>
+                <button
+                  type="button"
+                  disabled={working || duration <= 0}
+                  onClick={() => updateStart(currentSeconds)}
+                >
+                  {ar ? 'من مكان التشغيل' : 'Use playhead'}
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <label htmlFor="oddio-clip-length" className="text-sm font-semibold">
-                {ar ? 'المدة' : 'Duration'}
-              </label>
-              <select
-                id="oddio-clip-length"
-                value={clipLength}
-                disabled={working}
-                onChange={(event) => {
-                  stopPreview();
-                  setClipLength(Number(event.target.value));
-                  setStoryVideo(null);
-                }}
-                className="rounded-xl border border-white/20 bg-[#30263d] px-3 py-2 text-sm text-white"
+            <fieldset className={styles.durations}>
+              <legend>{ar ? 'مدة الستوري' : 'Story length'}</legend>
+              {[5, 10, 15, 30].map((seconds) => (
+                <button
+                  key={seconds}
+                  type="button"
+                  aria-label={ar ? `${seconds} ثانية` : `${seconds} seconds`}
+                  aria-pressed={clipLength === seconds}
+                  disabled={working || duration <= 0}
+                  onClick={() => {
+                    if (seconds === clipLength) return;
+                    stopPreview();
+                    setClipLength(seconds);
+                    setStoryVideo(null);
+                  }}
+                >
+                  {seconds}
+                  {ar ? ' ث' : 's'}
+                </button>
+              ))}
+            </fieldset>
+            {error ? (
+              <p role="alert" className={styles.error}>
+                {error}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        <footer className={styles.footer}>
+          {working ? (
+            <div
+              className={styles.progress}
+              role="progressbar"
+              aria-label={ar ? 'تجهيز الستوري' : 'Preparing Story video'}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={percent}
+            >
+              <span style={{ width: `${percent}%` }} />
+            </div>
+          ) : null}
+          {file ? (
+            <>
+              <p className={styles.ready} role="status">
+                <Check size={15} />
+                {storyVideo?.compatible
+                  ? ar
+                    ? 'الفيديو جاهز للمشاركة بصيغة MP4.'
+                    : 'MP4 with H.264 video and AAC audio, ready to share.'
+                  : ar
+                    ? 'الفيديو جاهز للتنزيل. إنستجرام ممكن ما يقبلش الترميز ده.'
+                    : 'Video ready to download. Instagram may not accept its encoding.'}
+              </p>
+              <div className={styles.actions}>
+                <button
+                  ref={shareRef}
+                  type="button"
+                  onClick={shareFile}
+                  className={styles.primary}
+                >
+                  <Share2 size={17} />
+                  {ar ? 'مشاركة الفيديو' : 'Share video'}
+                </button>
+                <button type="button" onClick={download} className={styles.secondary}>
+                  <Download size={16} />
+                  {ar ? 'تنزيل الفيديو' : 'Download video'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className={styles.actions}>
+              <button
+                type="button"
+                disabled={working || duration <= 0}
+                onClick={createClip}
+                className={styles.primary}
               >
-                <option value={5}>5 {ar ? 'ثواني' : 'seconds'}</option>
-                <option value={10}>10 {ar ? 'ثواني' : 'seconds'}</option>
-                <option value={15}>15 {ar ? 'ثانية' : 'seconds'}</option>
-                <option value={30}>30 {ar ? 'ثانية' : 'seconds'}</option>
-              </select>
+                <Instagram size={18} />
+                {working
+                  ? ar
+                    ? `جاري التجهيز… ${percent}%`
+                    : `Recording… ${percent}%`
+                  : ar
+                    ? 'جهّز فيديو الستوري'
+                    : 'Create Story video'}
+              </button>
               <button
                 type="button"
                 onClick={togglePreview}
                 disabled={working || duration <= 0}
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/20 px-3 text-xs hover:bg-white/10"
+                className={styles.secondary}
               >
-                {previewing ? (
-                  <Pause className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
+                {previewing ? <Pause size={16} /> : <Play size={16} />}
                 {previewing
                   ? ar
                     ? 'إيقاف'
@@ -734,88 +928,31 @@ export function StoryClipComposer({
                     : 'Preview audio'}
               </button>
             </div>
-            <button
-              type="button"
-              disabled={working || duration <= 0}
-              onClick={createClip}
-              className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#b460ed] px-4 text-sm font-bold text-[#160a20] transition hover:bg-[#ce91f5] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Instagram className="h-5 w-5" />{' '}
-              {working
-                ? ar
-                  ? `جاري تجهيز الفيديو… ${percent}%`
-                  : `Recording… ${percent}%`
-                : ar
-                  ? 'جهّز فيديو الستوري'
-                  : 'Create Story video'}
-            </button>
-            {file ? (
-              <div className="space-y-2">
-                <p className="text-xs text-[#ddbaff]">
-                  {storyVideo?.compatible
-                    ? ar
-                      ? 'الفيديو MP4 بترميز H.264 وAAC، وتقدر تشاركه.'
-                      : 'MP4 with H.264 video and AAC audio, ready to share.'
-                    : ar
-                      ? 'تقدر تنزّل الفيديو، بس إنستجرام ممكن ما يقبلش الترميز ده. لو رفضه، حوّله لـ MP4 بترميز H.264 وAAC.'
-                      : 'You can download this video, but Instagram may not accept its encoding. If it does not, convert it to MP4 with H.264 and AAC.'}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={shareFile}
-                    className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-3 text-xs font-bold text-[#21152e]"
-                  >
-                    <Instagram className="h-4 w-4" />
-                    {ar ? 'مشاركة الفيديو' : 'Share video'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={download}
-                    className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/25 px-3 text-xs"
-                  >
-                    <Download className="h-4 w-4" />
-                    {ar ? 'تنزيل الفيديو' : 'Download video'}
-                  </button>
-                </div>
-              </div>
-            ) : null}
-            {error ? (
-              <p
-                role="alert"
-                className="rounded-lg border border-red-400/30 bg-red-500/10 p-2 text-xs text-red-200"
-              >
-                {error}
-              </p>
-            ) : null}
-            <div className="space-y-2 rounded-xl border border-white/15 bg-white/[0.045] p-3">
-              <h3 className="text-sm font-bold">
-                {ar ? 'الرابط اللي هيتحط على الستوري' : 'Clickable Story link'}
-              </h3>
-              <input
-                readOnly
-                value={typeof window === 'undefined' ? sharePath : link()}
-                onFocus={(event) => event.currentTarget.select()}
-                aria-label={ar ? 'رابط التسجيل الكامل' : 'Full audio URL'}
-                dir="ltr"
-                className="w-full min-w-0 rounded-lg border border-white/15 bg-black/30 p-2 text-xs text-white"
-              />
-              <button
-                type="button"
-                onClick={copyLink}
-                className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#bb7be3]/50 px-3 text-xs font-bold hover:bg-white/10"
-              >
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                {copied ? (ar ? 'اتنسخ' : 'Copied') : ar ? 'انسخ الرابط' : 'Copy link'}
-              </button>
-              <p className="text-xs leading-5 text-white/65">
-                {ar
-                  ? 'افتح الفيديو في Instagram Story، واضغط Stickers ثم Link والصق الرابط. رابط قابل للضغط ما ينفعش نضيفه تلقائيًا من الموقع بسبب قيود Instagram.'
-                  : 'Open the video in Instagram Stories, then tap Stickers → Link and paste this URL. Instagram does not let websites insert a tappable Link sticker automatically.'}
-              </p>
+          )}
+          <div className={styles.linkRow}>
+            <div>
+              <Link2 size={15} />
+              <span>
+                {ar ? 'في إنستجرام: الملصقات ← Link' : 'In Instagram: Stickers → Link'}
+              </span>
             </div>
+            <button type="button" onClick={copyLink}>
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+              {copied ? (ar ? 'اتنسخ' : 'Copied') : ar ? 'انسخ الرابط' : 'Copy link'}
+            </button>
           </div>
-        </div>
+          <details ref={linkDetailsRef} className={styles.linkDetails}>
+            <summary>{ar ? 'عرض الرابط' : 'Show link'}</summary>
+            <input
+              readOnly
+              value={link()}
+              ref={linkInputRef}
+              onFocus={(event) => event.currentTarget.select()}
+              aria-label={ar ? 'رابط التسجيل الكامل' : 'Full audio URL'}
+              dir="ltr"
+            />
+          </details>
+        </footer>
       </section>
     </div>,
     document.body,

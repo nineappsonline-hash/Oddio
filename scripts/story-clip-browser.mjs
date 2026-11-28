@@ -186,25 +186,52 @@ try {
     .last()
     .tap();
   const player = page.locator('.oddio-full-player');
-  await player.getByRole('button', { name: /share/i }).first().tap();
-  await page.getByRole('menuitem', { name: /Instagram Story/ }).tap();
+  const shareTrigger = player.getByRole('button', { name: /share/i }).first();
+  await shareTrigger.tap();
+  const shareMenu = page.getByRole('menu', { name: 'Share options', exact: true });
+  const storyAction = shareMenu.getByRole('menuitem', { name: /Instagram Story/ });
+  await storyAction.waitFor();
+  assert.equal(
+    await storyAction.evaluate((item) => document.activeElement === item),
+    true,
+  );
+  await page.keyboard.press('ArrowDown');
+  assert.equal(
+    await shareMenu
+      .getByRole('menuitem', { name: /Copy link/ })
+      .evaluate((item) => document.activeElement === item),
+    true,
+  );
+  await page.keyboard.press('Escape');
+  await shareMenu.waitFor({ state: 'hidden' });
+  assert.ok(await player.isVisible(), 'Escape closes only the share menu');
+  assert.equal(
+    await shareTrigger.evaluate((item) => document.activeElement === item),
+    true,
+  );
+  await shareTrigger.tap();
+  await storyAction.tap();
   const dialog = page.getByRole('dialog', { name: /Instagram Story/i });
   await page.waitForFunction(
     () => Number(document.querySelector('#oddio-clip-start')?.max) === 39,
   );
   const slider = dialog.locator('#oddio-clip-start');
-  const length = dialog.locator('#oddio-clip-length');
+  const chooseLength = (seconds) =>
+    dialog.getByRole('button', { name: `${seconds} seconds`, exact: true }).tap();
+  assert.ok(await dialog.getByText('Story preview', { exact: false }).isVisible());
   const preview = dialog.getByRole('button', { name: 'Preview audio' });
   const stopPreview = dialog.getByRole('button', { name: 'Stop', exact: true });
-  await slider.fill('24');
-  await length.selectOption('10');
+  await slider.fill('19');
+  await dialog.getByRole('button', { name: 'Forward 5 seconds' }).tap();
+  await chooseLength(10);
+  assert.equal(await dialog.getByTestId('story-selection').innerText(), '0:24 – 0:34');
   await preview.tap();
   await page.waitForFunction(() => Math.abs(window.__story.previewStart - 24) < 0.3);
   await slider.fill('29');
   await preview.waitFor({ state: 'visible', timeout: 1500 });
   await preview.tap();
   await page.waitForFunction(() => Math.abs(window.__story.previewStart - 29) < 0.3);
-  await length.selectOption('15');
+  await chooseLength(15);
   await preview.waitFor({ state: 'visible', timeout: 1500 });
   await slider.fill('39');
   await preview.tap();
@@ -242,7 +269,7 @@ try {
     );
   } else {
     await slider.fill('24');
-    await length.selectOption('10');
+    await chooseLength(10);
     await preview.tap();
     await stopPreview.tap();
     await dialog.getByRole('button', { name: 'Create Story video' }).tap();
@@ -272,6 +299,7 @@ try {
       result.handoff?.active && result.handoff.size > 1000,
       JSON.stringify(result),
     );
+    await dialog.getByText('Show link', { exact: true }).tap();
     const link = new URL(
       await dialog.getByRole('textbox', { name: 'Full audio URL' }).inputValue(),
     );
