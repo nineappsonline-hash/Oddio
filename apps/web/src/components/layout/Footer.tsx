@@ -9,7 +9,7 @@ export function Footer({ locale }: { locale: Locale }) {
   return (
     <footer className="relative mt-8 overflow-hidden px-4 pb-[calc(96px+env(safe-area-inset-bottom))] pt-8 text-xs text-muted sm:px-6 lg:px-8 lg:pb-12">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(700px_240px_at_20%_0%,rgba(157,92,255,0.1),transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(700px_240px_at_20%_0%,rgba(41,109,123,0.13),transparent_70%)]" />
       <div className="relative mx-auto flex max-w-7xl flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-sm space-y-3">
           <Link

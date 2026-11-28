@@ -1,0 +1,120 @@
+/* Oddio podcast discovery — graphite/petrol styling without replacing catalog data. */
+.oddio-v2-podcasts {
+  --podcast-accent: #397987;
+  --podcast-highlight: #9cc5cb;
+  --podcast-border: rgba(96, 149, 159, 0.32);
+  color: #f5f8f9;
+  background: transparent;
+  min-width: 0;
+}
+.oddio-v2-podcasts .oddio-v2-podcast-hero {
+  border-color: var(--podcast-border);
+  background:
+    radial-gradient(ellipse at 95% 2%, rgba(54, 120, 135, 0.23), transparent 46%),
+    linear-gradient(125deg, #192c31, #15191b 72%, #111416);
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.3),
+    inset 0 1px rgba(180, 213, 219, 0.08);
+}
+.oddio-v2-podcasts .oddio-v2-podcast-hero > div[aria-hidden='true'] {
+  color: rgba(125, 184, 195, 0.2);
+  border-color: rgba(108, 160, 170, 0.13);
+}
+.oddio-v2-podcasts .oddio-v2-podcast-hero h1 {
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.oddio-v2-podcasts .oddio-v2-podcast-primary {
+  color: #fff;
+  border: 1px solid #4c8691;
+  background: linear-gradient(125deg, #347784, #1a4a55);
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+.oddio-v2-podcasts .oddio-v2-podcast-primary:hover {
+  background: #3c8190;
+  border-color: #8bb4bd;
+}
+.oddio-v2-podcasts .oddio-v2-podcast-secondary {
+  border-color: rgba(115, 166, 176, 0.45);
+  background: rgba(39, 87, 98, 0.24);
+}
+.oddio-v2-podcasts .oddio-v2-podcast-secondary:hover {
+  background: rgba(46, 103, 116, 0.42);
+}
+.oddio-v2-podcasts .oddio-v2-podcast-unread {
+  background: #99bdc5;
+  color: #10252b;
+}
+.oddio-v2-podcasts .oddio-v2-podcast-search {
+  border-color: var(--podcast-border);
+  background: #1b2529;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
+}
+.oddio-v2-podcasts .oddio-v2-podcast-search:focus-within {
+  border-color: #83b4bf;
+  box-shadow: 0 0 0 3px rgba(57, 121, 135, 0.18);
+}
+.oddio-v2-podcasts .oddio-v2-podcast-search button {
+  background: #2a5660;
+  border: 1px solid #467884;
+}
+.oddio-v2-podcasts .oddio-v2-podcast-search button:hover {
+  background: #346d79;
+}
+.oddio-v2-podcasts [data-podcast-series-card] {
+  min-width: 0;
+}
+.oddio-v2-podcasts a:focus-visible,
+.oddio-v2-podcasts button:focus-visible,
+.oddio-v2-podcasts input:focus-visible {
+  outline: 2px solid #9fc7ce;
+  outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .oddio-v2-podcasts {
+    overflow-x: clip;
+  }
+  .oddio-v2-podcasts .oddio-v2-podcast-hero {
+    padding: 23px 17px;
+  }
+  .oddio-v2-podcasts .oddio-v2-podcast-hero h1 {
+    font-size: clamp(28px, 7vw, 38px);
+  }
+  .oddio-v2-podcasts .oddio-v2-podcast-search {
+    padding: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oddio-v2-podcasts .oddio-v2-podcast-primary {
+    transition: none;
+  }
+}
+
+/* Keep podcast discovery actions readable without a seven-row CTA stack on phones. */
+@media (max-width: 640px) {
+  .oddio-v2-podcasts .oddio-v2-podcast-hero .flex.flex-wrap.items-center.gap-3 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 9px;
+  }
+  .oddio-v2-podcasts .oddio-v2-podcast-hero .flex.flex-wrap.items-center.gap-3 > a {
+    min-width: 0;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding-inline: 10px;
+    font-size: 11px;
+    line-height: 1.4;
+    gap: 5px;
+  }
+  .oddio-v2-podcasts
+    .oddio-v2-podcast-hero
+    .flex.flex-wrap.items-center.gap-3
+    > a:last-child {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+}

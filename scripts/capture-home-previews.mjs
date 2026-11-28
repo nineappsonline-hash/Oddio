@@ -14,6 +14,10 @@ const browseVariants = [
   { locale: 'ar', route: 'discover', label: 'desktop', width: 1440, height: 960 },
   { locale: 'ar', route: 'podcasts', label: 'mobile', width: 390, height: 844 },
   { locale: 'en', route: 'search', label: 'desktop', width: 1440, height: 960 },
+  { locale: 'en', route: 'artists', label: 'desktop', width: 1440, height: 960 },
+  { locale: 'ar', route: 'artists', label: 'mobile', width: 390, height: 844 },
+  { locale: 'en', route: 'podcasts', label: 'desktop', width: 1440, height: 960 },
+  { locale: 'ar', route: 'discover', label: 'mobile', width: 390, height: 844 },
   { locale: 'en', route: 'genres', label: 'mobile', width: 390, height: 844 },
 ];
 
@@ -72,7 +76,7 @@ try {
           const style = getComputedStyle(button);
           const rect = button.getBoundingClientRect();
           return {
-            background: style.backgroundColor,
+            background: style.backgroundImage,
             color: style.color,
             width: rect.width,
             height: rect.height,
@@ -80,8 +84,8 @@ try {
         });
       const size = width <= 640 ? 44 : 46;
       if (
-        playerButton.background !== 'rgb(239, 246, 245)' ||
-        playerButton.color !== 'rgb(23, 63, 70)' ||
+        !playerButton.background.includes('rgb(52, 119, 132)') ||
+        playerButton.color !== 'rgb(255, 255, 255)' ||
         playerButton.width !== size ||
         playerButton.height !== size
       ) {
@@ -117,6 +121,14 @@ try {
       }
       await page.locator('.mp2-header').waitFor({ state: 'visible' });
       await page.locator('.mp2-player').waitFor({ state: 'visible' });
+      // Next.js streams a route fallback at domcontentloaded. Capture the
+      // actual discovery UI instead of treating its skeleton as the design.
+      if (route === 'discover') {
+        await page.locator('.oddio-v2-discover .oddio-explore-heading h1').waitFor({
+          state: 'visible',
+          timeout: 30000,
+        });
+      }
       await page.screenshot({
         path: `${output}/${locale}-${route}-${label}.png`,
         fullPage: true,

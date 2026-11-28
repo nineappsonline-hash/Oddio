@@ -884,3 +884,59 @@
     height: 44px;
   }
 }
+
+/* Player finishing pass: readable transport and compact touch targets. */
+.mp2-player {
+  border-top-color: rgba(70, 120, 130, 0.54);
+  background: linear-gradient(
+    110deg,
+    rgba(21, 26, 29, 0.98),
+    rgba(27, 33, 36, 0.99),
+    rgba(18, 23, 26, 0.98)
+  );
+}
+.mp2-player-track-name strong {
+  color: #f6f9fa;
+}
+.mp2-player-track-name small {
+  color: #a6bcc1;
+}
+.mp2-player-controls > button.mp2-active {
+  color: #95c1c9;
+}
+.mp2-player-controls > button.mp2-main-play {
+  background: linear-gradient(135deg, #347784, #194852);
+  color: #fff;
+  border: 1px solid #6195a0;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.35) !important;
+}
+.mp2-player-controls > button.mp2-main-play:hover:not(:disabled) {
+  background: linear-gradient(135deg, #418996, #20545f);
+  color: #fff;
+}
+.mp2-player button:focus-visible {
+  outline: 2px solid #a2cbd2;
+  outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .mp2-player {
+    gap: 5px;
+    padding-inline: max(9px, env(safe-area-inset-left, 0px));
+  }
+  .mp2-player-track-name {
+    min-width: 0;
+  }
+  .mp2-player-track-name strong,
+  .mp2-player-track-name small {
+    max-width: 100%;
+  }
+  .mp2-player-controls > button.mp2-main-play {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp2-player-controls > button {
+    transition: none;
+  }
+}

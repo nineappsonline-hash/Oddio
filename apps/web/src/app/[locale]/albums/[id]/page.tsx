@@ -1,3 +1,4 @@
+import '../../../oddio-library-release-v2.css';
 import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 import Link from 'next/link';
@@ -96,7 +97,7 @@ export default async function AlbumPage({
     .slice(0, 4);
 
   return (
-    <div>
+    <div className="oddio-v2-album-page">
       <SeoBreadcrumbs
         items={[
           { label: locale === 'ar' ? 'الرئيسية' : 'Home', href: `/${locale}` },
@@ -116,7 +117,7 @@ export default async function AlbumPage({
           })),
         })}
       />
-      <section className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-end">
+      <section className="oddio-v2-release-hero mb-10 flex flex-col gap-6 sm:flex-row sm:items-end">
         <Artwork
           title={album.title}
           url={album.artworkUrl}
@@ -128,7 +129,10 @@ export default async function AlbumPage({
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
             {t('common.albums')}
           </p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight text-ink sm:text-4xl">
+          <h1
+            dir="auto"
+            className="mt-1 text-3xl font-black tracking-tight text-ink sm:text-4xl"
+          >
             {album.title}
           </h1>
           <Link
@@ -155,7 +159,7 @@ export default async function AlbumPage({
       {tracks.length === 0 ? (
         <EmptyState title={t('album.noTracks')} />
       ) : (
-        <div className="card divide-y divide-white/5 p-2">
+        <div className="oddio-v2-album-tracks card divide-y divide-white/5 p-2">
           {tracks.map((track, index) => (
             <TrackRow
               key={track.id}
@@ -188,7 +192,7 @@ export default async function AlbumPage({
               <Link
                 key={item.album.id}
                 href={`/${locale}/albums/${item.album.id}`}
-                className="group min-w-0 rounded-2xl border border-white/10 bg-white/[0.035] p-3 transition hover:border-primary/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                className="oddio-v2-related-album group min-w-0 rounded-2xl border p-3"
               >
                 <Artwork
                   title={item.album.title}

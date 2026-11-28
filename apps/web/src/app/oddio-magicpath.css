@@ -470,3 +470,68 @@ body:has(.oddio-magicpath-home) {
   border-color: #447783;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.19);
 }
+
+/* Oddio 2.0 production integration — restrained petrol accents.
+   Scoped to the actual data-backed home page; player and routing remain untouched. */
+body:has(.oddio-magicpath-home) {
+  --oddio-petrol: #285f6b;
+  --oddio-petrol-hover: #347987;
+  --oddio-petrol-text: #8db9c2;
+  --oddio-graphite-border: rgba(112, 155, 165, 0.28);
+}
+body:has(.oddio-magicpath-home) .oddio-topbar-search:focus-within {
+  border-color: #568c98;
+  box-shadow: 0 0 0 3px rgba(48, 113, 128, 0.18);
+}
+body:has(.oddio-magicpath-home) aside.fixed.inset-y-0 nav a[aria-current='page'] {
+  background: linear-gradient(105deg, rgba(35, 85, 95, 0.48), rgba(27, 30, 33, 0.82));
+  box-shadow: inset 3px 0 0 var(--oddio-petrol-hover);
+}
+[dir='rtl']
+  body:has(.oddio-magicpath-home)
+  aside.fixed.inset-y-0
+  nav
+  a[aria-current='page'] {
+  box-shadow: inset -3px 0 0 var(--oddio-petrol-hover);
+}
+.oddio-magicpath-home .oddio-v2-hero-button:hover {
+  background: linear-gradient(120deg, #347987, #1b4d59);
+  border-color: #79a8b2;
+}
+.oddio-magicpath-home .oddio-v2-hero-button:focus-visible,
+.oddio-magicpath-home .oddio-v2-hero-shortcuts a:focus-visible,
+.oddio-magicpath-home .oddio-section-action:focus-visible,
+.oddio-magicpath-home .oddio-genre-tile:focus-visible {
+  outline: 2px solid #9cc5cd;
+  outline-offset: 3px;
+}
+.oddio-magicpath-home .oddio-v2-hero-shortcuts a,
+.oddio-magicpath-home .oddio-v2-hero-button {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+@media (max-width: 700px) {
+  .oddio-magicpath-home,
+  .oddio-magicpath-home .oddio-v2-cinematic-hero,
+  .oddio-magicpath-home .oddio-v2-hero-layout {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .oddio-magicpath-home .oddio-v2-cinematic-hero {
+    overflow: hidden;
+  }
+  .oddio-magicpath-home .oddio-v2-hero-copy {
+    min-width: 0;
+  }
+  .oddio-magicpath-home .oddio-v2-hero-shortcuts {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oddio-magicpath-home .oddio-v2-hero-shortcuts a,
+  .oddio-magicpath-home .oddio-v2-hero-button {
+    transition: none;
+  }
+}

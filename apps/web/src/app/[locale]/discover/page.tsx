@@ -1,3 +1,4 @@
+import '../../oddio-discovery-artists.css';
 import { filterMusicDb, getContentLanguagePreference } from '@/lib/content-language';
 import Link from 'next/link';
 import { ArrowUpRight, Compass, SlidersHorizontal } from 'lucide-react';
@@ -93,7 +94,7 @@ export default async function DiscoverPage({
   ].filter(Boolean);
 
   return (
-    <div className="oddio-explore-page">
+    <div className="oddio-explore-page oddio-v2-discover">
       <header className="oddio-explore-heading">
         <div>
           <p className="oddio-micro-label">
@@ -229,7 +230,7 @@ export default async function DiscoverPage({
         <div className="flex items-end gap-2">
           <button
             type="submit"
-            className="h-10 flex-1 rounded-lg bg-primary px-4 text-sm font-semibold text-[#211518] transition hover:bg-primary-strong"
+            className="oddio-v2-discover-submit h-10 flex-1 rounded-lg px-4 text-sm font-semibold transition"
           >
             {t('common.search')}
           </button>
@@ -297,7 +298,7 @@ export default async function DiscoverPage({
               <Link
                 key={artist.id}
                 href={`/${locale}/artists/${artist.slug}`}
-                className="rounded-pill border border-white/10 bg-white/5 px-4 py-2 text-sm text-ink hover:border-primary/40"
+                className="oddio-v2-artist-result rounded-pill border px-4 py-2 text-sm text-ink"
               >
                 {artist.name}
                 <span className="ms-2 text-xs text-muted">{artist.trackCount}</span>
