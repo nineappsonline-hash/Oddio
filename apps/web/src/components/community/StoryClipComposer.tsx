@@ -230,7 +230,7 @@ export function StoryClipComposer({
   );
   const [measuredDuration, setMeasuredDuration] = useState(0);
   const [loadingAudio, setLoadingAudio] = useState(true);
-  const [lyricCues, setLyricCues] = useState<LyricCue[]>([]);
+  const lyricsRef = useRef<Promise<LyricCue[]> | null>(null);
   const duration = measuredDuration || Math.max(0, (track.durationMs || 0) / 1000);
   const [start, setStart] = useState(() =>
     Math.min(Math.floor(currentSeconds), Math.max(0, duration - MAX_CLIP_SECONDS)),
@@ -242,7 +242,7 @@ export function StoryClipComposer({
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [previewing, setPreviewing] = useState(false);
-  const previewRef = useRef<HTMLAudioElement | null>(null);
+  const previewRef = useRef<(() => void) | null>(null);
   const cancelRef = useRef<(() => void) | null>(null);
   const fileUrl = useRef<string | null>(null);
   const podcast = isPodcastPlayback(track);
@@ -259,8 +259,6 @@ export function StoryClipComposer({
   };
   const audioSrc = `/api/story-audio/${podcast ? 'podcast' : 'track'}/${track.id}`;
   const effectiveLength = Math.min(clipLength, Math.max(1, duration - start));
-  const lyricAt = (position: number) =>
-    lyricCues.find((cue) => cue.start <= position && position < cue.end)?.text;
 
   useEffect(() => {
     let active = true;
@@ -292,23 +290,28 @@ export function StoryClipComposer({
 
   useEffect(() => {
     if (podcast) return;
-    let active = true;
-    fetch(`/api/tracks/${track.id}/synced-lyrics`)
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 8_000);
+    lyricsRef.current = fetch(`/api/tracks/${track.id}/synced-lyrics`, {
+      signal: controller.signal,
+    })
       .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (active && typeof data?.data?.srt === 'string')
-          setLyricCues(parseStorySrt(data.data.srt));
-      })
-      .catch(() => {});
+      .then((data) =>
+        typeof data?.data?.srt === 'string' ? parseStorySrt(data.data.srt) : [],
+      )
+      .catch(() => [])
+      .finally(() => clearTimeout(timer));
     return () => {
-      active = false;
+      clearTimeout(timer);
+      controller.abort();
+      lyricsRef.current = null;
     };
   }, [podcast, track.id]);
 
   useEffect(
     () => () => {
       cancelRef.current?.();
-      previewRef.current?.pause();
+      previewRef.current?.();
       if (fileUrl.current) URL.revokeObjectURL(fileUrl.current);
     },
     [],
@@ -328,39 +331,46 @@ export function StoryClipComposer({
     }
   };
 
-  const togglePreview = async () => {
+  const stopPreview = () => {
+    previewRef.current?.();
+    setPreviewing(false);
+  };
+
+  const togglePreview = () => {
     if (previewRef.current) {
-      previewRef.current.pause();
-      previewRef.current.src = '';
-      previewRef.current = null;
-      setPreviewing(false);
+      stopPreview();
       return;
     }
     setError('');
-    const audio = new Audio(audioSrc);
-    previewRef.current = audio;
+    const audio = new Audio();
     audio.preload = 'auto';
-    try {
-      await new Promise<void>((resolve, reject) => {
-        audio.onloadedmetadata = () => resolve();
-        audio.onerror = () => reject(new Error('Could not load audio preview'));
-        audio.load();
-      });
-      audio.currentTime = start;
-      audio.ontimeupdate = () => {
-        if (audio.currentTime >= start + effectiveLength) {
-          audio.pause();
-          setPreviewing(false);
-          previewRef.current = null;
-        }
-      };
-      await audio.play();
-      setPreviewing(true);
-    } catch {
-      setPreviewing(false);
+    audio.src = audioSrc;
+    // Set the initial position and call play in the tap, including on cold media.
+    audio.currentTime = start;
+    const dispose = () => {
       previewRef.current = null;
+      clearTimeout(timer);
+      audio.onended = null;
+      audio.onerror = null;
+      audio.ontimeupdate = null;
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+    };
+    const onError = () => {
+      if (previewRef.current !== dispose) return;
+      stopPreview();
       setError(ar ? 'تعذر تشغيل معاينة المقطع' : 'Could not preview this excerpt.');
-    }
+    };
+    const timer = window.setTimeout(onError, 15_000);
+    previewRef.current = dispose;
+    audio.onended = stopPreview;
+    audio.onerror = onError;
+    audio.ontimeupdate = () => {
+      if (audio.currentTime >= start + effectiveLength) stopPreview();
+    };
+    setPreviewing(true);
+    void audio.play().then(() => clearTimeout(timer), onError);
   };
 
   async function createClip() {
@@ -368,11 +378,7 @@ export function StoryClipComposer({
     setWorking(true);
     setPercent(0);
     setFile(null);
-    if (previewRef.current) {
-      previewRef.current.pause();
-      previewRef.current = null;
-      setPreviewing(false);
-    }
+    stopPreview();
     let audio: HTMLAudioElement | null = null;
     let context: AudioContext | null = null;
     let recorder: MediaRecorder | null = null;
@@ -430,6 +436,9 @@ export function StoryClipComposer({
           recordingAudio.addEventListener('seeked', onSeek, { once: true });
         });
       }
+      const lyricCues = await lyricsRef.current;
+      const lyricAt = (position: number) =>
+        lyricCues?.find((cue) => cue.start <= position && position < cue.end)?.text;
       const source = context.createMediaElementSource(audio);
       const destination = context.createMediaStreamDestination();
       source.connect(destination);
@@ -657,6 +666,7 @@ export function StoryClipComposer({
                 step={1}
                 disabled={working}
                 onChange={(event) => {
+                  stopPreview();
                   setStart(Number(event.target.value));
                   setFile(null);
                 }}
@@ -676,6 +686,7 @@ export function StoryClipComposer({
                 value={clipLength}
                 disabled={working}
                 onChange={(event) => {
+                  stopPreview();
                   setClipLength(Number(event.target.value));
                   setFile(null);
                 }}
