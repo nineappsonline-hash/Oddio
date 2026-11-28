@@ -261,12 +261,15 @@ try {
             await page.goto(base + '/' + locale, { waitUntil: 'domcontentloaded' });
             await page.locator('.oddio-stage-play').click();
             const mini = page.locator('.mp2-player[role="region"]');
+            await mini
+              .locator('.mp2-player-track-name strong')
+              .waitFor({ state: 'visible' });
             const volume = mini.getByRole('button', {
               name: locale === 'ar' ? 'مستوى الصوت' : 'Volume',
               exact: true,
             });
             await volume.click();
-            assert.equal(await volume.getAttribute('aria-expanded'), 'true');
+            await waitForAttribute(volume, 'aria-expanded', 'true');
             const group = mini.getByRole('group', {
               name: locale === 'ar' ? 'مستوى الصوت' : 'Volume',
               exact: true,
@@ -293,7 +296,7 @@ try {
               'compact volume must fit a 320px viewport',
             );
             await page.keyboard.press('Escape');
-            assert.equal(await volume.getAttribute('aria-expanded'), 'false');
+            await waitForAttribute(volume, 'aria-expanded', 'false');
             const queue = mini.getByRole('button', {
               name: locale === 'ar' ? 'قائمة التشغيل' : 'Queue',
               exact: true,
@@ -615,8 +618,14 @@ try {
           await navigation
             .locator('a[href$="/podcasts/categories"]')
             .waitFor({ state: 'visible' });
-          await navigation.locator('a[href$="/podcasts/history"]').click();
-          await page.waitForURL((url) => url.pathname.endsWith('/podcasts/history'));
+          // Use the accessible link without waiting on unrelated media or
+          // background requests on the destination route.
+          const historyLink = navigation.locator('a[href$="/podcasts/history"]');
+          await historyLink.press('Enter');
+          await page.waitForURL((url) => url.pathname.endsWith('/podcasts/history'), {
+            waitUntil: 'domcontentloaded',
+          });
+          await page.getByRole('heading', { level: 1 }).waitFor({ state: 'visible' });
           await page.locator('.mp2-player').waitFor({ state: 'visible' });
           assert.ok(
             await page.evaluate(

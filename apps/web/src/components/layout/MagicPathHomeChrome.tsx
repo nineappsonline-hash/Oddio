@@ -123,6 +123,12 @@ export function MagicPathHomeSidebar({
   const drawerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
+  // Wait for a client route change before dismissing the drawer. Hiding its
+  // Links eagerly can interrupt their first navigation on mobile WebKit.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
@@ -210,6 +216,11 @@ export function MagicPathHomeSidebar({
             <Link
               key={path}
               href={`/${locale}${path}`}
+              prefetch={
+                path === '/library' || path === '/podcasts/notifications'
+                  ? false
+                  : undefined
+              }
               aria-current={isCurrentRoute(path) ? 'page' : undefined}
               className={`mp2-nav-item ${isCurrentRoute(path) ? 'mp2-nav-active' : ''}`}
               onClick={() => setOpen(false)}
@@ -230,8 +241,11 @@ export function MagicPathHomeSidebar({
                 <Link
                   key={path}
                   href={`/${locale}${path}`}
+                  prefetch={false}
                   className="mp2-nav-item"
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    if (pathname === '/' + locale + path.split('#')[0]) setOpen(false);
+                  }}
                 >
                   <Icon size={18} aria-hidden="true" />{' '}
                   <span>{ar ? labelAr : labelEn}</span>
@@ -241,6 +255,7 @@ export function MagicPathHomeSidebar({
                 <>
                   <Link
                     href={`/${locale}/podcasts/me`}
+                    prefetch={false}
                     className="mp2-nav-item"
                     onClick={() => setOpen(false)}
                   >
@@ -249,6 +264,7 @@ export function MagicPathHomeSidebar({
                   </Link>
                   <Link
                     href={`/${locale}/podcasts/manage`}
+                    prefetch={false}
                     className="mp2-nav-item"
                     onClick={() => setOpen(false)}
                   >
@@ -267,6 +283,7 @@ export function MagicPathHomeSidebar({
             <nav aria-label={ar ? 'مجموعتك' : 'Your collection'}>
               <Link
                 href={`/${locale}/library`}
+                prefetch={false}
                 onClick={() => setOpen(false)}
                 className="mp2-nav-item"
               >
@@ -305,14 +322,16 @@ export function MagicPathHomeSidebar({
           <ArrowUpLeft size={18} aria-hidden="true" />
         </Link>
         <div className="mp2-sidebar-footer">
-          <Link href={`/${locale}/notifications`}>
+          <Link href={`/${locale}/notifications`} prefetch={false}>
             <Bell size={17} /> {ar ? 'الإشعارات' : 'Notifications'}
           </Link>
-          <Link href={`/${locale}/settings`}>
+          <Link href={`/${locale}/settings`} prefetch={false}>
             <Settings size={17} /> {ar ? 'الإعدادات' : 'Settings'}
           </Link>
           {!user ? (
-            <Link href={`/${locale}/login`}>{ar ? 'تسجيل الدخول' : 'Log in'}</Link>
+            <Link href={`/${locale}/login`} prefetch={false}>
+              {ar ? 'تسجيل الدخول' : 'Log in'}
+            </Link>
           ) : null}
         </div>
       </aside>
@@ -370,6 +389,7 @@ export function MagicPathHomeHeader({
         <ExperienceSwitcher contentLanguage={contentLanguage} />
         <Link
           href={`/${locale}/notifications`}
+          prefetch={false}
           aria-label={ar ? 'الإشعارات' : 'Notifications'}
           className="mp2-header-bell"
         >
@@ -378,6 +398,7 @@ export function MagicPathHomeHeader({
         <Link
           className="mp2-header-account"
           href={user ? `/${locale}/settings` : `/${locale}/login`}
+          prefetch={false}
         >
           {user ? user.displayName.slice(0, 1) : ar ? 'دخول' : 'Log in'}
         </Link>
