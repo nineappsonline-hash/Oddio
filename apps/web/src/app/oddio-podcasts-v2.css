@@ -91,3 +91,28 @@
     transition: none;
   }
 }
+
+
+/* Keep podcast discovery actions readable without a seven-row CTA stack on phones. */
+@media (max-width: 640px) {
+  .oddio-v2-podcasts .oddio-v2-podcast-hero .flex.flex-wrap.items-center.gap-3 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 9px;
+  }
+  .oddio-v2-podcasts .oddio-v2-podcast-hero .flex.flex-wrap.items-center.gap-3 > a {
+    min-width: 0;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding-inline: 10px;
+    font-size: 11px;
+    line-height: 1.4;
+    gap: 5px;
+  }
+  .oddio-v2-podcasts .oddio-v2-podcast-hero .flex.flex-wrap.items-center.gap-3 > a:last-child {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+}
