@@ -6,6 +6,7 @@ import { getSitemapEntries } from '@/lib/data/queries';
 import { seoAbsoluteUrl as absoluteUrl } from '@/lib/seo-origin';
 import { locales } from '@/i18n/config';
 import { getPodcastCatalog } from '@/lib/podcasts/catalog';
+import { podcastEditorialRevision } from '@/lib/podcasts/editorial-notes';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const episodeShowIds = new Set(podcasts.episodes.map((episode) => episode.showId));
   const activeShows = podcasts.shows.filter((show) => episodeShowIds.has(show.id));
   const activePodcastCategoryIds = new Set(activeShows.map((show) => show.categoryId));
+  const showSlugs = new Map(activeShows.map((show) => [show.id, show.slug]));
+  const episodeLastModified = new Map(
+    podcasts.episodes.map((episode) => {
+      const published = validDate(episode.publishedAt);
+      const revision = podcastEditorialRevision(
+        episode,
+        showSlugs.get(episode.showId) ?? '',
+      );
+      const revised = validDate(revision);
+      // Retain date-only precision for editorial changes; do not invent an edit time.
+      const lastModified =
+        revised && (!published || revised > published) ? revision : published;
+      return [episode.id, lastModified] as const;
+    }),
+  );
   if (entries.artists.length) staticPaths.push('/artists');
 
   for (const locale of locales) {
@@ -87,7 +103,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const path = `/podcasts/episodes/${episode.id}`;
       items.push({
         url: absoluteUrl(`/${locale}${path}`),
-        lastModified: validDate(episode.publishedAt),
+        lastModified: episodeLastModified.get(episode.id),
         changeFrequency: 'monthly',
         priority: 0.7,
         alternates: { languages: languages(path) },
