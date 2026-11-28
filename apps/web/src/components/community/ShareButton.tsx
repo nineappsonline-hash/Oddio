@@ -2,16 +2,32 @@
 
 import {
   useEffect,
+  useId,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { Check, Copy, Facebook, Instagram, MessageCircle, Share2, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import {
+  ArrowUpRight,
+  Check,
+  ChevronRight,
+  Copy,
+  Facebook,
+  Instagram,
+  MessageCircle,
+  Share2,
+  X,
+} from 'lucide-react';
 import { useToast } from '@/components/providers/ToastProvider';
+import { Artwork } from '@/components/ui/Artwork';
 import { Button } from '@/components/ui/Button';
+import { useLocale } from '@/i18n/use-translator';
 import { canonicalOddioShareUrl } from '@/lib/share-url';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { StoryClipComposer } from '@/components/community/StoryClipComposer';
+import styles from './ShareButton.module.css';
 
 export function ShareButton({
   title,
@@ -26,69 +42,133 @@ export function ShareButton({
   storyTrack?: CatalogTrack;
   iconOnly?: boolean;
 }) {
+  const ar = useLocale() === 'ar';
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [manualLink, setManualLink] = useState('');
   const [storyOpen, setStoryOpen] = useState(false);
-  const root = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const manualInput = useRef<HTMLInputElement>(null);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const menuId = useId();
 
-  // Prefer a content-specific address over the current page, especially
-  // when the full-screen player is open on an unrelated route.
   const shareUrl = () => canonicalOddioShareUrl(url, window.location.href);
+  function dismiss(restoreFocus = true) {
+    setOpen(false);
+    setManualLink('');
+    if (restoreFocus) trigger.current?.focus({ preventScroll: true });
+  }
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    function position() {
+      const root = panel.current;
+      const anchor = trigger.current?.getBoundingClientRect();
+      if (!root || !anchor || window.matchMedia('(max-width: 640px)').matches) return;
+      const width = root.offsetWidth;
+      const height = root.offsetHeight;
+      const idealX = ar ? anchor.left : anchor.right - width;
+      const below = anchor.bottom + 9;
+      const above = anchor.top - height - 9;
+      const idealY = below + height <= innerHeight - 12 || above < 12 ? below : above;
+      root.style.setProperty(
+        '--share-x',
+        `${Math.max(12, Math.min(idealX, innerWidth - width - 12))}px`,
+      );
+      root.style.setProperty(
+        '--share-y',
+        `${Math.max(12, Math.min(idealY, innerHeight - height - 12))}px`,
+      );
+    }
+    position();
+    const observer = new ResizeObserver(position);
+    if (panel.current) observer.observe(panel.current);
+    window.addEventListener('resize', position);
+    window.addEventListener('scroll', position, true);
+    panel.current
+      ?.querySelector<HTMLElement>('[role="menuitem"]')
+      ?.focus({ preventScroll: true });
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', position);
+      window.removeEventListener('scroll', position, true);
+    };
+  }, [open, ar]);
 
   useEffect(() => {
-    if (open) {
-      root.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+    if (!open) return;
+    function outside(event: PointerEvent) {
+      const target = event.target as Node;
+      if (!panel.current?.contains(target) && !trigger.current?.contains(target)) {
+        setOpen(false);
+        setManualLink('');
+      }
     }
+    document.addEventListener('pointerdown', outside);
+    return () => document.removeEventListener('pointerdown', outside);
   }, [open]);
 
-  function handleMenuKeys(event: ReactKeyboardEvent<HTMLDivElement>) {
-    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+  useEffect(() => () => clearTimeout(copyTimer.current), []);
+  useLayoutEffect(() => {
+    if (manualLink) {
+      manualInput.current?.focus();
+      manualInput.current?.select();
+    }
+  }, [manualLink]);
+
+  function handleKeys(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      dismiss();
+      return;
+    }
+    if (event.key === 'Tab' && !manualLink) {
+      event.stopPropagation();
+      dismiss();
+      return;
+    }
+    if (
+      !['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(
+        event.key,
+      ) ||
+      event.target === manualInput.current
+    )
+      return;
     const items = Array.from(
       event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'),
     );
     if (!items.length) return;
     event.preventDefault();
     const index = items.indexOf(document.activeElement as HTMLButtonElement);
+    const forward =
+      event.key === 'ArrowDown' || event.key === (ar ? 'ArrowLeft' : 'ArrowRight');
     const next =
       event.key === 'Home'
         ? 0
         : event.key === 'End'
           ? items.length - 1
-          : event.key === 'ArrowDown'
-            ? (index + 1 + items.length) % items.length
-            : (index - 1 + items.length) % items.length;
+          : index < 0
+            ? 0
+            : (index + (forward ? 1 : -1) + items.length) % items.length;
     items[next]?.focus();
   }
-
-  useEffect(() => {
-    if (!open) return;
-    function outside(event: PointerEvent) {
-      if (!root.current?.contains(event.target as Node)) setOpen(false);
-    }
-    function escape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setOpen(false);
-        root.current?.querySelector('button')?.focus();
-      }
-    }
-    document.addEventListener('pointerdown', outside);
-    document.addEventListener('keydown', escape);
-    return () => {
-      document.removeEventListener('pointerdown', outside);
-      document.removeEventListener('keydown', escape);
-    };
-  }, [open]);
 
   async function copyLink() {
     const target = shareUrl();
     try {
       await navigator.clipboard.writeText(target);
+      setManualLink('');
       setCopied(true);
-      toast('Link copied to clipboard', 'success');
-      window.setTimeout(() => setCopied(false), 2200);
+      toast(ar ? 'الرابط اتنسخ' : 'Link copied to clipboard', 'success');
+      clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopied(false), 2200);
+      return true;
     } catch {
-      toast(target, 'info');
+      setManualLink(target);
+      return false;
     }
   }
 
@@ -101,120 +181,202 @@ export function ShareButton({
           ? `https://api.whatsapp.com/send?text=${encodeURIComponent(`🎧 ${title}\n\n${shareUrl()}`)}`
           : `https://twitter.com/intent/tweet?url=${link}&text=${encodeURIComponent(title)}`;
     window.open(destination, '_blank', 'noopener,noreferrer');
-    setOpen(false);
+    dismiss();
   }
 
   async function instagram() {
-    // Instagram has no supported web URL endpoint for prefilled link posts.
-    // Native share sheets on supported devices can offer Instagram directly.
     if (typeof navigator.share === 'function') {
       try {
         await navigator.share({ title, url: shareUrl() });
-        setOpen(false);
+        dismiss();
         return;
       } catch (err) {
         if ((err as Error)?.name === 'AbortError') return;
       }
     }
-    await copyLink();
+    if (!(await copyLink())) return;
     toast(
-      'Paste the copied link into your Instagram bio or a Story link sticker.',
+      ar
+        ? 'الصق الرابط في ملصق Link على الستوري.'
+        : 'Paste the link into a Story Link sticker.',
       'info',
     );
     window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
-    setOpen(false);
+    dismiss();
   }
 
+  const closeStory = () => {
+    setStoryOpen(false);
+    trigger.current?.focus({ preventScroll: true });
+  };
+  const channels = [
+    { key: 'whatsapp' as const, name: 'WhatsApp', Icon: MessageCircle },
+    { key: 'facebook' as const, name: 'Facebook', Icon: Facebook },
+    { key: 'x' as const, name: 'X', Icon: X },
+  ];
+  const displayLabel = ar && label === 'Share' ? 'شارك' : label;
+
   return (
-    <div ref={root} className="relative inline-flex">
+    <div className="relative inline-flex">
       <Button
+        ref={trigger}
         type="button"
         variant="outline"
         size="sm"
         className={
           iconOnly ? 'h-10 w-10 !min-w-0 !p-0 justify-center rounded-full' : undefined
         }
-        aria-label={label}
-        title={label}
-        onClick={() => setOpen((value) => !value)}
+        aria-label={displayLabel}
+        title={displayLabel}
+        onClick={() => (open ? dismiss() : setOpen(true))}
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
       >
         <Share2 className="h-4 w-4" />
-        {!iconOnly ? label : null}
+        {!iconOnly ? displayLabel : null}
       </Button>
-      {open ? (
-        <div
-          role="menu"
-          aria-label="Share options"
-          onKeyDown={handleMenuKeys}
-          className="absolute bottom-full end-0 z-[100] mb-2 w-56 overflow-hidden rounded-2xl border border-[#665078] bg-[#211a2b] p-1.5 text-sm text-white shadow-[0_15px_45px_rgba(0,0,0,0.55)]"
-        >
-          <button
-            type="button"
-            role="menuitem"
-            onClick={copyLink}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start hover:bg-white/10"
-          >
-            {copied ? (
-              <Check size={18} className="text-emerald-400" />
-            ) : (
-              <Copy size={18} className="text-[#cba8ec]" />
-            )}
-            {copied ? 'Copied!' : 'Copy link'}
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => openShare('facebook')}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start hover:bg-white/10"
-          >
-            <Facebook size={18} className="text-[#88b5ff]" /> Facebook
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => openShare('whatsapp')}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start hover:bg-white/10"
-          >
-            <MessageCircle size={18} className="text-[#25D366]" /> WhatsApp
-          </button>
-          {!storyTrack ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={instagram}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start hover:bg-white/10"
-            >
-              <Instagram size={18} className="text-[#f2a0d1]" /> Instagram
-            </button>
-          ) : null}
-          {storyTrack ? (
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setOpen(false);
-                setStoryOpen(true);
-              }}
-              className="flex w-full items-center gap-3 rounded-xl border-t border-white/10 px-3 py-2.5 text-start font-semibold text-[#eed4ff] hover:bg-white/10"
-            >
-              <Instagram size={18} />
-              Instagram Story · Audio clip
-            </button>
-          ) : null}
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => openShare('x')}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start hover:bg-white/10"
-          >
-            <X size={18} className="text-white" /> X
-          </button>
-        </div>
-      ) : null}
+      {open
+        ? createPortal(
+            <>
+              <div className={styles.backdrop} aria-hidden="true" />
+              <div
+                ref={panel}
+                className={styles.panel}
+                dir={ar ? 'rtl' : 'ltr'}
+                onKeyDown={handleKeys}
+              >
+                <header className={styles.header}>
+                  <Artwork
+                    title={title}
+                    url={storyTrack?.artwork.url || '/oddio-gradient-play-logo.png'}
+                    className={styles.artwork}
+                    rounded=""
+                    sizes="44px"
+                  />
+                  <div className={styles.heading}>
+                    <p>{ar ? 'مشاركة من Oddio' : 'SHARE FROM ODDIO'}</p>
+                    <strong dir="auto">{title}</strong>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.close}
+                    aria-label={ar ? 'إغلاق المشاركة' : 'Close share menu'}
+                    onClick={() => dismiss()}
+                  >
+                    <X size={18} />
+                  </button>
+                </header>
+                <div
+                  id={menuId}
+                  role="menu"
+                  aria-label={ar ? 'اختيارات المشاركة' : 'Share options'}
+                  className={styles.menu}
+                >
+                  {storyTrack ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      tabIndex={-1}
+                      className={styles.hero}
+                      onClick={() => {
+                        dismiss();
+                        setStoryOpen(true);
+                      }}
+                    >
+                      <span className={styles.storyIcon}>
+                        <Instagram size={21} />
+                      </span>
+                      <span className={styles.heroCopy}>
+                        <strong>Instagram Story</strong>
+                        <small>
+                          {ar
+                            ? 'جهّز فيديو قصير من المقطع'
+                            : 'Create an audio clip to share'}
+                        </small>
+                      </span>
+                      <ChevronRight size={18} className={styles.direction} />
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    tabIndex={-1}
+                    onClick={copyLink}
+                    className={styles.copy}
+                  >
+                    {copied ? <Check size={18} /> : <Copy size={18} />}
+                    <span>
+                      {copied
+                        ? ar
+                          ? 'الرابط اتنسخ'
+                          : 'Copied!'
+                        : ar
+                          ? 'انسخ الرابط'
+                          : 'Copy link'}
+                    </span>
+                    <span className={styles.domain}>oddio.online</span>
+                  </button>
+                  <div
+                    role="group"
+                    aria-label={ar ? 'شارك على' : 'Share to'}
+                    className={styles.channels}
+                  >
+                    {channels.map(({ key, name, Icon }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        role="menuitem"
+                        tabIndex={-1}
+                        data-channel={key}
+                        onClick={() => openShare(key)}
+                      >
+                        <Icon size={18} />
+                        <span>{name}</span>
+                      </button>
+                    ))}
+                    {!storyTrack ? (
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        role="menuitem"
+                        data-channel="instagram"
+                        onClick={instagram}
+                      >
+                        <Instagram size={18} />
+                        <span>Instagram</span>
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+                {manualLink ? (
+                  <div className={styles.manual}>
+                    <label htmlFor={`${menuId}-manual`}>
+                      {ar ? 'انسخ الرابط يدويًا' : 'Copy the link manually'}
+                    </label>
+                    <input
+                      ref={manualInput}
+                      id={`${menuId}-manual`}
+                      value={manualLink}
+                      readOnly
+                      dir="ltr"
+                      onFocus={(event) => event.currentTarget.select()}
+                    />
+                  </div>
+                ) : null}
+                <p className={styles.foot}>
+                  <ArrowUpRight size={13} />
+                  {ar
+                    ? 'اختار المكان اللي تحب تشارك فيه'
+                    : 'Choose where you want to share'}
+                </p>
+              </div>
+            </>,
+            document.body,
+          )
+        : null}
       {storyOpen && storyTrack ? (
-        <StoryClipComposer track={storyTrack} onClose={() => setStoryOpen(false)} />
+        <StoryClipComposer track={storyTrack} onClose={closeStory} />
       ) : null}
     </div>
   );

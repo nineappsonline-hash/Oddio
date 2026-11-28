@@ -186,8 +186,31 @@ try {
     .last()
     .tap();
   const player = page.locator('.oddio-full-player');
-  await player.getByRole('button', { name: /share/i }).first().tap();
-  await page.getByRole('menuitem', { name: /Instagram Story/ }).tap();
+  const shareTrigger = player.getByRole('button', { name: /share/i }).first();
+  await shareTrigger.tap();
+  const shareMenu = page.getByRole('menu', { name: 'Share options', exact: true });
+  const storyAction = shareMenu.getByRole('menuitem', { name: /Instagram Story/ });
+  await storyAction.waitFor();
+  assert.equal(
+    await storyAction.evaluate((item) => document.activeElement === item),
+    true,
+  );
+  await page.keyboard.press('ArrowDown');
+  assert.equal(
+    await shareMenu
+      .getByRole('menuitem', { name: /Copy link/ })
+      .evaluate((item) => document.activeElement === item),
+    true,
+  );
+  await page.keyboard.press('Escape');
+  await shareMenu.waitFor({ state: 'hidden' });
+  assert.ok(await player.isVisible(), 'Escape closes only the share menu');
+  assert.equal(
+    await shareTrigger.evaluate((item) => document.activeElement === item),
+    true,
+  );
+  await shareTrigger.tap();
+  await storyAction.tap();
   const dialog = page.getByRole('dialog', { name: /Instagram Story/i });
   await page.waitForFunction(
     () => Number(document.querySelector('#oddio-clip-start')?.max) === 39,
