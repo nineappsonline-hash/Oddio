@@ -8,6 +8,8 @@ import { ArrowUpRight, Bell, Mic2, Search } from 'lucide-react';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
 import { getPodcastCatalog } from '@/lib/podcasts/catalog';
+import { normalizeMusicSearch } from '@/lib/music-search';
+import { podcastSearchQuery, searchPodcastCatalog } from '@/lib/podcasts/search';
 import { getSessionUser } from '@/lib/auth/session';
 import { podcastInbox } from '@/lib/podcasts/notification-inbox';
 import { demoMode } from '@/lib/env';
@@ -24,14 +26,18 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ q?: string | string[] }>;
 }) {
   const { locale: raw } = await params;
   const locale = isLocale(raw) ? raw : 'en';
+  const { q } = await searchParams;
   return buildMetadata({
     locale,
     path: '/podcasts',
+    noindex: Boolean(normalizeMusicSearch(podcastSearchQuery(q))),
     title:
       locale === 'ar'
         ? 'بودكاست Oddio | اكتشف برامج وحلقات صوتية'
@@ -48,14 +54,15 @@ export default async function PodcastsHome({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string | string[] }>;
 }) {
   const { locale: raw } = await params;
   if (!isLocale(raw)) notFound();
   const locale = raw,
     ar = locale === 'ar';
   const { q: rawQuery } = await searchParams;
-  const q = (rawQuery ?? '').trim().slice(0, 100).toLocaleLowerCase();
+  const searchInput = podcastSearchQuery(rawQuery);
+  const q = normalizeMusicSearch(searchInput);
   const catalog = filterPodcastCatalog(
     await getPodcastCatalog(),
     await getContentLanguagePreference(),
@@ -73,21 +80,9 @@ export default async function PodcastsHome({
     user?.isArtistManager ||
     user?.roles.some((role) => role === 'admin' || role === 'super_admin'),
   );
-  const matchingShows = catalog.shows.filter(
-    (show) =>
-      !q ||
-      [show.title, show.description, show.author].some((item) =>
-        item.toLocaleLowerCase().includes(q),
-      ),
-  );
-  const matchingShowIds = new Set(matchingShows.map((show) => show.id));
-  const matchingEpisodes = catalog.episodes.filter(
-    (episode) =>
-      !q ||
-      matchingShowIds.has(episode.showId) ||
-      [episode.title, episode.description].some((item) =>
-        item.toLocaleLowerCase().includes(q),
-      ),
+  const { shows: matchingShows, episodes: matchingEpisodes } = searchPodcastCatalog(
+    catalog,
+    searchInput,
   );
   const showById = new Map(catalog.shows.map((show) => [show.id, show]));
 
@@ -198,7 +193,7 @@ export default async function PodcastsHome({
         <Search aria-hidden="true" className="h-5 w-5 shrink-0 text-[#e9e9e9]" />
         <input
           name="q"
-          defaultValue={rawQuery ?? ''}
+          defaultValue={searchInput}
           aria-label={
             ar ? 'البحث في البرامج والحلقات' : 'Search podcast shows and episodes'
           }

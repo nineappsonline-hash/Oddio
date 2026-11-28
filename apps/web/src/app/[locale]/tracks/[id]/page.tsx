@@ -14,6 +14,7 @@ import { getViewer } from '@/lib/auth/session';
 import { createTranslator } from '@/i18n/dictionaries';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata, musicRecordingJsonLd } from '@/lib/seo';
+import { describeTrack, searchDescription } from '@/lib/catalog-descriptions';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { idFromSegment } from '@/lib/links';
 import { Artwork } from '@/components/ui/Artwork';
@@ -46,15 +47,13 @@ export async function generateMetadata({
       noindex: true,
     });
   }
-  const arabic = /[\u0600-\u06FF]/.test(page.track.title);
   const artist = page.track.artist?.name ?? 'Oddio';
   return buildMetadata({
     locale: safeLocale,
     title: page.track.title,
     socialTitle: page.track.title,
-    description: arabic
-      ? `🎵 الأغنية: ${page.track.title}\n🎤 الفنان: ${artist}\n🎧 اسمعها على Oddio.`
-      : `🎵 Song: ${page.track.title}\n🎤 Artist: ${artist}\n🎧 Listen on Oddio.`,
+    description: searchDescription(describeTrack(page.track, safeLocale)),
+    noindex: !page.track.access.indexable,
     path: `/tracks/${page.track.id}-${page.track.slug}`,
     type: 'music.song',
     image: page.track.artwork.url,
@@ -81,6 +80,7 @@ export default async function TrackPage({
     matchesContentLanguage(item.languageCode, preference),
   );
   const artist = track.artist;
+  const summary = describeTrack(track, locale);
   const genreLabel = track.genre
     ? locale === 'ar'
       ? track.genre.labelAr
@@ -131,6 +131,7 @@ export default async function TrackPage({
           url: `/${locale}/tracks/${track.id}-${track.slug}`,
           durationMs: track.durationMs,
           releaseAt: track.releaseAt,
+          description: summary,
           genre: genreLabel,
           languageCode: track.languageCode,
         })}
@@ -206,11 +207,9 @@ export default async function TrackPage({
               label={t('common.report')}
             />
           </div>
-          {track.description ? (
-            <p className="mt-4 max-w-2xl whitespace-pre-line text-sm text-muted">
-              {track.description}
-            </p>
-          ) : null}
+          <p className="mt-4 max-w-2xl whitespace-pre-line text-sm text-muted" dir="auto">
+            {summary}
+          </p>
         </div>
       </section>
 
