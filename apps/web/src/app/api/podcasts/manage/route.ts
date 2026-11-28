@@ -6,6 +6,7 @@ import { serviceClient } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { isPodcastId } from '@/lib/podcasts/catalog';
 import { presignR2Get, presignR2StreamingPut } from '@/lib/storage/r2-presign';
+import { isPodcastWriteOriginAllowed } from '@/lib/podcasts/request-origin';
 
 export const runtime = 'nodejs';
 const slug = z
@@ -62,8 +63,7 @@ export async function POST(request: Request) {
   if (demoMode)
     return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
   // This endpoint only accepts first-party, same-origin administrative actions.
-  const origin = request.headers.get('origin');
-  if (origin && new URL(origin).origin !== new URL(request.url).origin) {
+  if (!isPodcastWriteOriginAllowed(request)) {
     return NextResponse.json(
       { error: 'Cross-origin publishing is forbidden' },
       { status: 403 },
