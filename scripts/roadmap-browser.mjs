@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Local demo UI, with an isolated response fixture for the account-sync API.
 import assert from 'node:assert/strict';
+import { createServer, request as proxyRequest } from 'node:http';
 import { chromium, webkit } from 'playwright';
 
 const base = (process.env.SMOKE_BASE_URL || 'http://127.0.0.1:3100').replace(/\/$/, '');
@@ -12,6 +13,7 @@ const browser = await (engine === 'webkit' ? webkit : chromium).launch({
   executablePath: process.env.CHROMIUM_EXECUTABLE || undefined,
 });
 const year = new Date().getUTCFullYear() - 1;
+let proxy;
 
 try {
   for (const locale of ['en', 'ar']) {
@@ -57,44 +59,77 @@ try {
   const firstRead = new Promise((resolve) => {
     releaseFirstRead = resolve;
   });
-  async function openDevice(delay = false) {
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    const login = await context.request.post(base + '/api/auth/login', {
-      data: credentials,
-      headers: { origin: base },
-    });
-    assert.equal(login.status(), 200);
-    accountId = (await login.json()).data.userId;
-    await context.route('**/api/library/smart-playlists', async (route) => {
-      if (route.request().method() === 'GET') {
-        if (delay) {
-          await firstRead;
-        }
-        return route.fulfill({
-          json: { data: { available: true, accountId, ...account }, error: null },
-        });
+  // A real local HTTP proxy avoids WebKit interception dropping intercepted
+  // PUT request bodies. Only the Smart Playlist endpoint is simulated.
+  proxy = createServer(async (request, response) => {
+    const url = new URL(request.url, base);
+    if (url.pathname !== '/api/library/smart-playlists') {
+      const upstream = proxyRequest(
+        url,
+        { method: request.method, headers: request.headers },
+        (result) => {
+          response.writeHead(result.statusCode, result.headers);
+          result.pipe(response);
+        },
+      );
+      upstream.on('error', () => {
+        response.writeHead(502).end();
+      });
+      request.pipe(upstream);
+      return;
+    }
+    const deviceA = request.headers['x-oddio-test-device'] === 'a';
+    const json = (status, data, error = null) =>
+      response
+        .writeHead(status, {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'private, no-store',
+        })
+        .end(JSON.stringify({ data, error }));
+    try {
+      if (request.method === 'GET') {
+        if (deviceA) await firstRead;
+        return json(200, { available: true, accountId, ...account });
       }
-      const payload = route.request().postDataJSON();
+      if (offline && deviceA)
+        return json(503, null, { code: 'offline', message: 'Offline' });
+      const chunks = [];
+      for await (const chunk of request) chunks.push(chunk);
+      const payload = JSON.parse(Buffer.concat(chunks).toString('utf8'));
       assert.equal(payload.accountId, accountId);
-      if (offline && delay) return route.abort();
-      if (payload.expectedUpdatedAt !== account.updatedAt) {
-        return route.fulfill({
-          status: 409,
-          json: { data: null, error: { code: 'conflict', message: 'Conflict' } },
-        });
-      }
+      if (payload.expectedUpdatedAt !== account.updatedAt)
+        return json(409, null, { code: 'conflict', message: 'Conflict' });
       const updatedAt = new Date(Date.parse(account.updatedAt) + 1000).toISOString();
       writes++;
       account = { updatedAt, rules: payload.rules };
-      return route.fulfill({ json: { data: { saved: true, updatedAt }, error: null } });
+      return json(200, { saved: true, updatedAt });
+    } catch (error) {
+      return json(500, null, { code: 'fixture_error', message: String(error) });
+    }
+  });
+  await new Promise((resolve, reject) => {
+    proxy.once('error', reject);
+    proxy.listen(0, '127.0.0.1', resolve);
+  });
+  const syncOrigin = `http://127.0.0.1:${proxy.address().port}`;
+  async function openDevice(delay = false) {
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      extraHTTPHeaders: { 'x-oddio-test-device': delay ? 'a' : 'b' },
     });
+    const login = await context.request.post(syncOrigin + '/api/auth/login', {
+      data: credentials,
+      headers: { origin: syncOrigin },
+    });
+    assert.equal(login.status(), 200);
+    accountId = (await login.json()).data.userId;
     const page = await context.newPage();
     const readStarted = page.waitForRequest(
       (request) =>
         request.method() === 'GET' &&
         new URL(request.url()).pathname === '/api/library/smart-playlists',
     );
-    await page.goto(base + '/en/library', { waitUntil: 'domcontentloaded' });
+    await page.goto(syncOrigin + '/en/library', { waitUntil: 'domcontentloaded' });
     await readStarted;
     return { page, context, area: page.locator('#smart-playlists') };
   }
@@ -162,4 +197,5 @@ try {
   );
 } finally {
   await browser.close();
+  proxy?.close();
 }
