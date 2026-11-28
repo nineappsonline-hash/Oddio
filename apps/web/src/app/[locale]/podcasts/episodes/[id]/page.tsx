@@ -57,6 +57,9 @@ export default async function PodcastEpisodePage({
   const show = catalog.shows.find((s) => s.id === episode?.showId);
   if (!episode || !show) notFound();
   const ar = locale === 'ar';
+  const related = catalog.episodes
+    .filter((item) => item.showId === show.id && item.id !== episode.id)
+    .slice(0, 3);
   return (
     <div className="mx-auto max-w-4xl space-y-7 pb-8">
       <JsonLd
@@ -136,6 +139,34 @@ export default async function PodcastEpisodePage({
           <p className="whitespace-pre-line text-sm leading-8 text-[#d0c4d6]">
             {episode.description}
           </p>
+        </section>
+      ) : null}
+      {related.length ? (
+        <section
+          aria-labelledby="related-episodes"
+          className="space-y-4 rounded-2xl border border-white/10 bg-[#202020] p-5"
+        >
+          <h2 id="related-episodes" className="text-xl font-bold text-white">
+            {ar ? `حلقات تانية من ${show.title}` : `More episodes from ${show.title}`}
+          </h2>
+          <ul className="divide-y divide-white/10">
+            {related.map((item) => (
+              <li key={item.id}>
+                <Link
+                  prefetch={false}
+                  href={`/${locale}/podcasts/episodes/${item.id}`}
+                  className="flex min-h-11 items-center justify-between gap-3 py-2 text-sm text-[#b0ebdc] hover:underline"
+                >
+                  <span dir="auto">{item.title}</span>
+                  {item.durationSeconds > 0 ? (
+                    <span className="shrink-0 text-xs text-white/65" dir="ltr">
+                      {formatPodcastTime(item.durationSeconds)}
+                    </span>
+                  ) : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       ) : null}
     </div>

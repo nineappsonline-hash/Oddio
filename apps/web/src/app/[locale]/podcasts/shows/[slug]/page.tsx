@@ -16,6 +16,17 @@ import { getSessionUser } from '@/lib/auth/session';
 import { demoMode } from '@/lib/env';
 import { PodcastFollowButton } from '@/components/podcasts/PodcastFollowButton';
 
+const seriesEditorial: Record<string, { ar: string; en: string }> = {
+  'show-mwky0f05': {
+    ar: 'حواديت غامضة بودكاست بالمصري للحكايات والأسئلة الغريبة. اختار حلقة من القائمة واسمع الحكاية من غير ما تعرف نهايتها مقدمًا.',
+    en: 'Hawadeet Ghamda is an Egyptian Arabic storytelling podcast about strange stories and intriguing questions. Pick an episode to listen without spoilers.',
+  },
+  'show-mwjp231e': {
+    ar: 'فلسفة داخلية بودكاست بالمصري عن أسئلة بنقابلها في حياتنا: قراراتنا، علاقاتنا، ومعنى التسامح والحرية.',
+    en: 'Falsafa Dakhleya is an Egyptian Arabic podcast about questions from everyday life, including choices, relationships, forgiveness and freedom.',
+  },
+};
+
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({
   params,
@@ -30,10 +41,15 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     path: `/podcasts/shows/${slug}`,
-    title: show?.title ?? 'Podcast show',
+    title: show
+      ? seriesEditorial[slug]
+        ? `${show.title} | ${locale === 'ar' ? 'بودكاست بالمصري' : 'Egyptian Arabic Podcast'}`
+        : show.title
+      : 'Podcast show',
     socialTitle: show?.title,
     description: show
       ? show.description.trim().replace(/\s+/g, ' ').slice(0, 160) ||
+        seriesEditorial[slug]?.[locale] ||
         (arabic
           ? `استمع لحلقات بودكاست ${show.title} مع ${show.author} على Oddio.`
           : `Listen to episodes of ${show.title} with ${show.author} on Oddio.`)
@@ -149,9 +165,9 @@ export default async function PodcastShowPage({
             label={locale === 'ar' ? 'مشاركة' : 'Share'}
             url={`/${locale}/podcasts/shows/${show.slug}`}
           />
-          {show.description ? (
+          {show.description || seriesEditorial[slug]?.[locale] ? (
             <p className="whitespace-pre-line text-sm leading-8 text-[#d9cede]">
-              {show.description}
+              {show.description || seriesEditorial[slug]?.[locale]}
             </p>
           ) : null}
           {category ? (
