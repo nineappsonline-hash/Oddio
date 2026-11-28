@@ -43,6 +43,30 @@ const editorialNotes: Record<string, Note> = {
       en: 'How can you tell if the life you are working toward is your own choice or a script shaped by other people? This episode explores the gap between succeeding in an expected role and choosing a life for yourself.',
     },
   },
+  'be01daec-0527-433e-86da-8b3e453160a7': {
+    showSlug: 'show-mwjp231e',
+    title: 'هل ممكن تكون حياتك كلها مجرد وهم',
+    summary: {
+      ar: 'الحلقة بتشرح فرضية المحاكاة عند نيك بوستروم: لو العالم حوالينا برنامج متطور، نقدر نعرف من جوّاه؟ وبتسأل لو اكتشفنا كده، هل ده يغيّر معنى الحب والذكريات اللي عشناها؟',
+      en: 'This episode explores Nick Bostrom’s simulation hypothesis. Could we tell from inside if our world were a computer simulation? And would that change what our memories and relationships mean?',
+    },
+  },
+  'c2b4cc22-0b92-4b99-9b97-0ac711c0bea1': {
+    showSlug: 'show-mwjp231e',
+    title: 'هل النجاح محتاج موهبة ولا حظ',
+    summary: {
+      ar: 'ليه ممكن اتنين يبذلوا نفس المجهود ويوصلوا لنتايج مختلفة؟ الحلقة بتفصل بين الموهبة والاجتهاد والحظ، وبين إنك تبقى جاهز للفرصة وإن الفرصة تيجي لك أصلًا.',
+      en: 'Why can two people put in the same effort and get different results? This episode looks at talent, hard work and luck, and the difference between being ready for an opportunity and actually getting one.',
+    },
+  },
+  'abe36723-d7e0-4ec7-a151-5ff2574f51c8': {
+    showSlug: 'show-mwjp231e',
+    title: 'إنت حر... بس على مزاج مين',
+    summary: {
+      ar: 'مين من حقه يقولك إن حريتك لازم تقف هنا؟ من مبدأ الضرر عند جون ستيوارت ميل، الحلقة بتسأل إمتى المجتمع من حقه يتدخل، وإيه الفرق بين إن اختيارك يضايق حد وإنه يأذيه.',
+      en: 'Who gets to decide where your freedom ends? Starting with John Stuart Mill’s harm principle, this episode asks when society should intervene and how to tell the difference between offending someone and harming them.',
+    },
+  },
 };
 
 /** Curated fallback for these specific episodes in the published catalog. */
