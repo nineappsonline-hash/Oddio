@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { podcastEditorialNote } from './editorial-notes';
+import { podcastEditorialNote, podcastEditorialRevision } from './editorial-notes';
 
 const show = 'show-mwky0f05';
 const ship = {
@@ -20,6 +20,20 @@ describe('public podcast notes', () => {
     expect(podcastEditorialNote({ ...ship, title: 'Different title' }, show, 'ar')).toBe(
       '',
     );
+  });
+
+  it('dates only genuinely applied editorial summaries', () => {
+    expect(podcastEditorialRevision(ship, show)).toBe('2026-11-28');
+    expect(
+      podcastEditorialRevision({ ...ship, description: 'Creator text' }, show),
+    ).toBeUndefined();
+    expect(podcastEditorialRevision(ship, 'other-show')).toBeUndefined();
+    expect(
+      podcastEditorialRevision({ ...ship, title: 'New title' }, show),
+    ).toBeUndefined();
+    expect(
+      podcastEditorialRevision({ ...ship, id: 'new-episode' }, show),
+    ).toBeUndefined();
   });
 
   it('identifies the fictional story as fiction in both languages', () => {
