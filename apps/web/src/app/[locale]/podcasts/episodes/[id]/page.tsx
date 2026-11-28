@@ -9,6 +9,10 @@ import {
   formatPodcastTime,
   isPodcastId,
 } from '@/lib/podcasts/catalog';
+import {
+  podcastEpisodeDescription,
+  podcastMetaDescription,
+} from '@/lib/podcasts/editorial-notes';
 import { PodcastArtwork } from '@/components/podcasts/PodcastUI';
 import { PodcastEpisodePlayer } from '@/components/podcasts/PodcastEpisodePlayer';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -28,13 +32,15 @@ export async function generateMetadata({
   const show = catalog.shows.find((s) => s.id === episode?.showId);
   const arabic = episode ? /[\u0600-\u06FF]/.test(episode.title) : locale === 'ar';
   const author = show?.title ?? (arabic ? 'بودكاست' : 'Podcast');
+  const summary =
+    episode && show ? podcastEpisodeDescription(episode, show.slug, locale) : '';
   return buildMetadata({
     locale,
     path: `/podcasts/episodes/${id}`,
     title: episode ? episode.title : 'Podcast episode',
     socialTitle: episode?.title,
     description: episode
-      ? episode.description.trim().replace(/\s+/g, ' ').slice(0, 160) ||
+      ? podcastMetaDescription(summary) ||
         (arabic
           ? `اسمع «${episode.title}» من بودكاست ${author} على Oddio.`
           : `Listen to “${episode.title}” from ${author} on Oddio.`)
@@ -57,6 +63,7 @@ export default async function PodcastEpisodePage({
   const show = catalog.shows.find((s) => s.id === episode?.showId);
   if (!episode || !show) notFound();
   const ar = locale === 'ar';
+  const summary = podcastEpisodeDescription(episode, show.slug, locale);
   const related = catalog.episodes
     .filter((item) => item.showId === show.id && item.id !== episode.id)
     .slice(0, 3);
@@ -67,7 +74,7 @@ export default async function PodcastEpisodePage({
           '@context': 'https://schema.org',
           '@type': 'PodcastEpisode',
           name: episode.title,
-          description: episode.description || undefined,
+          description: summary || undefined,
           url: seoAbsoluteUrl(`/${locale}/podcasts/episodes/${episode.id}`),
           datePublished: episode.publishedAt,
           ...(episode.durationSeconds > 0
@@ -131,13 +138,13 @@ export default async function PodcastEpisodePage({
         </div>
       </header>
       <PodcastEpisodePlayer episode={episode} show={show} locale={locale} />
-      {episode.description ? (
+      {summary ? (
         <section className="space-y-3 rounded-2xl border border-white/10 bg-[#202020] p-5">
           <h2 className="text-xl font-bold text-white">
             {ar ? 'عن الحلقة' : 'About this episode'}
           </h2>
           <p className="whitespace-pre-line text-sm leading-8 text-[#d0c4d6]">
-            {episode.description}
+            {summary}
           </p>
         </section>
       ) : null}
