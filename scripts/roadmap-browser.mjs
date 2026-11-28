@@ -227,16 +227,6 @@ try {
   }
   const racingWrite = await tab('race-success');
   const racingOffline = await tab('race-offline');
-  const racingRead = await tab('race-read', false);
-  await Promise.race([
-    staleReadStarted,
-    racingRead.page
-      .getByText('Account sync unavailable; using local rules.')
-      .waitFor()
-      .then(() => {
-        throw new Error('Delayed Smart Playlist read did not reach fixture');
-      }),
-  ]);
   await fill(racingWrite, 'Successful delayed write');
   await saveButton(racingWrite).press('Enter');
   await racingWrite.area.getByText('Saving changes…').waitFor();
@@ -259,6 +249,48 @@ try {
     /Newer local edit/,
     'A completed save in tab A erased the newer pending edit in tab B',
   );
+  await racingOffline.page.setExtraHTTPHeaders({ 'x-oddio-test-device': 'b' });
+  await racingOffline.page.reload();
+  await racingOffline.area
+    .getByText('Smart playlists changed on another device.')
+    .waitFor();
+  await racingOffline.area.getByRole('button', { name: 'Newer local edit' }).waitFor();
+
+  await racingOffline.area
+    .getByRole('button', { name: 'Keep account copy' })
+    .press('Enter');
+  await synced(racingOffline);
+  assert.equal(await pending(), null);
+
+  const racingRead = await tab('race-read', false);
+  await Promise.race([
+    staleReadStarted,
+    racingRead.page
+      .getByText('Account sync unavailable; using local rules.')
+      .waitFor()
+      .then(() => {
+        throw new Error('Delayed Smart Playlist read did not reach fixture');
+      }),
+  ]);
+  // Write the same pending record that a successful local edit writes while
+  // the GET is held. No additional page clicks are needed within its timeout.
+  await racingRead.page.evaluate(
+    ({ key, rules, expectedUpdatedAt }) => {
+      localStorage.setItem(
+        key + ':pending',
+        JSON.stringify({
+          rules,
+          updatedAt: expectedUpdatedAt,
+          attempt: 'late-get-regression',
+        }),
+      );
+    },
+    {
+      key: storageKey,
+      rules: [...account.rules, rule('late-get', 'Newer local edit')],
+      expectedUpdatedAt: account.updatedAt,
+    },
+  );
   releaseStaleRead();
   await synced(racingRead);
   assert.match(
@@ -266,12 +298,6 @@ try {
     /Newer local edit/,
     'A late GET in another tab erased the newer pending edit',
   );
-  await racingOffline.page.setExtraHTTPHeaders({ 'x-oddio-test-device': 'b' });
-  await racingOffline.page.reload();
-  await racingOffline.area
-    .getByText('Smart playlists changed on another device.')
-    .waitFor();
-  await racingOffline.area.getByRole('button', { name: 'Newer local edit' }).waitFor();
 
   // An old, still-open Library tab writes this marker when its legacy PUT
   // fails after an upgrade. Reopening must preserve it without a blind PUT.
