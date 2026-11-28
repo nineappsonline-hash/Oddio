@@ -3,6 +3,7 @@ import { ShareButton } from '@/components/community/ShareButton';
 import { notFound } from 'next/navigation';
 import { isLocale } from '@/i18n/config';
 import { buildMetadata } from '@/lib/seo';
+import { describePodcastShow, searchDescription } from '@/lib/catalog-descriptions';
 import { getPodcastCatalog, podcastCategoryLabel } from '@/lib/podcasts/catalog';
 import {
   PodcastArtwork,
@@ -37,7 +38,17 @@ export async function generateMetadata({
   const locale = isLocale(raw) ? raw : 'en';
   const catalog = await getPodcastCatalog(),
     show = catalog.shows.find((s) => s.slug === slug);
-  const arabic = show ? /[\u0600-\u06FF]/.test(show.title) : locale === 'ar';
+  const category = catalog.categories.find((item) => item.id === show?.categoryId);
+  const hasEpisodes = Boolean(
+    show && catalog.episodes.some((episode) => episode.showId === show.id),
+  );
+  const summary = show
+    ? describePodcastShow(show, locale, {
+        category: category && podcastCategoryLabel(category, locale),
+        hasEpisodes,
+        editorial: seriesEditorial[slug]?.[locale],
+      })
+    : '';
   return buildMetadata({
     locale,
     path: `/podcasts/shows/${slug}`,
@@ -47,14 +58,8 @@ export async function generateMetadata({
         : show.title
       : 'Podcast show',
     socialTitle: show?.title,
-    description: show
-      ? show.description.trim().replace(/\s+/g, ' ').slice(0, 160) ||
-        seriesEditorial[slug]?.[locale] ||
-        (arabic
-          ? `استمع لحلقات بودكاست ${show.title} مع ${show.author} على Oddio.`
-          : `Listen to episodes of ${show.title} with ${show.author} on Oddio.`)
-      : '',
-    noindex: !show || !catalog.episodes.some((episode) => episode.showId === show.id),
+    description: searchDescription(summary),
+    noindex: !show || !hasEpisodes,
     image: show?.coverUrl,
     imageAlt: show ? `${show.title} — ${show.author}` : undefined,
   });
@@ -97,6 +102,11 @@ export default async function PodcastShowPage({
           a.publishedAt.localeCompare(b.publishedAt),
       ),
     category = catalog.categories.find((c) => c.id === show.categoryId);
+  const summary = describePodcastShow(show, locale, {
+    category: category && podcastCategoryLabel(category, locale),
+    hasEpisodes: episodes.length > 0,
+    editorial: seriesEditorial[slug]?.[locale],
+  });
   return (
     <div className="space-y-9 pb-8">
       <JsonLd
@@ -104,7 +114,7 @@ export default async function PodcastShowPage({
           '@context': 'https://schema.org',
           '@type': 'PodcastSeries',
           name: show.title,
-          description: show.description,
+          description: summary,
           url: seoAbsoluteUrl(`/${locale}/podcasts/shows/${show.slug}`),
           author: { '@type': 'Person', name: show.author },
           inLanguage: show.language,
@@ -165,11 +175,9 @@ export default async function PodcastShowPage({
             label={locale === 'ar' ? 'مشاركة' : 'Share'}
             url={`/${locale}/podcasts/shows/${show.slug}`}
           />
-          {show.description || seriesEditorial[slug]?.[locale] ? (
-            <p className="whitespace-pre-line text-sm leading-8 text-[#d9cede]">
-              {show.description || seriesEditorial[slug]?.[locale]}
-            </p>
-          ) : null}
+          <p className="whitespace-pre-line text-sm leading-8 text-[#d9cede]" dir="auto">
+            {summary}
+          </p>
           {category ? (
             <Link
               href={`/${locale}/podcasts/categories/${category.slug}`}

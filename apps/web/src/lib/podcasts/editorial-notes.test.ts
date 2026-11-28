@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { podcastEpisodeDescription, podcastMetaDescription } from './editorial-notes';
+import { podcastEditorialNote } from './editorial-notes';
 
 const show = 'show-mwky0f05';
 const ship = {
@@ -10,19 +10,16 @@ const ship = {
 
 describe('public podcast notes', () => {
   it('gives matching published episodes a localized summary', () => {
-    expect(podcastEpisodeDescription(ship, show, 'ar')).toContain('ماري سيليست');
-    expect(podcastEpisodeDescription(ship, show, 'en')).toContain('Mary Celeste');
+    expect(podcastEditorialNote(ship, show, 'ar')).toContain('ماري سيليست');
+    expect(podcastEditorialNote(ship, show, 'en')).toContain('Mary Celeste');
   });
 
-  it('keeps the creator’s real description and does not match unrelated episodes', () => {
-    expect(
-      podcastEpisodeDescription({ ...ship, description: ' Original ' }, show, 'ar'),
-    ).toBe('Original');
-    expect(podcastEpisodeDescription(ship, 'other-show', 'ar')).toBe('');
-    expect(podcastEpisodeDescription({ ...ship, id: 'different' }, show, 'ar')).toBe('');
-    expect(
-      podcastEpisodeDescription({ ...ship, title: 'Different title' }, show, 'ar'),
-    ).toBe('');
+  it('does not match unrelated episodes', () => {
+    expect(podcastEditorialNote(ship, 'other-show', 'ar')).toBe('');
+    expect(podcastEditorialNote({ ...ship, id: 'different' }, show, 'ar')).toBe('');
+    expect(podcastEditorialNote({ ...ship, title: 'Different title' }, show, 'ar')).toBe(
+      '',
+    );
   });
 
   it('identifies the fictional story as fiction in both languages', () => {
@@ -31,17 +28,7 @@ describe('public podcast notes', () => {
       title: 'مدينة من غير أسرار',
       description: '',
     };
-    expect(podcastEpisodeDescription(city, show, 'ar')).toMatch(/^حكاية خيالية/);
-    expect(podcastEpisodeDescription(city, show, 'en')).toMatch(/^A fictional mystery/);
-  });
-
-  it('normalizes and bounds metadata without chopping a normal word', () => {
-    expect(podcastMetaDescription(' test\n copy  ')).toBe('test copy');
-    expect(podcastMetaDescription('Episode summary '.repeat(15))).toMatch(
-      /(?:Episode|summary)…$/,
-    );
-    expect(
-      podcastMetaDescription('Episode summary '.repeat(15)).length,
-    ).toBeLessThanOrEqual(160);
+    expect(podcastEditorialNote(city, show, 'ar')).toMatch(/^حكاية خيالية/);
+    expect(podcastEditorialNote(city, show, 'en')).toMatch(/^A fictional mystery/);
   });
 });

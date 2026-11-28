@@ -28,23 +28,13 @@ const mysteryNotes: Record<string, Note> = {
   },
 };
 
-/** Only called for episodes already selected from the published public catalog. */
-export function podcastEpisodeDescription(
-  episode: { id: string; title: string; description: string },
+/** Curated fallback for these specific episodes in the published catalog. */
+export function podcastEditorialNote(
+  episode: { id: string; title: string },
   showSlug: string,
   locale: Language,
 ): string {
-  const supplied = episode.description.trim();
-  if (supplied) return supplied;
   if (showSlug !== 'show-mwky0f05') return '';
   const note = mysteryNotes[episode.id];
   return note?.title === episode.title.trim() ? note.summary[locale] : '';
-}
-
-export function podcastMetaDescription(description: string): string {
-  const compact = description.replace(/\s+/g, ' ').trim();
-  if (compact.length <= 160) return compact;
-  const clipped = compact.slice(0, 157);
-  const boundary = clipped.lastIndexOf(' ');
-  return `${(boundary > 110 ? clipped.slice(0, boundary) : clipped).trimEnd()}…`;
 }

@@ -96,6 +96,7 @@ export function musicRecordingJsonLd(input: {
   url: string;
   durationMs: number;
   releaseAt: string;
+  description?: string;
   genre?: string;
   languageCode?: string;
 }) {
@@ -103,6 +104,7 @@ export function musicRecordingJsonLd(input: {
     '@context': 'https://schema.org',
     '@type': 'MusicRecording',
     name: input.title,
+    ...(input.description ? { description: input.description } : {}),
     ...(input.artistName
       ? { byArtist: { '@type': 'MusicGroup', name: input.artistName } }
       : {}),
