@@ -925,25 +925,36 @@ try {
       }
 
       if (locale === 'en' && viewport.width === 1366) {
-        // The login test navigates through several protected routes. Firefox
-        // can complete an obsolete speculative chunk request after navigation,
-        // reporting its failure on that older page. Start the Rewind check in
-        // a fresh tab, retaining the validated session cookie in this context.
         await page.close();
         pageErrors.length = 0;
         page = await context.newPage();
         page.on('pageerror', (error) => pageErrors.push(error.message));
         await test('signed-in Rewind shows honest empty state and protects sharing', async () => {
-          // Demo seed intentionally has no qualified playback events.
-          // A history row alone must not be counted as an annual qualified play.
-          const response = await page.goto(`${base}/en/library/rewind?year=2026`, {
-            waitUntil: 'domcontentloaded',
-          });
-          assert.equal(response?.status(), 200);
-          await page.locator('.mp2-player').waitFor({ state: 'visible' });
+          const currentYear = new Date().getUTCFullYear();
+          const previousYear = currentYear - 1;
+          // Keep the two locale documents alive separately. Navigating the
+          // same tab away after SSR paint can abort its still-loading chunks
+          // and attribute the old document's error to the new route.
+          async function openRewind(tab, routeLocale) {
+            const onboarding = tab.waitForResponse(
+              (response) =>
+                new URL(response.url()).pathname === '/api/onboarding/favorite-genres',
+            );
+            const [document, profile] = await Promise.all([
+              tab.goto(`${base}/${routeLocale}/library/rewind?year=${currentYear}`, {
+                waitUntil: 'load',
+              }),
+              onboarding,
+            ]);
+            assert.equal(document?.status(), 200);
+            assert.equal(profile.status(), 200, 'The signed-in shell must hydrate');
+            await tab.locator('.mp2-player').waitFor({ state: 'visible' });
+          }
+          await openRewind(page, 'en');
           await page
-            .getByRole('heading', { level: 1, name: /2026 Music Rewind/ })
+            .getByRole('heading', { level: 1, name: `Your ${currentYear} Music Rewind` })
             .waitFor();
+          // A history row alone must not be counted as a qualified listen.
           assert.ok(
             await page
               .getByText('No recorded qualified listens for this year yet.')
@@ -954,68 +965,64 @@ try {
             await page.getByRole('button', { name: 'Save PNG image' }).count(),
             0,
           );
-          const arabic = await page.goto(`${base}/ar/library/rewind?year=2026`, {
-            waitUntil: 'domcontentloaded',
-          });
-          assert.equal(arabic?.status(), 200);
-          await page.locator('.mp2-player').waitFor({ state: 'visible' });
-          assert.equal(await page.locator('html').getAttribute('dir'), 'rtl');
-          await page.getByRole('heading', { level: 1 }).waitFor();
-          await page.setViewportSize({ width: 390, height: 844 });
-          const layout = await page.evaluate(() => ({
-            overflow: document.documentElement.scrollWidth - window.innerWidth,
-            widths: {
-              viewport: window.innerWidth,
-              html: document.documentElement.clientWidth,
-              body: document.body.getBoundingClientRect().width,
-              workspace: document
-                .querySelector('.oddio-workspace')
-                ?.getBoundingClientRect().width,
-            },
-            offenders: Array.from(document.querySelectorAll('body *'))
-              .filter((element) => {
-                const rect = element.getBoundingClientRect();
-                return (
-                  rect.width > 1 &&
-                  (rect.right > innerWidth + 2 || rect.left < -2) &&
-                  getComputedStyle(element).position !== 'fixed'
-                );
-              })
-              .slice(0, 8)
-              .map((element) => ({
-                tag: element.tagName,
-                className:
-                  typeof element.className === 'string'
-                    ? element.className.slice(0, 100)
-                    : '',
-                width: Math.round(element.getBoundingClientRect().width),
-                left: Math.round(element.getBoundingClientRect().left),
-              })),
-          }));
-          assert.ok(
-            layout.overflow <= 2,
-            `Arabic Rewind overflow: ${layout.overflow}px; widths: ${JSON.stringify(layout.widths)}; offenders: ${JSON.stringify(layout.offenders)}`,
+          await page
+            .getByRole('link', { name: String(previousYear), exact: true })
+            .click();
+          await page.waitForURL(
+            (url) => url.searchParams.get('year') === String(previousYear),
           );
-          await page.setViewportSize({ width: 1366, height: 900 });
-          // WebKit cancels pending player/podcast bootstrap fetches when the
-          // signed-in page navigates to Rewind. The route checks above validate
-          // actual rendering; only these aborted requests are benign.
-          const unexpectedRewindErrors = pageErrors.filter(
-            (message) =>
-              !(
-                engine === 'webkit' &&
-                message.includes('due to access control checks') &&
-                (message.includes('/api/podcasts/progress') ||
-                  message.includes('/api/player/resume') ||
-                  message.includes('/api/library/smart-playlists') ||
-                  message.includes('/api/onboarding/favorite-genres'))
-              ),
-          );
-          assert.equal(
-            unexpectedRewindErrors.length,
-            0,
-            unexpectedRewindErrors.join('; '),
-          );
+          await page
+            .getByRole('heading', { level: 1, name: `Your ${previousYear} Music Rewind` })
+            .waitFor();
+          const mobile = await context.newPage();
+          const mobileErrors = [];
+          mobile.on('pageerror', (error) => mobileErrors.push(error.message));
+          try {
+            await mobile.setViewportSize({ width: 390, height: 844 });
+            await openRewind(mobile, 'ar');
+            assert.equal(await mobile.locator('html').getAttribute('dir'), 'rtl');
+            await mobile
+              .getByRole('heading', { level: 1, name: `حصاد موسيقاك في ${currentYear}` })
+              .waitFor();
+            const layout = await mobile.evaluate(() => ({
+              overflow: document.documentElement.scrollWidth - window.innerWidth,
+              widths: {
+                viewport: window.innerWidth,
+                html: document.documentElement.clientWidth,
+                body: document.body.getBoundingClientRect().width,
+                workspace: document
+                  .querySelector('.oddio-workspace')
+                  ?.getBoundingClientRect().width,
+              },
+              offenders: Array.from(document.querySelectorAll('body *'))
+                .filter((element) => {
+                  const rect = element.getBoundingClientRect();
+                  return (
+                    rect.width > 1 &&
+                    (rect.right > innerWidth + 2 || rect.left < -2) &&
+                    getComputedStyle(element).position !== 'fixed'
+                  );
+                })
+                .slice(0, 8)
+                .map((element) => ({
+                  tag: element.tagName,
+                  className:
+                    typeof element.className === 'string'
+                      ? element.className.slice(0, 100)
+                      : '',
+                  width: Math.round(element.getBoundingClientRect().width),
+                  left: Math.round(element.getBoundingClientRect().left),
+                })),
+            }));
+            assert.ok(
+              layout.overflow <= 2,
+              `Arabic Rewind overflow: ${layout.overflow}px; widths: ${JSON.stringify(layout.widths)}; offenders: ${JSON.stringify(layout.offenders)}`,
+            );
+            assert.deepEqual(mobileErrors, [], 'Arabic Rewind must not throw');
+          } finally {
+            await mobile.close();
+          }
+          assert.deepEqual(pageErrors, [], 'English Rewind must not throw');
         });
       }
 

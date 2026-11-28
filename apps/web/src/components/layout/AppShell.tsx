@@ -1,6 +1,6 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 import type { SessionUser } from '@ai-music/contracts';
 import { SessionProvider } from '@/components/providers/SessionProvider';
 import { ToastProvider } from '@/components/providers/ToastProvider';
@@ -24,14 +24,44 @@ import { AmbientBackground } from '@/components/visuals/AmbientBackground';
 import type { Locale } from '@ai-music/contracts';
 import type { ContentLanguagePreference } from '@/lib/content-language';
 
-// Guests never need onboarding: keep its JS out of their initial bundle.
-const FavoriteGenresSelector = dynamic(
-  () =>
-    import('@/components/onboarding/FavoriteGenresSelector').then(
-      (module) => module.FavoriteGenresSelector,
-    ),
-  { ssr: false },
-);
+type FavoriteGenresView =
+  typeof import('@/components/onboarding/FavoriteGenresSelector').FavoriteGenresSelector;
+
+function DeferredFavoriteGenres({
+  userId,
+  locale,
+  pathname,
+}: {
+  userId: string;
+  locale: Locale;
+  pathname: string;
+}) {
+  const [View, setView] = useState<FavoriteGenresView | null>(null);
+
+  useEffect(() => {
+    if (View) return;
+    let cancelled = false;
+    let retry: ReturnType<typeof setTimeout> | undefined;
+    const load = (attempt: number) => {
+      void import('@/components/onboarding/FavoriteGenresSelector')
+        .then(({ FavoriteGenresSelector }) => {
+          if (!cancelled) setView(() => FavoriteGenresSelector);
+        })
+        .catch(() => {
+          // An optional prompt must never take down the shell if Safari
+          // cancels its chunk during navigation or the connection drops.
+          if (!cancelled && attempt === 0) retry = setTimeout(() => load(1), 400);
+        });
+    };
+    load(0);
+    return () => {
+      cancelled = true;
+      if (retry !== undefined) clearTimeout(retry);
+    };
+  }, [View, pathname]);
+
+  return View ? <View mode="welcome" locale={locale} userId={userId} /> : null;
+}
 
 export function AppShell({
   locale,
@@ -126,7 +156,11 @@ export function AppShell({
           <DeferredFullPlayer />
           {!useMagicPathShell ? <MobileNav /> : null}
           {user ? (
-            <FavoriteGenresSelector mode="welcome" locale={locale} userId={user.id} />
+            <DeferredFavoriteGenres
+              locale={locale}
+              pathname={pathname}
+              userId={user.id}
+            />
           ) : null}
         </PlayerProvider>
       </ToastProvider>
