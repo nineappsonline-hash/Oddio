@@ -6,6 +6,7 @@ import { Check, Copy, Download, Instagram, Pause, Play, X } from 'lucide-react';
 import type { CatalogTrack } from '@/lib/data/queries';
 import { isPodcastPlayback } from '@/lib/podcast-playback';
 import { canonicalOddioShareUrl } from '@/lib/share-url';
+import { describeStoryVideo, selectStoryVideoType } from '@/lib/story-video-format';
 import { useLocale } from '@/i18n/use-translator';
 import { usePlayer } from '@/lib/player-store';
 
@@ -238,7 +239,11 @@ export function StoryClipComposer({
   const [clipLength, setClipLength] = useState(15);
   const [working, setWorking] = useState(false);
   const [percent, setPercent] = useState(0);
-  const [file, setFile] = useState<File | null>(null);
+  const [storyVideo, setStoryVideo] = useState<{
+    file: File;
+    compatible: boolean;
+  } | null>(null);
+  const file = storyVideo?.file;
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [previewing, setPreviewing] = useState(false);
@@ -377,7 +382,7 @@ export function StoryClipComposer({
     setError('');
     setWorking(true);
     setPercent(0);
-    setFile(null);
+    setStoryVideo(null);
     stopPreview();
     let audio: HTMLAudioElement | null = null;
     let context: AudioContext | null = null;
@@ -445,13 +450,7 @@ export function StoryClipComposer({
       drawStory(ctx, track, cover, 0, effectiveLength, ar, lyricAt(start));
       stream = canvas.captureStream(24);
       for (const item of destination.stream.getAudioTracks()) stream.addTrack(item);
-      const mime = [
-        'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
-        'video/mp4',
-        'video/webm;codecs=vp9,opus',
-        'video/webm;codecs=vp8,opus',
-        'video/webm',
-      ].find((type) => MediaRecorder.isTypeSupported(type));
+      const mime = selectStoryVideoType((type) => MediaRecorder.isTypeSupported(type));
       if (!mime) throw new Error('No compatible video encoder in this browser');
       recorder = new MediaRecorder(stream, {
         mimeType: mime,
@@ -459,88 +458,106 @@ export function StoryClipComposer({
       });
       const chunks: Blob[] = [];
       const videoRecorder = recorder;
-      const generated = await new Promise<File>((resolve, reject) => {
-        let finished = false;
-        const stop = (failure?: Error) => {
-          if (finished) return;
-          finished = true;
-          if (raf) cancelAnimationFrame(raf);
-          recordingAudio.onplaying = null;
-          recordingAudio.onwaiting = null;
-          recordingAudio.onended = null;
-          recordingAudio.onerror = null;
-          if (failure) reject(failure);
-          if (videoRecorder.state !== 'inactive') videoRecorder.stop();
-          recordingAudio.pause();
-        };
-        const failed = () =>
-          new Error(
-            ar
-              ? 'تعذر تسجيل المقطع كاملًا. جرّب تاني.'
-              : 'Could not record the full excerpt. Try again.',
-          );
-        cancelRef.current = () => stop(failed());
-        const target = Math.min(start + effectiveLength, recordingAudio.duration);
-        const length = target - start;
-        if (!(length > 0)) {
-          stop(failed());
-          return;
-        }
-        const draw = () => {
-          if (finished) return;
-          const position = Math.min(target, recordingAudio.currentTime);
-          const seconds = Math.max(0, position - start);
-          drawStory(ctx, track, cover, seconds, length, ar, lyricAt(position));
-          setPercent(Math.round((100 * seconds) / length));
-          if (position >= target) stop();
-          else raf = requestAnimationFrame(draw);
-        };
-        videoRecorder.ondataavailable = (event) => {
-          if (event.data.size) chunks.push(event.data);
-        };
-        videoRecorder.onerror = () => stop(new Error('Video encoding failed'));
-        videoRecorder.onstop = () => {
-          if (!chunks.length) return reject(new Error('The video could not be recorded'));
-          const type = (chunks[0]?.type || videoRecorder.mimeType || mime).split(';')[0];
-          resolve(
-            new File(
-              chunks,
-              `oddio-story-${track.id.slice(0, 8)}.${type === 'video/mp4' ? 'mp4' : 'webm'}`,
-              { type },
-            ),
-          );
-        };
-        recordingAudio.onplaying = () => {
-          try {
-            if (videoRecorder.state === 'inactive') {
-              videoRecorder.start(500);
-              draw();
-            } else if (videoRecorder.state === 'paused') {
-              videoRecorder.resume();
-            }
-          } catch {
-            stop(new Error('Video encoding failed'));
-          }
-        };
-        recordingAudio.onwaiting = () => {
-          if (videoRecorder.state === 'recording') videoRecorder.pause();
-        };
-        recordingAudio.onended = () =>
-          stop(recordingAudio.currentTime >= target - 0.05 ? undefined : failed());
-        recordingAudio.onerror = () => stop(failed());
-        timeout = window.setTimeout(() => stop(failed()), (length + 18) * 1000);
-        void recordingAudio.play().catch(() => {
-          stop(
+      let reportedMime = '';
+      const generated = await new Promise<{ file: File; compatible: boolean }>(
+        (resolve, reject) => {
+          let finished = false;
+          const stop = (failure?: Error) => {
+            if (finished) return;
+            finished = true;
+            if (raf) cancelAnimationFrame(raf);
+            recordingAudio.onplaying = null;
+            recordingAudio.onwaiting = null;
+            recordingAudio.onended = null;
+            recordingAudio.onerror = null;
+            if (failure) reject(failure);
+            if (videoRecorder.state !== 'inactive') videoRecorder.stop();
+            recordingAudio.pause();
+          };
+          const failed = () =>
             new Error(
               ar
-                ? 'المتصفح منع تشغيل الصوت أثناء التسجيل'
-                : 'Browser blocked audio playback while recording.',
-            ),
-          );
-        });
-      });
-      if (generated.size < 1000) throw new Error('The recorded file is empty');
-      setFile(generated);
+                ? 'تعذر تسجيل المقطع كاملًا. جرّب تاني.'
+                : 'Could not record the full excerpt. Try again.',
+            );
+          cancelRef.current = () => stop(failed());
+          const target = Math.min(start + effectiveLength, recordingAudio.duration);
+          const length = target - start;
+          if (!(length > 0)) {
+            stop(failed());
+            return;
+          }
+          const draw = () => {
+            if (finished) return;
+            const position = Math.min(target, recordingAudio.currentTime);
+            const seconds = Math.max(0, position - start);
+            drawStory(ctx, track, cover, seconds, length, ar, lyricAt(position));
+            setPercent(Math.round((100 * seconds) / length));
+            if (position >= target) stop();
+            else raf = requestAnimationFrame(draw);
+          };
+          videoRecorder.ondataavailable = (event) => {
+            if (event.data.size) {
+              if (chunks.length === 0)
+                reportedMime = videoRecorder.mimeType || reportedMime;
+              chunks.push(event.data);
+            }
+          };
+          videoRecorder.onerror = () => stop(new Error('Video encoding failed'));
+          videoRecorder.onstop = () => {
+            if (!chunks.length)
+              return reject(new Error('The video could not be recorded'));
+            try {
+              const { type, extension, compatible } = describeStoryVideo(
+                chunks[0]?.type || '',
+                reportedMime,
+                mime,
+              );
+              resolve({
+                file: new File(
+                  chunks,
+                  `oddio-story-${track.id.slice(0, 8)}.${extension}`,
+                  { type },
+                ),
+                compatible,
+              });
+            } catch (cause) {
+              reject(cause);
+            }
+          };
+          recordingAudio.onplaying = () => {
+            try {
+              if (videoRecorder.state === 'inactive') {
+                videoRecorder.start(500);
+                reportedMime = videoRecorder.mimeType;
+                draw();
+              } else if (videoRecorder.state === 'paused') {
+                videoRecorder.resume();
+              }
+            } catch {
+              stop(new Error('Video encoding failed'));
+            }
+          };
+          recordingAudio.onwaiting = () => {
+            if (videoRecorder.state === 'recording') videoRecorder.pause();
+          };
+          recordingAudio.onended = () =>
+            stop(recordingAudio.currentTime >= target - 0.05 ? undefined : failed());
+          recordingAudio.onerror = () => stop(failed());
+          timeout = window.setTimeout(() => stop(failed()), (length + 18) * 1000);
+          void recordingAudio.play().catch(() => {
+            stop(
+              new Error(
+                ar
+                  ? 'المتصفح منع تشغيل الصوت أثناء التسجيل'
+                  : 'Browser blocked audio playback while recording.',
+              ),
+            );
+          });
+        },
+      );
+      if (generated.file.size < 1000) throw new Error('The recorded file is empty');
+      setStoryVideo(generated);
       setPercent(100);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not create a Story clip.');
@@ -668,7 +685,7 @@ export function StoryClipComposer({
                 onChange={(event) => {
                   stopPreview();
                   setStart(Number(event.target.value));
-                  setFile(null);
+                  setStoryVideo(null);
                 }}
                 className="w-full cursor-pointer accent-[#c16af1]"
               />
@@ -688,7 +705,7 @@ export function StoryClipComposer({
                 onChange={(event) => {
                   stopPreview();
                   setClipLength(Number(event.target.value));
-                  setFile(null);
+                  setStoryVideo(null);
                 }}
                 className="rounded-xl border border-white/20 bg-[#30263d] px-3 py-2 text-sm text-white"
               >
@@ -735,13 +752,13 @@ export function StoryClipComposer({
             {file ? (
               <div className="space-y-2">
                 <p className="text-xs text-[#ddbaff]">
-                  {file.type === 'video/mp4'
+                  {storyVideo?.compatible
                     ? ar
-                      ? 'فيديو MP4 جاهز للمشاركة.'
-                      : 'MP4 video is ready to share.'
+                      ? 'الفيديو MP4 بترميز H.264 وAAC، وتقدر تشاركه.'
+                      : 'MP4 with H.264 video and AAC audio, ready to share.'
                     : ar
-                      ? 'الفيديو بصيغة WebM. بعض نسخ Instagram تحتاج تحويله لـ MP4 قبل الرفع.'
-                      : 'Video is WebM; Instagram may require converting it to MP4 before upload.'}
+                      ? 'تقدر تنزّل الفيديو، بس إنستجرام ممكن ما يقبلش الترميز ده. لو رفضه، حوّله لـ MP4 بترميز H.264 وAAC.'
+                      : 'You can download this video, but Instagram may not accept its encoding. If it does not, convert it to MP4 with H.264 and AAC.'}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <button

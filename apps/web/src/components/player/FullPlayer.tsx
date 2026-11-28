@@ -186,9 +186,13 @@ export function FullPlayer() {
   const track = usePlayer((state) => state.track);
   const podcast = isPodcastPlayback(track);
   const trackId = track?.id;
+  const lastPanelTrack = useRef(trackId);
   useEffect(() => {
-    if (track?.id) setSideTab('similar');
-  }, [track?.id]);
+    // Opening from the mini player's Queue button selects Queue on mount.
+    // Reset the panel only on a real track change, not on that first render.
+    if (lastPanelTrack.current !== trackId && trackId) setSideTab('similar');
+    lastPanelTrack.current = trackId;
+  }, [trackId]);
   const hasTrack = Boolean(track);
   const queue = usePlayer((state) => state.queue);
   const canUndoQueue = usePlayer((state) => state.queueUndo !== null);

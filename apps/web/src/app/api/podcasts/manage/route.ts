@@ -6,6 +6,7 @@ import { serviceClient } from '@/lib/data/supabase-store';
 import { demoMode } from '@/lib/env';
 import { isPodcastId } from '@/lib/podcasts/catalog';
 import { presignR2Get, presignR2StreamingPut } from '@/lib/storage/r2-presign';
+import { isPodcastWriteOriginAllowed } from '@/lib/podcasts/request-origin';
 
 export const runtime = 'nodejs';
 const slug = z
@@ -62,8 +63,7 @@ export async function POST(request: Request) {
   if (demoMode)
     return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
   // This endpoint only accepts first-party, same-origin administrative actions.
-  const origin = request.headers.get('origin');
-  if (origin && new URL(origin).origin !== new URL(request.url).origin) {
+  if (!isPodcastWriteOriginAllowed(request)) {
     return NextResponse.json(
       { error: 'Cross-origin publishing is forbidden' },
       { status: 403 },
@@ -136,10 +136,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ show });
     }
     if (data.action === 'episode') {
-      // Check the storage connection before leaving an orphan draft.
-      const episodeId = randomUUID(),
-        key = `podcasts/${episodeId}.mp3`;
-      const uploadUrl = presignR2StreamingPut(key);
       const { data: show } = await db
         .from('podcast_shows')
         .select('id,owner_id,artist_id')
@@ -158,20 +154,67 @@ export async function POST(request: Request) {
           { status: 403 },
         );
       }
-      if (data.episodeNumber) {
-        const { data: duplicate } = await db
-          .from('podcast_episodes')
-          .select('id')
-          .eq('show_id', data.showId)
-          .eq('season_number', data.seasonNumber)
-          .eq('episode_number', data.episodeNumber)
-          .limit(1);
-        if (duplicate?.length)
-          return NextResponse.json(
-            { error: 'This episode number is already used in the selected season.' },
-            { status: 409 },
-          );
+      // The browser can lose the first signed PUT before any audio reaches R2.
+      // Only reissue for an identical request to the same authorized draft.
+      // The UI generates a fresh slug on each attempt; use episode numbering
+      // (or the exact unnumbered draft metadata), not the new slug, to find it.
+      const bySeries = db
+        .from('podcast_episodes')
+        .select(
+          'id,status,title,description,duration_seconds,audio_bytes,audio_object_key,season_number,episode_number',
+        )
+        .eq('show_id', data.showId)
+        .eq('season_number', data.seasonNumber);
+      const candidates = data.episodeNumber
+        ? bySeries.eq('episode_number', data.episodeNumber)
+        : bySeries
+            .is('episode_number', null)
+            .eq('status', 'draft')
+            .eq('title', data.title)
+            .eq('duration_seconds', data.durationSeconds)
+            .eq('audio_bytes', data.fileBytes);
+      const { data: matches, error: lookupError } = await candidates
+        .order('created_at', { ascending: false })
+        .limit(data.episodeNumber ? 1 : 20);
+      const existing = data.episodeNumber
+        ? matches?.[0]
+        : matches?.find((episode) => (episode.description ?? '') === data.description);
+      if (lookupError)
+        return NextResponse.json(
+          { error: 'Could not check existing episodes' },
+          { status: 503 },
+        );
+      if (existing) {
+        const key = `podcasts/${existing.id}.mp3`;
+        if (
+          existing.status === 'draft' &&
+          existing.audio_object_key === key &&
+          existing.title === data.title &&
+          (existing.description ?? '') === data.description &&
+          Number(existing.duration_seconds) === data.durationSeconds &&
+          Number(existing.audio_bytes) === data.fileBytes &&
+          existing.season_number === data.seasonNumber &&
+          existing.episode_number === (data.episodeNumber ?? null)
+        ) {
+          return NextResponse.json({
+            episodeId: existing.id,
+            uploadUrl: presignR2StreamingPut(key),
+            key,
+          });
+        }
+        return NextResponse.json(
+          {
+            error: data.episodeNumber
+              ? 'This episode number is already used in the selected season. For an incomplete upload, retry with the original details and MP3.'
+              : 'This episode already exists. For an incomplete upload, retry with the original details and MP3.',
+          },
+          { status: 409 },
+        );
       }
+      // Check the storage configuration before leaving an orphan draft.
+      const episodeId = randomUUID();
+      const key = `podcasts/${episodeId}.mp3`;
+      const uploadUrl = presignR2StreamingPut(key);
       const { error } = await db.from('podcast_episodes').insert({
         id: episodeId,
         show_id: data.showId,

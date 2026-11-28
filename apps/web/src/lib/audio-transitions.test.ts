@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { crossfadeGains, canPrepareNextTrack } from './audio-transitions';
+import {
+  crossfadeGains,
+  canPrepareNextTrack,
+  isActiveAudioTransition,
+} from './audio-transitions';
 
 describe('audio transition safety', () => {
   it('uses equal power with correct start and end amplitudes', () => {
@@ -53,5 +57,39 @@ describe('audio transition safety', () => {
         queued: true,
       }),
     ).toBe(false);
+  });
+});
+
+describe('stale async playback transitions', () => {
+  const candidate = {
+    sourceTrackId: 'song-a',
+    nextTrackId: 'song-b',
+    activeTrackId: 'song-a',
+    activeNextTrackId: 'song-b',
+    playing: true,
+  };
+
+  it('accepts a prefetched transition only for its unchanged song pair', () => {
+    expect(isActiveAudioTransition(candidate)).toBe(true);
+  });
+
+  it('rejects a warmup response after the listener changes the current song', () => {
+    expect(isActiveAudioTransition({ ...candidate, activeTrackId: 'song-c' })).toBe(
+      false,
+    );
+  });
+
+  it('rejects a crossfade play promise after pause or queue replacement', () => {
+    expect(isActiveAudioTransition({ ...candidate, playing: false })).toBe(false);
+    expect(isActiveAudioTransition({ ...candidate, activeNextTrackId: 'song-d' })).toBe(
+      false,
+    );
+  });
+
+  it('rejects a transition that no longer has an active source or target', () => {
+    expect(isActiveAudioTransition({ ...candidate, sourceTrackId: null })).toBe(false);
+    expect(isActiveAudioTransition({ ...candidate, activeNextTrackId: null })).toBe(
+      false,
+    );
   });
 });

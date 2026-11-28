@@ -1,10 +1,12 @@
+'use client';
+
 import Image from 'next/image';
+import { useCallback, useState } from 'react';
 import { cn, initials } from '@/lib/utils';
 
 export function Artwork({
   title,
   url,
-  accent = '#9D5CFF',
   className,
   rounded = 'rounded-xl',
   animated = false,
@@ -20,6 +22,18 @@ export function Artwork({
   priority?: boolean;
   sizes?: string;
 }) {
+  const [failedUrl, setFailedUrl] = useState<string>();
+  const showCover = Boolean(url && failedUrl !== url);
+  const markFailed = useCallback(() => {
+    if (url) setFailedUrl(url);
+  }, [url]);
+  const checkCachedCover = useCallback(
+    (image: HTMLImageElement | null) => {
+      // A failed image can finish before this client component hydrates.
+      if (image?.complete && image.currentSrc && image.naturalWidth === 0) markFailed();
+    },
+    [markFailed],
+  );
   const localSource = Boolean(url && url.startsWith('/') && !url.startsWith('//'));
   const cloudinarySource = Boolean(url && /^https:\/\/res\.cloudinary\.com\//i.test(url));
   const optimizedCloudinary =
@@ -45,15 +59,18 @@ export function Artwork({
         className,
       )}
       style={{
-        backgroundImage: url
+        backgroundImage: showCover
           ? 'linear-gradient(135deg, #17112e, #090912)'
-          : `linear-gradient(135deg, ${accent} 0%, #2a1a4d 55%, #090912 100%)`,
+          : 'linear-gradient(150deg, #202b2e, #131617 72%)',
       }}
     >
-      {url ? (
+      {showCover ? (
         <>
           {localSource ? (
             <Image
+              key={url}
+              ref={checkCachedCover}
+              onError={markFailed}
               src={url!}
               alt=""
               fill
@@ -68,6 +85,9 @@ export function Artwork({
             // private hosts through the public Next.js image proxy.
             // eslint-disable-next-line @next/next/no-img-element
             <img
+              key={url}
+              ref={checkCachedCover}
+              onError={markFailed}
               src={optimizedCloudinary}
               srcSet={cloudinarySet}
               sizes={cloudinarySet ? sizes : undefined}
@@ -85,79 +105,35 @@ export function Artwork({
           />
         </>
       ) : null}
-      {!url ? (
+      {!showCover ? (
         <div
           aria-hidden="true"
-          className="absolute inset-0 flex items-center justify-center overflow-hidden"
+          data-oddio-artwork-fallback
+          className="pointer-events-none absolute inset-x-[14%] inset-y-[24%]"
         >
-          <div
-            className="absolute inset-[-35%] opacity-60"
-            style={{
-              background:
-                'conic-gradient(from 20deg, transparent, rgba(255,255,255,.13), transparent 30%, rgba(65,217,255,.35), transparent 60%, rgba(207,90,255,.4), transparent)',
-            }}
-          />
-          <div
+          <Image
+            src="/oddio-gradient-play-logo.png"
+            alt=""
+            fill
+            sizes={sizes}
+            quality={75}
+            priority={priority}
+            draggable={false}
             className={cn(
-              'absolute h-[85%] w-[85%] rounded-full border border-white/20 shadow-[0_0_50px_rgba(127,69,255,.35)]',
-              animated && 'motion-safe:animate-[spin_24s_linear_infinite]',
+              'object-contain',
+              animated && 'motion-safe:animate-[pulse_5s_ease-in-out_infinite]',
             )}
-            style={{
-              background:
-                'repeating-radial-gradient(circle, transparent 0 9%, rgba(255,255,255,.12) 9.3% 9.7%, transparent 10% 16%), conic-gradient(from 45deg, #100c27, #5730a6, #1ac8e5, #bc50ef, #100c27)',
-            }}
           />
-          <div
-            className={cn(
-              'absolute h-[61%] w-[61%] rounded-full border border-white/25 opacity-80',
-              animated && 'motion-safe:animate-[spin_14s_linear_infinite_reverse]',
-            )}
-            style={{
-              background:
-                'conic-gradient(from 100deg, transparent 0 30%, rgba(255,255,255,.38) 37%, transparent 45% 70%, rgba(45,224,255,.45) 85%, transparent)',
-            }}
-          />
-          <svg
-            viewBox="0 0 200 200"
-            className={cn(
-              'relative z-10 h-[68%] w-[68%] drop-shadow-[0_0_18px_rgba(120,210,255,.7)]',
-              animated && 'motion-safe:animate-[pulse_3s_ease-in-out_infinite]',
-            )}
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle
-              cx="100"
-              cy="100"
-              r="76"
-              stroke="white"
-              strokeOpacity=".35"
-              strokeWidth="1.5"
-              strokeDasharray="2 8"
-            />
-            <path
-              d="M20 106 C40 106 40 64 60 64 S80 138 100 138 S120 76 140 76 S160 108 180 108"
-              stroke="#fff"
-              strokeWidth="8"
-              strokeLinecap="round"
-            />
-            <path
-              d="M20 106 C40 106 40 64 60 64 S80 138 100 138 S120 76 140 76 S160 108 180 108"
-              stroke="#55e6ff"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent" />
         </div>
-      ) : null}
-      <span
-        className="pointer-events-none absolute inset-0 opacity-60 mix-blend-overlay"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 45%), radial-gradient(circle at 80% 80%, rgba(0,0,0,0.5), transparent 50%)',
-        }}
-      />
+      ) : (
+        <span
+          className="pointer-events-none absolute inset-0 opacity-60 mix-blend-overlay"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 45%), radial-gradient(circle at 80% 80%, rgba(0,0,0,0.5), transparent 50%)',
+          }}
+        />
+      )}
     </div>
   );
 }

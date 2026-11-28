@@ -55,40 +55,28 @@ try {
         assert.equal(response?.status(), 200);
         await page.locator('.oddio-home-feature-grid').waitFor();
         assert.equal(await page.locator('.oddio-featured-stage').count(), 1);
-        assert.equal(await page.locator('.oddio-topbar-search').count(), 1);
-        // Desktop-only rail is a deferred chunk. Wait for the settled
-        // breakpoint state instead of sampling while WebKit is hydrating.
-        await page.waitForFunction(
-          (expectedVisible) => {
-            const rail = document.querySelector('.oddio-listening-rail');
-            if (!rail) return false;
-            const style = getComputedStyle(rail);
-            const rect = rail.getBoundingClientRect();
-            const visible =
-              style.display !== 'none' &&
-              style.visibility !== 'hidden' &&
-              rect.width > 0 &&
-              rect.height > 0;
-            return visible === expectedVisible;
-          },
-          viewport.width >= 1320,
-          { timeout: 15000 },
+        // MagicPath home has genuinely new shell geometry (not just CSS skin).
+        await page.locator('.mp2-header .mp2-search').waitFor({ state: 'visible' });
+        await page.waitForFunction((expectRail) => {
+          const rail = document.querySelector('.mp2-listening');
+          if (!rail) return false;
+          const bounds = rail.getBoundingClientRect();
+          const visible = getComputedStyle(rail).display !== 'none' && bounds.width > 0;
+          return visible === expectRail;
+        }, viewport.width > 1120);
+        await page.locator('.mp2-player:visible').waitFor();
+        const playerGeometry = await page.locator('.mp2-player').evaluate((node) => {
+          const rect = node.getBoundingClientRect();
+          return {
+            bottom: window.innerHeight - rect.bottom,
+            position: getComputedStyle(node).position,
+          };
+        });
+        assert.equal(playerGeometry.position, 'fixed');
+        assert.ok(
+          Math.abs(playerGeometry.bottom) <= 2,
+          'player must stay on viewport bottom',
         );
-        // A visibility assertion is resilient to client hydration replacing the
-        // initially hidden rail placeholder with its desktop component.
-        if (viewport.width >= 1320) {
-          await page.locator('.oddio-listening-rail:visible').waitFor();
-        } else {
-          await page.locator('.oddio-listening-rail:visible').waitFor({
-            state: 'hidden',
-          });
-        }
-        assert.equal(
-          await page.locator('.oddio-topbar-search').isVisible(),
-          viewport.width >= 1024,
-          'Persistent search should appear on desktop, not inside mobile chrome',
-        );
-        await page.locator('.oddio-idle-player').waitFor({ state: 'visible' });
         assert.equal(await page.locator('.oddio-home-intro h1').count(), 1);
         assert.equal(await page.locator('.oddio-home-dashboard').count(), 1);
         const overflow = await page.evaluate(
@@ -124,6 +112,81 @@ try {
         );
         assert.ok(overflow <= 2, `horizontal overflow: ${overflow}px`);
       });
+
+      if (viewport.width === 390) {
+        await test(
+          label + ' branded artwork and mobile header keep the right proportions',
+          async () => {
+            await page.goto(base + '/' + locale + '/discover', {
+              waitUntil: 'domcontentloaded',
+            });
+            try {
+              for (const width of [320, 390, 430]) {
+                await page.setViewportSize({ width, height: 844 });
+                const header = await page.locator('.mp2-header').boundingBox();
+                const menu = await page.locator('.mp2-mobile-menu-trigger').boundingBox();
+                const search = await page.locator('.mp2-search').boundingBox();
+                const account = await page.locator('.mp2-header-account').boundingBox();
+                assert.ok(
+                  header && menu && search && account,
+                  'mobile header controls must be visible',
+                );
+                assert.ok(
+                  menu.x >= 10 &&
+                    menu.x + menu.width + 8 <= Math.min(search.x, account.x),
+                  'menu must have its own space',
+                );
+                assert.ok(
+                  search.width >= 130 &&
+                    Math.max(search.x + search.width, account.x + account.width) <= width,
+                  'search must fit inside the viewport',
+                );
+                assert.ok(
+                  await page.evaluate(
+                    () => document.documentElement.scrollWidth - innerWidth <= 2,
+                  ),
+                );
+              }
+              const fallback = page
+                .locator('.art-frame [data-oddio-artwork-fallback] img')
+                .first();
+              await fallback.scrollIntoViewIfNeeded();
+              await page.waitForFunction(() =>
+                Array.from(
+                  document.querySelectorAll(
+                    '.art-frame [data-oddio-artwork-fallback] img',
+                  ),
+                ).some((image) => image.complete && image.naturalWidth > 0),
+              );
+              assert.ok(
+                (await fallback.getAttribute('src'))?.includes(
+                  'oddio-gradient-play-logo.png',
+                ),
+              );
+              await page.mouse.move(0, 0);
+              const cardPlay = page.locator('.art-frame .oddio-card-play').first();
+              const style = await cardPlay.evaluate((element) => {
+                const rect = element.getBoundingClientRect();
+                const style = getComputedStyle(element);
+                return {
+                  width: rect.width,
+                  height: rect.height,
+                  background: style.backgroundColor,
+                  color: style.color,
+                };
+              });
+              assert.deepEqual(style, {
+                width: 44,
+                height: 44,
+                background: 'rgb(239, 246, 245)',
+                color: 'rgb(23, 63, 70)',
+              });
+            } finally {
+              await page.setViewportSize(viewport);
+            }
+          },
+        );
+      }
 
       if (viewport.width === 390) {
         await test(`${label} mobile drawer stays left and closes on Escape`, async () => {
@@ -171,16 +234,14 @@ try {
         const play = page.locator('.oddio-stage-play');
         await play.waitFor({ state: 'visible' });
         await play.click();
-        const mini = page.getByRole('region', {
-          name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
-        });
+        const mini = page.locator('.mp2-player[role="region"]');
         await mini.waitFor({ state: 'visible' });
         // The mobile mini-player includes a full-size background hotspot
         // under the title and controls; click its actual visible expand
         // control, rather than the covered background hotspot.
         await mini
           .getByRole('button', { name: /expand|كبّر|توسيع|تكبير|فتح/i })
-          .last()
+          .first()
           .click();
         const dialog = page.getByRole('dialog', { name: /player|مشغل/i });
         await dialog.waitFor({ state: 'visible' });
@@ -240,7 +301,7 @@ try {
         );
         const playerOverlapsFooter = await page.evaluate(() => {
           const footerContent = document.querySelector('footer > div:last-child');
-          const miniPlayer = document.querySelector('.oddio-player-bar[role="region"]');
+          const miniPlayer = document.querySelector('.mp2-player[role="region"]');
           if (!footerContent || !miniPlayer) return null;
           const footer = footerContent.getBoundingClientRect();
           const player = miniPlayer.getBoundingClientRect();
@@ -254,13 +315,119 @@ try {
             player.right > footer.left
           );
         });
-        assert.equal(playerOverlapsFooter, false, 'mini player visually overlaps footer');
+        assert.equal(
+          playerOverlapsFooter,
+          false,
+          'fixed bottom player must not cover footer content',
+        );
         const documentOverflow = await page.evaluate(
           () => document.documentElement.scrollWidth - window.innerWidth,
         );
         assert.ok(
           documentOverflow <= 2,
           `page horizontal overflow: ${documentOverflow}px`,
+        );
+      });
+
+      if (viewport.width === 390) {
+        await test(label + ' compact volume and direct queue on 320px', async () => {
+          await page.setViewportSize({ width: 320, height: 760 });
+          try {
+            await page.goto(base + '/' + locale, { waitUntil: 'load' });
+            const play = page.locator('.oddio-stage-play');
+            const mini = page.locator('.mp2-player[role="region"]');
+            const title = mini.locator('.mp2-player-track-name strong');
+            // Hydration can race the very first fixture click on slow WebKit.
+            // Once selected, do not click again (which would toggle playback).
+            await play.click();
+            if (!(await title.isVisible())) {
+              try {
+                await title.waitFor({ state: 'visible', timeout: 1500 });
+              } catch {
+                if (!(await title.isVisible())) await play.click();
+              }
+            }
+            await title.waitFor({ state: 'visible' });
+            const volume = mini.getByRole('button', {
+              name: locale === 'ar' ? 'مستوى الصوت' : 'Volume',
+              exact: true,
+            });
+            await volume.click();
+            await waitForAttribute(volume, 'aria-expanded', 'true');
+            const group = mini.getByRole('group', {
+              name: locale === 'ar' ? 'مستوى الصوت' : 'Volume',
+              exact: true,
+            });
+            const slider = group.getByRole('slider');
+            await slider.fill('37');
+            assert.equal(await slider.inputValue(), '37');
+            const mute = group.getByRole('button', {
+              name: locale === 'ar' ? 'كتم الصوت' : 'Mute',
+              exact: true,
+            });
+            await mute.click();
+            assert.equal(await slider.inputValue(), '0');
+            await group
+              .getByRole('button', {
+                name: locale === 'ar' ? 'تشغيل الصوت' : 'Unmute',
+                exact: true,
+              })
+              .click();
+            assert.equal(await slider.inputValue(), '37');
+            const box = await group.boundingBox();
+            assert.ok(
+              box && box.x >= 0 && box.x + box.width <= 322,
+              'compact volume must fit a 320px viewport',
+            );
+            await page.keyboard.press('Escape');
+            await waitForAttribute(volume, 'aria-expanded', 'false');
+            const queue = mini.getByRole('button', {
+              name: locale === 'ar' ? 'قائمة التشغيل' : 'Queue',
+              exact: true,
+            });
+            const touchTarget = await queue.boundingBox();
+            assert.ok(touchTarget && touchTarget.height >= 44 && touchTarget.width >= 44);
+            await queue.click();
+            const activeQueue = page
+              .getByRole('dialog', { name: /player|مشغل/i })
+              .locator('#oddio-tab-queue');
+            await waitForAttribute(activeQueue, 'aria-selected', 'true');
+            await page.keyboard.press('Escape');
+          } finally {
+            await page.setViewportSize(viewport);
+          }
+        });
+      }
+
+      await test(`${label} player keeps selected track across client-side navigation`, async () => {
+        await page.goto(`${base}/${locale}`, { waitUntil: 'domcontentloaded' });
+        await page.locator('.oddio-stage-play').click();
+        const selected = await page
+          .locator('.mp2-player-track-name strong')
+          .textContent();
+        assert.ok(selected?.trim(), 'track should be selected before navigating');
+        if (viewport.width === 390) {
+          await page.locator('#oddio-mobile-menu-trigger').click();
+        }
+        await page.locator(`.mp2-sidebar a[href="/${locale}/discover"]`).click();
+        await page.waitForURL(`${base}/${locale}/discover`);
+        await page.waitForFunction(
+          (title) => document.body.textContent?.includes(title),
+          selected.trim(),
+        );
+        // Browse routes share the new shell, so transport controls should
+        // remain mounted while preserving the selected track.
+        await page.locator('.mp2-player').waitFor({ state: 'visible' });
+        assert.ok(
+          await page.locator('.mp2-player-track-name').getByText(selected.trim()).count(),
+          'selected song must remain in the bottom player across navigation',
+        );
+        assert.equal(
+          await page
+            .locator('.mp2-sidebar a[aria-current="page"][href$="/discover"]')
+            .count(),
+          1,
+          'current navigation item should follow the client route',
         );
       });
 
@@ -272,11 +439,46 @@ try {
       page = await context.newPage();
       page.on('pageerror', (error) => pageErrors.push(error.message));
 
+      if (locale === 'en' && viewport.width === 1366) {
+        await test('music track detail shares the persistent bottom player', async () => {
+          await page.goto(`${base}/en`, { waitUntil: 'domcontentloaded' });
+          const trackLink = page.locator('a[href^="/en/tracks/"]').first();
+          if (!(await trackLink.count())) {
+            process.stdout.write(
+              'No public music track link in homepage fixture; skipping detail layout check.\\n',
+            );
+            return;
+          }
+          const href = await trackLink.getAttribute('href');
+          assert.ok(href, 'missing track href');
+          const response = await page.goto(`${base}${href}`, {
+            waitUntil: 'domcontentloaded',
+          });
+          assert.equal(response?.status(), 200);
+          await page.locator('.mp2-player').waitFor({ state: 'visible' });
+          await page.locator('.mp2-header').waitFor({ state: 'visible' });
+          assert.equal(
+            await page.locator('.oddio-top-mini-player').count(),
+            0,
+            'track detail must not revert to legacy top mini player',
+          );
+          if (engine === 'chromium') {
+            await page.screenshot({
+              path: 'artifacts/oddio-magicpath/en-track-detail-desktop.png',
+              fullPage: true,
+              animations: 'disabled',
+            });
+          }
+        });
+      }
+
       await test(`${label} discover and search without crashes`, async () => {
         const discover = await page.goto(`${base}/${locale}/discover`, {
           waitUntil: 'domcontentloaded',
         });
         assert.equal(discover?.status(), 200);
+        await page.locator('.mp2-header').waitFor({ state: 'visible' });
+        await page.locator('.mp2-player').waitFor({ state: 'visible' });
         const search = await page.goto(`${base}/${locale}/search`, {
           waitUntil: 'domcontentloaded',
         });
@@ -338,9 +540,7 @@ try {
         // and does NOT make a personalized discovery API request.
         await start.click();
         await page
-          .getByRole('region', {
-            name: locale === 'ar' ? /مصغر|صغير|مشغل/ : /mini player/i,
-          })
+          .locator('.mp2-player[role="region"]')
           .waitFor({ state: 'visible', timeout: 15_000 });
         const weeklyTitle =
           locale === 'ar' ? 'شغّل Discover Weekly' : 'Play Discover Weekly';
@@ -353,7 +553,15 @@ try {
         const hidden = page.getByRole('button', {
           name: locale === 'ar' ? 'مش مهتم' : 'Not interested',
         });
-        await hidden.first().click();
+        assert.equal(await hidden.count(), 0, 'feedback starts collapsed');
+        const options = page.locator('[data-discovery-options]').first();
+        await options.click();
+        await waitForAttribute(options, 'aria-expanded', 'true');
+        await hidden.waitFor({ state: 'visible' });
+        await page.keyboard.press('Escape');
+        await waitForAttribute(options, 'aria-expanded', 'false');
+        await options.click();
+        await hidden.click();
         const clear = page.getByRole('button', {
           name: locale === 'ar' ? 'مسح الاستبعادات' : 'Clear hidden music',
         });
@@ -479,6 +687,45 @@ try {
         );
         assert.ok(overflow <= 2, `discovery page horizontal overflow: ${overflow}px`);
       });
+
+      await test(
+        label + ' Podcast categories keep the 2.0 shell and podcast navigation',
+        async () => {
+          const response = await page.goto(base + '/' + locale + '/podcasts/categories', {
+            waitUntil: 'domcontentloaded',
+          });
+          assert.equal(response?.status(), 200);
+          await page.locator('.mp2-player').waitFor({ state: 'visible' });
+          assert.equal(
+            await page
+              .locator('.oddio-top-mini-player:visible, .oddio-idle-player:visible')
+              .count(),
+            0,
+          );
+          if (viewport.width === 390)
+            await page.locator('#oddio-mobile-menu-trigger').click();
+          const navigation = page.getByRole('navigation', {
+            name: locale === 'ar' ? 'تصفّح البودكاست' : 'Explore podcasts',
+          });
+          await navigation
+            .locator('a[href$="/podcasts/categories"]')
+            .waitFor({ state: 'visible' });
+          // Use the accessible link without waiting on unrelated media or
+          // background requests on the destination route.
+          const historyLink = navigation.locator('a[href$="/podcasts/history"]');
+          await historyLink.press('Enter');
+          await page.waitForURL((url) => url.pathname.endsWith('/podcasts/history'), {
+            waitUntil: 'domcontentloaded',
+          });
+          await page.getByRole('heading', { level: 1 }).waitFor({ state: 'visible' });
+          await page.locator('.mp2-player').waitFor({ state: 'visible' });
+          assert.ok(
+            await page.evaluate(
+              () => document.documentElement.scrollWidth - innerWidth <= 2,
+            ),
+          );
+        },
+      );
 
       await test(`${label} podcast notifications page and guest API privacy`, async () => {
         const response = await page.goto(`${base}/${locale}/podcasts/notifications`, {
@@ -657,29 +904,57 @@ try {
             );
           }
           await page.getByRole('heading', { level: 1 }).waitFor();
+          await page.locator('.mp2-player').waitFor({ state: 'visible' });
+          await page.locator('.mp2-header').waitFor({ state: 'visible' });
+          assert.equal(
+            await page
+              .locator('.mp2-sidebar a[href="/en/library"][aria-current="page"]')
+              .count(),
+            1,
+            'Library must be the active route in the persistent navigation',
+          );
+          if (engine === 'chromium') {
+            await page.screenshot({
+              path: 'artifacts/oddio-magicpath/en-library-signed-in-desktop.png',
+              fullPage: true,
+              animations: 'disabled',
+            });
+          }
           assert.equal(pageErrors.length, 0, pageErrors.join('; '));
         });
       }
 
       if (locale === 'en' && viewport.width === 1366) {
-        // The login test navigates through several protected routes. Firefox
-        // can complete an obsolete speculative chunk request after navigation,
-        // reporting its failure on that older page. Start the Rewind check in
-        // a fresh tab, retaining the validated session cookie in this context.
         await page.close();
         pageErrors.length = 0;
         page = await context.newPage();
         page.on('pageerror', (error) => pageErrors.push(error.message));
         await test('signed-in Rewind shows honest empty state and protects sharing', async () => {
-          // Demo seed intentionally has no qualified playback events.
-          // A history row alone must not be counted as an annual qualified play.
-          const response = await page.goto(`${base}/en/library/rewind?year=2026`, {
-            waitUntil: 'domcontentloaded',
-          });
-          assert.equal(response?.status(), 200);
+          const currentYear = new Date().getUTCFullYear();
+          const previousYear = currentYear - 1;
+          // Keep the two locale documents alive separately. Navigating the
+          // same tab away after SSR paint can abort its still-loading chunks
+          // and attribute the old document's error to the new route.
+          async function openRewind(tab, routeLocale) {
+            const onboarding = tab.waitForResponse(
+              (response) =>
+                new URL(response.url()).pathname === '/api/onboarding/favorite-genres',
+            );
+            const [document, profile] = await Promise.all([
+              tab.goto(`${base}/${routeLocale}/library/rewind?year=${currentYear}`, {
+                waitUntil: 'load',
+              }),
+              onboarding,
+            ]);
+            assert.equal(document?.status(), 200);
+            assert.equal(profile.status(), 200, 'The signed-in shell must hydrate');
+            await tab.locator('.mp2-player').waitFor({ state: 'visible' });
+          }
+          await openRewind(page, 'en');
           await page
-            .getByRole('heading', { level: 1, name: /2026 Music Rewind/ })
+            .getByRole('heading', { level: 1, name: `Your ${currentYear} Music Rewind` })
             .waitFor();
+          // A history row alone must not be counted as a qualified listen.
           assert.ok(
             await page
               .getByText('No recorded qualified listens for this year yet.')
@@ -690,67 +965,64 @@ try {
             await page.getByRole('button', { name: 'Save PNG image' }).count(),
             0,
           );
-          const arabic = await page.goto(`${base}/ar/library/rewind?year=2026`, {
-            waitUntil: 'domcontentloaded',
-          });
-          assert.equal(arabic?.status(), 200);
-          assert.equal(await page.locator('html').getAttribute('dir'), 'rtl');
-          await page.getByRole('heading', { level: 1 }).waitFor();
-          await page.setViewportSize({ width: 390, height: 844 });
-          const layout = await page.evaluate(() => ({
-            overflow: document.documentElement.scrollWidth - window.innerWidth,
-            widths: {
-              viewport: window.innerWidth,
-              html: document.documentElement.clientWidth,
-              body: document.body.getBoundingClientRect().width,
-              workspace: document
-                .querySelector('.oddio-workspace')
-                ?.getBoundingClientRect().width,
-            },
-            offenders: Array.from(document.querySelectorAll('body *'))
-              .filter((element) => {
-                const rect = element.getBoundingClientRect();
-                return (
-                  rect.width > 1 &&
-                  (rect.right > innerWidth + 2 || rect.left < -2) &&
-                  getComputedStyle(element).position !== 'fixed'
-                );
-              })
-              .slice(0, 8)
-              .map((element) => ({
-                tag: element.tagName,
-                className:
-                  typeof element.className === 'string'
-                    ? element.className.slice(0, 100)
-                    : '',
-                width: Math.round(element.getBoundingClientRect().width),
-                left: Math.round(element.getBoundingClientRect().left),
-              })),
-          }));
-          assert.ok(
-            layout.overflow <= 2,
-            `Arabic Rewind overflow: ${layout.overflow}px; widths: ${JSON.stringify(layout.widths)}; offenders: ${JSON.stringify(layout.offenders)}`,
+          await page
+            .getByRole('link', { name: String(previousYear), exact: true })
+            .click();
+          await page.waitForURL(
+            (url) => url.searchParams.get('year') === String(previousYear),
           );
-          await page.setViewportSize({ width: 1366, height: 900 });
-          // WebKit cancels pending player/podcast bootstrap fetches when the
-          // signed-in page navigates to Rewind. The route checks above validate
-          // actual rendering; only these aborted requests are benign.
-          const unexpectedRewindErrors = pageErrors.filter(
-            (message) =>
-              !(
-                engine === 'webkit' &&
-                message.includes('due to access control checks') &&
-                (message.includes('/api/podcasts/progress') ||
-                  message.includes('/api/player/resume') ||
-                  message.includes('/api/library/smart-playlists') ||
-                  message.includes('/api/onboarding/favorite-genres'))
-              ),
-          );
-          assert.equal(
-            unexpectedRewindErrors.length,
-            0,
-            unexpectedRewindErrors.join('; '),
-          );
+          await page
+            .getByRole('heading', { level: 1, name: `Your ${previousYear} Music Rewind` })
+            .waitFor();
+          const mobile = await context.newPage();
+          const mobileErrors = [];
+          mobile.on('pageerror', (error) => mobileErrors.push(error.message));
+          try {
+            await mobile.setViewportSize({ width: 390, height: 844 });
+            await openRewind(mobile, 'ar');
+            assert.equal(await mobile.locator('html').getAttribute('dir'), 'rtl');
+            await mobile
+              .getByRole('heading', { level: 1, name: `حصاد موسيقاك في ${currentYear}` })
+              .waitFor();
+            const layout = await mobile.evaluate(() => ({
+              overflow: document.documentElement.scrollWidth - window.innerWidth,
+              widths: {
+                viewport: window.innerWidth,
+                html: document.documentElement.clientWidth,
+                body: document.body.getBoundingClientRect().width,
+                workspace: document
+                  .querySelector('.oddio-workspace')
+                  ?.getBoundingClientRect().width,
+              },
+              offenders: Array.from(document.querySelectorAll('body *'))
+                .filter((element) => {
+                  const rect = element.getBoundingClientRect();
+                  return (
+                    rect.width > 1 &&
+                    (rect.right > innerWidth + 2 || rect.left < -2) &&
+                    getComputedStyle(element).position !== 'fixed'
+                  );
+                })
+                .slice(0, 8)
+                .map((element) => ({
+                  tag: element.tagName,
+                  className:
+                    typeof element.className === 'string'
+                      ? element.className.slice(0, 100)
+                      : '',
+                  width: Math.round(element.getBoundingClientRect().width),
+                  left: Math.round(element.getBoundingClientRect().left),
+                })),
+            }));
+            assert.ok(
+              layout.overflow <= 2,
+              `Arabic Rewind overflow: ${layout.overflow}px; widths: ${JSON.stringify(layout.widths)}; offenders: ${JSON.stringify(layout.offenders)}`,
+            );
+            assert.deepEqual(mobileErrors, [], 'Arabic Rewind must not throw');
+          } finally {
+            await mobile.close();
+          }
+          assert.deepEqual(pageErrors, [], 'English Rewind must not throw');
         });
       }
 
@@ -959,7 +1231,7 @@ try {
             'signed-in state must use persistent localStorage',
           );
           await page.reload({ waitUntil: 'domcontentloaded' });
-          const mini = page.getByRole('region', { name: /mini player/i });
+          const mini = page.locator('.mp2-player[role="region"]');
           await mini.waitFor({ state: 'visible' });
           assert.ok(
             await mini.getByRole('button', { name: /play|resume/i }).count(),

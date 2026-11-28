@@ -35,14 +35,14 @@ const config: Config = {
         arabic: ['var(--font-cairo)', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        glow: '0 0 40px -12px rgba(157, 92, 255, 0.65)',
-        'glow-lg': '0 0 80px -20px rgba(157, 92, 255, 0.75)',
+        glow: '0 0 40px -12px rgba(90, 92, 96, 0.20)',
+        'glow-lg': '0 0 80px -20px rgba(90, 92, 96, 0.25)',
         card: '0 18px 40px -24px rgba(0, 0, 0, 0.9)',
-        'card-hover': '0 28px 70px -28px rgba(157, 92, 255, 0.55)',
+        'card-hover': '0 28px 70px -28px rgba(90, 92, 96, 0.16)',
       },
       backgroundImage: {
         'brand-gradient':
-          'linear-gradient(135deg, rgba(157,92,255,0.35) 0%, rgba(65,217,255,0.14) 50%, rgba(255,114,94,0.22) 100%)',
+          'linear-gradient(135deg, rgba(78,80,84,0.38) 0%, rgba(35,36,39,0.24) 50%, rgba(18,19,22,0.40) 100%)',
       },
       keyframes: {
         'fade-up': {

@@ -131,7 +131,10 @@ try {
   }
   // Measure a real in-app navigation without counting server-only URL changes.
   // This stays observational until we have repeatable field performance data.
-  const searchLink = page.locator('nav a[href="/en/search"]:visible').first();
+  const menu = page.locator('#oddio-mobile-menu-trigger');
+  await menu.waitFor({ state: 'visible', timeout: 10_000 });
+  await menu.click();
+  const searchLink = page.locator('.mp2-sidebar nav a[href="/en/search"]');
   await searchLink.waitFor({ state: 'visible', timeout: 10_000 });
   const routeStart = Date.now();
   await searchLink.click();

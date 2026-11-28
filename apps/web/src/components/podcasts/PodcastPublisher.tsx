@@ -282,9 +282,17 @@ export function PodcastPublisher({
         method: 'PUT',
         headers: { 'Content-Type': 'audio/mpeg' },
         body: file,
-      });
-      if (!uploaded.ok) throw new Error('Audio upload failed. Please try again.');
+      }).catch(() => null);
+      if (!uploaded?.ok)
+        throw new Error(
+          ar
+            ? 'رفع الصوت ماكملش. اضغط نشر تاني من غير ما تغيّر بيانات الحلقة أو الملف.'
+            : 'Audio upload failed. Retry with the same episode details and MP3.',
+        );
       await post({ action: 'publish', episodeId: result.episodeId });
+      setPendingDrafts((current) =>
+        current.filter((draft) => draft.id !== result.episodeId),
+      );
       setNotice(
         ar
           ? 'تم رفع الحلقة وإرسالها لمراجعة الأدمن.'
@@ -361,8 +369,8 @@ export function PodcastPublisher({
             </h3>
             <p className="mt-1 text-xs text-[#d6bca0]">
               {ar
-                ? 'لو رفعت الملف قبل كده، ابعته لمراجعة الأدمن من غير ما تعيد رفعه.'
-                : 'Already uploaded the MP3? Submit it for admin review without reuploading.'}
+                ? 'لو الملف اترفع، كمّل من هنا. لو الرفع وقف، جرّب تاني من نموذج الحلقة بنفس البيانات ونفس الملف.'
+                : 'If the MP3 uploaded, finish here. If the upload stopped, retry from the episode form with the original details and MP3.'}
             </p>
           </div>
           {pendingDrafts.map((d) => (

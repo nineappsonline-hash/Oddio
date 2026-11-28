@@ -89,7 +89,7 @@ async function measure(mode) {
       timeout: 45_000,
     });
     assert.ok(response?.ok(), `Player starting page returned HTTP ${response?.status()}`);
-    const idle = page.locator('.oddio-idle-player');
+    const idle = page.locator('.oddio-idle-player, .mp2-player');
     await idle.waitFor({ state: 'visible' });
     const trigger =
       url.pathname === '/en'
@@ -99,7 +99,7 @@ async function measure(mode) {
             .getByRole('button', { name: 'Play', exact: true })
             .first();
     await trigger.tap();
-    const mini = page.getByRole('region', { name: /mini player/i });
+    const mini = page.getByRole('region', { name: /oddio music player|mini player/i });
     const expand = mini.getByRole('button', { name: /expand/i }).last();
     await expand.waitFor({ state: 'visible' });
     if (process.env.ODDIO_PLAYER_DWELL_MS) {

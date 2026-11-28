@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getSessionUser } from '@/lib/auth/session';
 import { serviceClient } from '@/lib/data/supabase-store';
 import { presignR2Get } from '@/lib/storage/r2-presign';
+import { isPodcastWriteOriginAllowed } from '@/lib/podcasts/request-origin';
 
 export const runtime = 'nodejs';
 const input = z.object({
@@ -20,8 +21,7 @@ export async function POST(request: Request) {
   const user = await admin();
   if (!user)
     return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-  const origin = request.headers.get('origin');
-  if (origin && origin !== new URL(request.url).origin)
+  if (!isPodcastWriteOriginAllowed(request))
     return NextResponse.json({ error: 'Forbidden origin' }, { status: 403 });
   const parsed = input.safeParse(await request.json().catch(() => null));
   if (!parsed.success)

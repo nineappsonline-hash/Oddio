@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { demoMode } from '@/lib/env';
 import { presignR2Get, presignR2StreamingPut } from '@/lib/storage/r2-presign';
+import { isPodcastWriteOriginAllowed } from '@/lib/podcasts/request-origin';
 
 export const runtime = 'nodejs';
 const MAX_COVER_BYTES = 3 * 1024 * 1024;
@@ -37,8 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
   if (demoMode)
     return NextResponse.json({ error: 'Storage is not configured' }, { status: 503 });
-  const origin = request.headers.get('origin');
-  if (origin && origin !== new URL(request.url).origin)
+  if (!isPodcastWriteOriginAllowed(request))
     return NextResponse.json(
       { error: 'Cross-origin uploads are not allowed' },
       { status: 403 },

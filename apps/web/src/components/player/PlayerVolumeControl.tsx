@@ -28,6 +28,7 @@ export function PlayerVolumeControl({
   const outputRef = useRef<HTMLOutputElement>(null);
   const frameRef = useRef<number | null>(null);
   const pendingRef = useRef<number>(volume);
+  const hasUncommittedInputRef = useRef(false);
 
   useEffect(() => {
     // Every browser on iOS uses WebKit, including Chrome on iPhone.
@@ -44,15 +45,22 @@ export function PlayerVolumeControl({
   useEffect(() => {
     const slider = sliderRef.current;
     if (slider && document.activeElement !== slider) {
+      // Keep the pointer-up/blur commit aligned with external mute, volume,
+      // account restore or media-key updates. Otherwise blur can rewind volume
+      // to the value that was present when this component first mounted.
+      // Muting changes the displayed position but must not erase the
+      // remembered non-zero volume used when unmuting.
+      pendingRef.current = volume;
       slider.value = String(pct);
       slider.style.setProperty('--oddio-volume-progress', `${pct}%`);
     }
     if (outputRef.current) outputRef.current.textContent = String(pct);
-  }, [pct]);
+  }, [pct, muted, volume]);
 
   const updateFromInput = (element: HTMLInputElement) => {
     const value = Math.max(0, Math.min(100, Number(element.value)));
     pendingRef.current = value / 100;
+    hasUncommittedInputRef.current = true;
     element.style.setProperty('--oddio-volume-progress', `${value}%`);
     if (outputRef.current) outputRef.current.textContent = String(value);
     if (frameRef.current !== null) return;
@@ -78,6 +86,7 @@ export function PlayerVolumeControl({
       slider.style.setProperty('--oddio-volume-progress', `${next}%`);
       if (outputRef.current) outputRef.current.textContent = String(next);
       pendingRef.current = next / 100;
+      hasUncommittedInputRef.current = false;
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
       frameRef.current = null;
       setVolume(next / 100);
@@ -87,10 +96,14 @@ export function PlayerVolumeControl({
   }, [ios, mobile, setVolume]);
 
   const finishDrag = () => {
+    // Blur/pointerup without a change (e.g. external mute while focused)
+    // must not write stale slider values into the shared player store.
+    if (!hasUncommittedInputRef.current) return;
     if (frameRef.current !== null) {
       cancelAnimationFrame(frameRef.current);
       frameRef.current = null;
     }
+    hasUncommittedInputRef.current = false;
     setVolume(pendingRef.current);
   };
 
@@ -170,8 +183,13 @@ export function PlayerVolumeControl({
           onInput={(event) => updateFromInput(event.currentTarget)}
           onChange={(event) => updateFromInput(event.currentTarget)}
           onPointerUp={finishDrag}
+          onPointerCancel={finishDrag}
           onBlur={finishDrag}
-          className={mobile ? 'oddio-glass-volume-slider w-full' : 'w-12 sm:w-20 xl:w-24'}
+          className={
+            mobile
+              ? 'oddio-glass-volume-slider w-full'
+              : 'oddio-desktop-volume-slider w-12 sm:w-20 xl:w-24'
+          }
           style={{ '--oddio-volume-progress': `${pct}%` } as CSSProperties}
           aria-label={rtl ? 'مستوى الصوت' : 'Volume level'}
           title={label}
